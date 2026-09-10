@@ -52,6 +52,8 @@ export function mapHevyWorkoutToInsert(workout: THevyWorkout, userId: string, wo
         ended_at: workout.end_time,
         // Hevy's own revision stamp — how a later sync spots an edited session.
         source_updated_at: workout.updated_at ?? null,
+        // Linked-day match key for Day complete. Null for ad-hoc Hevy sessions.
+        routine_id: workout.routine_id ?? null,
     };
 }
 
@@ -60,6 +62,7 @@ export type TBackedUpWorkoutFreshness = {
     source_updated_at: string | null;
     started_at: string | null;
     ended_at: string | null;
+    routine_id?: string | null;
 };
 
 /**
@@ -171,7 +174,7 @@ async function findExistingWorkout(
 ): Promise<({ id: string } & TBackedUpWorkoutFreshness) | null> {
     const { data, error } = await db
         .from("workouts")
-        .select("id, source_updated_at, started_at, ended_at")
+        .select("id, source_updated_at, started_at, ended_at, routine_id")
         .eq("user_id", userId)
         .eq("source", HEVY_WORKOUT_SOURCE)
         .eq("external_id", externalId)
@@ -190,6 +193,7 @@ async function findExistingWorkout(
         source_updated_at: data.source_updated_at ?? null,
         started_at: data.started_at ?? null,
         ended_at: data.ended_at ?? null,
+        routine_id: data.routine_id ?? null,
     };
 }
 
@@ -671,7 +675,8 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
  * @param params.userId - Proxima user ID owning the backup
  * @param params.workout - Completed workout from the Hevy API
  * @param params.apiKey - Syncing user's Hevy API key, for exercise ownership resolution
- * @returns Insert outcome: `inserted`, `skipped` (duplicate), or `error`
+ * @returns Insert outcome: `inserted`, `skipped` (duplicate), `patched` (filled
+ *   missing `routine_id` on an otherwise current row), or `error`
  * @throws {HevyRateLimitError} When Hevy rate-limits a template lookup, so the caller backs off
  */
 export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
@@ -683,6 +688,17 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
         if (existing) {
             const isComplete = await hasWorkoutExercises(db, existing.id);
             if (isComplete && !isBackedUpWorkoutStale(existing, workout)) {
+                const incomingRoutineId = workout.routine_id ?? null;
+                if (!existing.routine_id && incomingRoutineId) {
+                    const { error: patchError } = await db
+                        .from("workouts")
+                        .update({ routine_id: incomingRoutineId })
+                        .eq("id", existing.id);
+                    if (patchError) {
+                        return { status: "error", message: patchError.message };
+                    }
+                    return { status: "patched", workoutId: existing.id };
+                }
                 return { status: "skipped", workoutId: existing.id };
             }
 

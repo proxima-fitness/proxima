@@ -11,7 +11,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { EllipsisIcon, PlusIcon, NotebookTextIcon, LinkIcon } from "lucide-react";
+import { EllipsisIcon, PlusIcon, NotebookTextIcon, LinkIcon, Check } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import {
@@ -29,7 +29,7 @@ import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { useIsAgentStreaming } from "@/contexts/ProgramMutationContext";
+import { useIsDayLocked, useCompletedHevyRoutineIds } from "@/contexts/ProgramMutationContext";
 import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
@@ -127,7 +127,10 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
     const { resolvedTheme } = useTheme();
     const { isInLbs } = usePoundsOrKgContext();
-    const mutationsLocked = useIsAgentStreaming();
+    const mutationsLocked = useIsDayLocked(day.hevyRoutineId);
+    const completedHevyRoutineIds = useCompletedHevyRoutineIds();
+    const isDayComplete =
+        day.hevyRoutineId != null && completedHevyRoutineIds.includes(day.hevyRoutineId);
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
     const [editTitleOpen, setEditTitleOpen] = useState(false);
     const [currentTitle, setCurrentTitle] = useState(day.title ?? "");
@@ -255,7 +258,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                         </div>
                     ) : (
                     <div className="flex flex-row justify-between items-center px-3 py-1">
-                        <div className="font-main text-lg flex flex-row whitespace-nowrap">
+                        <div className="font-main text-lg flex flex-row whitespace-nowrap items-center gap-2">
                             Day {day.order}
                         </div>
                         <div className="font-secondary text-md min-w-0 flex-1">
@@ -291,7 +294,17 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                 </TooltipProvider>
                             }
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-row items-center gap-1.5 shrink-0">
+                            {isDayComplete ? (
+                                <span
+                                    className="flex flex-row items-center gap-1 shrink-0 text-lightSecondary"
+                                    aria-label="Day complete"
+                                >
+                                    <Check className="h-4 w-4" aria-hidden="true" />
+                                    <span className="font-secondary text-sm">Complete</span>
+                                </span>
+                            ) : null}
+                            <div className="flex flex-col gap-2">
                             { day.notes && day.notes.length > 0 &&
                             <TooltipProvider delayDuration={ 0 }>
                                 <Tooltip>
@@ -349,6 +362,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     </DropdownMenuItem> */}
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                            </div>
                         </div>
                     </div>
                     )}

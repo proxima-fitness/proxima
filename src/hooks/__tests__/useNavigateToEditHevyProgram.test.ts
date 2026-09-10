@@ -47,7 +47,7 @@ describe("useNavigateToEditHevyProgram", () => {
         localStorage.clear();
     });
 
-    it("refetches Hevy programs, seeds draft, navigates with folder", async () => {
+    it("refetches Hevy programs, seeds an Edit session, navigates with folder", async () => {
         const program: THevyProgramItem = {
             program_title: "Split",
             program: [
@@ -68,9 +68,10 @@ describe("useNavigateToEditHevyProgram", () => {
         });
 
         expect(refetchQueries).toHaveBeenCalledWith({ queryKey: ["hevy-programs"] });
-        expect(JSON.parse(localStorage.getItem("hevy-program-in-progress") ?? "[]")).toEqual(
-            program.program,
-        );
+        const seeded = startEditSession.mock.calls[0]?.[0]?.routines as THevyRoutine[];
+        expect(seeded.map((routine) => routine.hevyRoutineId)).toEqual(["r1"]);
+        expect(seeded.every((routine) => routine.folder_id === 0)).toBe(true);
+        expect(localStorage.getItem("hevy-program-in-progress")).toBeNull();
         expect(push).toHaveBeenCalledWith(
             "/build-program?resume=true&edit=true&hevy=true&search=stall&folder=42",
         );
@@ -136,7 +137,9 @@ describe("useNavigateToEditHevyProgram", () => {
         ]);
     });
 
-    it("falls back to title inference when the folder has no link", async () => {
+    it("Hevy-only Edit hands off in memory with the same hevyRoutineId split", async () => {
+        localStorage.setItem("hevy-program-in-progress", JSON.stringify([{ id: "new-path-draft" }]));
+
         const program: THevyProgramItem = {
             program_title: "Hevy-only split",
             program: [
@@ -150,13 +153,19 @@ describe("useNavigateToEditHevyProgram", () => {
             await result.current(program);
         });
 
-        // normalizeRoutineTitlesForBuilder is mocked to identity here — the point
-        // is that the raw folder_id survives, i.e. link ordering did not run.
-        const seeded = JSON.parse(
-            localStorage.getItem("hevy-program-in-progress") ?? "[]",
-        ) as THevyRoutine[];
-        expect(seeded[0].folder_id).toBe(55);
-        // Hevy-only Edit keeps the draft-key transport until ADR 0002 / 02.
-        expect(startEditSession).not.toHaveBeenCalled();
+        const seeded = startEditSession.mock.calls[0]?.[0]?.routines as THevyRoutine[];
+        expect(seeded.map((routine) => routine.hevyRoutineId)).toEqual(["r1"]);
+        expect(seeded.map((routine) => routine.id)).toEqual(["1"]);
+        expect(seeded.every((routine) => routine.folder_id === 0)).toBe(true);
+        expect(startEditSession.mock.calls[0]?.[0]).toEqual(
+            expect.objectContaining({ initialFolderId: 55 }),
+        );
+        expect(startEditSession.mock.calls[0]?.[0]).not.toHaveProperty("programId");
+        expect(JSON.parse(localStorage.getItem("hevy-program-in-progress") ?? "[]")).toEqual([
+            { id: "new-path-draft" },
+        ]);
+        expect(push).toHaveBeenCalledWith(
+            "/build-program?resume=true&edit=true&hevy=true&folder=55",
+        );
     });
 });

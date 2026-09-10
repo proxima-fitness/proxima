@@ -6,7 +6,7 @@
  * hevy-program-sync (ADR 0011).
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase, ./index
- * Used by: ProgramOverviewWeekList via useProgramScheduleHistoryDays
+ * Used by: unused after Day complete switched to Workout backup ∩ link IDs
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";

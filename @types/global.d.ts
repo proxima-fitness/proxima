@@ -178,6 +178,8 @@ type THevyWorkout = {
     exercises: THevyWorkoutExercise[];
     updated_at?: string;
     created_at?: string;
+    /** Hevy routine this session was logged from. Null for ad-hoc sessions. */
+    routine_id?: string | null;
 };
 
 type THevyWorkoutsResponse = {
@@ -241,6 +243,7 @@ type TWorkoutHistoryDb = SupabaseClient<Database>;
 type TImportHevyWorkoutResult =
     | { status: "inserted"; workoutId: string }
     | { status: "skipped"; workoutId: string }
+    | { status: "patched"; workoutId: string }
     | { status: "error"; message: string };
 
 type TSyncChunkResult = {

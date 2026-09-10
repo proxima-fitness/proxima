@@ -1,12 +1,13 @@
+import { mutationTargetsCompletedDay } from "@/hooks/edit-persist";
 import { programMutationCatalogById } from "./catalog";
-import { isValidationFailure, mutationFailure, type TMutationResult } from "./types";
-import type { TProgramMutationRunContext } from "./types";
+import { isValidationFailure, mutationFailure, type TMutationResult, type TProgramMutationRunContext } from "./types";
 import {
     detectCommonMutationFieldMistakes,
     formatMutationSchemaError,
 } from "./validationErrors";
 
 const STREAMING_FAILURE = "Can't edit the program while the assistant is responding.";
+const DAY_COMPLETE_FAILURE = "This day is complete and can't be edited.";
 
 /**
  * Run a catalog mutation against `ctx.program` and commit on success.
@@ -19,6 +20,16 @@ export function runProgramMutation(
 ): TMutationResult {
     if (ctx.isAgentStreaming) {
         return mutationFailure(STREAMING_FAILURE);
+    }
+
+    if (
+        mutationTargetsCompletedDay(
+            ctx.program,
+            args,
+            ctx.completedHevyRoutineIds ?? [],
+        )
+    ) {
+        return mutationFailure(DAY_COMPLETE_FAILURE);
     }
 
     const mutation = programMutationCatalogById[id];

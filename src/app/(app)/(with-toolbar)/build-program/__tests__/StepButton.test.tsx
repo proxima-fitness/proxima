@@ -40,14 +40,14 @@ describe("StepButton (ADR 0007 — remove New-path Export)", () => {
         expect(screen.queryByText("Export")).toBeNull();
     });
 
-    it("shows disabled Sync when edit=true and hevy=true", () => {
+    it("does not render a second persist control when edit=true and hevy=true", () => {
         useSearchParams.mockReturnValue(new URLSearchParams("edit=true&hevy=true"));
         useUserContext.mockReturnValue({ user: { id: "u1" }, isLoading: false });
 
-        render(<StepButton />);
+        const { container } = render(<StepButton />);
 
-        const syncButtons = screen.getAllByText("Sync");
-        expect(syncButtons.length).toBeGreaterThan(0);
+        expect(container.firstChild).toBeNull();
+        expect(screen.queryByText("Sync")).toBeNull();
         expect(screen.queryByText("Export")).toBeNull();
     });
 });

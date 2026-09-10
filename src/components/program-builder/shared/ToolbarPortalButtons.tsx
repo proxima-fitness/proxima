@@ -13,10 +13,11 @@ interface IToolbarPortalButtonsProps {
     onSave: () => void;
     saveDisabled: boolean;
     isSaving: boolean;
+    persistMode?: "save" | "sync";
 }
 
 /**
- * Renders Undo and Save buttons into toolbar portal targets (#toolbar-undo-portal,
+ * Renders Undo and persist buttons into toolbar portal targets (#toolbar-undo-portal,
  * #toolbar-save-portal, optional #toolbar-save-portal-mobile). Single state + one
  * effect for one re-render after mount.
  */
@@ -27,6 +28,7 @@ function ToolbarPortalButtonsInner({
     onSave,
     saveDisabled,
     isSaving,
+    persistMode = "save",
 }: IToolbarPortalButtonsProps) {
     const [targets, setTargets] = useState<{
         undo: HTMLElement;
@@ -62,7 +64,12 @@ function ToolbarPortalButtonsInner({
 
     const savePortals = targets.save.map((el) =>
         createPortal(
-            <ToolbarSaveButton onClick={onSave} disabled={saveDisabled} isSaving={isSaving} />,
+            <ToolbarSaveButton
+                onClick={onSave}
+                disabled={saveDisabled}
+                isSaving={isSaving}
+                persistMode={persistMode}
+            />,
             el,
         ),
     );

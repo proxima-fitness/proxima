@@ -75,6 +75,27 @@ describe("runProgramMutation", () => {
         expect(commitWithUndo).not.toHaveBeenCalled();
     });
 
+    it("blocks mutations on a Day complete day", () => {
+        const commitWithUndo = vi.fn();
+        const hevyRoutineId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+        const result = runProgramMutation(
+            "edit_day_title",
+            { folderIds: [0], dayOrder: 1, title: "New" },
+            {
+                program: [makeDay({ hevyRoutineId })],
+                commitWithUndo,
+                isAgentStreaming: false,
+                completedHevyRoutineIds: [hevyRoutineId],
+            },
+        );
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toContain("complete");
+        expect(commitWithUndo).not.toHaveBeenCalled();
+    });
+
     it("insert_exercise from dialog form commits with 0-based set indices", () => {
         const program = [makeDay()];
         const commitWithUndo = vi.fn();

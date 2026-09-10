@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
     defaultSelectedWeek,
     deriveCompletedWeeksFromLinks,
-    deriveCompletedWeeksFromScheduleHistory,
+    deriveCompletedWeeksFromWorkoutRoutineIds,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
     mergeCompletedWeeks,
@@ -72,36 +72,24 @@ describe("deriveProgramOverviewWeekStatuses", () => {
     });
 });
 
-describe("deriveCompletedWeeksFromScheduleHistory", () => {
-    it("requires all expected distinct days for a week", () => {
-        const expected = new Map([
-            [1, 3],
-            [2, 2],
-        ]);
-        const days = [
-            { nthWeek: 1, nthDay: 1 },
-            { nthWeek: 1, nthDay: 2 },
-            { nthWeek: 1, nthDay: 3 },
-            { nthWeek: 2, nthDay: 1 },
+describe("deriveCompletedWeeksFromWorkoutRoutineIds", () => {
+    it("requires every linked routine id to have a matching Workout", () => {
+        const links = [
+            { nth_week: 1, hevy_routine_ids: ["a", "b", "c"] },
+            { nth_week: 2, hevy_routine_ids: ["d", "e"] },
         ];
-        expect(deriveCompletedWeeksFromScheduleHistory(days, expected)).toEqual([1]);
+        expect(deriveCompletedWeeksFromWorkoutRoutineIds(links, ["a", "b", "c"])).toEqual([1]);
     });
 
-    it("dedupes repeated day rows", () => {
-        const expected = new Map([[1, 2]]);
-        const days = [
-            { nthWeek: 1, nthDay: 1 },
-            { nthWeek: 1, nthDay: 1 },
-            { nthWeek: 1, nthDay: 2 },
-        ];
-        expect(deriveCompletedWeeksFromScheduleHistory(days, expected)).toEqual([1]);
+    it("does not complete a week from a day-count alone", () => {
+        // Two workouts exist, but they are not this week's linked IDs.
+        const links = [{ nth_week: 1, hevy_routine_ids: ["a", "b"] }];
+        expect(deriveCompletedWeeksFromWorkoutRoutineIds(links, ["x", "y"])).toEqual([]);
     });
 
-    it("skips weeks with unknown or zero expected days", () => {
-        const expected = new Map([[1, 0]]);
-        expect(
-            deriveCompletedWeeksFromScheduleHistory([{ nthWeek: 1, nthDay: 1 }], expected),
-        ).toEqual([]);
+    it("skips weeks with no linked routine ids", () => {
+        const links = [{ nth_week: 1, hevy_routine_ids: [] }];
+        expect(deriveCompletedWeeksFromWorkoutRoutineIds(links, ["a"])).toEqual([]);
     });
 });
 

@@ -7,9 +7,9 @@
  *
  * **Edit current week** (ADR 0013 / 01): pass `programId` + `nthWeek` and the seed
  * is ordered by the **Program–Hevy link** and the arrival carries `program` + `week`
- * alongside `folder`. That path hands off through the **Edit session**, not the
- * New-path **Builder draft** key (ADR 0013 / 02); every other Edit entry still uses
- * `hevy-program-in-progress` until ADR 0002 / 02 migrates it.
+ * alongside `folder`. Hevy-only Edit (no program/week) uses the same **Edit
+ * session** and `hevyRoutineId` split (ADR 0013 / 04). Neither path writes the
+ * New-path **Builder draft** key.
  *
  * Depends on: next/navigation, react-query, UserContext, useHevySecret,
  *             normalizeRoutineTitlesForBuilder, edit-current-week-arrival,
@@ -65,12 +65,17 @@ export function useNavigateToEditHevyProgram() {
             const { programId, nthWeek, hevyRoutineIds, extraParams } = options;
             const isEditCurrentWeek = programId != null && nthWeek != null;
 
-            // Linked week → the link owns week/day identity. Titles are only a
-            // fallback for a Hevy folder with no link (ADR 0013 / 01).
-            const seed =
+            // Linked week → the link owns week/day identity. Hevy-only still
+            // runs the same hevyRoutineId split (ADR 0013 / 04).
+            const source =
                 isEditCurrentWeek && hevyRoutineIds?.length
-                    ? orderRoutinesByLink(program.program, hevyRoutineIds)
+                    ? program.program
                     : normalizeRoutineTitlesForBuilder(program.program);
+            const identityIds =
+                isEditCurrentWeek && hevyRoutineIds?.length
+                    ? hevyRoutineIds
+                    : source.map((routine) => routine.hevyRoutineId ?? routine.id);
+            const seed = orderRoutinesByLink(source, identityIds);
 
             const rawFolderId = program.program[0]?.folder_id;
             const folderId =
@@ -78,8 +83,8 @@ export function useNavigateToEditHevyProgram() {
                     ? Number(rawFolderId)
                     : null;
 
+            // In-memory handoff — never the New-path draft key (ADR 0013 / 02, / 04).
             if (isEditCurrentWeek) {
-                // In-memory handoff — never the New-path draft key (ADR 0013 / 02).
                 startEditSession({
                     routines: seed,
                     initialFolderId: folderId,
@@ -87,7 +92,10 @@ export function useNavigateToEditHevyProgram() {
                     nthWeek,
                 });
             } else {
-                localStorage.setItem("hevy-program-in-progress", JSON.stringify(seed));
+                startEditSession({
+                    routines: seed,
+                    initialFolderId: folderId,
+                });
             }
 
             const params = buildEditArrivalParams({

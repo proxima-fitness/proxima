@@ -21,7 +21,7 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
-import { useIsAgentStreaming } from "@/contexts/ProgramMutationContext";
+import { useIsDayLocked } from "@/contexts/ProgramMutationContext";
 
 /** Props for the exercise list within a day card. */
 interface IProps {
@@ -97,7 +97,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
 
     const { isInLbs } = usePoundsOrKgContext();
     const isSm = useMediaQuery("(min-width: 640px)");
-    const mutationsLocked = useIsAgentStreaming();
+    const mutationsLocked = useIsDayLocked(day.hevyRoutineId);
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLElement>, folder_id: number, i: number, exercise: THevyExercise) => {

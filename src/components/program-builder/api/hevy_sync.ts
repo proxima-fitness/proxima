@@ -12,8 +12,9 @@
  *   prefix is the only empty signal — empty exercises alone are a new day
  *   the athlete is still building.
  * - Identity is the Hevy routine UUID. Edit current week stores it on
- *   `hevyRoutineId`. Hevy-only still parks it on `id` until SP4; we coerce
- *   a UUID `id` so those days PUT rather than POST as duplicates.
+ *   `hevyRoutineId`. Hevy-only Edit now uses the same split (ADR 0013 / 04);
+ *   we still coerce a UUID `id` as a backstop so those days PUT rather than
+ *   POST as duplicates.
  * - Writes always run empty → PUT → POST. PUT must omit `folder_id` (Hevy
  *   would move the routine). POST uses `initialFolderId`, never the builder's
  *   `folder_id` (that field is a week index, usually 0).
@@ -755,6 +756,81 @@ async function persistLiveLinkIds(input: {
     return liveHevyRoutineIds;
 }
 
+export type TExecuteHevySyncPlanInput = {
+    apiKey: string;
+    hevyApi?: Partial<TSyncHevyApi>;
+    onProgress?: THevyUploadProgressCallback;
+    plan: TSyncPlan;
+    session: TSyncEditSession;
+    user?: User | null;
+};
+
+export type TExecuteHevySyncPlanResult = TSyncResult & {
+    postedByBuilderId: Map<string, string>;
+};
+
+/**
+ * Run a pre-built Sync plan (empty → PUT → POST). Does not rewrite the link.
+ * SP4 rollback calls this with {@link buildRollbackPlan}.
+ *
+ * @param input - Plan, Edit session, Hevy key, optional fakes
+ */
+export async function executeHevySyncPlan(
+    input: TExecuteHevySyncPlanInput,
+): Promise<TExecuteHevySyncPlanResult> {
+    const api = resolveHevyApi(input.hevyApi);
+    const remapped = await remapCustomExercises(
+        api,
+        input.user,
+        input.apiKey,
+        input.plan,
+        input.onProgress,
+    );
+    if (!remapped.ok) {
+        return {
+            success: false,
+            failures: [
+                {
+                    op: "put",
+                    title: "custom exercises",
+                    error: remapped.error.message,
+                },
+            ],
+            emptyCount: 0,
+            putCount: 0,
+            postCount: 0,
+            postedRoutineIds: [],
+            postedByBuilderId: new Map(),
+        };
+    }
+
+    const batch: THevyWriteBatch = {
+        api,
+        apiKey: input.apiKey,
+        onProgress: input.onProgress,
+        failures: [],
+        emptyCount: 0,
+        putCount: 0,
+        postCount: 0,
+        postedByBuilderId: new Map(),
+        postedRoutineIds: [],
+        total: input.plan.empty.length + input.plan.put.length + input.plan.post.length,
+        finished: 0,
+    };
+
+    await emptyRemovedRoutines(batch, input.plan.empty);
+    await putChangedRoutines(batch, input.plan.put, remapped.byBuilderId);
+    await postNewRoutines(
+        batch,
+        input.plan.post,
+        remapped.byBuilderId,
+        input.session.initialFolderId,
+    );
+
+    const result = syncResult(batch, { success: batch.failures.length === 0 });
+    return { ...result, postedByBuilderId: batch.postedByBuilderId };
+}
+
 /**
  * Write the Sync plan to Hevy, then rewrite live `hevy_routine_ids` when
  * the session is linked and every Hevy op succeeded.
@@ -780,66 +856,32 @@ export async function syncProgramToHevy(
         completedHevyRoutineIds,
     });
 
-    const api = resolveHevyApi(input.hevyApi);
-    const remapped = await remapCustomExercises(
-        api,
-        input.user,
-        input.apiKey,
-        plan,
-        input.onProgress,
-    );
-    if (!remapped.ok) {
-        return {
-            success: false,
-            failures: [
-                {
-                    op: "put",
-                    title: "custom exercises",
-                    error: remapped.error.message,
-                },
-            ],
-            emptyCount: 0,
-            putCount: 0,
-            postCount: 0,
-            postedRoutineIds: [],
-        };
-    }
-
-    const batch: THevyWriteBatch = {
-        api,
+    const executed = await executeHevySyncPlan({
         apiKey: input.apiKey,
+        hevyApi: input.hevyApi,
         onProgress: input.onProgress,
-        failures: [],
-        emptyCount: 0,
-        putCount: 0,
-        postCount: 0,
-        postedByBuilderId: new Map(),
-        postedRoutineIds: [],
-        total: plan.empty.length + plan.put.length + plan.post.length,
-        finished: 0,
-    };
-
-    await emptyRemovedRoutines(batch, plan.empty);
-    await putChangedRoutines(batch, plan.put, remapped.byBuilderId);
-    await postNewRoutines(batch, plan.post, remapped.byBuilderId, session.initialFolderId);
-
-    if (batch.failures.length > 0) {
-        return syncResult(batch, { success: false });
+        plan,
+        session,
+        user: input.user,
+    });
+    const { postedByBuilderId, ...result } = executed;
+    if (!result.success) {
+        return result;
     }
 
     if (!isLinkedSession(session)) {
-        return syncResult(batch, { success: true });
+        return result;
     }
 
     const liveHevyRoutineIds = await persistLiveLinkIds({
         session,
         workingRoutines: input.workingRoutines,
         completedHevyRoutineIds,
-        postedByBuilderId: batch.postedByBuilderId,
+        postedByBuilderId,
         programId: session.programId,
         nthWeek: session.nthWeek,
         linkClient: input.linkClient,
     });
 
-    return syncResult(batch, { success: true, liveHevyRoutineIds });
+    return { ...result, liveHevyRoutineIds };
 }

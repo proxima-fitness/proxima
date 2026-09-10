@@ -6,17 +6,20 @@
  * the hevy-program-sync edge function. No midnight cron.
  *
  * Also reconciles the workout backup mirror from Hevy's events feed on the way
- * through: edits and deletions leave the workout count untouched, so nothing
- * else on this path would ever notice them, and the mirror drifts from Hevy.
+ * through. After that backup, PUT a Hevy-app title checkmark for each linked
+ * `routine_id` that has a Workout. Clients re-read `workouts.routine_id` for
+ * the builder lock — they do not wait on the count-gated edge write.
  *
  * Depends on: @/utils/supabase/server, fetchHevyWorkoutCount,
- *             syncHevyWorkoutEvents, SUPABASE_SECRET_KEY
+ *             syncHevyWorkoutEvents, markUserLinkedHevyRoutineTitlesComplete,
+ *             SUPABASE_SECRET_KEY
  */
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { fetchHevyWorkoutCount, syncHevyWorkoutEvents } from "@/api/workout-history-sync";
 import { shouldInvokeHevyProgramSync } from "@/api/hevy-program-sync";
+import { markUserLinkedHevyRoutineTitlesComplete } from "@/api/hevy-day-complete-title";
 
 /**
  * POST /api/hevy-program-sync — sync day-complete for the current user when needed.
@@ -68,6 +71,20 @@ export async function POST() {
             }
         } catch (eventsError) {
             console.warn("hevy workout events sync failed:", eventsError);
+        }
+
+        // Hevy-app ✓ only. Detector is backup ∩ link; do not restore auto-upload
+        // or silent weight writes. Never fail the request if a title PUT fails.
+        try {
+            const titles = await markUserLinkedHevyRoutineTitlesComplete(supabase, {
+                userId: user.id,
+                apiKey,
+            });
+            if (titles.updated > 0 || titles.failed > 0) {
+                console.info("hevy day-complete titles:", titles);
+            }
+        } catch (titleError) {
+            console.warn("hevy day-complete title checkmark failed:", titleError);
         }
 
         if (!shouldInvokeHevyProgramSync(workoutsCount, lastSyncCount)) {

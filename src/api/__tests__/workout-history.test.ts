@@ -169,6 +169,9 @@ function createMockDb(
             let exactCount = false;
             let deleting = false;
 
+            let updating = false;
+            let pendingUpdate: TRow | null = null;
+
             const builder = {
                 select(_columns?: string, selectOptions?: { count?: string; head?: boolean }) {
                     if (selectOptions?.head) head = true;
@@ -181,6 +184,11 @@ function createMockDb(
                 },
                 is(column: string, value: unknown) {
                     filters.push({ column, value });
+                    return builder;
+                },
+                update(patch: TRow) {
+                    updating = true;
+                    pendingUpdate = patch;
                     return builder;
                 },
                 delete() {
@@ -247,6 +255,16 @@ function createMockDb(
                     return { error: null };
                 },
                 then(resolve: (value: { count: number | null; error: null }) => void) {
+                    if (updating && pendingUpdate) {
+                        for (const row of tables[table]) {
+                            if (matchFilters(row, filters)) {
+                                Object.assign(row, pendingUpdate);
+                            }
+                        }
+                        resolve({ count: null, error: null });
+                        return;
+                    }
+
                     if (deleting) {
                         const removed = removeRows(tables[table], (row) =>
                             matchFilters(row, filters),
@@ -312,7 +330,18 @@ describe("hevy import mapping", () => {
             started_at: workout.start_time,
             ended_at: workout.end_time,
             source_updated_at: null,
+            routine_id: null,
         });
+    });
+
+    it("writes Hevy routine_id onto the backup row", () => {
+        const row = mapHevyWorkoutToInsert(
+            { ...workout, routine_id: "hevy-routine-push" },
+            USER_ID,
+            "workout-internal-id",
+        );
+
+        expect(row.routine_id).toBe("hevy-routine-push");
     });
 
     it("maps exercise notes and superset id", () => {
@@ -472,6 +501,63 @@ describe("importHevyWorkout", () => {
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workout_exercises).toHaveLength(1);
         expect(mockDb.tables.workout_sets).toHaveLength(0);
+    });
+
+    it("patches routine_id on a complete non-stale row that is missing it", async () => {
+        mockDb.tables.workouts.push({
+            id: "existing-workout-id",
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: workout.id,
+            started_at: workout.start_time,
+            ended_at: workout.end_time,
+            routine_id: null,
+        });
+        mockDb.tables.workout_exercises.push({
+            id: "existing-exercise-id",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        });
+
+        const result = await importHevyWorkout(asDb(mockDb), {
+            userId: USER_ID,
+            workout: { ...workout, routine_id: "hevy-routine-push" },
+            apiKey: API_KEY,
+        });
+
+        expect(result).toEqual({ status: "patched", workoutId: "existing-workout-id" });
+        expect(mockDb.tables.workouts).toHaveLength(1);
+        expect(mockDb.tables.workouts[0].routine_id).toBe("hevy-routine-push");
+        expect(mockDb.tables.workout_exercises).toHaveLength(1);
+    });
+
+    it("skips a complete non-stale row that already has routine_id", async () => {
+        mockDb.tables.workouts.push({
+            id: "existing-workout-id",
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: workout.id,
+            started_at: workout.start_time,
+            ended_at: workout.end_time,
+            routine_id: "already-stored",
+        });
+        mockDb.tables.workout_exercises.push({
+            id: "existing-exercise-id",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        });
+
+        const result = await importHevyWorkout(asDb(mockDb), {
+            userId: USER_ID,
+            workout: { ...workout, routine_id: "hevy-routine-push" },
+            apiKey: API_KEY,
+        });
+
+        expect(result).toEqual({ status: "skipped", workoutId: "existing-workout-id" });
+        expect(mockDb.tables.workouts[0].routine_id).toBe("already-stored");
+        expect(mockDb.tables.workout_exercises).toHaveLength(1);
     });
 
     it("re-imports a session Hevy has since changed", async () => {

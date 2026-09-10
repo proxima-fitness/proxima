@@ -10,7 +10,7 @@ const useUserContext = vi.fn();
 const useHevySecret = vi.fn();
 const useHevyPrograms = vi.fn();
 const useProgramHevyWeekLinks = vi.fn();
-const useProgramScheduleHistoryDays = vi.fn();
+const useWorkoutRoutineIds = vi.fn();
 const mutateMarkComplete = vi.fn();
 const useMarkProgramWeekComplete = vi.fn();
 
@@ -22,8 +22,7 @@ vi.mock("@/api/hooks", () => ({
     useHevySecret: (...args: unknown[]) => useHevySecret(...args),
     useHevyPrograms: (...args: unknown[]) => useHevyPrograms(...args),
     useProgramHevyWeekLinks: (...args: unknown[]) => useProgramHevyWeekLinks(...args),
-    useProgramScheduleHistoryDays: (...args: unknown[]) =>
-        useProgramScheduleHistoryDays(...args),
+    useWorkoutRoutineIds: (...args: unknown[]) => useWorkoutRoutineIds(...args),
 }));
 
 vi.mock("@/hooks/useProgramWeekComplete", () => ({
@@ -73,7 +72,7 @@ describe("ProgramOverviewWeekList mark week complete", () => {
             ],
             isLoading: false,
         });
-        useProgramScheduleHistoryDays.mockReturnValue({
+        useWorkoutRoutineIds.mockReturnValue({
             data: [],
             isLoading: false,
         });

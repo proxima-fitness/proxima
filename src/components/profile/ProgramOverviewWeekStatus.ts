@@ -3,7 +3,7 @@
  *
  * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02,
  * ADR 0011 / 04). Statuses: not exported / current / complete.
- * Completion inputs: link `completed_at` + schedule-history auto flags.
+ * Completion inputs: link `completed_at` + Workout backup ∩ link IDs.
  *
  * Depends on: none
  * Used by: ProgramOverviewWeekList, ProgramOverviewWeekRail,
@@ -17,14 +17,14 @@ export type TProgramOverviewWeekRowModel = {
     status: TProgramOverviewWeekStatus;
 };
 
-export type TScheduleHistoryDay = {
-    nthWeek: number;
-    nthDay: number;
-};
-
 export type TLinkCompletionRow = {
     nth_week: number;
     completed_at: string | null;
+};
+
+export type TLinkRoutineRow = {
+    nth_week: number;
+    hevy_routine_ids: readonly string[] | null;
 };
 
 /**
@@ -48,47 +48,36 @@ export function deriveCompletedWeeksFromLinks(
 }
 
 /**
- * Weeks where schedule history has at least `expectedDays` distinct days logged.
+ * Weeks where every linked Hevy routine ID has a matching Workout (`routine_id`).
  *
- * @param days - Schedule-history day rows for the program
- * @param expectedDaysByWeek - Linked week → expected day count (from hevy_routine_ids)
+ * @param links - Program–Hevy link rows (week + live routine IDs)
+ * @param workoutRoutineIds - Distinct `workouts.routine_id` values for the user
  */
-export function deriveCompletedWeeksFromScheduleHistory(
-    days: readonly TScheduleHistoryDay[],
-    expectedDaysByWeek: ReadonlyMap<number, number>,
+export function deriveCompletedWeeksFromWorkoutRoutineIds(
+    links: readonly TLinkRoutineRow[],
+    workoutRoutineIds: readonly string[],
 ): number[] {
-    const daysByWeek = new Map<number, Set<number>>();
-    for (const day of days) {
-        if (!Number.isInteger(day.nthWeek) || day.nthWeek < 1) {
-            continue;
-        }
-        if (!Number.isInteger(day.nthDay) || day.nthDay < 1) {
-            continue;
-        }
-        let set = daysByWeek.get(day.nthWeek);
-        if (!set) {
-            set = new Set();
-            daysByWeek.set(day.nthWeek, set);
-        }
-        set.add(day.nthDay);
-    }
-
+    const logged = new Set(workoutRoutineIds.filter((id) => id.length > 0));
     const completed: number[] = [];
-    for (const [week, expected] of expectedDaysByWeek) {
-        if (!Number.isInteger(expected) || expected < 1) {
+    for (const link of links) {
+        if (!Number.isInteger(link.nth_week) || link.nth_week < 1) {
             continue;
         }
-        if ((daysByWeek.get(week)?.size ?? 0) >= expected) {
-            completed.push(week);
+        const ids = link.hevy_routine_ids ?? [];
+        if (ids.length < 1) {
+            continue;
+        }
+        if (ids.every((id) => logged.has(id))) {
+            completed.push(link.nth_week);
         }
     }
     return completed.sort((a, b) => a - b);
 }
 
 /**
- * Merge auto (schedule history) + persisted (link) completion flags, unique sorted.
+ * Merge auto (workout ∩ link) + persisted (link) completion flags, unique sorted.
  *
- * @param autoCompleted - Weeks complete from schedule history
+ * @param autoCompleted - Weeks complete from workout backup ∩ link IDs
  * @param persistedCompleted - Weeks with link.completed_at
  */
 export function mergeCompletedWeeks(
@@ -103,7 +92,7 @@ export function mergeCompletedWeeks(
 /**
  * Linked weeks ready to persist as Week complete (auto detection, not yet on link).
  *
- * @param autoCompleted - Weeks complete from schedule history
+ * @param autoCompleted - Weeks complete from workout backup ∩ link IDs
  * @param persistedCompleted - Weeks with link.completed_at
  */
 export function weeksNeedingAutoMark(

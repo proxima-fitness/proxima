@@ -9,6 +9,7 @@ import {
     buildLiveHevyRoutineIds,
     buildRollbackPlan,
     buildSyncPlan,
+    executeHevySyncPlan,
     isRemovedRoutine,
     stripRemovedPrefix,
     syncProgramToHevy,
@@ -398,6 +399,51 @@ describe("syncProgramToHevy", () => {
         expect(result.success).toBe(true);
         expect(from).not.toHaveBeenCalled();
         expect(result.liveHevyRoutineIds).toBeUndefined();
+    });
+});
+
+describe("executeHevySyncPlan", () => {
+    it("runs a rollback plan: PUT snapshot then empty Sync-created IDs", async () => {
+        const writes: string[] = [];
+        const hevyApi: TSyncHevyApi = {
+            emptyRoutineOnHevy: vi.fn(async (id) => {
+                writes.push(`empty:${id}`);
+                return {};
+            }),
+            putRoutine: vi.fn(async (id) => {
+                writes.push(`put:${id}`);
+                return {};
+            }),
+            postRoutine: vi.fn(),
+            resolveCustomExerciseTemplatesForHevyUpload: vi.fn(async (_user, _key, routines) => ({
+                success: true as const,
+                routines,
+                createdNewHevyCustomTemplates: 0,
+            })),
+            extractHevyCreatedRoutineId: vi.fn(),
+            wait: vi.fn().mockResolvedValue(undefined),
+        };
+        const initial = [makeRoutine({ id: "1", title: "1 - Push", hevyRoutineId: HEVY_A })];
+        const plan = buildRollbackPlan({
+            initialHevyProgram: initial,
+            currentFolderRoutineIds: [HEVY_A, POSTED_ID],
+            postedDuringSyncIds: [POSTED_ID],
+        });
+
+        const result = await executeHevySyncPlan({
+            apiKey: "key",
+            hevyApi,
+            plan,
+            session: {
+                initialFolderId: 9,
+                initialHevyProgram: initial,
+                initialRoutineIds: [HEVY_A],
+            },
+        });
+
+        expect(result.success).toBe(true);
+        expect(writes).toEqual([`empty:${POSTED_ID}`, `put:${HEVY_A}`]);
+        expect(hevyApi.postRoutine).not.toHaveBeenCalled();
     });
 });
 

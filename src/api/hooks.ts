@@ -39,6 +39,7 @@ import {
 } from "./body-measurements-read";
 import { getProgramHevyWeekLinks } from "./program-hevy-links";
 import { getProgramScheduleHistoryDays } from "./program-schedule-history";
+import { getWorkoutRoutineIds, WORKOUT_ROUTINE_IDS_QUERY_KEY } from "./workout-routine-ids";
 import { supabase } from ".";
 
 /** React Query key for latest backed-up body measurement. */
@@ -52,6 +53,8 @@ export const PROGRAM_HEVY_LINKS_QUERY_KEY = ["program-hevy-links"] as const;
 
 /** React Query key for program schedule-history day rows by program. */
 export const PROGRAM_SCHEDULE_HISTORY_QUERY_KEY = ["program-schedule-history"] as const;
+
+export { WORKOUT_ROUTINE_IDS_QUERY_KEY };
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -516,6 +519,20 @@ export const useProgramScheduleHistoryDays = (
         queryKey: [...PROGRAM_SCHEDULE_HISTORY_QUERY_KEY, programId, userId],
         queryFn: () => getProgramScheduleHistoryDays(programId!, userId!),
         enabled: programId != null && !!userId,
+    });
+};
+
+/**
+ * Distinct Hevy routine IDs from the signed-in user's Workout backup.
+ * Day complete / auto Week complete intersect this set with link IDs.
+ *
+ * @param userId - Owner user id (query disabled when undefined)
+ */
+export const useWorkoutRoutineIds = (userId: string | undefined) => {
+    return useQuery({
+        queryKey: [...WORKOUT_ROUTINE_IDS_QUERY_KEY, userId],
+        queryFn: () => getWorkoutRoutineIds(userId!),
+        enabled: !!userId,
     });
 };
 

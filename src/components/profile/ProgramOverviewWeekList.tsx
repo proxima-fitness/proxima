@@ -5,7 +5,7 @@
  * ADR 0011 / 04): shell (title | Export / Edit), week rail + Selected week
  * preview, Mark week complete, Hevy mirror.
  *
- * Depends on: useProgramHevyWeekLinks, useProgramScheduleHistoryDays, useHevyPrograms,
+ * Depends on: useProgramHevyWeekLinks, useWorkoutRoutineIds, useHevyPrograms,
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
  *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
  *             ProgramOverviewCtas, ProgramOverviewHevyMirror, ConfirmDialog
@@ -21,7 +21,7 @@ import {
     useHevyPrograms,
     useHevySecret,
     useProgramHevyWeekLinks,
-    useProgramScheduleHistoryDays,
+    useWorkoutRoutineIds,
 } from "@/api/hooks";
 import {
     useAutoMarkProgramWeeksComplete,
@@ -38,7 +38,7 @@ import { ProgramOverviewWeekPreview } from "./ProgramOverviewWeekPreview";
 import { ProgramOverviewWeekRail } from "./ProgramOverviewWeekRail";
 import {
     deriveCompletedWeeksFromLinks,
-    deriveCompletedWeeksFromScheduleHistory,
+    deriveCompletedWeeksFromWorkoutRoutineIds,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
     mergeCompletedWeeks,
@@ -103,8 +103,7 @@ export function ProgramOverviewWeekList({
         hevyApiKey ?? "",
     );
     const { data: links = [], isLoading: linksLoading } = useProgramHevyWeekLinks(programId);
-    const { data: historyDays = [], isLoading: historyLoading } = useProgramScheduleHistoryDays(
-        programId,
+    const { data: workoutRoutineIds = [], isLoading: workoutIdsLoading } = useWorkoutRoutineIds(
         user?.id,
     );
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
@@ -114,22 +113,15 @@ export function ProgramOverviewWeekList({
     const [isEnteringEdit, setIsEnteringEdit] = useState(false);
 
     const linkedWeeks = links.map((link) => link.nth_week);
-    const expectedDaysByWeek = new Map<number, number>();
-    for (const link of links) {
-        expectedDaysByWeek.set(link.nth_week, link.hevy_routine_ids?.length ?? 0);
-    }
 
     const persistedCompleted = deriveCompletedWeeksFromLinks(links);
-    const autoCompleted = deriveCompletedWeeksFromScheduleHistory(
-        historyDays,
-        expectedDaysByWeek,
-    );
+    const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
     const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
     const autoMarkWeeks = weeksNeedingAutoMark(autoCompleted, persistedCompleted);
 
     useAutoMarkProgramWeeksComplete(programId, autoMarkWeeks);
 
-    const isLoading = linksLoading || (!!user && historyLoading);
+    const isLoading = linksLoading || (!!user && workoutIdsLoading);
 
     if (isLoading) {
         return <WeekListSkeleton />;

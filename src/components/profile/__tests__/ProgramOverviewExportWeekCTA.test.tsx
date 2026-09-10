@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 const useUserContext = vi.fn();
 const useHevySecret = vi.fn();
 const useProgramHevyWeekLinks = vi.fn();
-const useProgramScheduleHistoryDays = vi.fn();
+const useWorkoutRoutineIds = vi.fn();
 const mutateMarkComplete = vi.fn();
 const useMarkProgramWeekComplete = vi.fn();
 
@@ -21,8 +21,7 @@ vi.mock("@/api/hooks", () => ({
     PROGRAM_HEVY_LINKS_QUERY_KEY: ["program-hevy-links"],
     useHevySecret: (...args: unknown[]) => useHevySecret(...args),
     useProgramHevyWeekLinks: (...args: unknown[]) => useProgramHevyWeekLinks(...args),
-    useProgramScheduleHistoryDays: (...args: unknown[]) =>
-        useProgramScheduleHistoryDays(...args),
+    useWorkoutRoutineIds: (...args: unknown[]) => useWorkoutRoutineIds(...args),
 }));
 
 vi.mock("@/hooks/useProgramWeekComplete", () => ({
@@ -59,7 +58,7 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
             ],
             isLoading: false,
         });
-        useProgramScheduleHistoryDays.mockReturnValue({ data: [] });
+        useWorkoutRoutineIds.mockReturnValue({ data: [] });
         mutateMarkComplete.mockReset();
         useMarkProgramWeekComplete.mockReturnValue({
             mutate: mutateMarkComplete,

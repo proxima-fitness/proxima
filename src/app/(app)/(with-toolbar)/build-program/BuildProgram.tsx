@@ -41,10 +41,18 @@ import {
     getSaveProgramToSupabaseFailureDetail,
     isSaveProgramToSupabaseSuccess,
     saveProgramToSupabase,
+    getRoutinesInFolder,
 } from "@/components/program-builder/api/hevy";
+import {
+    buildRollbackPlan,
+    executeHevySyncPlan,
+    syncProgramToHevy,
+    type TSyncResult,
+} from "@/components/program-builder/api/hevy_sync";
 import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/chat-history";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
+import { SyncProgressDialog, type TSyncDialogPhase, type TSyncProgress } from "@/components/program-builder/shared/SyncProgressDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
 import {
@@ -54,7 +62,8 @@ import {
     NEW_PATH_SAVE_SUCCESS_TOAST,
 } from "@/lib/builder-draft";
 import { useEditSession } from "@/contexts/EditSessionContext";
-import { parseEditCurrentWeekArrival } from "@/hooks/edit-current-week-arrival";
+import { isHevyEditArrival, persistModeForBuilder, completedHevyRoutineIdsForWeek } from "@/hooks/edit-persist";
+import { PROGRAM_HEVY_LINKS_QUERY_KEY, useHevySecret, useWorkoutRoutineIds } from "@/api/hooks";
 import { editorReducer, isNewPathDirty, isNewPathSaveDirty } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
@@ -118,9 +127,10 @@ export function BuildProgram() {
     const { urlChatId, search, shareId, empty, resume } = arrival;
     const chatId = urlChatId;
 
-    /** Edit current week router state; both fields null for every other arrival. */
-    const editArrival = parseEditCurrentWeekArrival(searchParams);
-    const { session: editSession } = useEditSession();
+    /** Edit path router state (`edit=true&hevy=true`). */
+    const hevyEditArrival = isHevyEditArrival(searchParams);
+    const { session: editSession, clearEditSession } = useEditSession();
+    const editHydratedRef = useRef(false);
 
     /** URL-only fallback until shell registers getter with mint ref (export reads this ref). */
     const getPersistChatIdFromUrl = useCallback(() => chatId, [chatId]);
@@ -324,6 +334,22 @@ export function BuildProgram() {
             return;
         }
 
+        // Edit path arrives through the in-memory Edit session, not the
+        // New-path draft key (ADR 0013 / 02, / 04). No session (hard refresh,
+        // hand-typed URL) → back to the overview. After a successful Sync we
+        // may clear the session while this effect is still mounted — skip
+        // the wipe/redirect if we already hydrated.
+        if (hevyEditArrival) {
+            if (editSession?.routines.length) {
+                setProgramFromHydrate(appendOrderToHevyRoutines(editSession.routines));
+                editHydratedRef.current = true;
+            } else if (!editHydratedRef.current) {
+                toast.error("That edit session has expired. Open the week again from your program.");
+                router.replace("/profile");
+            }
+            return;
+        }
+
         setProgramFromHydrate([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
@@ -337,19 +363,6 @@ export function BuildProgram() {
                 setSharedProgramLoadAttempted(true);
             }
         };
-
-        // Edit current week arrives through the in-memory Edit session, not the
-        // New-path draft key (ADR 0013 / 02). No session (hard refresh, hand-typed
-        // URL) → back to the overview; a half-hydrated week is worse than none.
-        if (editArrival.programId != null && editArrival.nthWeek != null) {
-            if (editSession?.routines.length) {
-                setProgramFromHydrate(appendOrderToHevyRoutines(editSession.routines));
-            } else {
-                toast.error("That edit session has expired. Open the week again from your program.");
-                router.replace("/profile");
-            }
-            return;
-        }
 
         if (resume === "true") {
             const program = localStorage.getItem("hevy-program-in-progress");
@@ -365,7 +378,7 @@ export function BuildProgram() {
         if (empty === "true") {
             setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, editArrival.programId, editArrival.nthWeek, editSession]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, hevyEditArrival, editSession]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -447,6 +460,8 @@ export function BuildProgram() {
                 mobileTab={mobileTab}
                 setMobileTab={setMobileTab}
                 chatEntryPlan={chatEntryPlan}
+                isHevyEditArrival={hevyEditArrival}
+                clearEditSession={clearEditSession}
             />
             <ConfirmDialog
                 open={leaveDialogOpen}
@@ -494,6 +509,8 @@ interface IBuildProgramShellProps {
     mobileTab: string;
     setMobileTab: (tab: string) => void;
     chatEntryPlan: IChatEntryPlan;
+    isHevyEditArrival: boolean;
+    clearEditSession: () => void;
 }
 
 function BuildProgramShell({
@@ -528,10 +545,33 @@ function BuildProgramShell({
     mobileTab,
     setMobileTab,
     chatEntryPlan,
+    isHevyEditArrival,
+    clearEditSession,
 }: IBuildProgramShellProps) {
     const { clearChatRef, getPersistChatIdRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
+    const router = useRouter();
+    const { session: editSession } = useEditSession();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const { data: workoutRoutineIds } = useWorkoutRoutineIds(user?.id);
+    const completedHevyRoutineIds = useMemo(
+        () =>
+            completedHevyRoutineIdsForWeek({
+                nthWeek: editSession?.nthWeek,
+                initialRoutineIds: editSession?.initialRoutineIds ?? [],
+                workoutRoutineIds: workoutRoutineIds ?? [],
+            }),
+        [editSession?.nthWeek, editSession?.initialRoutineIds, workoutRoutineIds],
+    );
+    const persistMode = persistModeForBuilder({
+        hasEditSession: editSession != null,
+        isHevyEditArrival,
+    });
     const [isSaving, setIsSaving] = useState(false);
+    const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+    const [syncPhase, setSyncPhase] = useState<TSyncDialogPhase>("uploading");
+    const [syncProgress, setSyncProgress] = useState<TSyncProgress | null>(null);
+    const [syncResult, setSyncResult] = useState<TSyncResult | null>(null);
 
     const chat = useBuildProgramChat({
         user,
@@ -587,6 +627,7 @@ function BuildProgramShell({
     }, [tryRunSignInMigration, trySendInitialPrompt, sharedProgramLoadAttempted]);
 
     const handleSave = useCallback(async () => {
+        if (persistMode === "sync") return;
         if (isLoading) return;
         if (!user) {
             toast.error("Sign in to save.");
@@ -659,7 +700,129 @@ function BuildProgramShell({
         queryClient,
         getPersistChatId,
         clearUndoBaseline,
+        persistMode,
     ]);
+
+    const handleSync = useCallback(async () => {
+        if (persistMode !== "sync") return;
+        if (isLoading || isSaving) return;
+        if (!user) {
+            toast.error("Sign in to sync.");
+            return;
+        }
+        if (!editSession) {
+            toast.error("That edit session has expired. Open the week again from your program.");
+            return;
+        }
+        if (!hevyApiKey) {
+            toast.error("Add your Hevy API key in profile.");
+            return;
+        }
+
+        setIsSaving(true);
+        setSyncDialogOpen(true);
+        setSyncPhase("uploading");
+        setSyncProgress({ uploaded: 0, total: 0, status: "uploading" });
+
+        try {
+            const result = await syncProgramToHevy({
+                apiKey: hevyApiKey,
+                user,
+                session: {
+                    initialFolderId: editSession.initialFolderId,
+                    initialHevyProgram: editSession.initialHevyProgram,
+                    initialRoutineIds: editSession.initialRoutineIds,
+                    programId: editSession.programId,
+                    nthWeek: editSession.nthWeek,
+                },
+                workingRoutines: orderedProgram,
+                completedHevyRoutineIds,
+                onProgress: (uploaded, total, status, rateLimitSecondsLeft) => {
+                    setSyncProgress({ uploaded, total, status, rateLimitSecondsLeft });
+                },
+            });
+
+            if (!result.success) {
+                setSyncResult(result);
+                setSyncPhase("failed");
+                return;
+            }
+
+            setSyncDialogOpen(false);
+            toast.success("Synced to Hevy.");
+            await queryClient.invalidateQueries({ queryKey: ["hevy-programs"] });
+            if (editSession.programId != null) {
+                await queryClient.invalidateQueries({
+                    queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, editSession.programId],
+                });
+            }
+            router.push("/profile");
+            clearEditSession();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Sync failed.");
+            console.error("Sync error:", err);
+            setSyncPhase("failed");
+        } finally {
+            setIsSaving(false);
+        }
+    }, [
+        persistMode,
+        isLoading,
+        isSaving,
+        user,
+        editSession,
+        hevyApiKey,
+        orderedProgram,
+        completedHevyRoutineIds,
+        queryClient,
+        router,
+        clearEditSession,
+    ]);
+
+    const handleRollback = useCallback(async () => {
+        if (!editSession || !hevyApiKey || !syncResult) return;
+        setSyncPhase("rolling_back");
+        setIsSaving(true);
+        try {
+            const folderRoutines =
+                editSession.initialFolderId != null
+                    ? await getRoutinesInFolder(hevyApiKey, editSession.initialFolderId)
+                    : [];
+            const plan = buildRollbackPlan({
+                currentFolderRoutineIds: folderRoutines.map((routine) => routine.id),
+                initialHevyProgram: editSession.initialHevyProgram,
+                postedDuringSyncIds: syncResult.postedRoutineIds,
+            });
+            const rolled = await executeHevySyncPlan({
+                apiKey: hevyApiKey,
+                user,
+                session: {
+                    initialFolderId: editSession.initialFolderId,
+                    initialHevyProgram: editSession.initialHevyProgram,
+                    initialRoutineIds: editSession.initialRoutineIds,
+                    programId: editSession.programId,
+                    nthWeek: editSession.nthWeek,
+                },
+                plan,
+                onProgress: (uploaded, total, status, rateLimitSecondsLeft) => {
+                    setSyncProgress({ uploaded, total, status, rateLimitSecondsLeft });
+                },
+            });
+            if (!rolled.success) {
+                setSyncResult(rolled);
+                setSyncPhase("failed");
+                toast.error("Rollback failed.");
+                return;
+            }
+            toast.success("Rolled back to the previous version.");
+            setSyncDialogOpen(false);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Rollback failed.");
+            setSyncPhase("failed");
+        } finally {
+            setIsSaving(false);
+        }
+    }, [editSession, hevyApiKey, syncResult, user]);
 
     const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const DEBOUNCE_MS = 500;
@@ -674,6 +837,7 @@ function BuildProgramShell({
 
         localStorageDebounceRef.current = setTimeout(() => {
             localStorageDebounceRef.current = null;
+            if (isHevyEditArrival) return;
             if (!canWriteBuilderDraft()) return;
             if (hevyProgram.length === 0 && resume === "true") {
                 // Don't overwrite on resume
@@ -698,7 +862,7 @@ function BuildProgramShell({
                 localStorageDebounceRef.current = null;
             }
         };
-    }, [hevyProgram, programRequest.request, resume, search, user, messages]);
+    }, [hevyProgram, programRequest.request, resume, search, user, messages, isHevyEditArrival]);
 
     const chatPanelStateProps = {
         search,
@@ -762,6 +926,7 @@ function BuildProgramShell({
             commitWithUndo={commitWithUndo}
             setProgramFromHydrate={setProgramFromHydrate}
             isAgentStreaming={status === "streaming"}
+            completedHevyRoutineIds={completedHevyRoutineIds}
         >
             <BuildProgramToolbarTitle
                 value={programRequest.programTitle}
@@ -771,19 +936,22 @@ function BuildProgramShell({
                 canUndo={isNewPathDirty(undoStackLength)}
                 undoDisabled={status === "streaming"}
                 onUndo={onUndo}
-                onSave={handleSave}
+                onSave={persistMode === "sync" ? handleSync : handleSave}
                 saveDisabled={
-                    !user
-                    || isSaving
-                    || isLoading
-                    || messages.length === 0
-                    || !isNewPathSaveDirty(
-                        undoStackLength,
-                        hasSaveBaseline,
-                        hevyProgram.length > 0,
-                    )
+                    persistMode === "sync"
+                        ? !user || isSaving || isLoading
+                        : !user
+                            || isSaving
+                            || isLoading
+                            || messages.length === 0
+                            || !isNewPathSaveDirty(
+                                undoStackLength,
+                                hasSaveBaseline,
+                                hevyProgram.length > 0,
+                            )
                 }
                 isSaving={isSaving}
+                persistMode={persistMode}
             />
             {isChatHidden && (
                 <TooltipProvider delayDuration={0}>
@@ -819,6 +987,15 @@ function BuildProgramShell({
                 hasProgramContent={hasProgramContent}
                 chatPanel={mobileChatPanel}
                 routineContent={routineContent}
+            />
+            <SyncProgressDialog
+                open={syncDialogOpen}
+                phase={syncPhase}
+                progress={syncProgress}
+                failures={syncResult?.failures ?? []}
+                onRetry={() => { void handleSync(); }}
+                onRollback={() => { void handleRollback(); }}
+                onOpenChange={setSyncDialogOpen}
             />
         </ProgramMutationProvider>
     );

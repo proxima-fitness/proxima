@@ -370,10 +370,10 @@ _Avoid_: Treating Hevy folder deletion as un-complete, treating routine deletion
 ### Day complete
 
 
-A planned **Hevy routine** already has a matching **Workout**. In **Edit current week** that day is visible, locked, and marked done. Distinct from **Week complete**. Deleting the routine does not undo this; deleting the **Workout** does.
+A planned **Hevy routine** already has a matching **Workout**: `workouts.routine_id` is in that week’s `hevy_routine_ids`. In **Edit current week** that day is visible, locked, and marked done. Distinct from **Week complete**. Deleting the routine does not undo this; deleting the **Workout** does.
 
 
-_Avoid_: Calling a Workout a routine, implying the planned routine was deleted
+_Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match
 
 
 
@@ -425,10 +425,10 @@ _Avoid_: Billing period (Stripe-anchored), monthly reset (implies a cron job), l
 ### Hevy program sync
 
 
-Edge function that, on new Hevy workouts, writes **Day complete** via `workout.routine_id` → **Linked day** (**Hevy routine ID**). No match → skip (no title fallback). On-demand when user opens profile / overview, not midnight cron. Auto next-week upload / silent double-progression / email commented out (not deleted).
+Edge function invoked on-demand when the user opens profile / overview (not midnight cron). Used to stamp **Day complete** into `program_schedule_history`. App matching is **Workout** backup `routine_id` ∩ that week’s **Program–Hevy link** `hevy_routine_ids`; this write is leftover. Hevy-app title ✓ is a Next PUT on that same join, next to backup — not auto next-week upload, not silent weight writes. Auto next-week upload / silent double-progression / email commented out (not deleted).
 
 
-_Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push), title parse as match key, midnight cron
+_Avoid_: Treating the schedule-history stamp as **Day complete** SoT, Sync (Edit-path Hevy push), title parse as match key, midnight cron
 
 
 

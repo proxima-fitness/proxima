@@ -1,7 +1,7 @@
 /**
  * @module EditSessionContext
  *
- * In-memory transport for an **Edit current week** arrival (ADR 0013 / 02).
+ * In-memory transport for **Edit path** arrival (ADR 0013 / 02, / 04).
  *
  * The overview holds everything the builder needs — the ordered **Hevy week copy**,
  * the **Program–Hevy link** folder id, the week — so it hands them over directly
@@ -17,7 +17,8 @@
  * not a refresh. The builder redirects rather than hydrating half a week.
  *
  * Depends on: react
- * Used by: (app)/layout, useNavigateToEditHevyProgram, BuildProgram
+ * Used by: (app)/layout, useNavigateToEditHevyProgram, BuildProgram. Hevy-only
+ * Edit uses the same session without `programId` / `nthWeek`.
  */
 
 "use client";
@@ -33,10 +34,10 @@ export type TEditSession = {
     initialRoutineIds: string[];
     /** Hevy folder id from the link — the Sync POST target. Never `routine.folder_id`. */
     initialFolderId: number | null;
-    /** Proxima program id. */
-    programId: number;
-    /** 1-based week this folder is the Hevy week copy of. */
-    nthWeek: number;
+    /** Proxima program id. Absent on Hevy-only Edit (no link). */
+    programId?: number;
+    /** 1-based week this folder is the Hevy week copy of. Absent on Hevy-only. */
+    nthWeek?: number;
 };
 
 export type TStartEditSessionInput = Omit<
@@ -64,7 +65,7 @@ function snapshotRoutines(routines: readonly THevyRoutine[]): THevyRoutine[] {
 }
 
 /**
- * Holds the active Edit current week session. Mounted above both `/profile` and
+ * Holds the active Edit path session. Mounted above both `/profile` and
  * `/build-program` so the handoff survives `router.push`.
  *
  * @param props.children - App subtree.

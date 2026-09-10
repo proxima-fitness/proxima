@@ -1530,6 +1530,7 @@ export type Database = {
           ended_at: string
           external_id: string | null
           id: string
+          routine_id: string | null
           source: Database["public"]["Enums"]["source_type"] | null
           source_updated_at: string | null
           started_at: string
@@ -1543,6 +1544,7 @@ export type Database = {
           ended_at: string
           external_id?: string | null
           id: string
+          routine_id?: string | null
           source?: Database["public"]["Enums"]["source_type"] | null
           source_updated_at?: string | null
           started_at: string
@@ -1556,6 +1558,7 @@ export type Database = {
           ended_at?: string
           external_id?: string | null
           id?: string
+          routine_id?: string | null
           source?: Database["public"]["Enums"]["source_type"] | null
           source_updated_at?: string | null
           started_at?: string

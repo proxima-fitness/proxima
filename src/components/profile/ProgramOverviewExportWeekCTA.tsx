@@ -19,7 +19,7 @@ import {
     PROGRAM_HEVY_LINKS_QUERY_KEY,
     useHevySecret,
     useProgramHevyWeekLinks,
-    useProgramScheduleHistoryDays,
+    useWorkoutRoutineIds,
 } from "@/api/hooks";
 import {
     useAutoMarkProgramWeeksComplete,
@@ -37,7 +37,7 @@ import {
 } from "./ProgramOverviewExportWeek";
 import {
     deriveCompletedWeeksFromLinks,
-    deriveCompletedWeeksFromScheduleHistory,
+    deriveCompletedWeeksFromWorkoutRoutineIds,
     mergeCompletedWeeks,
     weeksNeedingAutoMark,
 } from "./ProgramOverviewWeekStatus";
@@ -64,7 +64,7 @@ export function ProgramOverviewExportWeekCTA({
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: links = [], isLoading: linksLoading } = useProgramHevyWeekLinks(programId);
-    const { data: historyDays = [] } = useProgramScheduleHistoryDays(programId, user?.id);
+    const { data: workoutRoutineIds = [] } = useWorkoutRoutineIds(user?.id);
     const queryClient = useQueryClient();
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<TUploadProgress | null>(null);
@@ -72,16 +72,9 @@ export function ProgramOverviewExportWeekCTA({
     const markComplete = useMarkProgramWeekComplete(programId);
 
     const linkedWeeks = links.map((link) => link.nth_week);
-    const expectedDaysByWeek = new Map<number, number>();
-    for (const link of links) {
-        expectedDaysByWeek.set(link.nth_week, link.hevy_routine_ids?.length ?? 0);
-    }
 
     const persistedCompleted = deriveCompletedWeeksFromLinks(links);
-    const autoCompleted = deriveCompletedWeeksFromScheduleHistory(
-        historyDays,
-        expectedDaysByWeek,
-    );
+    const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
     const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
     useAutoMarkProgramWeeksComplete(
         programId,
