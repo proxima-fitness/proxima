@@ -6,12 +6,14 @@ import {
     defaultSelectedWeek,
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
+    deriveEffectiveCompletedWeeks,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
     mergeCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
     weeksNeedingAutoMark,
+    weeksNeedingUncomplete,
 } from "../ProgramOverviewWeekStatus";
 
 describe("deriveProgramOverviewWeekStatuses", () => {
@@ -29,7 +31,7 @@ describe("deriveProgramOverviewWeekStatuses", () => {
         ]);
     });
 
-    it("marks highest incomplete linked week as current", () => {
+    it("marks earliest incomplete linked week as current", () => {
         expect(deriveProgramOverviewWeekStatuses(4, [1], [])).toEqual([
             { week: 1, status: "current" },
             { week: 2, status: "not_exported" },
@@ -55,11 +57,10 @@ describe("deriveProgramOverviewWeekStatuses", () => {
         ]);
     });
 
-    it("treats prior linked weeks without a complete flag as complete", () => {
-        // Gate invariant: week 2 cannot link unless week 1 is complete.
+    it("keeps later linked incomplete weeks exported when an earlier week reopens", () => {
         expect(deriveProgramOverviewWeekStatuses(3, [1, 2], [])).toEqual([
-            { week: 1, status: "complete" },
-            { week: 2, status: "current" },
+            { week: 1, status: "current" },
+            { week: 2, status: "exported" },
             { week: 3, status: "not_exported" },
         ]);
     });
@@ -117,6 +118,59 @@ describe("mergeCompletedWeeks", () => {
     });
 });
 
+describe("deriveEffectiveCompletedWeeks", () => {
+    const links = [
+        {
+            nth_week: 1,
+            completed_at: "2026-09-01T00:00:00Z",
+            hevy_routine_ids: ["a", "b"],
+            exported_hevy_routine_ids: ["a", "b"],
+        },
+        {
+            nth_week: 2,
+            completed_at: null,
+            hevy_routine_ids: ["c"],
+            exported_hevy_routine_ids: ["c"],
+        },
+    ];
+
+    it("keeps persisted complete when matching Workouts remain", () => {
+        expect(deriveEffectiveCompletedWeeks(links, ["a"])).toEqual([1]);
+    });
+
+    it("drops persisted complete when complete-week Workouts are gone", () => {
+        expect(deriveEffectiveCompletedWeeks(links, [])).toEqual([]);
+    });
+
+    it("includes auto-complete from live routine IDs without completed_at", () => {
+        expect(deriveEffectiveCompletedWeeks(links, ["c"])).toEqual([2]);
+    });
+});
+
+describe("weeksNeedingUncomplete", () => {
+    it("returns persisted-complete weeks with no matching Workouts", () => {
+        expect(
+            weeksNeedingUncomplete(
+                [
+                    {
+                        nth_week: 1,
+                        completed_at: "2026-09-01T00:00:00Z",
+                        hevy_routine_ids: ["a"],
+                        exported_hevy_routine_ids: ["a"],
+                    },
+                    {
+                        nth_week: 2,
+                        completed_at: "2026-09-02T00:00:00Z",
+                        hevy_routine_ids: ["b"],
+                        exported_hevy_routine_ids: ["b"],
+                    },
+                ],
+                ["b"],
+            ),
+        ).toEqual([1]);
+    });
+});
+
 describe("weeksNeedingAutoMark", () => {
     it("returns auto weeks not yet persisted", () => {
         expect(weeksNeedingAutoMark([1, 2], [1])).toEqual([2]);
@@ -129,6 +183,7 @@ describe("weekStatusLabel", () => {
         expect(weekStatusLabel("not_exported")).toBe("Not exported");
         expect(weekStatusLabel("current")).toBe("Current");
         expect(weekStatusLabel("complete")).toBe("Complete");
+        expect(weekStatusLabel("exported")).toBe("Exported");
     });
 });
 

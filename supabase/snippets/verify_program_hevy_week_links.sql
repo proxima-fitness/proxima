@@ -1,5 +1,6 @@
 -- ADR 0008 / Sub-plan 4 — local Postgres + RLS smoke for program_hevy_week_links.
 -- PASS 7–10: ADR 0011 `completed_at` (Week complete) under RLS. PRO-256.
+-- PASS 11–13: ADR 0013 `exported_hevy_routine_ids` (Export-time Hevy routine IDs).
 --
 -- Scratch script, not a migration. Leaves no rows (transaction rolled back).
 --
@@ -58,6 +59,7 @@ DECLARE
   v_n integer;
   v_folder bigint;
   v_routines text[];
+  v_exported text[];
   v_raised boolean;
   v_completed timestamptz;
 BEGIN
@@ -191,6 +193,63 @@ BEGIN
     RAISE EXCEPTION 'FAIL 9: completed_at NULL after second owner UPDATE';
   END IF;
   RAISE NOTICE 'PASS 9: second owner UPDATE keeps one row and completed_at set';
+
+  -- 11. Insert that omits freeze column → default empty array
+  SELECT exported_hevy_routine_ids INTO v_exported
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  IF v_exported IS DISTINCT FROM '{}'::text[] THEN
+    RAISE EXCEPTION 'FAIL 11: exported_hevy_routine_ids = %, expected {}', v_exported;
+  END IF;
+  RAISE NOTICE 'PASS 11: insert default exported_hevy_routine_ids is empty';
+
+  -- 12. Freeze set; live-ID UPDATE does not rewrite Export-time IDs (Sync)
+  UPDATE public.program_hevy_week_links
+  SET exported_hevy_routine_ids = hevy_routine_ids
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  UPDATE public.program_hevy_week_links
+  SET hevy_routine_ids = ARRAY['live-only']
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  SELECT hevy_routine_ids, exported_hevy_routine_ids
+    INTO v_routines, v_exported
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 1;
+
+  IF v_routines IS DISTINCT FROM ARRAY['live-only']::text[] THEN
+    RAISE EXCEPTION 'FAIL 12: hevy_routine_ids = %, expected {live-only}', v_routines;
+  END IF;
+  IF v_exported IS DISTINCT FROM ARRAY['routine-w1-a', 'routine-w1-b']::text[] THEN
+    RAISE EXCEPTION 'FAIL 12: exported_hevy_routine_ids = %, expected week-1 export IDs', v_exported;
+  END IF;
+  RAISE NOTICE 'PASS 12: live-ID UPDATE leaves Export-time Hevy routine IDs unchanged';
+
+  -- 13. Upsert writes both arrays (Week Export / Re-Export)
+  INSERT INTO public.program_hevy_week_links (
+    user_id, program_id, nth_week, hevy_folder_id, hevy_routine_ids, exported_hevy_routine_ids
+  ) VALUES (
+    v_user_a, v_program_id, 2, 2222, ARRAY['export-w2-a'], ARRAY['export-w2-a']
+  )
+  ON CONFLICT (program_id, nth_week) DO UPDATE
+  SET
+    hevy_folder_id = EXCLUDED.hevy_folder_id,
+    hevy_routine_ids = EXCLUDED.hevy_routine_ids,
+    exported_hevy_routine_ids = EXCLUDED.exported_hevy_routine_ids;
+
+  SELECT hevy_routine_ids, exported_hevy_routine_ids
+    INTO v_routines, v_exported
+  FROM public.program_hevy_week_links
+  WHERE program_id = v_program_id AND nth_week = 2;
+
+  IF v_routines IS DISTINCT FROM ARRAY['export-w2-a']::text[] THEN
+    RAISE EXCEPTION 'FAIL 13: hevy_routine_ids = %, expected {export-w2-a}', v_routines;
+  END IF;
+  IF v_exported IS DISTINCT FROM ARRAY['export-w2-a']::text[] THEN
+    RAISE EXCEPTION 'FAIL 13: exported_hevy_routine_ids = %, expected {export-w2-a}', v_exported;
+  END IF;
+  RAISE NOTICE 'PASS 13: upsert writes live and Export-time Hevy routine IDs';
 END $$;
 
 -- Act as user B

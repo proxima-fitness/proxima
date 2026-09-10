@@ -27,6 +27,8 @@ function statusTone(status: TProgramOverviewWeekStatus): string {
             return "text-lightSecondary";
         case "complete":
             return "text-muted-foreground";
+        case "exported":
+            return "text-muted-foreground";
         case "not_exported":
             return "text-muted-foreground/80";
     }
@@ -44,6 +46,8 @@ function chipTone(
             return "border-lightSecondary/40 text-lightSecondary";
         case "complete":
             return "border-border/60 text-muted-foreground";
+        case "exported":
+            return "border-border/50 text-muted-foreground";
         case "not_exported":
             return "border-border/40 text-muted-foreground/80";
     }

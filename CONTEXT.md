@@ -161,10 +161,10 @@ _Avoid_: Current week (status), focused week, active week (ambiguous with Curren
 ### Week preview
 
 
-Read-only glance at one week inside a **Program overview**. One day at a time as a read-only **HevyDayCard** (full exercises/sets), with prev/next controls when the week has multiple days. Shown for the **Selected week**. What it renders depends on how far that week has got (see **Week preview source**). It is not always the **Program prescription**. Not the **Hevy mirror**.
+Read-only glance at one week inside a **Program overview**. One day at a time as a read-only **HevyDayCard** (full exercises/sets), with prev/next when the week has multiple days. **Planned vs completed** is still one day: two cards (plan | log). Shown for the **Selected week**. What it renders depends on **Week preview source**. Not the **Hevy mirror**.
 
 
-_Avoid_: Week detail (builder edit), name-only exercise lists, horizontal multi-day strip without paging, treating preview as editable Sync surface, always reading the prescription
+_Avoid_: Week detail (builder edit), name-only exercise lists, treating preview as editable Sync surface, always reading the prescription, using **Hevy week copy** as a historical record, dumping every day of a complete week onto one screen
 
 
 
@@ -172,18 +172,28 @@ _Avoid_: Week detail (builder edit), name-only exercise lists, horizontal multi-
 ### Week preview source
 
 
-Which one document the **Week preview** shows for the **Selected week**, in place of the others (not side-by-side). Exported and not **Week complete** → **Hevy week copy** (routines). Not exported → **Program prescription**. **Week complete** → logged **Workouts**. If those **Workouts** are gone, the week is not complete and preview is the **Program prescription**. Deleting **Hevy routines** does not by itself change a complete week's preview. Named by a **Day card source badge**.
+Which document(s) the **Week preview** shows for the **Selected week**. Not exported → **Program prescription**. Exported and not **Week complete** → **Hevy week copy** (empty folder stays empty). **Week complete** → **Program prescription** and logged **Workouts** together (**Planned vs completed**). If those **Workouts** are gone, the week is not complete and preview is the **Program prescription**. Deleting **Hevy routines** does not by itself change a complete week's preview. Named by a **Day card source badge**.
 
 
-_Avoid_: Using routines as history, always reading the prescription for an exported incomplete week, side-by-side completed vs prescribed this ship
+_Avoid_: One document for a complete week that still has Workouts, using **Hevy week copy** as the planned side of the record, always reading the prescription for an exported incomplete week, substituting Workouts or prescription for an empty in-progress folder
 
+
+
+
+### Planned vs completed
+
+
+The **Week complete** **Week preview**: **Program prescription** (`Planned`) with logged **Workouts** (`Completed`), still one day at a time. Not a **Hevy week copy** comparison. Only after **Week complete**. Join is the routine id each planned day got at **Week Export**, not the live day number. A planned day with no **Workout** keeps an empty Completed slot (`Not logged`). A **Workout** that was not an exported planned day hangs off as Completed only (`Not in the plan`). Several **Workouts** for the same planned day: the latest; earlier ones stay in workout history.
+
+
+_Avoid_: Pairing Hevy copy with Workouts as the record, showing this pair on **Current week**, lining up by live day number after add/remove, hiding an empty half, paging every log for that day here, calling it a diff/delta (the documents sit together; they are not a computed patch)
 
 
 
 ### Day card source badge
 
 
-Corner label on a **HevyDayCard** naming which document the card is showing: `Planned` (**Program prescription**), `In Hevy` (**Hevy week copy**), `Completed` (logged **Workouts**). Ships on **Week preview** (and any other card that can mix sources) so the SoT is visible, including for debugging.
+Corner label on a **HevyDayCard** naming which document the card is showing: `Planned` (**Program prescription**), `In Hevy` (**Hevy week copy**), `Completed` (logged **Workouts**). Ships on **Week preview** (and any other card that can mix sources) so the SoT is visible, including for debugging. **Planned vs completed** shows both `Planned` and `Completed`.
 
 
 _Avoid_: Omitting the badge, implying the card is editable, using internal names (prescription / Hevy week copy / Workout) as chip text
@@ -274,7 +284,17 @@ _Avoid_: Title match (`Week N - ...`) for identity or day-complete, in-memory-on
 One planned **Hevy routine** on a **Program–Hevy link**: its **Hevy routine ID** in the live `hevy_routine_ids` list, in folder order. Display day is 1…n of that live list (compact). **Day complete** keys off the routine ID, not the ordinal. **Athlete-added routines** are not in the list. Builder add (Sync POST) inserts an ID; builder remove or Hevy-app delete drops it and survivors compact. Only Proxima (Export or Sync POST) adds planned IDs.
 
 
-_Avoid_: Stored holes (Day 1, 2, 4), not-live slots, using the ordinal as **Day complete** identity, adopting **Athlete-added routines** into the list
+_Avoid_: Stored holes (Day 1, 2, 4), not-live slots, using the ordinal as **Day complete** identity, adopting **Athlete-added routines** into the list, using this live list as the **Planned vs completed** join
+
+
+
+### Export-time Hevy routine IDs
+
+
+The **Hevy routine IDs** assigned to each **Program prescription** day at **Week Export** or **Re-Export**, in plan order. Join key for **Planned vs completed**. Distinct from the live **Linked day** list. **Sync** does not rewrite them.
+
+
+_Avoid_: Treating live `hevy_routine_ids` as the plan-to-Workout join after add/remove, a child table of days, title match
 
 
 
@@ -577,7 +597,7 @@ _Avoid_: Week Export, Save (Supabase prescription), labeling this control **Save
 ### Sync completion (Edit mode)
 
 
-After Sync finishes with zero failed operations, show a success toast, invalidate the `useHevyPrograms` React Query cache, then navigate. Toolbar Sync goes to the profile page. Leave-guard **Save and Continue** goes to the user's original destination. The builder is not refreshed in place. The next Edit entry loads fresh routines from a refetched profile fetch.
+After Sync finishes with zero failed operations, show a success toast, invalidate the `useHevyPrograms` React Query cache, then navigate. Toolbar Sync goes to the profile page. Leave-guard **Sync and Continue** goes to the user's original destination. The builder is not refreshed in place. The next Edit entry loads fresh routines from a refetched profile fetch.
 
 
 _Avoid_: Post-sync cache, keep local state, in-builder reload, confetti
@@ -588,7 +608,7 @@ _Avoid_: Post-sync cache, keep local state, in-builder reload, confetti
 ### Sync dialog
 
 
-Dedicated `SyncDialog` for Edit mode. Confirmation with empty / update / add counts, inline progress with rate-limit retry (same pattern as Export), and **Rollback to previous version** when operations fail. Leave-guard **Save and Continue** opens the same dialog in progress-only mode (counts already shown in the leave dialog). Toolbar Sync uses the full confirm step first.
+Dedicated `SyncDialog` for Edit mode. Confirmation with empty / update / add counts, inline progress with rate-limit retry (same pattern as Export), and **Rollback to previous version** when operations fail. Leave-guard **Sync and Continue** opens the same dialog in progress-only mode (counts already shown in the leave dialog). Toolbar Sync uses the full confirm step first.
 
 
 _Avoid_: Export dialog, save dialog
@@ -599,7 +619,7 @@ _Avoid_: Export dialog, save dialog
 ### Sync pipeline
 
 
-Single Sync implementation used by the toolbar Sync button and by the leave-guard **Save and Continue** action. Same diff, batch order, progress UI, and retry behaviour. Proxima custom exercises are resolved the same way as Export before PUT and POST operations.
+Single Sync implementation used by the toolbar Sync button and by the leave-guard **Sync and Continue** action. Same diff, batch order, progress UI, and retry behaviour. Proxima custom exercises are resolved the same way as Export before PUT and POST operations.
 
 
 _Avoid_: saveAndContinueSync, duplicate sync paths
@@ -720,10 +740,10 @@ _Avoid_: Dual-write forever after Save, Edit session payload, treating draft as 
 ### Edit navigation guard
 
 
-When the user has unsaved Edit-mode changes and tries to leave the builder, including switching New ↔ Edit in the mode menu, block in-app navigation and show a dialog with a Sync change summary (empty / update / add counts), **Save and Continue** (run Sync progress immediately, then navigate to the user's original destination on success), **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data), and **Cancel** (stay in builder). Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty. It cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`. The next Edit entry always loads from the profile routines fetch.
+When the user has unsaved Edit-mode changes and tries to leave the builder, including switching New ↔ Edit in the mode menu, block in-app navigation and show a dialog with a Sync change summary (empty / update / add counts), **Sync and Continue** (run Sync progress immediately, then navigate to the user's original destination on success), **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data), and **Cancel** (stay in builder). Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty. It cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`. The next Edit entry always loads from the profile routines fetch.
 
 
-_Avoid_: Unsaved changes warning (too generic)
+_Avoid_: Unsaved changes warning (too generic), Save and Continue (Save is prescription persist)
 
 
 

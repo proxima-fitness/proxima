@@ -48,6 +48,9 @@ export const LATEST_BODY_MEASUREMENT_QUERY_KEY = ["body-measurements", "latest"]
 /** React Query key for body-measurement history pages. */
 export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "history"] as const;
 
+/** React Query key for the live Hevy folder list (`useHevyPrograms`). */
+export const HEVY_PROGRAMS_QUERY_KEY = ["hevy-programs"] as const;
+
 /** React Query key for Program–Hevy week links by program. */
 export const PROGRAM_HEVY_LINKS_QUERY_KEY = ["program-hevy-links"] as const;
 
@@ -68,7 +71,7 @@ export { WORKOUT_ROUTINE_IDS_QUERY_KEY };
  */
 export const useHevyPrograms = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({
-        queryKey: ["hevy-programs"],
+        queryKey: HEVY_PROGRAMS_QUERY_KEY,
         queryFn: () => getHevyPrograms(user, hevyApiKey),
         enabled: !!user && !!hevyApiKey,
     });

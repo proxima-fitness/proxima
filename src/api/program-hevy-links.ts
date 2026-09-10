@@ -2,8 +2,10 @@
  * @module api/program-hevy-links
  *
  * Typed CRUD for Program–Hevy links (`program_hevy_week_links`).
- * Current week = max(nth_week) among incomplete links; absent → null.
+ * Overview Current week = earliest incomplete linked week (status helper).
+ * getCurrentLinkedWeek returns max(nth_week) among links (Week Export C6).
  * Week complete = `completed_at` set (ADR 0011).
+ * Export-time Hevy routine IDs freeze at Week Export / Re-Export (ADR 0013 C10).
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase, ./index
  * Used by: Week Export (`exportProgramWeekToHevy`), Program overview (ADR 0010 / 0011),
@@ -105,6 +107,8 @@ export async function getCurrentLinkedWeek(
 /**
  * Upserts a Program–Hevy link for `(program_id, nth_week)`.
  * Re-upsert updates folder/routine IDs in place (C6).
+ * Writes live `hevy_routine_ids` and Export-time Hevy routine IDs together
+ * (same order as the exported prescription days). Sync must not use this.
  *
  * @param input - Owner + program week + Hevy ids
  * @param client - Supabase client (browser by default)
@@ -123,6 +127,7 @@ export async function upsertProgramHevyWeekLink(
                 nth_week: input.nthWeek,
                 hevy_folder_id: input.hevyFolderId,
                 hevy_routine_ids: input.hevyRoutineIds,
+                exported_hevy_routine_ids: input.hevyRoutineIds,
             },
             { onConflict: "program_id,nth_week" },
         )
@@ -143,6 +148,7 @@ export async function upsertProgramHevyWeekLink(
 /**
  * Rewrites live `hevy_routine_ids` on an existing Program–Hevy link.
  * Sync uses this after successful Hevy writes. Does not insert a week row.
+ * Does not rewrite Export-time Hevy routine IDs (ADR 0013 C10).
  *
  * @param programId - Proxima program id
  * @param nthWeek - 1-based week number (must already have a link)
@@ -239,6 +245,69 @@ export async function markProgramWeeksComplete(
         .eq("program_id", programId)
         .in("nth_week", weeks)
         .is("completed_at", null);
+
+    if (error) {
+        throw error;
+    }
+}
+
+/**
+ * Clears Week complete (`completed_at = null`) on one linked week.
+ * Keeps the Program–Hevy link. Throws when the week has no link.
+ *
+ * @param programId - Proxima program id
+ * @param nthWeek - 1-based week number (must already have a link)
+ * @param client - Supabase client (browser by default)
+ * @returns Updated link row
+ */
+export async function clearProgramWeekComplete(
+    programId: number,
+    nthWeek: number,
+    client: TSupabase = supabase,
+): Promise<TProgramHevyWeekLink> {
+    const { data, error } = await client
+        .from("program_hevy_week_links")
+        .update({ completed_at: null })
+        .eq("program_id", programId)
+        .eq("nth_week", nthWeek)
+        .select("*")
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    if (!data) {
+        throw new Error(
+            `No Program–Hevy link for program ${programId} week ${nthWeek}`,
+        );
+    }
+
+    return data;
+}
+
+/**
+ * Clears Week complete on multiple linked weeks. No-op when `nthWeeks` is empty.
+ *
+ * @param programId - Proxima program id
+ * @param nthWeeks - 1-based week numbers with existing links
+ * @param client - Supabase client (browser by default)
+ */
+export async function clearProgramWeeksComplete(
+    programId: number,
+    nthWeeks: readonly number[],
+    client: TSupabase = supabase,
+): Promise<void> {
+    const weeks = nthWeeks.filter((w) => Number.isInteger(w) && w >= 1);
+    if (weeks.length === 0) {
+        return;
+    }
+
+    const { error } = await client
+        .from("program_hevy_week_links")
+        .update({ completed_at: null })
+        .eq("program_id", programId)
+        .in("nth_week", weeks);
 
     if (error) {
         throw error;

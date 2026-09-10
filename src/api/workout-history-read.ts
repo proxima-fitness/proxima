@@ -214,6 +214,39 @@ export async function getWorkoutsForUser(
 }
 
 /**
+ * Nested Workouts whose `routine_id` is in `routineIds`, newest `started_at` first.
+ * Used by Planned vs completed (ADR 0013 / SP5). Empty `routineIds` returns [].
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID owning the backup rows
+ * @param routineIds - Hevy routine IDs to match
+ */
+export async function getWorkoutsByRoutineIds(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    routineIds: readonly string[],
+): Promise<TBackedUpWorkout[]> {
+    const ids = [...new Set(routineIds.filter((id) => id.length > 0))];
+    if (ids.length === 0) {
+        return [];
+    }
+
+    const { data, error } = await db
+        .from("workouts")
+        .select(WORKOUT_NESTED_SELECT)
+        .eq("user_id", userId)
+        .in("routine_id", ids)
+        .order("started_at", { ascending: false })
+        .order("id", { ascending: false });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return sortWorkoutNestedRows((data ?? []) as TBackedUpWorkout[]);
+}
+
+/**
  * Returns one backed-up workout with nested exercises and sets, scoped to the user.
  *
  * @param db - Supabase client (user or service role)

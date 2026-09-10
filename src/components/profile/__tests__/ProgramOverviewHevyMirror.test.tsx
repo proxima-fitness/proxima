@@ -46,6 +46,7 @@ function makeLink(
         nth_week: overrides.nth_week,
         hevy_folder_id: overrides.hevy_folder_id,
         hevy_routine_ids: overrides.hevy_routine_ids ?? ["a"],
+        exported_hevy_routine_ids: overrides.exported_hevy_routine_ids ?? overrides.hevy_routine_ids ?? ["a"],
         completed_at: overrides.completed_at ?? null,
         created_at: "2026-01-01",
         updated_at: "2026-01-01",

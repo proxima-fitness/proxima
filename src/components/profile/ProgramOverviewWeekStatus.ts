@@ -2,15 +2,20 @@
  * @module ProgramOverviewWeekStatus
  *
  * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02,
- * ADR 0011 / 04). Statuses: not exported / current / complete.
- * Completion inputs: link `completed_at` + Workout backup ∩ link IDs.
+ * ADR 0011 / 04, ADR 0013 / SP5). Statuses: not exported / current / complete /
+ * exported. Completion: Workout ∩ link IDs, or persisted `completed_at` only
+ * while matching Workouts remain.
  *
  * Depends on: none
  * Used by: ProgramOverviewWeekList, ProgramOverviewWeekRail,
  *          ProgramOverviewExportWeekCTA
  */
 
-export type TProgramOverviewWeekStatus = "not_exported" | "current" | "complete";
+export type TProgramOverviewWeekStatus =
+    | "not_exported"
+    | "current"
+    | "complete"
+    | "exported";
 
 export type TProgramOverviewWeekRowModel = {
     week: number;
@@ -25,7 +30,10 @@ export type TLinkCompletionRow = {
 export type TLinkRoutineRow = {
     nth_week: number;
     hevy_routine_ids: readonly string[] | null;
+    exported_hevy_routine_ids?: readonly string[] | null;
 };
+
+export type TLinkCompletionProofRow = TLinkCompletionRow & TLinkRoutineRow;
 
 /**
  * Weeks with `completed_at` set on the Program–Hevy link.
@@ -103,14 +111,72 @@ export function weeksNeedingAutoMark(
     return autoCompleted.filter((w) => !persisted.has(w));
 }
 
+function linkHasMatchingWorkouts(
+    link: TLinkRoutineRow,
+    logged: ReadonlySet<string>,
+): boolean {
+    const ids = [
+        ...(link.exported_hevy_routine_ids ?? []),
+        ...(link.hevy_routine_ids ?? []),
+    ];
+    return ids.some((id) => id.length > 0 && logged.has(id));
+}
+
+/**
+ * Week complete for overview: auto (all live IDs logged) or persisted with
+ * at least one matching Workout still present. Persisted `completed_at` with
+ * zero matching Workouts is not complete (ADR 0013 / SP5).
+ *
+ * @param links - Program–Hevy link rows
+ * @param workoutRoutineIds - Distinct `workouts.routine_id` values
+ */
+export function deriveEffectiveCompletedWeeks(
+    links: readonly TLinkCompletionProofRow[],
+    workoutRoutineIds: readonly string[],
+): number[] {
+    const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
+    const persistedCompleted = deriveCompletedWeeksFromLinks(links);
+    const logged = new Set(workoutRoutineIds.filter((id) => id.length > 0));
+    const persistedStillProven = persistedCompleted.filter((week) => {
+        const link = links.find((row) => row.nth_week === week);
+        return link != null && linkHasMatchingWorkouts(link, logged);
+    });
+    return mergeCompletedWeeks(autoCompleted, persistedStillProven);
+}
+
+/**
+ * Persisted-complete weeks whose Workouts are gone. Clear `completed_at`.
+ *
+ * @param links - Program–Hevy link rows
+ * @param workoutRoutineIds - Distinct `workouts.routine_id` values
+ */
+export function weeksNeedingUncomplete(
+    links: readonly TLinkCompletionProofRow[],
+    workoutRoutineIds: readonly string[],
+): number[] {
+    const logged = new Set(workoutRoutineIds.filter((id) => id.length > 0));
+    const weeks: number[] = [];
+    for (const link of links) {
+        if (!Number.isInteger(link.nth_week) || link.nth_week < 1) {
+            continue;
+        }
+        if (link.completed_at == null) {
+            continue;
+        }
+        if (!linkHasMatchingWorkouts(link, logged)) {
+            weeks.push(link.nth_week);
+        }
+    }
+    return weeks.sort((a, b) => a - b);
+}
+
 /**
  * Build consecutive week rows with overview status.
  *
  * - **complete** — in `completedWeeks`
- * - **current** — highest linked week that is not complete (CONTEXT Current week)
+ * - **current** — earliest incomplete linked week (CONTEXT Current week)
+ * - **exported** — linked, not complete, not Current week
  * - **not_exported** — no Program–Hevy link
- * - Linked weeks before current that lack a complete flag still render **complete**
- *   (Export gate invariant: N+1 cannot link until N is complete)
  *
  * @param programLength - Total weeks in the Proxima program
  * @param linkedWeeks - 1-based weeks with a Program–Hevy link
@@ -133,7 +199,7 @@ export function deriveProgramOverviewWeekStatuses(
     );
     const incompleteLinked = [...linked].filter((w) => !completed.has(w));
     const currentWeek =
-        incompleteLinked.length > 0 ? Math.max(...incompleteLinked) : null;
+        incompleteLinked.length > 0 ? Math.min(...incompleteLinked) : null;
 
     const rows: TProgramOverviewWeekRowModel[] = [];
     for (let week = 1; week <= programLength; week++) {
@@ -146,8 +212,7 @@ export function deriveProgramOverviewWeekStatuses(
             continue;
         }
         if (linked.has(week)) {
-            // Prior linked week without flag — treat complete (gate invariant).
-            rows.push({ week, status: "complete" });
+            rows.push({ week, status: "exported" });
             continue;
         }
         rows.push({ week, status: "not_exported" });
@@ -161,6 +226,8 @@ export function weekStatusLabel(status: TProgramOverviewWeekStatus): string {
             return "Complete";
         case "current":
             return "Current";
+        case "exported":
+            return "Exported";
         case "not_exported":
             return "Not exported";
     }

@@ -116,6 +116,26 @@ describe("HevyDayCard read-only variant", () => {
         expect(screen.getAllByText("Superset 1").length).toBeGreaterThanOrEqual(1);
         expect(screen.queryAllByLabelText("Exercise details")).toHaveLength(0);
     });
+
+    it("shows a Day card source badge when source is passed", () => {
+        const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
+
+        render(<HevyDayCard variant="read-only" day={day} source="Completed" />);
+
+        expect(screen.getByText("Completed")).toBeTruthy();
+        expect(screen.queryByText("Planned")).toBeNull();
+        expect(screen.queryByText("In Hevy")).toBeNull();
+    });
+
+    it("omits the source badge when source is not passed", () => {
+        const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
+
+        render(<HevyDayCard variant="read-only" day={day} />);
+
+        expect(screen.queryByText("Planned")).toBeNull();
+        expect(screen.queryByText("In Hevy")).toBeNull();
+        expect(screen.queryByText("Completed")).toBeNull();
+    });
 });
 
 describe("HevyDayCard Day complete", () => {

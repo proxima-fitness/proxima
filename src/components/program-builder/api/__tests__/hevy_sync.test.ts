@@ -302,6 +302,7 @@ describe("syncProgramToHevy", () => {
                         nth_week: 1,
                         hevy_folder_id: 42,
                         hevy_routine_ids: linkRows[0].hevy_routine_ids,
+                        exported_hevy_routine_ids: [HEVY_A, HEVY_B],
                         completed_at: null,
                         created_at: "2026-01-01",
                         updated_at: "2026-01-01",

@@ -25,6 +25,7 @@ import {
 } from "@/api/hooks";
 import {
     useAutoMarkProgramWeeksComplete,
+    useAutoUncompleteProgramWeeks,
     useMarkProgramWeekComplete,
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
@@ -39,12 +40,13 @@ import { ProgramOverviewWeekRail } from "./ProgramOverviewWeekRail";
 import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
+    deriveEffectiveCompletedWeeks,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
-    mergeCompletedWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
     weeksNeedingAutoMark,
+    weeksNeedingUncomplete,
 } from "./ProgramOverviewWeekStatus";
 
 export type TProgramOverviewWeekListProps = {
@@ -116,10 +118,12 @@ export function ProgramOverviewWeekList({
 
     const persistedCompleted = deriveCompletedWeeksFromLinks(links);
     const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
-    const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
+    const completedWeeks = deriveEffectiveCompletedWeeks(links, workoutRoutineIds);
     const autoMarkWeeks = weeksNeedingAutoMark(autoCompleted, persistedCompleted);
+    const uncompleteWeeks = weeksNeedingUncomplete(links, workoutRoutineIds);
 
     useAutoMarkProgramWeeksComplete(programId, autoMarkWeeks);
+    useAutoUncompleteProgramWeeks(programId, uncompleteWeeks);
 
     const isLoading = linksLoading || (!!user && workoutIdsLoading);
 
@@ -252,6 +256,19 @@ export function ProgramOverviewWeekList({
                             key={`${programId}-${resolvedSelected}`}
                             programId={programId}
                             nthWeek={resolvedSelected}
+                            link={
+                                links.find((row) => row.nth_week === resolvedSelected) ?? null
+                            }
+                            hevyFolderRoutines={
+                                findHevyProgramForWeek(
+                                    hevyPrograms,
+                                    links,
+                                    resolvedSelected,
+                                )?.program ?? []
+                            }
+                            hevyFolderPending={hevyPending}
+                            workoutRoutineIds={workoutRoutineIds}
+                            userId={user?.id}
                         />
 
                         {selectedIsCurrent && !completedWeeks.includes(resolvedSelected) ? (
@@ -292,6 +309,7 @@ export function ProgramOverviewWeekList({
                 description="Are you sure? This week becomes history. You can export the next week after."
                 confirmLabel="Mark complete"
                 confirmVariant="default"
+                confirmClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
                 isConfirmLoading={markComplete.isPending}
                 onConfirm={() => {
                     if (confirmCompleteWeek == null) {

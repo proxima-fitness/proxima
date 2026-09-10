@@ -659,6 +659,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          exported_hevy_routine_ids: string[]
           hevy_folder_id: number
           hevy_routine_ids: string[]
           id: string
@@ -670,6 +671,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          exported_hevy_routine_ids?: string[]
           hevy_folder_id: number
           hevy_routine_ids?: string[]
           id?: string
@@ -681,6 +683,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          exported_hevy_routine_ids?: string[]
           hevy_folder_id?: number
           hevy_routine_ids?: string[]
           id?: string

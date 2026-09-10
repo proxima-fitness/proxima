@@ -4,8 +4,9 @@
  * Thin overview Week Export CTA + progress fragment (ADR 0009, ADR 0011 / 04).
  * Gates Export via Program–Hevy links + Week complete (`completed_at` on link).
  *
- * Depends on: ProgramOverviewExportWeek, useProgramHevyWeekLinks, useHevySecret,
- *             useProgramWeekComplete, UserContext, ConfirmDialog
+ * Depends on: ProgramOverviewExportWeek, refreshOverviewQueriesAfterWeekExport,
+ *             useProgramHevyWeekLinks, useHevySecret, useProgramWeekComplete,
+ *             UserContext, ConfirmDialog
  * Used by: thin Week Export entry points (overview CTAs own primary Export)
  */
 
@@ -16,13 +17,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, Upload } from "lucide-react";
 import {
-    PROGRAM_HEVY_LINKS_QUERY_KEY,
     useHevySecret,
     useProgramHevyWeekLinks,
     useWorkoutRoutineIds,
 } from "@/api/hooks";
 import {
     useAutoMarkProgramWeeksComplete,
+    useAutoUncompleteProgramWeeks,
     useMarkProgramWeekComplete,
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
@@ -35,11 +36,13 @@ import {
     exportProgramWeekToHevy,
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
+import { refreshOverviewQueriesAfterWeekExport } from "./refreshOverviewQueriesAfterWeekExport";
 import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
-    mergeCompletedWeeks,
+    deriveEffectiveCompletedWeeks,
     weeksNeedingAutoMark,
+    weeksNeedingUncomplete,
 } from "./ProgramOverviewWeekStatus";
 
 type TUploadProgress = {
@@ -75,10 +78,14 @@ export function ProgramOverviewExportWeekCTA({
 
     const persistedCompleted = deriveCompletedWeeksFromLinks(links);
     const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
-    const completedWeeks = mergeCompletedWeeks(autoCompleted, persistedCompleted);
+    const completedWeeks = deriveEffectiveCompletedWeeks(links, workoutRoutineIds);
     useAutoMarkProgramWeeksComplete(
         programId,
         weeksNeedingAutoMark(autoCompleted, persistedCompleted),
+    );
+    useAutoUncompleteProgramWeeks(
+        programId,
+        weeksNeedingUncomplete(links, workoutRoutineIds),
     );
 
     const currentLinkedWeek =
@@ -138,10 +145,9 @@ export function ProgramOverviewExportWeekCTA({
             },
         });
 
-        setIsUploading(false);
-        setUploadProgress(null);
-
         if (result.success !== true) {
+            setIsUploading(false);
+            setUploadProgress(null);
             const message = result.error.message.includes("Rate limited after 3 retries")
                 ? RATE_LIMIT_EXHAUSTED_MESSAGE
                 : result.error.message;
@@ -149,16 +155,18 @@ export function ProgramOverviewExportWeekCTA({
             return;
         }
 
-        if (result.createdNewHevyCustomTemplates > 0) {
-            queryClient.invalidateQueries({ queryKey: ["hevy-custom-exercises"] });
+        try {
+            await refreshOverviewQueriesAfterWeekExport(queryClient, {
+                programId,
+                createdNewHevyCustomTemplates: result.createdNewHevyCustomTemplates,
+            });
+            toast.success(
+                `Exported week ${nthWeek} to Hevy. Current week: ${result.currentWeek}.`,
+            );
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(null);
         }
-        queryClient.invalidateQueries({
-            queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, programId],
-        });
-
-        toast.success(
-            `Exported week ${nthWeek} to Hevy. Current week: ${result.currentWeek}.`,
-        );
     };
 
     const exportDisabled =
@@ -243,6 +251,7 @@ export function ProgramOverviewExportWeekCTA({
                 description="Are you sure? This week becomes history. You can export the next week after."
                 confirmLabel="Mark complete"
                 confirmVariant="default"
+                confirmClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
                 isConfirmLoading={markComplete.isPending}
                 onConfirm={handleMarkComplete}
             />

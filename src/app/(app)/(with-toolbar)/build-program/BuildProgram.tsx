@@ -45,6 +45,7 @@ import {
 } from "@/components/program-builder/api/hevy";
 import {
     buildRollbackPlan,
+    buildSyncPlan,
     executeHevySyncPlan,
     syncProgramToHevy,
     type TSyncResult,
@@ -53,8 +54,17 @@ import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/c
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { SyncProgressDialog, type TSyncDialogPhase, type TSyncProgress } from "@/components/program-builder/shared/SyncProgressDialog";
+import { EditLeaveDialog } from "@/components/program-builder/shared/EditLeaveDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
+import {
+    EMPTY_EDIT_LEAVE_COUNTS,
+    editLeaveCountsFromPlan,
+    editLeaveGuard,
+    isEditLeaveDirty,
+    resolveSyncLeaveHref,
+    useEditLeaveGuard,
+} from "@/hooks/useEditLeaveGuard";
 import {
     canWriteBuilderDraft,
     clearBuilderDraft,
@@ -572,6 +582,25 @@ function BuildProgramShell({
     const [syncPhase, setSyncPhase] = useState<TSyncDialogPhase>("uploading");
     const [syncProgress, setSyncProgress] = useState<TSyncProgress | null>(null);
     const [syncResult, setSyncResult] = useState<TSyncResult | null>(null);
+    const syncAfterHrefRef = useRef("/profile");
+    /** Mirror only — SoT is undo stack after Edit hydrate. */
+    editLeaveGuard.setDirty(isEditLeaveDirty(isHevyEditArrival, undoStackLength));
+    const {
+        leaveDialogOpen: editLeaveDialogOpen,
+        pendingHref: editLeavePendingHref,
+        onLeaveDialogOpenChange: onEditLeaveDialogOpenChange,
+        onDiscardLeave: onDiscardEditLeave,
+    } = useEditLeaveGuard();
+    const editLeaveCounts = editLeaveDialogOpen && editSession
+        ? editLeaveCountsFromPlan(
+            buildSyncPlan({
+                workingRoutines: orderedProgram,
+                initialHevyProgram: editSession.initialHevyProgram,
+                initialRoutineIds: editSession.initialRoutineIds,
+                completedHevyRoutineIds,
+            }),
+        )
+        : EMPTY_EDIT_LEAVE_COUNTS;
 
     const chat = useBuildProgramChat({
         user,
@@ -703,7 +732,10 @@ function BuildProgramShell({
         persistMode,
     ]);
 
-    const handleSync = useCallback(async () => {
+    const handleSync = useCallback(async (afterHref?: string) => {
+        if (afterHref != null) {
+            syncAfterHrefRef.current = afterHref;
+        }
         if (persistMode !== "sync") return;
         if (isLoading || isSaving) return;
         if (!user) {
@@ -756,7 +788,7 @@ function BuildProgramShell({
                     queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, editSession.programId],
                 });
             }
-            router.push("/profile");
+            router.push(syncAfterHrefRef.current);
             clearEditSession();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Sync failed.");
@@ -778,6 +810,17 @@ function BuildProgramShell({
         router,
         clearEditSession,
     ]);
+
+    const handleSyncAndContinue = useCallback(() => {
+        const href = resolveSyncLeaveHref(editLeavePendingHref);
+        onEditLeaveDialogOpenChange(false);
+        void handleSync(href);
+    }, [editLeavePendingHref, handleSync, onEditLeaveDialogOpenChange]);
+
+    const handleDiscardEditLeave = useCallback(() => {
+        onDiscardEditLeave();
+        clearEditSession();
+    }, [clearEditSession, onDiscardEditLeave]);
 
     const handleRollback = useCallback(async () => {
         if (!editSession || !hevyApiKey || !syncResult) return;
@@ -936,7 +979,7 @@ function BuildProgramShell({
                 canUndo={isNewPathDirty(undoStackLength)}
                 undoDisabled={status === "streaming"}
                 onUndo={onUndo}
-                onSave={persistMode === "sync" ? handleSync : handleSave}
+                onSave={persistMode === "sync" ? () => { void handleSync("/profile"); } : handleSave}
                 saveDisabled={
                     persistMode === "sync"
                         ? !user || isSaving || isLoading
@@ -996,6 +1039,14 @@ function BuildProgramShell({
                 onRetry={() => { void handleSync(); }}
                 onRollback={() => { void handleRollback(); }}
                 onOpenChange={setSyncDialogOpen}
+            />
+            <EditLeaveDialog
+                open={editLeaveDialogOpen}
+                counts={editLeaveCounts}
+                discardHref={editLeavePendingHref}
+                onDiscard={handleDiscardEditLeave}
+                onSyncAndContinue={handleSyncAndContinue}
+                onOpenChange={onEditLeaveDialogOpenChange}
             />
         </ProgramMutationProvider>
     );

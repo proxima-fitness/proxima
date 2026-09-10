@@ -11,7 +11,8 @@
  * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
  * and refreshes the Week preview read; Export stays a separate, explicit step.
  *
- * Depends on: ExportDialog, ProgramOverviewExportWeek, AiWeekSuggestPanel,
+ * Depends on: ExportDialog, ProgramOverviewExportWeek,
+ *             refreshOverviewQueriesAfterWeekExport, AiWeekSuggestPanel,
  *             AiWeekSuggestApply, ProgramOverviewWeekPreview, hooks,
  *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress
  * Used by: ProgramOverviewWeekList
@@ -24,10 +25,7 @@ import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronDown, Pencil, Upload } from "lucide-react";
-import {
-    PROGRAM_HEVY_LINKS_QUERY_KEY,
-    useHevySecret,
-} from "@/api/hooks";
+import { useHevySecret } from "@/api/hooks";
 import {
     MAX_PROGRAM_TITLE_LENGTH,
     updateProgramTitle,
@@ -57,6 +55,7 @@ import {
     loadPrescriptionHevyRoutines,
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
+import { refreshOverviewQueriesAfterWeekExport } from "./refreshOverviewQueriesAfterWeekExport";
 import { PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY } from "./ProgramOverviewWeekPreview";
 
 type TUploadProgress = {
@@ -205,10 +204,9 @@ export function ProgramOverviewCtas({
             },
         });
 
-        setIsUploading(false);
-        setUploadProgress(null);
-
         if (result.success !== true) {
+            setIsUploading(false);
+            setUploadProgress(null);
             const message = result.error.message.includes("Rate limited after 3 retries")
                 ? RATE_LIMIT_EXHAUSTED_MESSAGE
                 : result.error.message;
@@ -216,16 +214,18 @@ export function ProgramOverviewCtas({
             return;
         }
 
-        if (result.createdNewHevyCustomTemplates > 0) {
-            queryClient.invalidateQueries({ queryKey: ["hevy-custom-exercises"] });
+        try {
+            await refreshOverviewQueriesAfterWeekExport(queryClient, {
+                programId,
+                createdNewHevyCustomTemplates: result.createdNewHevyCustomTemplates,
+            });
+            toast.success(
+                `Exported week ${nthWeek} to Hevy. Current week: ${result.currentWeek}.`,
+            );
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(null);
         }
-        queryClient.invalidateQueries({
-            queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, programId],
-        });
-
-        toast.success(
-            `Exported week ${nthWeek} to Hevy. Current week: ${result.currentWeek}.`,
-        );
     };
 
     const openFileExport = async (destination: "pdf" | "spreadsheet") => {

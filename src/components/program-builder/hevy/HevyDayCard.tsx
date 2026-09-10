@@ -42,6 +42,8 @@ interface IProps {
     day: THevyRoutine;
     /** Read-only backup workout card — hides builder shell. */
     variant?: "read-only";
+    /** Week preview source badge. Default off (builder / Recent workouts). */
+    source?: "Planned" | "In Hevy" | "Completed";
     /** Total exercises when preview is capped (logged variant). */
     totalExerciseCount?: number;
     /** Backup workout id for preview CTA (defaults to `day.id`). */
@@ -98,6 +100,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const {
         day,
         variant,
+        source,
         totalExerciseCount,
         workoutId,
         seeMoreHref,
@@ -243,18 +246,28 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     {showSessionGoalBadge && <SessionGoalBadge day={day} />}
                                 </div>
                             </div>
-                            { day.notes && day.notes.length > 0 &&
-                            <TooltipProvider delayDuration={ 0 }>
-                                <Tooltip>
-                                    <TooltipTrigger className="cursor-pointer shrink-0 pt-0.5">
-                                        <NotebookTextIcon />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-gray-600 text-white rounded-lg">
-                                        <p>{ day.notes }</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            }
+                            <div className="flex items-start gap-2 shrink-0">
+                                {source ? (
+                                    <span
+                                        className="rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground"
+                                        data-day-source={source}
+                                    >
+                                        {source}
+                                    </span>
+                                ) : null}
+                                { day.notes && day.notes.length > 0 &&
+                                <TooltipProvider delayDuration={ 0 }>
+                                    <Tooltip>
+                                        <TooltipTrigger className="cursor-pointer shrink-0 pt-0.5">
+                                            <NotebookTextIcon />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-gray-600 text-white rounded-lg">
+                                            <p>{ day.notes }</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                }
+                            </div>
                         </div>
                     ) : (
                     <div className="flex flex-row justify-between items-center px-3 py-1">

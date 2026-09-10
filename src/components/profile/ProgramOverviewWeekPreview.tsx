@@ -1,11 +1,11 @@
 /**
  * @module ProgramOverviewWeekPreview (UI)
  *
- * Selected-week prescription glance (ADR 0020 / 03): one read-only HevyDayCard
- * at a time with prev/next controls. Loads full prescription once per program.
+ * Selected-week glance (ADR 0020 / 03, ADR 0013 / SP5–6): one day at a time.
+ * Source is Program prescription, Hevy week copy, or Planned vs completed.
  *
  * Depends on: react-query, useHevyExercises, HevyDayCard, ProgramOverviewExportWeek,
- *             ProgramOverviewWeekPreviewModel, Button, Skeleton
+ *             ProgramOverviewWeekPreviewModel, WeekPreviewSources, Button, Skeleton
  * Used by: ProgramOverviewWeekList
  */
 
@@ -15,20 +15,36 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useHevyExercises } from "@/api/hooks";
+import { supabase } from "@/api/index";
+import { getWorkoutsByRoutineIds } from "@/api/workout-history-read";
 import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { loadPrescriptionHevyRoutines } from "./ProgramOverviewExportWeek";
+import { slicePrescriptionWeekDays } from "./ProgramOverviewWeekPreviewModel";
 import {
-    slicePrescriptionWeekDays,
-    weekPreviewDayKey,
-} from "./ProgramOverviewWeekPreviewModel";
+    EMPTY_IN_HEVY_FOLDER_EXPLAINER,
+    EMPTY_IN_HEVY_FOLDER_TITLE,
+    isPlannedVsCompletedWeek,
+    resolveWeekPreview,
+    weekPreviewWorkoutRoutineIds,
+    type TWeekPreviewLink,
+    type TWeekPreviewSlot,
+} from "./WeekPreviewSources";
 
 export const PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY = ["program-prescription-hevy"] as const;
+
+export const WEEK_PREVIEW_WORKOUTS_QUERY_KEY = ["week-preview-workouts"] as const;
 
 export type TProgramOverviewWeekPreviewProps = {
     programId: number;
     nthWeek: number;
+    link: TWeekPreviewLink | null;
+    hevyFolderRoutines: readonly THevyRoutine[];
+    hevyFolderPending: boolean;
+    workoutRoutineIds: readonly string[];
+    userId: string | undefined;
 };
 
 function PreviewSkeleton() {
@@ -44,13 +60,78 @@ function PreviewSkeleton() {
     );
 }
 
+export function WeekPreviewSlot({
+    slot,
+    nthWeek,
+    hevyExercises,
+}: {
+    slot: TWeekPreviewSlot;
+    nthWeek: number;
+    hevyExercises: THevyExerciseTemplate[] | undefined;
+}) {
+    if (slot.routine == null) {
+        const isEmptyHevyFolder = slot.source === "In Hevy";
+        return (
+            <div
+                className={cn(
+                    "relative flex w-full flex-col rounded-xl border",
+                    isEmptyHevyFolder
+                        ? "min-h-[220px] items-center justify-center border-dashed border-border/60 bg-muted/20 px-6 py-10 text-center"
+                        : "min-h-[140px] border-border/40 bg-muted/10 px-3 py-3",
+                )}
+                data-day-source={slot.source}
+            >
+                <span
+                    className={cn(
+                        "rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground",
+                        isEmptyHevyFolder ? "absolute right-3 top-3" : "self-end",
+                    )}
+                >
+                    {slot.source}
+                </span>
+                {isEmptyHevyFolder ? (
+                    <div className="flex max-w-sm flex-col items-center gap-1.5">
+                        <p className="text-sm font-medium text-foreground">
+                            {EMPTY_IN_HEVY_FOLDER_TITLE}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {EMPTY_IN_HEVY_FOLDER_EXPLAINER}
+                        </p>
+                    </div>
+                ) : slot.emptyCopy ? (
+                    <p className="mt-6 text-center text-sm text-muted-foreground">
+                        {slot.emptyCopy}
+                    </p>
+                ) : null}
+            </div>
+        );
+    }
+
+    return (
+        <HevyDayCard
+            variant="read-only"
+            source={slot.source}
+            day={slot.routine}
+            folder_id={nthWeek - 1}
+            title={`Week ${nthWeek}`}
+            hevyExercises={hevyExercises}
+            showSessionGoalBadge={false}
+        />
+    );
+}
+
 /**
- * Single-day HevyDayCard Week preview with carousel controls.
+ * Single-day Week preview with carousel controls.
  * Remount via `key={programId-nthWeek}` from parent to reset day index.
  */
 export function ProgramOverviewWeekPreview({
     programId,
     nthWeek,
+    link,
+    hevyFolderRoutines,
+    hevyFolderPending,
+    workoutRoutineIds,
+    userId,
 }: TProgramOverviewWeekPreviewProps) {
     const { data: hevyExercises } = useHevyExercises(true);
     const {
@@ -62,15 +143,32 @@ export function ProgramOverviewWeekPreview({
         queryFn: () => loadPrescriptionHevyRoutines(programId),
         enabled: Number.isInteger(programId) && programId > 0,
     });
+
+    const pair = isPlannedVsCompletedWeek(link, workoutRoutineIds);
+    const pairRoutineIds = weekPreviewWorkoutRoutineIds(link, hevyFolderRoutines);
+    const {
+        data: pairWorkouts,
+        isLoading: workoutsLoading,
+        isError: workoutsError,
+    } = useQuery({
+        queryKey: [...WEEK_PREVIEW_WORKOUTS_QUERY_KEY, userId, pairRoutineIds.join(",")],
+        queryFn: () => getWorkoutsByRoutineIds(supabase, userId!, pairRoutineIds),
+        enabled: Boolean(userId) && pair && pairRoutineIds.length > 0,
+    });
+
     const [dayIndex, setDayIndex] = useState(0);
 
-    const days = slicePrescriptionWeekDays(routines ?? [], nthWeek);
+    const prescriptionDays = slicePrescriptionWeekDays(routines ?? [], nthWeek);
+    const persistedGone =
+        link?.completed_at != null &&
+        !isPlannedVsCompletedWeek(link, workoutRoutineIds);
+    const waitForHevy = Boolean(link) && !pair && !persistedGone && hevyFolderPending;
 
-    if (isLoading) {
+    if (isLoading || waitForHevy || (pair && workoutsLoading)) {
         return <PreviewSkeleton />;
     }
 
-    if (isError) {
+    if (isError || workoutsError) {
         return (
             <p className="mt-2 text-sm text-muted-foreground">
                 Couldn&apos;t load this week&apos;s workouts. Try again later.
@@ -78,7 +176,15 @@ export function ProgramOverviewWeekPreview({
         );
     }
 
-    if (days.length === 0) {
+    const preview = resolveWeekPreview({
+        nthWeek,
+        link,
+        prescriptionDays,
+        hevyFolderRoutines,
+        workouts: pairWorkouts ?? [],
+    });
+
+    if (preview.days.length === 0) {
         return (
             <p className="mt-2 text-sm text-muted-foreground">
                 No workouts in the prescription for this week.
@@ -86,29 +192,32 @@ export function ProgramOverviewWeekPreview({
         );
     }
 
-    // Clamp if prescription shrinks while mounted (no effect — derive for render).
-    const safeIndex = Math.min(dayIndex, days.length - 1);
-    const day = days[safeIndex]!;
-    const key = weekPreviewDayKey(day, nthWeek, safeIndex);
-    const cardDay: THevyRoutine = {
-        ...day,
-        id: key,
-    };
-    const canPage = days.length > 1;
+    const safeIndex = Math.min(dayIndex, preview.days.length - 1);
+    const day = preview.days[safeIndex]!;
+    const isPair = day.slots.length > 1;
+    const canPage = preview.days.length > 1;
 
     return (
         <div className="mt-3" aria-label={`Week ${nthWeek} preview`}>
-            <div className="flex justify-center">
-                <div className="w-full max-w-[450px]">
-                    <HevyDayCard
-                        variant="read-only"
-                        day={cardDay}
-                        folder_id={nthWeek - 1}
-                        title={`Week ${nthWeek}`}
-                        hevyExercises={hevyExercises}
-                        showSessionGoalBadge={false}
-                    />
-                </div>
+            <div
+                className={
+                    isPair
+                        ? "flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-center"
+                        : "flex justify-center"
+                }
+            >
+                {day.slots.map((slot, slotIndex) => (
+                    <div
+                        key={`${slot.source}-${slotIndex}`}
+                        className={isPair ? "min-w-0" : "w-full max-w-[450px]"}
+                    >
+                        <WeekPreviewSlot
+                            slot={slot}
+                            nthWeek={nthWeek}
+                            hevyExercises={hevyExercises}
+                        />
+                    </div>
+                ))}
             </div>
 
             {canPage ? (
@@ -125,16 +234,16 @@ export function ProgramOverviewWeekPreview({
                         <ChevronLeft className="size-5" aria-hidden />
                     </Button>
                     <p className="min-w-[5.5rem] text-center text-xs text-muted-foreground sm:text-sm">
-                        Day {safeIndex + 1} of {days.length}
+                        Day {safeIndex + 1} of {preview.days.length}
                     </p>
                     <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         className="size-9 rounded-full"
-                        disabled={safeIndex >= days.length - 1}
+                        disabled={safeIndex >= preview.days.length - 1}
                         aria-label="Next day"
-                        onClick={() => setDayIndex((i) => Math.min(days.length - 1, i + 1))}
+                        onClick={() => setDayIndex((i) => Math.min(preview.days.length - 1, i + 1))}
                     >
                         <ChevronRight className="size-5" aria-hidden />
                     </Button>

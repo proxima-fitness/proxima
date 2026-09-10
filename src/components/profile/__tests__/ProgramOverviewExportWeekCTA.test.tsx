@@ -27,6 +27,7 @@ vi.mock("@/api/hooks", () => ({
 vi.mock("@/hooks/useProgramWeekComplete", () => ({
     useMarkProgramWeekComplete: (...args: unknown[]) => useMarkProgramWeekComplete(...args),
     useAutoMarkProgramWeeksComplete: vi.fn(),
+    useAutoUncompleteProgramWeeks: vi.fn(),
 }));
 
 vi.mock("../ProgramOverviewExportWeek", () => ({
@@ -79,6 +80,9 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
 
         expect(screen.getByRole("heading", { name: "Mark week 1 complete?" })).toBeTruthy();
         expect(screen.getByText(/Are you sure/)).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Mark complete" }).className).toContain(
+            "bg-lightSecondary",
+        );
         expect(mutateMarkComplete).not.toHaveBeenCalled();
 
         fireEvent.click(screen.getByRole("button", { name: "Cancel" }));

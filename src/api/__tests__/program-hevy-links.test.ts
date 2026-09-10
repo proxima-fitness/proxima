@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
 import {
+    clearProgramWeekComplete,
     getCurrentLinkedWeek,
     getProgramHevyWeekLink,
     getProgramHevyWeekLinks,
@@ -23,6 +24,7 @@ type TRow = {
     nth_week: number;
     hevy_folder_id: number;
     hevy_routine_ids: string[];
+    exported_hevy_routine_ids: string[];
     completed_at: string | null;
     created_at: string;
     updated_at: string;
@@ -149,11 +151,12 @@ function createMockDb(seed?: TRow[]) {
                     } else {
                         idSeq += 1;
                         rows.push({
+                            ...row,
                             id: `link-${idSeq}`,
                             created_at: now,
                             updated_at: now,
                             completed_at: row.completed_at ?? null,
-                            ...row,
+                            exported_hevy_routine_ids: row.exported_hevy_routine_ids ?? [],
                         });
                     }
                     return builder;
@@ -244,6 +247,7 @@ describe("program-hevy-links helpers", () => {
         const upserted = await upsertProgramHevyWeekLink(payload, asDb(mock));
         expect(upserted.hevy_folder_id).toBe(555);
         expect(upserted.hevy_routine_ids).toEqual(["r1", "r2", "r3"]);
+        expect(upserted.exported_hevy_routine_ids).toEqual(["r1", "r2", "r3"]);
         expect(upserted.program_id).toBe(PROGRAM_ID);
         expect(upserted.nth_week).toBe(1);
 
@@ -299,6 +303,7 @@ describe("program-hevy-links helpers", () => {
 
         expect(updated.hevy_folder_id).toBe(200);
         expect(updated.hevy_routine_ids).toEqual(["new-a"]);
+        expect(updated.exported_hevy_routine_ids).toEqual(["new-a"]);
 
         const forProgram = mock.rows.filter((r) => r.program_id === PROGRAM_ID);
         expect(forProgram).toHaveLength(1);
@@ -357,8 +362,32 @@ describe("program-hevy-links helpers", () => {
 
         expect(updated.hevy_routine_ids).toEqual(["live-a"]);
         expect(updated.hevy_folder_id).toBe(1001);
+        expect(updated.exported_hevy_routine_ids).toEqual(["old-a", "old-b"]);
         expect(mock.rows).toHaveLength(1);
         expect(mock.rows[0]?.hevy_routine_ids).toEqual(["live-a"]);
+        expect(mock.rows[0]?.exported_hevy_routine_ids).toEqual(["old-a", "old-b"]);
+    });
+
+    it("updateProgramHevyWeekRoutineIds does not rewrite Export-time Hevy routine IDs", async () => {
+        await upsertProgramHevyWeekLink(
+            input({
+                nthWeek: 1,
+                hevyFolderId: 1001,
+                hevyRoutineIds: ["export-a", "export-b"],
+            }),
+            asDb(mock),
+        );
+
+        const updated = await updateProgramHevyWeekRoutineIds(
+            PROGRAM_ID,
+            1,
+            ["live-only"],
+            asDb(mock),
+        );
+
+        expect(updated.hevy_routine_ids).toEqual(["live-only"]);
+        expect(updated.exported_hevy_routine_ids).toEqual(["export-a", "export-b"]);
+        expect(mock.rows[0]?.exported_hevy_routine_ids).toEqual(["export-a", "export-b"]);
     });
 
     it("updateProgramHevyWeekRoutineIds throws when the week has no link", async () => {
@@ -366,5 +395,15 @@ describe("program-hevy-links helpers", () => {
             updateProgramHevyWeekRoutineIds(PROGRAM_ID, 1, ["r1"], asDb(mock)),
         ).rejects.toThrow(/No Program–Hevy link/);
         expect(mock.rows).toHaveLength(0);
+    });
+
+    it("clearProgramWeekComplete clears completed_at and keeps the link", async () => {
+        await upsertProgramHevyWeekLink(input({ nthWeek: 1 }), asDb(mock));
+        await markProgramWeekComplete(PROGRAM_ID, 1, asDb(mock));
+
+        const cleared = await clearProgramWeekComplete(PROGRAM_ID, 1, asDb(mock));
+        expect(cleared.completed_at).toBeNull();
+        expect(cleared.hevy_routine_ids).toEqual(["routine-a", "routine-b"]);
+        expect(mock.rows).toHaveLength(1);
     });
 });

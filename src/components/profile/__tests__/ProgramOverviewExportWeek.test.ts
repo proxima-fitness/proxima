@@ -30,9 +30,11 @@ function makeLink(overrides: Partial<TProgramHevyWeekLink> = {}): TProgramHevyWe
         nth_week: 1,
         hevy_folder_id: 555,
         hevy_routine_ids: ["r1", "r2"],
+        exported_hevy_routine_ids: ["r1", "r2"],
         created_at: "2026-01-01T00:00:00Z",
         updated_at: "2026-01-01T00:00:00Z",
         ...overrides,
+        completed_at: overrides.completed_at ?? null,
     };
 }
 
