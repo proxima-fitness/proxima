@@ -1,10 +1,12 @@
 /**
  * @module ProgramOverviewCtas
  *
- * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01): title + meta
- * left (owner can rename), Export dropdown (Hevy Week Export / PDF / spreadsheet)
- * + Edit program right; AI week suggest disclosure below (ADR 0012 / 02). Week
- * Export via ADR 0009; PDF/CSV reuse ExportDialog destinations.
+ * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01):
+ * title + meta left (owner can rename). **Edit program** is always a quiet
+ * title-row control. Header: split Export (Hevy Week Export left, PDF /
+ * spreadsheet dropdown right) plus **Edit current week** ("Edit Week N").
+ * Edit Week 1 is shown disabled until the first Week Export. AI week suggest
+ * disclosure below (ADR 0012 / 02).
  *
  * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
  * and refreshes the Week preview read; Export stays a separate, explicit step.
@@ -74,7 +76,40 @@ export type TProgramOverviewCtasProps = {
     linksLoading: boolean;
     /** Owner-only: show rename control next to the title. */
     canRenameTitle?: boolean;
+    /**
+     * 1-based Current week when Edit current week can run. Null/omitted still
+     * shows disabled "Edit Week 1" before the first Week Export.
+     */
+    currentWeek?: number | null;
+    /** Enter Edit current week for `currentWeek`. */
+    onEditCurrentWeek?: () => void;
+    /** Disable Edit Week N while Hevy is loading or the session is entering. */
+    editCurrentWeekDisabled?: boolean;
 };
+
+const EXPORT_SPLIT_CLASS =
+    "bg-lightSecondary text-white shadow-none hover:bg-lightSecondary/90";
+
+/**
+ * Owner **Edit program** entry. Always the quiet title-row control.
+ */
+function EditProgramControl({ programId }: { programId: number }) {
+    return (
+        <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="h-auto px-0 text-xs font-normal text-muted-foreground"
+            asChild
+        >
+            {/* Stub until ADR 0014 Edit program arrival */}
+            <Link href={`/build-program?shareId=${programId}`}>
+                <Pencil className="size-3" aria-hidden />
+                Edit program
+            </Link>
+        </Button>
+    );
+}
 
 function formatProgramMeta(
     programLength: number | null,
@@ -92,7 +127,7 @@ function formatProgramMeta(
 }
 
 /**
- * Program shell (title | Export / Edit) + AI week suggest for one overview slide.
+ * Program shell (title + Edit program | split Export / Edit Week N) + AI week suggest.
  */
 export function ProgramOverviewCtas({
     programId,
@@ -103,6 +138,9 @@ export function ProgramOverviewCtas({
     completedWeeks,
     linksLoading,
     canRenameTitle = false,
+    currentWeek = null,
+    onEditCurrentWeek,
+    editCurrentWeekDisabled = false,
 }: TProgramOverviewCtasProps) {
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
@@ -125,6 +163,13 @@ export function ProgramOverviewCtas({
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
     const meta = formatProgramMeta(programLength, specialization);
+    const hasExported = linkedWeeks.length > 0;
+    const showEditCurrentWeek =
+        currentWeek != null && currentWeek >= 1 && onEditCurrentWeek != null;
+    const liveEditWeek = currentWeek != null && currentWeek >= 1 ? currentWeek : null;
+    const editWeekNumber = liveEditWeek ?? (hasExported ? null : 1);
+    const editWeekDisabled =
+        !hasExported || !showEditCurrentWeek || editCurrentWeekDisabled;
 
     const handleWeekExport = async () => {
         if (!user) {
@@ -310,68 +355,85 @@ export function ProgramOverviewCtas({
                             </Button>
                         ) : null}
                     </div>
-                    {meta ? (
-                        <p className="text-sm text-muted-foreground">{meta}</p>
-                    ) : null}
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
+                        {meta ? (
+                            <p className="text-sm text-muted-foreground">{meta}</p>
+                        ) : null}
+                        <EditProgramControl programId={programId} />
+                    </div>
                 </div>
 
                 <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
                     <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
-                                    disabled={isUploading || fileLoading}
-                                >
-                                    <Upload className="size-3.5" aria-hidden />
-                                    Export
-                                    <ChevronDown className="size-3.5 opacity-80" aria-hidden />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-[14rem]">
-                                <DropdownMenuItem
-                                    disabled={hevyDisabled}
-                                    title={!gate.allowed ? gate.reason : undefined}
-                                    onSelect={() => {
-                                        void handleWeekExport();
-                                    }}
-                                >
-                                    Week Export · week {nthWeek}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    disabled={fileLoading || isUploading}
-                                    onSelect={() => {
-                                        void openFileExport("pdf");
-                                    }}
-                                >
-                                    PDF
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    disabled={fileLoading || isUploading}
-                                    onSelect={() => {
-                                        void openFileExport("spreadsheet");
-                                    }}
-                                >
-                                    Spreadsheet
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="rounded-full border-border/80"
-                            asChild
+                        <div
+                            className="inline-flex rounded-full shadow-sm"
+                            role="group"
+                            aria-label="Export"
                         >
-                            {/* Stub until ADR 0014 Edit program arrival */}
-                            <Link href={`/build-program?shareId=${programId}`}>
+                            <Button
+                                type="button"
+                                size="sm"
+                                className={`${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`}
+                                disabled={hevyDisabled}
+                                title={!gate.allowed ? gate.reason : undefined}
+                                onClick={() => {
+                                    void handleWeekExport();
+                                }}
+                            >
+                                <Upload className="size-3.5" aria-hidden />
+                                Export Week {nthWeek}
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        className={`${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`}
+                                        disabled={isUploading || fileLoading}
+                                        aria-label="Export as PDF or spreadsheet"
+                                    >
+                                        <ChevronDown className="size-3.5" aria-hidden />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="min-w-[10rem]">
+                                    <DropdownMenuItem
+                                        disabled={fileLoading || isUploading}
+                                        onSelect={() => {
+                                            void openFileExport("pdf");
+                                        }}
+                                    >
+                                        PDF
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        disabled={fileLoading || isUploading}
+                                        onSelect={() => {
+                                            void openFileExport("spreadsheet");
+                                        }}
+                                    >
+                                        Spreadsheet
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {editWeekNumber != null ? (
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="rounded-full border-border/80"
+                                disabled={editWeekDisabled}
+                                title={
+                                    !hasExported
+                                        ? "Export this week to Hevy first"
+                                        : undefined
+                                }
+                                onClick={onEditCurrentWeek}
+                            >
                                 <Pencil className="size-3.5" aria-hidden />
-                                Edit program
-                            </Link>
-                        </Button>
+                                Edit Week {editWeekNumber}
+                            </Button>
+                        ) : null}
                     </div>
 
                     {!gate.allowed && !linksLoading ? (

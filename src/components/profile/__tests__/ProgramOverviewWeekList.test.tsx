@@ -13,6 +13,7 @@ const useProgramHevyWeekLinks = vi.fn();
 const useWorkoutRoutineIds = vi.fn();
 const mutateMarkComplete = vi.fn();
 const useMarkProgramWeekComplete = vi.fn();
+const programOverviewCtas = vi.fn();
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -35,7 +36,10 @@ vi.mock("@/hooks/useNavigateToEditHevyProgram", () => ({
 }));
 
 vi.mock("../ProgramOverviewCtas", () => ({
-    ProgramOverviewCtas: () => null,
+    ProgramOverviewCtas: (props: Record<string, unknown>) => {
+        programOverviewCtas(props);
+        return null;
+    },
 }));
 
 vi.mock("../ProgramOverviewHevyMirror", () => ({
@@ -77,6 +81,7 @@ describe("ProgramOverviewWeekList mark week complete", () => {
             isLoading: false,
         });
         mutateMarkComplete.mockReset();
+        programOverviewCtas.mockClear();
         useMarkProgramWeekComplete.mockReturnValue({
             mutate: mutateMarkComplete,
             isPending: false,
@@ -121,5 +126,54 @@ describe("ProgramOverviewWeekList mark week complete", () => {
 
         expect(mutateMarkComplete).toHaveBeenCalledTimes(1);
         expect(mutateMarkComplete.mock.calls[0]?.[0]).toBe(1);
+    });
+
+    it("does not keep Edit current week in the week preview", () => {
+        renderList(
+            <ProgramOverviewWeekList
+                programId={11}
+                programTitle="Strength Block A"
+                programLength={8}
+            />,
+        );
+
+        expect(screen.queryByRole("button", { name: /Edit current week/i })).toBeNull();
+        expect(screen.queryByRole("button", { name: /Edit Week/i })).toBeNull();
+        expect(screen.getByRole("button", { name: "Mark week complete" })).toBeTruthy();
+    });
+
+    it("offers Edit Week N from the header for the Current week", () => {
+        useHevySecret.mockReturnValue({ data: "hevy-key" });
+        useHevyPrograms.mockReturnValue({
+            data: [
+                {
+                    program_title: "Week 1",
+                    program: [
+                        {
+                            id: "r1",
+                            title: "Day 1",
+                            folder_id: 10,
+                            notes: "",
+                            exercises: [],
+                        },
+                    ],
+                },
+            ],
+            isLoading: false,
+        });
+
+        renderList(
+            <ProgramOverviewWeekList
+                programId={11}
+                programTitle="Strength Block A"
+                programLength={8}
+            />,
+        );
+
+        expect(programOverviewCtas).toHaveBeenCalled();
+        const props = programOverviewCtas.mock.calls.at(-1)?.[0] as {
+            currentWeek?: number | null;
+        };
+        expect(props.currentWeek).toBe(1);
     });
 });

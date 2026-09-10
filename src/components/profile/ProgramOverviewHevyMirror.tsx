@@ -2,8 +2,9 @@
  * @module ProgramOverviewHevyMirror
  *
  * Hevy mirror subsection for a Program overview slide (ADR 0020 / 04):
- * full-width; Current week folder primary; other folders behind disclosure.
- * Hevy-only empty overview lists all folders for Edit path entry.
+ * full-width. One disclosure: Other folders in Hevy. Current week is
+ * Edit Week N, so it is omitted. Empty overview / not yet exported:
+ * every Hevy folder lives in that same disclosure.
  *
  * Depends on: useNavigateToEditHevyProgram, Button, Skeleton, Collapsible, hevy_logo
  * Used by: ProgramOverviewWeekList, ProgramOverviewSection (empty state)
@@ -229,7 +230,7 @@ function MirrorFolderList({
     onEdit: (folder: TMirrorFolder) => void;
 }) {
     return (
-        <ul className="mt-1 flex list-none flex-col p-0" aria-label="In Hevy">
+        <ul className="mt-1 flex list-none flex-col p-0" aria-label="Other folders in Hevy">
             {folders.map((folder) => (
                 <li
                     key={folder.key}
@@ -274,28 +275,15 @@ export function ProgramOverviewHevyMirror({
 
     const programs = hevyPrograms ?? [];
     const folders = buildMirrorFolders(programs, links, completedWeeks, hevyOnly);
-
-    if (folders.length === 0) {
-        if (hevyOnly) {
-            return null;
-        }
-        return (
-            <div className="w-full px-1">
-                <h4 className="text-xs text-muted-foreground">In Hevy</h4>
-                <p className="mt-2 text-sm text-muted-foreground">
-                    Week Export creates this program&apos;s Hevy week copy here.
-                </p>
-            </div>
-        );
-    }
+    const { secondary } = partitionMirrorFolders(folders);
+    const showOtherFolders = secondary.length > 0;
 
     const handleEdit = async (folder: TMirrorFolder) => {
         if (busyKey) return;
         setBusyKey(folder.key);
         try {
-            // Edit current week scoping only for a linked week that is still live.
-            // A Week complete week is history — editing its folder is a plain
-            // Hevy-scope edit and must not claim a program + week (ADR 0013).
+            // Live linked week that is not Current (Other folders). Current week
+            // is Edit Week N. A Week complete folder is Hevy-scope Edit only.
             const scoped =
                 programId != null
                 && folder.nthWeek != null
@@ -315,56 +303,42 @@ export function ProgramOverviewHevyMirror({
         }
     };
 
-    // Hevy-only: list every folder (Edit path entry). Linked: Current primary + disclosure.
-    const useDisclosure = !hevyOnly && links.length > 0;
-    const { primary, secondary } = useDisclosure
-        ? partitionMirrorFolders(folders)
-        : { primary: folders, secondary: [] as TMirrorFolder[] };
+    if (!showOtherFolders) {
+        return null;
+    }
 
     return (
         <div className="w-full px-1">
-            <h4 className="text-xs text-muted-foreground">In Hevy</h4>
-            {primary.length > 0 ? (
-                <MirrorFolderList
-                    folders={primary}
-                    busyKey={busyKey}
-                    onEdit={(folder) => {
-                        void handleEdit(folder);
-                    }}
-                />
-            ) : null}
-            {secondary.length > 0 ? (
-                <Collapsible open={othersOpen} onOpenChange={setOthersOpen} className="mt-1">
-                    <CollapsibleTrigger
-                        className="flex w-full items-center justify-between gap-2 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
-                        aria-label={
-                            othersOpen
-                                ? "Collapse other folders in Hevy"
-                                : "Expand other folders in Hevy"
-                        }
-                    >
-                        <span>
-                            Other folders in Hevy ({secondary.length})
-                        </span>
-                        <ChevronRight
-                            className={cn(
-                                "size-3.5 shrink-0 transition-transform",
-                                othersOpen && "rotate-90",
-                            )}
-                            aria-hidden
-                        />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <MirrorFolderList
-                            folders={secondary}
-                            busyKey={busyKey}
-                            onEdit={(folder) => {
-                                void handleEdit(folder);
-                            }}
-                        />
-                    </CollapsibleContent>
-                </Collapsible>
-            ) : null}
+            <Collapsible open={othersOpen} onOpenChange={setOthersOpen} className="mt-1">
+                <CollapsibleTrigger
+                    className="flex w-full items-center justify-between gap-2 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
+                    aria-label={
+                        othersOpen
+                            ? "Collapse other folders in Hevy"
+                            : "Expand other folders in Hevy"
+                    }
+                >
+                    <span>
+                        Other folders in Hevy ({secondary.length})
+                    </span>
+                    <ChevronRight
+                        className={cn(
+                            "size-3.5 shrink-0 transition-transform",
+                            othersOpen && "rotate-90",
+                        )}
+                        aria-hidden
+                    />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <MirrorFolderList
+                        folders={secondary}
+                        busyKey={busyKey}
+                        onEdit={(folder) => {
+                            void handleEdit(folder);
+                        }}
+                    />
+                </CollapsibleContent>
+            </Collapsible>
         </div>
     );
 }

@@ -8,9 +8,11 @@
  * Design constraints that are easy to miss:
  *
  * - Hevy has no DELETE. A builder-removed day is emptied in place: title
- *   `[Removed] {original}`, `exercises: []`, notes `" "`. The `[Removed]`
- *   prefix is the only empty signal — empty exercises alone are a new day
- *   the athlete is still building.
+ *   `[Removed] {original}`, one placeholder exercise, and notes that the
+ *   athlete can delete it in Hevy. Live Hevy PUT rejects `exercises: []`
+ *   (400: array must contain at least 1 element).
+ *   The `[Removed]` prefix is the only empty signal — empty exercises alone
+ *   are a new day the athlete is still building.
  * - Identity is the Hevy routine UUID. Edit current week stores it on
  *   `hevyRoutineId`. Hevy-only Edit now uses the same split (ADR 0013 / 04);
  *   we still coerce a UUID `id` as a backstop so those days PUT rather than

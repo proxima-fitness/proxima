@@ -2,8 +2,8 @@
  * @module ProgramOverviewWeekList
  *
  * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03,
- * ADR 0011 / 04): shell (title | Export / Edit), week rail + Selected week
- * preview, Mark week complete, Hevy mirror.
+ * ADR 0011 / 04): shell (title | split Export / Edit Week N), week rail +
+ * Selected week preview, Mark week complete, Hevy mirror.
  *
  * Depends on: useProgramHevyWeekLinks, useWorkoutRoutineIds, useHevyPrograms,
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
@@ -15,7 +15,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Pencil } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import {
     useHevyPrograms,
@@ -145,17 +145,22 @@ export function ProgramOverviewWeekList({
             ? (rows.find((row) => row.week === resolvedSelected) ?? null)
             : null;
     const selectedIsCurrent = selectedRow?.status === "current";
+    const currentWeekNumber = rows.find((row) => row.status === "current")?.week ?? null;
 
     /** Still fetching Hevy — distinct from "fetched, folder is gone". */
     const hevyPending = Boolean(hevyApiKey) && isLoadingHevy;
-    /** Link row for the Selected week — carries the folder id and day-ordered routine ids. */
-    const currentWeekLink = selectedIsCurrent
-        ? (links.find((link) => link.nth_week === resolvedSelected) ?? null)
-        : null;
-    /** Hevy folder that is the Selected week's Hevy week copy (null → no Edit target). */
-    const currentWeekHevyProgram = selectedIsCurrent
-        ? findHevyProgramForWeek(hevyPrograms, links, resolvedSelected)
-        : null;
+    /** Link row for the Current week — carries the folder id and day-ordered routine ids. */
+    const currentWeekLink =
+        currentWeekNumber != null
+            ? (links.find((link) => link.nth_week === currentWeekNumber) ?? null)
+            : null;
+    /** Hevy folder that is the Current week's Hevy week copy (null → no Edit target). */
+    const currentWeekHevyProgram =
+        currentWeekNumber != null
+            ? findHevyProgramForWeek(hevyPrograms, links, currentWeekNumber)
+            : null;
+    const showEditCurrentWeek =
+        currentWeekNumber != null && (hevyPending || currentWeekHevyProgram != null);
 
     /** Edit current week: hand the linked folder to the builder, ordered by the link. */
     const handleEditCurrentWeek = async (program: THevyProgramItem, week: number) => {
@@ -198,6 +203,23 @@ export function ProgramOverviewWeekList({
                 completedWeeks={completedWeeks}
                 linksLoading={linksLoading}
                 canRenameTitle={canRenameTitle}
+                currentWeek={showEditCurrentWeek ? currentWeekNumber : null}
+                onEditCurrentWeek={
+                    showEditCurrentWeek
+                        ? () => {
+                            if (!currentWeekHevyProgram || currentWeekNumber == null) {
+                                return;
+                            }
+                            void handleEditCurrentWeek(
+                                currentWeekHevyProgram,
+                                currentWeekNumber,
+                            );
+                        }
+                        : undefined
+                }
+                editCurrentWeekDisabled={
+                    hevyPending || isEnteringEdit || !currentWeekHevyProgram
+                }
             />
 
             {weekCount < 1 || resolvedSelected == null || selectedRow == null ? (
@@ -232,42 +254,19 @@ export function ProgramOverviewWeekList({
                             nthWeek={resolvedSelected}
                         />
 
-                        {selectedIsCurrent ? (
+                        {selectedIsCurrent && !completedWeeks.includes(resolvedSelected) ? (
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                                {!completedWeeks.includes(resolvedSelected) ? (
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-8 rounded-full"
-                                        disabled={markComplete.isPending}
-                                        onClick={() => setConfirmCompleteWeek(resolvedSelected)}
-                                    >
-                                        <Check className="size-3.5" aria-hidden />
-                                        Mark week complete
-                                    </Button>
-                                ) : null}
-                                {/* Pending Hevy → disabled, not absent: a missing button reads
-                                    as "no Hevy week copy", which is a different thing. */}
-                                {hevyPending || currentWeekHevyProgram ? (
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-8 rounded-full text-muted-foreground"
-                                        disabled={hevyPending || isEnteringEdit || !currentWeekHevyProgram}
-                                        onClick={() => {
-                                            if (!currentWeekHevyProgram) return;
-                                            void handleEditCurrentWeek(
-                                                currentWeekHevyProgram,
-                                                resolvedSelected,
-                                            );
-                                        }}
-                                    >
-                                        <Pencil className="size-3.5" aria-hidden />
-                                        Edit current week
-                                    </Button>
-                                ) : null}
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 rounded-full"
+                                    disabled={markComplete.isPending}
+                                    onClick={() => setConfirmCompleteWeek(resolvedSelected)}
+                                >
+                                    <Check className="size-3.5" aria-hidden />
+                                    Mark week complete
+                                </Button>
                             </div>
                         ) : null}
                     </div>

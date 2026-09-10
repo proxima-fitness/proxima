@@ -39,6 +39,21 @@ const HEVY_EXERCISE_TEMPLATES_MAX_PAGES = 40;
 const EXPORT_TEMPLATE_IDS_CHUNK_SIZE = 150;
 
 /**
+ * Hevy error text, appended so a 400 is diagnosable in the Sync dialog.
+ *
+ * @param method - GET / POST / PUT
+ * @param response - Failed fetch response
+ */
+async function throwHevyHttpError(method: string, response: Response): Promise<never> {
+    const detail = (await response.text()).trim();
+    throw new Error(
+        detail
+            ? `HTTP ${method} error! Status: ${response.status}: ${detail}`
+            : `HTTP ${method} error! Status: ${response.status}`,
+    );
+}
+
+/**
  * Generic authenticated GET request against the Hevy public API.
  *
  * Wraps `fetch` with the required `api-key` header and JSON parsing.
@@ -59,7 +74,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP GET error! Status: ${response.status}`);
+        await throwHevyHttpError("GET", response);
     }
 
     return (await response.json()) as T;
@@ -1338,7 +1353,7 @@ export const defaultPost = async <T, U = unknown>(url: string, apiKey: string, b
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP POST error! Status: ${response.status}`);
+        await throwHevyHttpError("POST", response);
     }
 
     return (await response.json()) as T;
@@ -1369,7 +1384,7 @@ export const defaultPut = async <T, U = unknown>(url: string, apiKey: string, bo
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP PUT error! Status: ${response.status}`);
+        await throwHevyHttpError("PUT", response);
     }
 
     return (await response.json()) as T;
@@ -2309,9 +2324,72 @@ export const putRoutine = async (
     return response;
 };
 
+/** Hevy routine notes (description) written on empty PUT. Non-empty so Hevy accepts it. */
+export const REMOVED_ROUTINE_NOTES =
+    "You marked this routine for removal in Proxima. You can now delete this routine.";
+
+/**
+ * One-set stub Hevy requires on empty PUT. Live Hevy 400s `exercises: []`
+ * ("Array must contain at least 1 element(s)") and 400s when `exercises` is omitted.
+ *
+ * @param exerciseTemplateId - Template id taken from the routine being emptied
+ */
+export function placeholderExerciseForRemovedRoutine(
+    exerciseTemplateId: string,
+): THevyExerciseRequest {
+    return {
+        exercise_template_id: exerciseTemplateId,
+        superset_id: null,
+        rest_seconds: 0,
+        notes: "...",
+        sets: [
+            {
+                type: "normal",
+                weight_kg: null,
+                reps: 0,
+                distance_meters: null,
+                duration_seconds: null,
+                custom_metric: null,
+            },
+        ],
+    };
+}
+
+/**
+ * First `exercise_template_id` on a Hevy GET/PUT routine payload.
+ * Hevy sometimes wraps `routine` as an object, sometimes as a one-item array.
+ *
+ * @param body - Parsed JSON from GET `/v1/routines/{id}`
+ */
+export function firstHevyExerciseTemplateId(body: unknown): string | undefined {
+    if (!body || typeof body !== "object") {
+        return undefined;
+    }
+    const wrapped = (body as { routine?: unknown }).routine ?? body;
+    const routine = Array.isArray(wrapped) ? wrapped[0] : wrapped;
+    if (!routine || typeof routine !== "object") {
+        return undefined;
+    }
+    const exercises = (routine as { exercises?: unknown }).exercises;
+    if (!Array.isArray(exercises)) {
+        return undefined;
+    }
+    for (const exercise of exercises) {
+        if (!exercise || typeof exercise !== "object") {
+            continue;
+        }
+        const id = (exercise as { exercise_template_id?: unknown }).exercise_template_id;
+        if (typeof id === "string" && id.length > 0) {
+            return id;
+        }
+    }
+    return undefined;
+}
+
 /**
  * Empties a Hevy routine in place (no DELETE). Title becomes `[Removed] {original}`,
- * exercises are cleared, notes are a non-empty space so Hevy accepts the PUT.
+ * notes are {@link REMOVED_ROUTINE_NOTES}, and exercises collapse to one placeholder set.
+ * Hevy PUT rejects `exercises: []`.
  *
  * @param routineId - Hevy routine UUID
  * @param originalTitle - Title before emptying; existing `[Removed] ` is stripped first
@@ -2325,12 +2403,22 @@ export async function emptyRoutineOnHevy(
     const stripped = originalTitle.startsWith("[Removed] ")
         ? originalTitle.slice("[Removed] ".length)
         : originalTitle;
+    const current = await defaultFetch<unknown>(
+        `https://api.hevyapp.com/v1/routines/${routineId}`,
+        apiKey,
+    );
+    const templateId = firstHevyExerciseTemplateId(current);
+    if (!templateId) {
+        throw new Error(
+            `Cannot empty Hevy routine ${routineId}: no exercise template to keep as placeholder`,
+        );
+    }
     return putRoutine(
         routineId,
         {
             title: `[Removed] ${stripped}`,
-            notes: " ",
-            exercises: [],
+            notes: REMOVED_ROUTINE_NOTES,
+            exercises: [placeholderExerciseForRemovedRoutine(templateId)],
         },
         apiKey,
     );

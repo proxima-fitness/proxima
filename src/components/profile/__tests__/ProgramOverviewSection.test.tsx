@@ -119,6 +119,7 @@ describe("ProgramOverviewSection", () => {
 
         expect(screen.getByText("No active programs yet")).toBeTruthy();
         expect(screen.getByRole("link", { name: /Start a program/i })).toBeTruthy();
+        expect(screen.queryByRole("link", { name: "New program" })).toBeNull();
         expect(screen.getByTestId("hevy-mirror-stub")).toBeTruthy();
         expect(screen.queryByText("My Programs")).toBeNull();
         expect(screen.queryByText("My Hevy Programs")).toBeNull();
@@ -161,5 +162,6 @@ describe("ProgramOverviewSection", () => {
 
         expect(screen.queryByRole("tablist", { name: "Active programs" })).toBeNull();
         expect(screen.getByTestId("week-list-11")).toBeTruthy();
+        expect(screen.getByRole("link", { name: "New program" })).toBeTruthy();
     });
 });

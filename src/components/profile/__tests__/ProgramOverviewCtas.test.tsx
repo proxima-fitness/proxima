@@ -1,13 +1,17 @@
 /**
- * Smoke tests for Program overview title rename control.
+ * Program overview chrome: title rename, split Export, Edit Week N / Edit program.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const updateProgramTitle = vi.fn();
+const nextExportableWeek = vi.fn((linkedWeeks: readonly number[]) =>
+    linkedWeeks.length === 0 ? 1 : Math.max(...linkedWeeks) + 1,
+);
+const evaluateWeekExportGate = vi.fn(() => ({ allowed: false, reason: "gated" }));
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -32,10 +36,10 @@ vi.mock("@/components/program-builder/shared/ExportDialog", () => ({
 }));
 
 vi.mock("./ProgramOverviewExportWeek", () => ({
-    evaluateWeekExportGate: () => ({ allowed: false, reason: "gated" }),
+    evaluateWeekExportGate: () => evaluateWeekExportGate(),
     exportProgramWeekToHevy: vi.fn(),
     loadPrescriptionHevyRoutines: vi.fn(),
-    nextExportableWeek: () => 1,
+    nextExportableWeek: (linkedWeeks: readonly number[]) => nextExportableWeek(linkedWeeks),
 }));
 
 import { ProgramOverviewCtas } from "../ProgramOverviewCtas";
@@ -61,6 +65,8 @@ describe("ProgramOverviewCtas rename", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         updateProgramTitle.mockReset();
+        nextExportableWeek.mockClear();
+        evaluateWeekExportGate.mockClear();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -96,5 +102,88 @@ describe("ProgramOverviewCtas rename", () => {
                 "Hypertrophy Block",
             );
         });
+    });
+});
+
+describe("ProgramOverviewCtas chrome", () => {
+    beforeEach(() => {
+        useUserContext.mockReset();
+        nextExportableWeek.mockClear();
+        evaluateWeekExportGate.mockClear();
+        useUserContext.mockReturnValue({
+            user: { id: "user-1" },
+            isLoading: false,
+        });
+    });
+
+    afterEach(() => {
+        cleanup();
+    });
+
+    it("keeps Edit program under the title and disables Edit Week 1 before the first Week Export", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        const titleBlock = screen.getByRole("heading", { name: "Strength Block A" })
+            .parentElement?.parentElement;
+        expect(titleBlock).toBeTruthy();
+        if (!titleBlock) {
+            return;
+        }
+        expect(within(titleBlock).getByRole("link", { name: "Edit program" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Edit Week 1" })).toHaveProperty(
+            "disabled",
+            true,
+        );
+    });
+
+    it("splits file export into a dropdown beside Export Week N", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        expect(screen.getByRole("button", { name: "Export Week 1" })).toBeTruthy();
+        expect(
+            screen.getByRole("button", { name: "Export as PDF or spreadsheet" }),
+        ).toBeTruthy();
+        expect(screen.queryByRole("button", { name: /^Export$/ })).toBeNull();
+    });
+
+    it("keeps Edit program under the title after Week Export and enables Edit Week N", () => {
+        const onEditCurrentWeek = vi.fn();
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={onEditCurrentWeek}
+            />,
+        );
+
+        const titleBlock = screen.getByRole("heading", { name: "Strength Block A" })
+            .parentElement?.parentElement;
+        expect(titleBlock).toBeTruthy();
+        if (!titleBlock) {
+            return;
+        }
+        expect(within(titleBlock).getByRole("link", { name: "Edit program" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Export Week 2" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Edit Week 1" })).toHaveProperty(
+            "disabled",
+            false,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Edit Week 1" }));
+        expect(onEditCurrentWeek).toHaveBeenCalledTimes(1);
+    });
+
+    it("hides Edit Week N when there is no Current week", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                completedWeeks={[1]}
+            />,
+        );
+
+        expect(screen.queryByRole("button", { name: /Edit Week/ })).toBeNull();
+        expect(screen.getByRole("link", { name: "Edit program" })).toBeTruthy();
     });
 });

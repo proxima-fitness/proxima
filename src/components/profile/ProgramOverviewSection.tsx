@@ -100,7 +100,7 @@ export function ProgramOverviewSection() {
                     icon={<Layers className="size-4 shrink-0 opacity-80" aria-hidden />}
                     title="Program overview"
                     action={
-                        user ? (
+                        user && (isLoading || activePrograms.length > 0) ? (
                             <div className="flex flex-wrap items-center justify-end gap-2">
                                 {selectedProgram &&
                                 selectedProgram.user_id === user.id ? (
@@ -108,22 +108,18 @@ export function ProgramOverviewSection() {
                                         programId={selectedProgram.id}
                                     />
                                 ) : null}
-                                <Link
-                                    href="/build-program?empty=true"
-                                    className="shrink-0"
-                                    target="_self"
-                                    rel="noopener noreferrer"
+                                <Button
+                                    type="button"
+                                    variant="link"
+                                    size="sm"
+                                    className="h-auto px-0 text-xs font-normal text-muted-foreground"
+                                    asChild
                                 >
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-full border-border/80"
-                                    >
+                                    <Link href="/build-program?empty=true">
+                                        <Plus className="size-3" aria-hidden />
                                         New program
-                                        <Plus className="size-4" aria-hidden />
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </div>
                         ) : null
                     }

@@ -643,7 +643,7 @@ _Avoid_: Added day, local routine
 ### Removed routine (Sync)
 
 
-A routine whose Hevy routine ID is in `initialRoutineIds` but no longer appears in builder state. Sync clears it in Hevy via PUT, update title and remove all exercises. Hevy API does not support DELETE on routines.
+A routine whose Hevy routine ID is in `initialRoutineIds` but no longer appears in builder state. Sync PUTs it in Hevy: `[Removed]` title plus one placeholder exercise. Hevy PUT rejects `exercises: []` (HTTP 400: array must contain at least 1 element). Hevy API does not support DELETE on routines.
 
 
 _Avoid_: Orphan, deleted day (ambiguous with UI action), hard delete
@@ -654,7 +654,7 @@ _Avoid_: Orphan, deleted day (ambiguous with UI action), hard delete
 ### Emptied routine (Hevy)
 
 
-A routine left in the Hevy folder with no exercises after Sync removed it from the builder program. Title set to `[Removed]` plus the original title (any existing `[Removed]` prefix stripped first). Skip the empty PUT when Hevy already matches that state. The prefix is the sole signal for an emptied routine. An exercise-less routine without the prefix may be a day the user is still building.
+A routine left in the Hevy folder after Sync removed it from the builder program. Title set to `[Removed]` plus the original title (any existing `[Removed]` prefix stripped first). Notes (Hevy description) set to "You marked this routine for removal in Proxima. You can now delete this routine." Hevy keeps one placeholder set of the first remaining exercise because PUT rejects an empty `exercises` array. Skip the empty PUT when Hevy already matches that state. The prefix is the sole signal for an emptied routine. An exercise-less routine without the prefix may be a day the user is still building.
 
 
 _Avoid_: Deleted routine, archived folder, empty routine
