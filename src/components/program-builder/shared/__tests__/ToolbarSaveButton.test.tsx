@@ -16,7 +16,7 @@ describe("ToolbarSaveButton", () => {
         render(<ToolbarSaveButton onClick={() => undefined} disabled={false} isSaving={false} />);
 
         expect(screen.getByRole("button", { name: "Save program" })).toBeTruthy();
-        expect(screen.getByText("Save")).toBeTruthy();
+        expect(screen.getByText("Save").className).toContain("hidden");
     });
 
     it("labels Sync on Edit current week and Hevy-only Edit", () => {
@@ -31,7 +31,7 @@ describe("ToolbarSaveButton", () => {
         );
 
         expect(screen.getByRole("button", { name: "Sync" })).toBeTruthy();
-        expect(screen.getByText("Sync")).toBeTruthy();
+        expect(screen.getByText("Sync").className).not.toContain("hidden");
         expect(screen.queryByRole("button", { name: "Save program" })).toBeNull();
 
         fireEvent.click(screen.getByRole("button", { name: "Sync" }));
