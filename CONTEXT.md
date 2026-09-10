@@ -608,7 +608,7 @@ _Avoid_: Post-sync cache, keep local state, in-builder reload, confetti
 ### Sync dialog
 
 
-Dedicated `SyncDialog` for Edit mode. Confirmation with empty / update / add counts, inline progress with rate-limit retry (same pattern as Export), and **Rollback to previous version** when operations fail. Leave-guard **Sync and Continue** opens the same dialog in progress-only mode (counts already shown in the leave dialog). Toolbar Sync uses the full confirm step first.
+Dedicated `SyncDialog` for Edit mode. Confirmation with empty / update / add counts, inline progress with rate-limit retry (same pattern as Export), and **Rollback to previous version** when operations fail. Leave-guard **Sync and Continue** opens the same dialog in progress-only mode. Toolbar Sync uses the full confirm step first.
 
 
 _Avoid_: Export dialog, save dialog
@@ -740,10 +740,10 @@ _Avoid_: Dual-write forever after Save, Edit session payload, treating draft as 
 ### Edit navigation guard
 
 
-When the user has unsaved Edit-mode changes and tries to leave the builder, including switching New ↔ Edit in the mode menu, block in-app navigation and show a dialog with a Sync change summary (empty / update / add counts), **Sync and Continue** (run Sync progress immediately, then navigate to the user's original destination on success), **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data), and **Cancel** (stay in builder). Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty. It cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`. The next Edit entry always loads from the profile routines fetch.
+When the user has unsaved Edit-mode changes and tries to leave the builder, including switching New ↔ Edit in the mode menu, block in-app navigation and show a dialog with **Sync and Continue** (run Sync progress immediately, then navigate to the user's original destination on success) and **Discard** (drop local changes and navigate without touching Hevy or invalidating cached profile data). Dismiss (X) stays in the builder. Implemented via `useEditLeaveGuard()` (`beforeunload` + `guardNavigation()` on documented exit points: sidebar, breadcrumbs, mode menu, etc.). Tab close or refresh uses the browser `beforeunload` prompt when dirty. It cannot offer Sync. Edit mode never resumes from `hevy-program-in-progress`. The next Edit entry always loads from the profile routines fetch.
 
 
-_Avoid_: Unsaved changes warning (too generic), Save and Continue (Save is prescription persist)
+_Avoid_: Unsaved changes warning (too generic), Save and Continue (Save is prescription persist), Sync change summary in the leave dialog
 
 
 

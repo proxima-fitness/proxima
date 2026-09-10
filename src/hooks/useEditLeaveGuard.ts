@@ -3,11 +3,12 @@
  *
  * **Edit navigation guard** (ADR 0013 / 07). Dirty Edit sessions block in-app
  * leave. **Sync and Continue** reuses SP4 `runSync` then the pending href.
- * Discard navigates without a Hevy write. `beforeunload` is the browser prompt
- * only — it cannot Sync.
+ * Discard navigates without a Hevy write. Dismiss (X) stays in the builder.
+ * `beforeunload` is the browser prompt only — it cannot Sync.
  *
  * Dirty SoT is the post-hydrate undo stack (grid edits, agent patches, undo).
- * Mirrored silently into {@link editLeaveGuard} like New path.
+ * Mirrored silently into {@link editLeaveGuard} like New path. Dialog copy
+ * lives on the guard; ConfirmDialog renders it.
  *
  * Depends on: create-leave-guard
  * Used by: BuildProgram, AppSidebar, BuildProgramModeMenu
@@ -16,18 +17,6 @@
 "use client";
 
 import { createLeaveGuard, newPathLeaveGuard } from "@/hooks/create-leave-guard";
-
-export type TEditLeaveCounts = {
-    add: number;
-    empty: number;
-    update: number;
-};
-
-export const EMPTY_EDIT_LEAVE_COUNTS: TEditLeaveCounts = {
-    add: 0,
-    empty: 0,
-    update: 0,
-};
 
 export const editLeaveGuard = createLeaveGuard({
     title: "Leave without syncing?",
@@ -50,23 +39,6 @@ export function isEditLeaveDirty(
     undoStackLength: number,
 ): boolean {
     return isHevyEditArrival && undoStackLength > 0;
-}
-
-/**
- * Empty / update / add counts for the leave dialog (CONTEXT labels; PUT/POST).
- *
- * @param plan - {@link buildSyncPlan} result
- */
-export function editLeaveCountsFromPlan(plan: {
-    empty: readonly unknown[];
-    post: readonly unknown[];
-    put: readonly unknown[];
-}): TEditLeaveCounts {
-    return {
-        add: plan.post.length,
-        empty: plan.empty.length,
-        update: plan.put.length,
-    };
 }
 
 /**

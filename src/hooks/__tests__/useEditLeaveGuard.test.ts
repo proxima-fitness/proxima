@@ -8,7 +8,6 @@ import { act, cleanup, renderHook } from "@testing-library/react";
 
 import { newPathLeaveGuard } from "../create-leave-guard";
 import {
-    editLeaveCountsFromPlan,
     editLeaveGuard,
     isEditLeaveDirty,
     requestBuilderLeave,
@@ -21,18 +20,6 @@ describe("isEditLeaveDirty", () => {
         expect(isEditLeaveDirty(true, 1)).toBe(true);
         expect(isEditLeaveDirty(true, 0)).toBe(false);
         expect(isEditLeaveDirty(false, 3)).toBe(false);
-    });
-});
-
-describe("editLeaveCountsFromPlan", () => {
-    it("maps empty / PUT / POST lengths to empty / update / add", () => {
-        expect(
-            editLeaveCountsFromPlan({
-                empty: [{}, {}],
-                put: [{}],
-                post: [],
-            }),
-        ).toEqual({ empty: 2, update: 1, add: 0 });
     });
 });
 

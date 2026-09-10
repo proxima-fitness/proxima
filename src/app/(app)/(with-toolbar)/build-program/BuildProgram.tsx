@@ -45,7 +45,6 @@ import {
 } from "@/components/program-builder/api/hevy";
 import {
     buildRollbackPlan,
-    buildSyncPlan,
     executeHevySyncPlan,
     syncProgramToHevy,
     type TSyncResult,
@@ -54,12 +53,9 @@ import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/c
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { SyncProgressDialog, type TSyncDialogPhase, type TSyncProgress } from "@/components/program-builder/shared/SyncProgressDialog";
-import { EditLeaveDialog } from "@/components/program-builder/shared/EditLeaveDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
 import {
-    EMPTY_EDIT_LEAVE_COUNTS,
-    editLeaveCountsFromPlan,
     editLeaveGuard,
     isEditLeaveDirty,
     resolveSyncLeaveHref,
@@ -591,16 +587,6 @@ function BuildProgramShell({
         onLeaveDialogOpenChange: onEditLeaveDialogOpenChange,
         onDiscardLeave: onDiscardEditLeave,
     } = useEditLeaveGuard();
-    const editLeaveCounts = editLeaveDialogOpen && editSession
-        ? editLeaveCountsFromPlan(
-            buildSyncPlan({
-                workingRoutines: orderedProgram,
-                initialHevyProgram: editSession.initialHevyProgram,
-                initialRoutineIds: editSession.initialRoutineIds,
-                completedHevyRoutineIds,
-            }),
-        )
-        : EMPTY_EDIT_LEAVE_COUNTS;
 
     const chat = useBuildProgramChat({
         user,
@@ -813,9 +799,8 @@ function BuildProgramShell({
 
     const handleSyncAndContinue = useCallback(() => {
         const href = resolveSyncLeaveHref(editLeavePendingHref);
-        onEditLeaveDialogOpenChange(false);
         void handleSync(href);
-    }, [editLeavePendingHref, handleSync, onEditLeaveDialogOpenChange]);
+    }, [editLeavePendingHref, handleSync]);
 
     const handleDiscardEditLeave = useCallback(() => {
         onDiscardEditLeave();
@@ -1040,13 +1025,18 @@ function BuildProgramShell({
                 onRollback={() => { void handleRollback(); }}
                 onOpenChange={setSyncDialogOpen}
             />
-            <EditLeaveDialog
+            <ConfirmDialog
                 open={editLeaveDialogOpen}
-                counts={editLeaveCounts}
-                discardHref={editLeavePendingHref}
-                onDiscard={handleDiscardEditLeave}
-                onSyncAndContinue={handleSyncAndContinue}
                 onOpenChange={onEditLeaveDialogOpenChange}
+                title={editLeaveGuard.title}
+                description={editLeaveGuard.description}
+                hideCancel
+                confirmLabel="Discard"
+                confirmHref={editLeavePendingHref ?? undefined}
+                onConfirm={handleDiscardEditLeave}
+                secondaryLabel="Sync and Continue"
+                secondaryClassName="bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                onSecondary={handleSyncAndContinue}
             />
         </ProgramMutationProvider>
     );
