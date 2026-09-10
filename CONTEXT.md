@@ -216,10 +216,10 @@ _Avoid_: Reviving My Hevy Programs / Hevy folders as a top-level profile card
 ### New path
 
 
-Create and progress a **Proxima program**: build → **Save** to Supabase → Program overview → export via overview dropdown (**Week Export** to Hevy one week at a time; PDF / spreadsheet still available) → optional **AI week suggest** between weeks. No Export control on the program builder. All former builder export methods live only on the Program overview (profile). Not the **Edit path**.
+Create and progress a **Proxima program**: build → **Save** → **Start** → **Program overview** → **Week Export** week 1 (then the week loop). PDF / spreadsheet still live on overview. The builder has no Export control and does not mention Export or **Week Export**. Not the **Edit path**.
 
 
-_Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-all-to-Hevy workflow, builder Export button
+_Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-all-to-Hevy workflow, builder Export button, teaching **Week Export** in the builder
 
 
 
@@ -227,10 +227,21 @@ _Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-
 ### Save (New path)
 
 
-Persist the builder's **Program prescription** to Supabase. The one top-right toolbar button labeled Save. Does not push to Hevy. First **New path** Save INSERTs a new **Proxima program**; toast then directs to profile to **Week Export** week 1. **Edit program** Save UPDATEs that same program (owner only). On **Edit current week** that same button runs **Sync** instead; it does not write the prescription.
+Persist the builder's **Program prescription** to Supabase. Toolbar button labeled **Save** on **New path** and **Edit program**. Does not push to Hevy. First **New path** Save INSERTs a new **Proxima program**; later **Edit program** Save UPDATEs that same program (owner only). Success toast is `Saved`. Once a program exists and it has no **Program–Hevy link**, **Start** sits beside **Save**. This is not the persist control on **Edit current week**.
 
 
-_Avoid_: A second toolbar persist button (the old Sync control), using this operation on **Edit current week**, Update program, Export, treating **Edit program** Save as a fork
+_Avoid_: A second toolbar persist button, using this operation on **Edit current week**, Update program, Export, treating **Edit program** Save as a fork, auto-navigating to profile, a toast that names Export or **Week Export**
+
+
+
+
+### Start
+
+
+Toolbar control (arrow) beside **Save** on **New path**, **Make into a program**, and **Edit program** after a **Proxima program** exists and that program has no **Program–Hevy link**. Opens that program's **Program overview**. Hidden on an unsaved grid and after the first **Week Export**. Not shown on **Edit current week** or Hevy-only **Edit**. Does not **Week Export**.
+
+
+_Avoid_: Open profile, builder **Week Export** / Export, auto-navigate on **Save**, a banner, showing it before the program is Saved, keeping it after the first **Week Export**
 
 
 
@@ -304,10 +315,10 @@ _Avoid_: Edit mode (UI label only), Edit arrival (entry mechanic), assuming ever
 ### Edit current week
 
 
-**Edit path** entry that loads the **Current week**'s live **Hevy week copy** into the builder, not that week's **Program prescription** slot. Toolbar **Save** on this entry runs **Sync** (Hevy only). A day that already has a **Workout** is shown, locked (same lock as while the agent is streaming), and marked done; it is not edited. The **Program prescription** is changed through **Edit program**. Offered for the **Current week** only. After **Week complete**, that week is done in Hevy; the next Hevy write is **Week Export** of N+1.
+**Edit path** entry that loads the **Current week**'s live **Hevy week copy** into the builder, not that week's **Program prescription** slot. Toolbar persist on this entry is labeled **Sync** and runs **Sync** (Hevy only). A day that already has a **Workout** is shown, locked (same lock as while the agent is streaming), and marked done; it is not edited. The **Program prescription** is changed through **Edit program**. Offered for the **Current week** only. After **Week complete**, that week is done in Hevy; the next Hevy write is **Week Export** of N+1.
 
 
-_Avoid_: Edit mode (too broad), a second Sync toolbar button, writing the prescription from this entry, editing a **Day complete** or **Week complete** routine, using Sync to fix logged **Workouts**
+_Avoid_: Edit mode (too broad), a second persist toolbar button, labeling this control **Save**, writing the prescription from this entry, editing a **Day complete** or **Week complete** routine, using Sync to fix logged **Workouts**, showing **Start** on this entry
 
 
 
@@ -373,7 +384,7 @@ _Avoid_: Calling a Workout a routine, implying the planned routine was deleted
 Push one week of a **Proxima program** to Hevy as a new folder + **Hevy routines**, and write that week's **Program–Hevy link**. Week N+1 requires week N **Week complete**. **Re-Export** is allowed only when that week is already linked, is not **Week complete**, and is not the **Current week** (a later unused copy after an earlier week re-opened). The **Current week** is updated with **Edit current week** Sync, never a second Export. A **Week complete** week cannot be Exported again, even if the Hevy folder is gone.
 
 
-_Avoid_: Re-Export of **Current week** or a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete
+_Avoid_: Re-Export of **Current week** or a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
 
 
 
@@ -381,10 +392,10 @@ _Avoid_: Re-Export of **Current week** or a complete week, Export N+1 while an e
 ### Hevy export gate
 
 
-In-chat multi-step UI opened when the user asks to push a program to Hevy but is missing account or Hevy connection prerequisites (sign in, then Hevy API key, skip steps already done). Unblocks those gates only. Does not **Save**, does not run **Week Export**, and does not replace toolbar / **Program overview** shell. Distinct from the **Questionnaire gate**. If that gate is active, do not open this one. Tell the user to dismiss or complete the questionnaire before attempting to export to Hevy.
+In-chat multi-step UI opened when the user asks to push a program to Hevy but is missing account or Hevy connection prerequisites (sign in, then Hevy API key, skip steps already done). Unblocks those gates only. Does not **Save**, does not **Start**, does not run **Week Export**. Builder-visible copy (including the system prompt) never names Export or **Week Export**; next chrome is **Save** then **Start** (or **Start** if already Saved). Distinct from the **Questionnaire gate**. If that gate is active, do not open this one; tell them to finish or dismiss the questions first.
 
 
-_Avoid_: Chat gate card, action surface, agent export, in-chat Week Export, injecting Hevy API key secrets into the agent, replacing an open Questionnaire gate
+_Avoid_: Chat gate card, action surface, agent export, in-chat Week Export, builder Export, “don’t click Export”, injecting Hevy API key secrets into the agent, replacing an open Questionnaire gate
 
 
 
@@ -392,10 +403,10 @@ _Avoid_: Chat gate card, action surface, agent export, in-chat Week Export, inje
 ### Hevy write quota
 
 
-Renamed/replaced monthly full-program export limits. **Save** and in-Proxima prescription edits are unlimited. Meter charges every successful Hevy write: **Week Export**, **Edit current week** Sync, and Hevy-only **Edit path** Sync (no Proxima program). Week 1 **Week Export** per program is free. Later Week Exports and all Syncs count. Tier numbers updated when the limit is renamed.
+Not a product cap. **Week Export**, **Re-Export**, **Edit current week** Sync, Hevy-only Sync, and **Save** do not consume usage. A signed-in user can run the week loop for free with manual **Edit program** / **Edit current week**. Paid usage is LLM chat and **Blind Spot** depth. The old monthly export limit is removed.
 
 
-_Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole via **Hevy mirror** / Hevy-only Edit, "monthly exports" full-program wording
+_Avoid_: Monthly exports, charging Hevy writes, week-1-free as an exception, Sync-free loophole, a second Hevy meter beside LLM
 
 
 
@@ -403,7 +414,7 @@ _Avoid_: Week Export quota (too narrow), charging for Save, Sync-free loophole v
 ### Usage period
 
 
-The calendar month (UTC) that one `feature_usage` row counts. One row per user per month, keyed `(user_id, period_start)` where `period_start` is the 1st. The row is created lazily by the first metered action that month, so an **absent row means zero used** and quota resets with no scheduled job. `get_my_feature_limits` reads only the current period's row and returns `resets_on` (the 1st of next month), surfaced in copy only when the user is out of usage. Anonymous users have no usage period. Their localStorage counter is lifetime. Not the Stripe billing period. Free users have no subscription, and Stripe period columns move between sync-engine versions.
+The calendar month (UTC) that one `feature_usage` row counts. One row per user per month, keyed `(user_id, period_start)` where `period_start` is the 1st. The row is created lazily by the first metered LLM action that month, so an **absent row means zero used** and quota resets with no scheduled job. Hevy writes do not create or increment a period row. `get_my_feature_limits` reads only the current period's row and returns `resets_on` (the 1st of next month), surfaced in copy only when the user is out of usage. Anonymous users have no usage period. Their localStorage counter is lifetime. Not the Stripe billing period. Free users have no subscription, and Stripe period columns move between sync-engine versions.
 
 
 _Avoid_: Billing period (Stripe-anchored), monthly reset (implies a cron job), lifetime usage (pre-migration behaviour), showing the reset date before the user is blocked
@@ -425,10 +436,10 @@ _Avoid_: Workout history backup (different pipeline), Sync (Edit-path Hevy push)
 ### AI week suggest
 
 
-After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** when the user opens the **Program overview** (or expands the suggest panel). Not on mark-complete and not on Export click. Cached once per program + completed week (`program_week_suggestions`). Remount / reopen returns cache (no monthly LLM meter, company-borne). User may one-click apply into the **Program prescription** for week N+1, or skip and **Week Export** as-is. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
+After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** on first expand of the suggest panel, not on mark-complete or Export click. Cached once per program + completed week. Cache miss with remaining LLM: successful generate consumes one unit (same meter as chat). Cache miss at 0 remaining: still generate, cache the full row, return a truncated summary and no changes (Apply replaced by Upgrade). Unlock is remaining > 0: full cache, no regenerate, no consume. A row that already consumed a unit always returns full, even if remaining is later 0. Apply, skip, cache hit, and failed generate do not consume. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
 
 
-_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation, billing week-suggest against monthly LLM quota
+_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation, company-borne suggest for users who still have credits, a second suggest meter, charging both generate and apply, CSS blur of a full payload, regenerating a cached row after checkout
 
 
 
@@ -555,10 +566,10 @@ _Avoid_: id (when meaning Hevy), routine id (ambiguous), UUID dnd key, leaving t
 ### Sync (Edit mode)
 
 
-Hevy write from **Edit path**: empty removed **Hevy routines**, PUT updated ones, POST new ones. The toolbar button labeled Save runs this on **Edit current week** and on Hevy-only Edit (no **Proxima program**). **Edit current week** also rewrites that week's live **Hevy routine IDs** on the **Program–Hevy link**. Hevy-only has no link. Does not write the **Program prescription**.
+Hevy write from **Edit path**: empty removed **Hevy routines**, PUT updated ones, POST new ones. The toolbar button labeled **Sync** runs this on **Edit current week** and on Hevy-only Edit (no **Proxima program**). **Edit current week** also rewrites that week's live **Hevy routine IDs** on the **Program–Hevy link**. Hevy-only has no link. Does not write the **Program prescription**. Successful **Sync** navigates to profile.
 
 
-_Avoid_: Week Export, Save (Supabase prescription), a second Sync button, DELETE, a separate Hevy-only engine
+_Avoid_: Week Export, Save (Supabase prescription), labeling this control **Save**, a second persist button, DELETE, a separate Hevy-only engine
 
 
 
