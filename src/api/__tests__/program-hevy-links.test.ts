@@ -7,6 +7,7 @@ import {
     getProgramHevyWeekLinks,
     markProgramWeekComplete,
     markProgramWeeksComplete,
+    updateProgramHevyWeekRoutineIds,
     upsertProgramHevyWeekLink,
     type TUpsertProgramHevyWeekLinkInput,
 } from "../program-hevy-links";
@@ -335,5 +336,35 @@ describe("program-hevy-links helpers", () => {
         await expect(markProgramWeekComplete(PROGRAM_ID, 9, asDb(mock))).rejects.toThrow(
             /No Program–Hevy link/,
         );
+    });
+
+    it("updateProgramHevyWeekRoutineIds rewrites IDs on the existing row", async () => {
+        await upsertProgramHevyWeekLink(
+            input({
+                nthWeek: 1,
+                hevyFolderId: 1001,
+                hevyRoutineIds: ["old-a", "old-b"],
+            }),
+            asDb(mock),
+        );
+
+        const updated = await updateProgramHevyWeekRoutineIds(
+            PROGRAM_ID,
+            1,
+            ["live-a"],
+            asDb(mock),
+        );
+
+        expect(updated.hevy_routine_ids).toEqual(["live-a"]);
+        expect(updated.hevy_folder_id).toBe(1001);
+        expect(mock.rows).toHaveLength(1);
+        expect(mock.rows[0]?.hevy_routine_ids).toEqual(["live-a"]);
+    });
+
+    it("updateProgramHevyWeekRoutineIds throws when the week has no link", async () => {
+        await expect(
+            updateProgramHevyWeekRoutineIds(PROGRAM_ID, 1, ["r1"], asDb(mock)),
+        ).rejects.toThrow(/No Program–Hevy link/);
+        expect(mock.rows).toHaveLength(0);
     });
 });

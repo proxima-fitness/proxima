@@ -16,7 +16,7 @@
  * Depends on: hevy_export (convertHevyOutputIntoInput), @/api/index (supabase),
  *             @/api/custom-movements (minting imported share customs),
  *             @/components/program-builder/utils (getMaxFolderId), uuid
- * Used by: program-builder UI components, Agent chat flow, API routes
+ * Used by: program-builder UI components, Agent chat flow, API routes, hevy_sync
  */
 import { v4 as uuidv4 } from "uuid";
 import { validate as validateUuid } from "uuid";
@@ -855,12 +855,14 @@ export type THevyUploadProgressCallback = (
  * @param ms - Milliseconds to wait before resolving
  * @returns A promise that resolves after the specified delay
  */
-export const delay = (ms: number) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export const delay = (ms: number): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 };
 
 /** Runs waitSeconds delay while calling onProgress every second with countdown (waitSeconds down to 0). */
-async function delayWithRateLimitCountdown(
+export async function delayWithRateLimitCountdown(
     uploaded: number,
     total: number,
     onProgress?: THevyUploadProgressCallback,
@@ -2288,13 +2290,17 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
  * @param apiKey - The hevy api key
  * @returns The updated routine
  */
-export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
+export const putRoutine = async (
+    routineId: string,
+    updateRoutine: Omit<THevyRoutineRequest, "folder_id"> & { folder_id?: number | null },
+    apiKey: string,
+) => {
 
-    const body: THevyRoutineRequestObject = {
+    const body = {
         routine: updateRoutine,
     };
 
-    const response = await defaultPut<THevyRoutineRequest, THevyRoutineRequestObject>(
+    const response = await defaultPut<typeof updateRoutine, typeof body>(
         `https://api.hevyapp.com/v1/routines/${routineId}`,
         apiKey,
         body,
@@ -2302,6 +2308,33 @@ export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineR
 
     return response;
 };
+
+/**
+ * Empties a Hevy routine in place (no DELETE). Title becomes `[Removed] {original}`,
+ * exercises are cleared, notes are a non-empty space so Hevy accepts the PUT.
+ *
+ * @param routineId - Hevy routine UUID
+ * @param originalTitle - Title before emptying; existing `[Removed] ` is stripped first
+ * @param apiKey - User's Hevy API key
+ */
+export async function emptyRoutineOnHevy(
+    routineId: string,
+    originalTitle: string,
+    apiKey: string,
+): Promise<unknown> {
+    const stripped = originalTitle.startsWith("[Removed] ")
+        ? originalTitle.slice("[Removed] ".length)
+        : originalTitle;
+    return putRoutine(
+        routineId,
+        {
+            title: `[Removed] ${stripped}`,
+            notes: " ",
+            exercises: [],
+        },
+        apiKey,
+    );
+}
 
 /**
  * APPENDS "  ✅" TO THE ROUTINE TITLE OF A COMPLETED ROUTINE

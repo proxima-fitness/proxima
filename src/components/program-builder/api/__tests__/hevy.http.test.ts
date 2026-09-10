@@ -4,7 +4,7 @@ vi.mock("@/api/index", () => ({
     supabase: {},
 }));
 
-import { defaultFetch, defaultPost, defaultPut, parsePostCustomExerciseBody, postHevyCustomExercise } from "../hevy";
+import { defaultFetch, defaultPost, defaultPut, emptyRoutineOnHevy, parsePostCustomExerciseBody, postHevyCustomExercise } from "../hevy";
 
 describe("Hevy HTTP helpers", () => {
     const url = "https://api.hevyapp.com/v1/test";
@@ -76,6 +76,23 @@ describe("Hevy HTTP helpers", () => {
         expect(headers["Content-Type"]).toBe("application/json");
         expect(headers.Accept).toBe("application/json");
         expect(headers["api-key"]).toBe(apiKey);
+    });
+
+    it("emptyRoutineOnHevy PUTs a [Removed] title with empty exercises and no folder_id", async () => {
+        await emptyRoutineOnHevy("routine-1", "1 - Push", apiKey);
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        const call = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+        expect(call[0]).toBe("https://api.hevyapp.com/v1/routines/routine-1");
+        const init = call[1] as RequestInit;
+        expect(init.method).toBe("PUT");
+        expect(JSON.parse(init.body as string)).toEqual({
+            routine: {
+                title: "[Removed] 1 - Push",
+                notes: " ",
+                exercises: [],
+            },
+        });
     });
 });
 

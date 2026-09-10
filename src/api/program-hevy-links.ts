@@ -6,7 +6,8 @@
  * Week complete = `completed_at` set (ADR 0011).
  *
  * Depends on: @supabase/supabase-js, @/hooks/supabase, ./index
- * Used by: Week Export (`exportProgramWeekToHevy`), Program overview (ADR 0010 / 0011)
+ * Used by: Week Export (`exportProgramWeekToHevy`), Program overview (ADR 0010 / 0011),
+ *          Sync (`hevy_sync`, ADR 0013 / 03)
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
@@ -59,9 +60,10 @@ export async function getProgramHevyWeekLinks(
 export async function getProgramHevyWeekLink(
     programId: number,
     nthWeek: number,
-    client: TSupabase = supabase,
+    client?: TSupabase,
 ): Promise<TProgramHevyWeekLink | null> {
-    const { data, error } = await client
+    const db = client ?? supabase;
+    const { data, error } = await db
         .from("program_hevy_week_links")
         .select("*")
         .eq("program_id", programId)
@@ -133,6 +135,44 @@ export async function upsertProgramHevyWeekLink(
 
     if (!data) {
         throw new Error("Upsert returned no Program–Hevy link row");
+    }
+
+    return data;
+}
+
+/**
+ * Rewrites live `hevy_routine_ids` on an existing Program–Hevy link.
+ * Sync uses this after successful Hevy writes. Does not insert a week row.
+ *
+ * @param programId - Proxima program id
+ * @param nthWeek - 1-based week number (must already have a link)
+ * @param hevyRoutineIds - Compact planned Hevy routine IDs in builder order
+ * @param client - Supabase client (browser by default)
+ * @returns Updated link row
+ */
+export async function updateProgramHevyWeekRoutineIds(
+    programId: number,
+    nthWeek: number,
+    hevyRoutineIds: string[],
+    client?: TSupabase,
+): Promise<TProgramHevyWeekLink> {
+    const db = client ?? supabase;
+    const { data, error } = await db
+        .from("program_hevy_week_links")
+        .update({ hevy_routine_ids: hevyRoutineIds })
+        .eq("program_id", programId)
+        .eq("nth_week", nthWeek)
+        .select("*")
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    if (!data) {
+        throw new Error(
+            `No Program–Hevy link for program ${programId} week ${nthWeek}`,
+        );
     }
 
     return data;
