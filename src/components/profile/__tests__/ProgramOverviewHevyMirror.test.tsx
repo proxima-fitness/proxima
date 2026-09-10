@@ -46,6 +46,7 @@ function makeLink(
         nth_week: overrides.nth_week,
         hevy_folder_id: overrides.hevy_folder_id,
         hevy_routine_ids: overrides.hevy_routine_ids ?? ["a"],
+        completed_at: overrides.completed_at ?? null,
         created_at: "2026-01-01",
         updated_at: "2026-01-01",
     };
@@ -162,7 +163,7 @@ describe("ProgramOverviewHevyMirror", () => {
         );
 
         // No incomplete linked week → no Current row, so it sits behind the disclosure.
-        fireEvent.click(screen.getByRole("button", { name: /Expand other weeks/i }));
+        fireEvent.click(screen.getByRole("button", { name: /Expand other folders in Hevy/i }));
         fireEvent.click(screen.getByRole("button", { name: /Edit/i }));
         expect(navigateToEdit).toHaveBeenCalledWith(completed, {});
     });
@@ -188,7 +189,7 @@ describe("ProgramOverviewHevyMirror", () => {
         expect(screen.queryByText("Extra Split")).toBeNull();
 
         fireEvent.click(
-            screen.getByRole("button", { name: /Expand other weeks in Hevy/i }),
+            screen.getByRole("button", { name: /Expand other folders in Hevy/i }),
         );
 
         expect(screen.getByText("Week 1 - Strength")).toBeTruthy();
@@ -205,7 +206,7 @@ describe("ProgramOverviewHevyMirror", () => {
 
         expect(screen.getByText("Custom Split")).toBeTruthy();
         expect(screen.getByText(/2 routines/)).toBeTruthy();
-        expect(screen.queryByRole("button", { name: /other weeks in Hevy/i })).toBeNull();
+        expect(screen.queryByRole("button", { name: /other folders in Hevy/i })).toBeNull();
     });
 
     it("shows empty linked-state copy when no Hevy folders", () => {

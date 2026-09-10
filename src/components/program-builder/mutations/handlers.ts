@@ -12,6 +12,7 @@ import {
     sortHevyByOrder,
 } from "@/components/program-builder/utils/format-responses";
 
+import { normalizeRestSeconds } from "./normalizeHevyApiRoutine";
 import type { TInsertExercisePayload, TSwapExerciseTemplateMinimalTo } from "./schemas";
 import { toHevySet } from "./schemas";
 
@@ -333,7 +334,7 @@ export function addExercise(
             exercise_template_id: exercise?.selectedExercise?.id ?? "",
             supersets_id: null,
             sets,
-            rest_seconds: exercise?.restSeconds ?? null,
+            rest_seconds: normalizeRestSeconds(exercise?.restSeconds),
         };
 
         if (exerciseIndex === undefined || exerciseIndex === day.exercises.length) {
@@ -357,7 +358,7 @@ export function addExerciseFormToInsertPayload(exercise: THevyAddExercise): TIns
         exercise_template_id: exercise.selectedExercise?.id ?? "",
         title: exercise.selectedExercise?.title ?? "",
         notes: "",
-        rest_seconds: exercise.restSeconds ?? null,
+        rest_seconds: normalizeRestSeconds(exercise.restSeconds),
         sets: hevyAddExerciseToHevySetsConverter(exercise),
     };
 }

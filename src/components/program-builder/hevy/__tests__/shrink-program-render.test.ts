@@ -72,7 +72,9 @@ describe("shrink 8x4 program to 4x3", () => {
             if (result.ok) program = result.program;
         }
 
-        const weekIndexes = Array.from(new Set(program.map((d) => d.folder_id)));
+        const weekIndexes = Array.from(new Set(program.map((d) => d.folder_id))).filter(
+            (id): id is number => id != null,
+        );
         const deleteDay4 = applyOperations(program, [
             { op: "delete_day", folderIds: weekIndexes, dayOrder: 4 },
         ]);
@@ -116,20 +118,20 @@ describe("shrink 8x4 program to 4x3", () => {
     });
 
     it("normalizeProgramForGrid fills missing exercises/sets", () => {
-        const malformed = [
+        const malformed: object[] = [
             {
                 ...makeDay(1, 0, 1),
                 exercises: [{ ...makeExercise(), sets: undefined }],
             },
             { ...makeDay(2, 0, 2), exercises: undefined },
-        ] as THevyRoutine[];
-        const normalized = normalizeProgramForGrid(malformed);
+        ];
+        const normalized = normalizeProgramForGrid(malformed as THevyRoutine[]);
         expect(normalized[0].exercises[0].sets).toEqual([]);
         expect(normalized[1].exercises).toEqual([]);
     });
 
     it("normalizeProgramForGrid drops null exercises and coalesces title", () => {
-        const malformed = [
+        const malformed: object[] = [
             {
                 ...makeDay(1, 0, 1),
                 exercises: [
@@ -138,9 +140,20 @@ describe("shrink 8x4 program to 4x3", () => {
                     { ...makeExercise(), title: undefined },
                 ],
             },
-        ] as THevyRoutine[];
-        const normalized = normalizeProgramForGrid(malformed);
+        ];
+        const normalized = normalizeProgramForGrid(malformed as THevyRoutine[]);
         expect(normalized[0].exercises).toHaveLength(2);
         expect(normalized[0].exercises[1].title).toBe("");
+    });
+
+    it("normalizeProgramForGrid stringifies Hevy numeric rest_seconds", () => {
+        const hevyLoaded: object[] = [
+            {
+                ...makeDay(1, 0, 1),
+                exercises: [{ ...makeExercise(), rest_seconds: 90 }],
+            },
+        ];
+        const normalized = normalizeProgramForGrid(hevyLoaded as THevyRoutine[]);
+        expect(normalized[0].exercises[0].rest_seconds).toBe("90");
     });
 });

@@ -339,12 +339,12 @@ export function ProgramOverviewHevyMirror({
                         className="flex w-full items-center justify-between gap-2 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
                         aria-label={
                             othersOpen
-                                ? "Collapse other weeks in Hevy"
-                                : "Expand other weeks in Hevy"
+                                ? "Collapse other folders in Hevy"
+                                : "Expand other folders in Hevy"
                         }
                     >
                         <span>
-                            Other weeks in Hevy ({secondary.length})
+                            Other folders in Hevy ({secondary.length})
                         </span>
                         <ChevronRight
                             className={cn(

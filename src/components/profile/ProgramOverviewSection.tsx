@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { ProgramOverviewDebugReset } from "./ProgramOverviewDebugReset";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
 import {
@@ -100,22 +101,30 @@ export function ProgramOverviewSection() {
                     title="Program overview"
                     action={
                         user ? (
-                            <Link
-                                href="/build-program?empty=true"
-                                className="shrink-0"
-                                target="_self"
-                                rel="noopener noreferrer"
-                            >
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="rounded-full border-border/80"
+                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                {selectedProgram &&
+                                selectedProgram.user_id === user.id ? (
+                                    <ProgramOverviewDebugReset
+                                        programId={selectedProgram.id}
+                                    />
+                                ) : null}
+                                <Link
+                                    href="/build-program?empty=true"
+                                    className="shrink-0"
+                                    target="_self"
+                                    rel="noopener noreferrer"
                                 >
-                                    New program
-                                    <Plus className="size-4" aria-hidden />
-                                </Button>
-                            </Link>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-full border-border/80"
+                                    >
+                                        New program
+                                        <Plus className="size-4" aria-hidden />
+                                    </Button>
+                                </Link>
+                            </div>
                         ) : null
                     }
                 />

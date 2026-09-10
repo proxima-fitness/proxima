@@ -27,6 +27,7 @@ import Fuse from "fuse.js";
 import { toast } from "sonner";
 import { applyOperations } from "@/components/program-builder/mutations/apply";
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
+import { normalizeRestSeconds } from "@/components/program-builder/mutations/normalizeHevyApiRoutine";
 import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import {
     isHevyShareImportSuccess,
@@ -709,6 +710,7 @@ function exerciseNeedsGridNormalization(exercise: THevyExercise): boolean {
         exercise.notes === undefined ||
         exercise.exercise_template_id === undefined ||
         exercise.sets === undefined ||
+        normalizeRestSeconds(exercise.rest_seconds) !== exercise.rest_seconds ||
         sets.some((s) => s == null)
     );
 }
@@ -720,7 +722,7 @@ function normalizeExerciseForGrid(exercise: THevyExercise): THevyExercise {
         notes: exercise.notes ?? "",
         exercise_template_id: exercise.exercise_template_id ?? "",
         supersets_id: exercise.supersets_id ?? null,
-        rest_seconds: exercise.rest_seconds ?? null,
+        rest_seconds: normalizeRestSeconds(exercise.rest_seconds),
         sets: (exercise.sets ?? []).filter((s): s is THevySets => s != null),
     };
 }

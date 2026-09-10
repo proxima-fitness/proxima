@@ -18,6 +18,7 @@
  */
 
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
+import { normalizeRestSeconds } from "@/components/program-builder/mutations/normalizeHevyApiRoutine";
 import { routineNotesForExport } from "@/lib/proximaExportAttribution";
 import { amrapAsNumber } from "@/utils/general/helpers";
 import * as Papa from "papaparse";
@@ -788,7 +789,7 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
             repRangeEnd,
             weightKg,
             rpe,
-            restSeconds: exercise.rest_seconds,
+            restSeconds: normalizeRestSeconds(exercise.rest_seconds),
             setTypes: sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
         };
     }
@@ -814,7 +815,7 @@ export const convertHevyExerciseIntoHevyAddExercise = async (exercise: THevyExer
         reps,
         weightKg,
         rpe,
-        restSeconds: exercise.rest_seconds,
+        restSeconds: normalizeRestSeconds(exercise.rest_seconds),
         setTypes: sets.map(set => (set.type) as ("normal" | "warmup" | "dropset" | "failure")),
     };
 };

@@ -128,6 +128,21 @@ describe("editExerciseFromDialog", () => {
         expect(next[0].exercises[0].sets).toHaveLength(3);
         expect(next[0].exercises[0].notes).toBe("Keep elbows tucked");
     });
+
+    it("stringifies numeric restSeconds from a Hevy-loaded dialog", () => {
+        const dialogExercise: object = {
+            selectedExercise: mockTemplate,
+            repTypeValue: "reps",
+            reps: [8, 8],
+            weightKg: null,
+            rpe: null,
+            setTypes: ["normal", "normal"],
+            restSeconds: 90,
+        };
+        const payload = addExerciseFormToInsertPayload(dialogExercise as THevyAddExercise);
+
+        expect(payload.rest_seconds).toBe("90");
+    });
 });
 
 describe("swapExerciseTemplate", () => {
