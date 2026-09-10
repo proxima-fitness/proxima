@@ -95,7 +95,7 @@ export function EditProfileContent() {
     }
 
     return (
-        <div className="min-h-screen bg-muted/30 px-3 py-6 text-foreground sm:px-4 sm:py-10">
+        <div className="min-h-screen bg-muted px-3 py-6 text-foreground sm:px-4 sm:py-10">
             <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
                 <div>
                     <Link

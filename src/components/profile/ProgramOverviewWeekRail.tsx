@@ -105,7 +105,7 @@ export function ProgramOverviewWeekRail({
                                         "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors",
                                         selected
                                             ? "bg-muted/50"
-                                            : "hover:bg-muted/30",
+                                            : "hover:bg-muted",
                                     )}
                                 >
                                     <span

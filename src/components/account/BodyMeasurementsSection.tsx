@@ -34,7 +34,7 @@ import {
 } from "./body-measurements-display";
 
 const INSET_GROUP_CLASS =
-    "overflow-visible rounded-lg border border-border/60 bg-muted/30";
+    "overflow-visible rounded-lg border border-border/60 bg-muted";
 
 interface ISettingsGroupProps {
     caption: string;

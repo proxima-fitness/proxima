@@ -72,7 +72,7 @@ export const MyProgramsVault = () => {
     if (!user) {
         return (
             <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
-                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted shadow-sm dark:border-white/10 dark:bg-card/40">
                     <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Authentication required</h2>
                     <p className="text-sm text-muted-foreground mb-6">
@@ -91,7 +91,7 @@ export const MyProgramsVault = () => {
     if (errorFetchingPrograms) {
         return (
             <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
-                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted shadow-sm dark:border-white/10 dark:bg-card/40">
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Couldn&apos;t load programs</h2>
                     <p className="text-sm text-muted-foreground">
                         An error occurred while fetching your saved programs. Please try again later.

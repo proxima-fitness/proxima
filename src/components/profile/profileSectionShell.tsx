@@ -11,9 +11,9 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** Outer profile section Card — roomy padding, single surface. */
+/** Outer profile section Card — white Hevy-style surface, no border or shadow. */
 export const PROFILE_SECTION_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6";
+    "rounded-2xl border-0 bg-card px-4 py-5 shadow-none dark:border dark:border-white/10 sm:px-6 sm:py-6";
 
 export type TProfileSectionHeaderProps = {
     id?: string;

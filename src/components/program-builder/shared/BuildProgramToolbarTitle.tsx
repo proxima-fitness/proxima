@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 /** ~width of “My Proxima Program”; wrapper is w-fit max-w-[20ch] */
 const TITLE_INPUT_CLASS =
-    "h-9 w-full min-w-0 rounded-lg border border-transparent bg-muted/30 px-2 text-center text-base font-semibold tracking-tight shadow-none transition-colors hover:bg-muted/45 focus-visible:border-border/60 focus-visible:bg-background sm:text-sm dark:bg-muted/20 dark:hover:bg-muted/35";
+    "h-9 w-full min-w-0 rounded-lg border border-transparent bg-muted px-2 text-center text-base font-semibold tracking-tight shadow-none transition-colors hover:bg-muted/45 focus-visible:border-border/60 focus-visible:bg-background sm:text-sm dark:bg-muted/20 dark:hover:bg-muted/35";
 
 const DESKTOP_MIN_WIDTH = "(min-width: 640px)";
 

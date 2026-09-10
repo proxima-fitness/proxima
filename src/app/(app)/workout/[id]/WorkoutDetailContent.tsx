@@ -74,7 +74,7 @@ export function WorkoutDetailContent({
 
     if (isUserLoading || (user && isLoading)) {
         return (
-            <div className={`min-h-[50vh] bg-muted/30 py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
+            <div className={`min-h-[50vh] bg-muted py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
                 <div className={`${styles.boxWidth} max-w-2xl`}>
                     <WorkoutDetailSkeleton />
                 </div>
@@ -84,7 +84,7 @@ export function WorkoutDetailContent({
 
     if (!user) {
         return (
-            <div className={`min-h-[50vh] bg-muted/30 py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
+            <div className={`min-h-[50vh] bg-muted py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
                 <Card className="max-w-md rounded-2xl px-6 py-12 text-center shadow-sm">
                     <h1 className="text-xl font-semibold tracking-tight">Sign in required</h1>
                     <p className="mt-2 text-sm text-muted-foreground">
@@ -107,7 +107,7 @@ export function WorkoutDetailContent({
 
     if (isError || !workout) {
         return (
-            <div className={`min-h-[50vh] bg-muted/30 py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
+            <div className={`min-h-[50vh] bg-muted py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter}`}>
                 <Card className="max-w-md rounded-2xl px-6 py-12 text-center shadow-sm">
                     <h1 className="text-xl font-semibold tracking-tight">Could not load workout</h1>
                     <p className="mt-2 text-sm text-muted-foreground">Please try again later.</p>
@@ -129,7 +129,7 @@ export function WorkoutDetailContent({
     const duration = formatWorkoutWallDuration(workout.started_at, workout.ended_at);
 
     return (
-        <div className={`min-h-[50vh] bg-muted/30 py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter} flex-col`}>
+        <div className={`min-h-[50vh] bg-muted py-8 max-sm:px-3 sm:px-12 md:px-16 lg:px-20 xl:px-24 ${styles.flexCenter} flex-col`}>
             <div className={`${styles.boxWidth} w-full max-w-2xl flex flex-col gap-6`}>
                 <Card className="rounded-2xl border border-border/60 bg-card px-5 py-6 shadow-sm sm:px-8">
                     <WorkoutDetailBackLink

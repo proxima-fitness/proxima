@@ -137,7 +137,7 @@ export function PrivacySettingsContent() {
     }
 
     return (
-        <div className="min-h-screen bg-background px-4 py-10 text-foreground">
+        <div className="min-h-screen bg-muted px-4 py-10 text-foreground">
             <div className="mx-auto max-w-2xl space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Privacy settings</h1>

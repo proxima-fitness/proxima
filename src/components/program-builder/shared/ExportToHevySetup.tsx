@@ -493,7 +493,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                 </span>
                             ) : (
                                 <span
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-xs font-medium text-muted-foreground"
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-medium text-muted-foreground"
                                     aria-hidden
                                 >
                                     1
@@ -593,7 +593,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     <AccordionTrigger className="hover:no-underline py-5">
                         <div className="flex items-center gap-3 text-left">
                             <span
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted/30 text-xs font-medium text-muted-foreground"
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-xs font-medium text-muted-foreground"
                                 aria-hidden
                             >
                                 2

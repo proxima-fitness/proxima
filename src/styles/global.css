@@ -570,7 +570,7 @@
     --primary-foreground: 60 9% 98%;
     --secondary: 60 5% 96%;
     --secondary-foreground: 24 10% 10%;
-    --muted: 60 5% 96%;
+    --muted: 210 33.333% 97.647%; /* #F7F9FB */
     --muted-foreground: 25 5% 45%;
     --accent: 60 5% 96%;
     --accent-foreground: 24 10% 10%;

@@ -3,15 +3,9 @@
 /**
  * @module (app)/profile/ProfileContent
  *
-<<<<<<< HEAD
  * Client profile body: single scroll on muted background — hero (when signed
  * in), Program overview first, then calendar/statistics, blind spot, recent
  * workouts (ADR 0010 / 05). Resume-draft banner sits above the stack.
-=======
- * Client profile body: Hevy-style card stack on muted background - header with Stats/Programs
- * tabs, then tab panels for statistics/blind-spot/recent workouts vs Hevy + vault programs.
- * Resume-draft banner sits above the card stack.
->>>>>>> main
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
  * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection,
@@ -54,7 +48,7 @@ export function ProfileContent() {
 
     return (
         <div
-            className={`min-h-screen bg-muted/30 py-8 ${PROFILE_PAGE_X} ${styles.flexCenter} flex-col`}
+            className={`min-h-screen bg-muted py-8 ${PROFILE_PAGE_X} ${styles.flexCenter} flex-col`}
         >
             <div className={`${styles.boxWidth} flex flex-col gap-4 pb-16`}>
                 <div className="flex w-full min-w-0 justify-center">
