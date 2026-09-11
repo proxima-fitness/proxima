@@ -19,7 +19,7 @@ const legalBody =
 /** Privacy policy page; static legal text. */
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-background px-4 py-10 text-foreground">
+        <div className="min-h-screen bg-muted px-4 py-10 text-foreground">
             <h1 className="mb-8 max-w-3xl mx-auto text-left text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 Privacy Policy
             </h1>

@@ -1,6 +1,17 @@
-/** Coerce Hevy API routine payloads into grid/mutation schema shape. */
+/**
+ * @module normalizeHevyApiRoutine
+ *
+ * Coerce Hevy API routine payloads into grid/mutation schema shape. Hevy's
+ * GET /v1/routines sends `rest_seconds` as a number; the builder stores it as
+ * a string (see THevyExercise).
+ *
+ * Depends on: nothing
+ * Used by: schemas (add_routine_as_day + insert/edit_exercise), handlers,
+ *          helpers (grid hydrate)
+ */
 
-function normalizeRestSeconds(value: unknown): string | null {
+/** Builder stores rest as a string (or null); Hevy GET /v1/routines sends a number. */
+export function normalizeRestSeconds(value: unknown): string | null {
     if (value === null || value === undefined) return null;
     if (typeof value === "number" && Number.isFinite(value)) return String(value);
     if (typeof value === "string") return value;

@@ -32,6 +32,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { PoundsOrKgProvider } from "@/contexts/PoundsOrKgContext";
 import { BuildProgramActionsProvider } from "@/contexts/BuildProgramActionsContext";
 import { AgentDebugModeProvider } from "@/contexts/AgentDebugModeContext";
+import { EditSessionProvider } from "@/contexts/EditSessionContext";
 import { WorkoutHistorySyncBanner } from "@/components/workout-history/WorkoutHistorySyncBanner";
 
 export const viewport: Viewport = {
@@ -128,6 +129,9 @@ export default function RootLayout({
                             <SidebarProvider defaultOpen={false}>
                                 <PoundsOrKgProvider>
                                     <BuildProgramActionsProvider>
+                                    {/* Above both /profile and /build-program: Edit current week
+                                        hands off in memory across the router.push (ADR 0013 / 02). */}
+                                    <EditSessionProvider>
                                     <AppSidebarDynamic />
                                     <div className="flex-1 min-w-0 bg-background">
                                         <MobileSidebarHeader />
@@ -145,6 +149,7 @@ export default function RootLayout({
                                         </main>
                                         <ConditionalFooterDynamic />
                                     </div>
+                                    </EditSessionProvider>
                                     </BuildProgramActionsProvider>
                                 </PoundsOrKgProvider>
                             </SidebarProvider>

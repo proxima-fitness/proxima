@@ -12,7 +12,8 @@
     "start": "next start",
     "test": "vitest",
     "test:ci": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:db-smoke": "./scripts/run-db-smoke.sh"
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [

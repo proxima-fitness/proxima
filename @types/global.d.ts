@@ -178,12 +178,30 @@ type THevyWorkout = {
     exercises: THevyWorkoutExercise[];
     updated_at?: string;
     created_at?: string;
+    /** Hevy routine this session was logged from. Null for ad-hoc sessions. */
+    routine_id?: string | null;
 };
 
 type THevyWorkoutsResponse = {
     page: number;
     page_count: number;
     workouts: THevyWorkout[];
+};
+
+/**
+ * One entry from `GET /v1/workouts/events?since=` — Hevy's delta feed.
+ * A created or edited session arrives as `updated` with the full workout; a
+ * removed one as `deleted` with only its id. This is the only signal that
+ * reports deletions, which never move the workout count.
+ */
+type THevyWorkoutEvent =
+    | { type: "updated"; workout: THevyWorkout }
+    | { type: "deleted"; id: string; deleted_at: string };
+
+type THevyWorkoutEventsResponse = {
+    page: number;
+    page_count: number;
+    events: THevyWorkoutEvent[];
 };
 
 /** One body-measurement entry from `GET /v1/body_measurements` (Hevy OpenAPI BodyMeasurement). */
@@ -225,6 +243,7 @@ type TWorkoutHistoryDb = SupabaseClient<Database>;
 type TImportHevyWorkoutResult =
     | { status: "inserted"; workoutId: string }
     | { status: "skipped"; workoutId: string }
+    | { status: "patched"; workoutId: string }
     | { status: "error"; message: string };
 
 type TSyncChunkResult = {
@@ -460,7 +479,13 @@ type THevyRoutineFolder = {
 }
 
 type THevyRoutine = {
-    id: string; // The routine ID
+    id: string; // Builder key: ordinal string, minted locally. Not a Hevy id on the Edit path.
+    /**
+     * Hevy-side routine UUID, set only for routines loaded from a Hevy folder
+     * (ADR 0013 / 02). Absent means the day was minted in the builder and has no
+     * Hevy counterpart yet — which is how Sync tells a PUT from a POST.
+     */
+    hevyRoutineId?: string;
     title: string; // The routine title
     folder_id: number | null; // Week folder in builder; null for logged backup workouts
     updated_at?: string; // ISO 8601 timestamp of when the routine was last updated. example: 2021-09-14T12:00:00Z
@@ -722,7 +747,7 @@ type TIntensityTypes = {
 
 type TRepsTypes = {
     reps?: number[];
-    reps_range?: number[][];
+    reps_range?: Array<[number, number] | null>;
     reps_max?: number[];
     amrap?: string[];
     time_taken?: number[];
@@ -770,9 +795,11 @@ type TScheduleWorkouts = {
 }
 
 type TSavedWorkoutExercise = {
-    reps?: number[];
+    /** Per-set fixed reps; null when that set uses a range. */
+    reps?: Array<number | null>;
     reps_max?: number[];
-    reps_range?: number[][];
+    /** Per-set `[start, end]`; null = no range for that set. Flat DB `real[]` is encode/decode-only. */
+    reps_range?: Array<[number, number] | null>;
     time_taken?: number[];
     time_range?: number[][];
     amrap?: string[];
@@ -784,10 +811,10 @@ type TSavedWorkoutExercise = {
 }
 
 type TAPIProgramWorkoutExercises = {
-    reps?: number[];
+    reps?: Array<number | null>;
     weights?: number[];
     reps_max?: number[];
-    reps_range?: number[][] ;
+    reps_range?: Array<[number, number] | null>;
     rpe?: number[];
     rpe_range?: number[][];
     time_taken?: number[];

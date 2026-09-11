@@ -63,6 +63,17 @@ interface IProps {
     onPageChange?: (page: number) => void;
 }
 
+/** Status accent colors — muted so the rail doesn't read as a traffic-light stripe. */
+const STATUS_INK: Record<string, string> = {
+    green: "#5B8F6E",
+    yellow: "#C4A35A",
+    red: "#C47A74",
+};
+
+function statusInk(color: string): string {
+    return STATUS_INK[color] ?? "var(--muted-foreground)";
+}
+
 const MiniTrendGraph: React.FC<{ trend: number[]; color: string }> = ({ trend, color }) => {
     const maxValue = Math.max(...trend);
     const minValue = Math.min(...trend);
@@ -114,19 +125,6 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
     const gridColumns = useMemo(() => (isLg ? 3 : isSm ? 2 : 1), [isLg, isSm]);
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
-    const getColorValue = (color: string) => {
-        switch (color) {
-            case "green":
-                return "#22c55e";
-            case "yellow":
-                return "#eab308";
-            case "red":
-                return "#ef4444";
-            default:
-                return "#9333ea";
-        }
-    };
-
     const handleExploreFixes = (exercise: TExerciseStallResult) => {
         onExploreFixes?.(exercise);
     };
@@ -164,7 +162,7 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3 w-full max-w-full box-border items-stretch">
                 {exercises.map((exercise, index) => {
                     const rowIndex = Math.floor(index / gridColumns);
-                    const colorValue = exercise.weight > 0 ? getColorValue(exercise.color) : "var(--muted-foreground, #999)";
+                    const colorValue = exercise.weight > 0 ? statusInk(exercise.color) : "var(--muted-foreground)";
                     const isExpanded = expandedRow === rowIndex;
                     const hasSessions = !dataLoading && exercise.sessions && exercise.sessions.length > 0;
                     const showStallFooter = exercise.hasStall && exercise.weight > 0 && !dataLoading;
@@ -172,10 +170,14 @@ export const ExerciseStalls: React.FC<IProps> = (props) => {
                     return (
                         <Card
                             key={exercise.name}
-                            className="flex h-full w-full flex-col box-border border border-l-4 border-border dark:bg-blueGray dark:border dark:border-l-4"
-                            style={{ borderLeftColor: colorValue }}
+                            className="relative flex h-full w-full flex-col box-border border border-border/40 bg-muted/20 shadow-none"
                         >
-                            <CardContent className="flex flex-1 flex-col p-3">
+                            <span
+                                aria-hidden
+                                className="pointer-events-none absolute inset-y-2.5 left-2 w-0.5 rounded-full opacity-70"
+                                style={{ backgroundColor: colorValue }}
+                            />
+                            <CardContent className="flex flex-1 flex-col p-3 pl-4">
                                 {/* Top section: Exercise name, weight, and trend line */}
                                 <div
                                     className={`flex justify-between items-center w-full ${isExpanded ? "mb-2" : ""} ${hasSessions ? "cursor-pointer" : ""}`}

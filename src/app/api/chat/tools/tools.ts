@@ -85,7 +85,7 @@ import {
 import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
 import { tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
-import { splitConstraintCsv } from '../constraints/initialize';
+import { sanitizeExcludedEquipment, splitConstraintCsv } from '../constraints/initialize';
 import { validateAgainstConstraints } from '../constraints/validate';
 import { upsertUserConstraints } from '@/api/user-constraints';
 import { upsertUserTrainingProfile } from '@/api/user-training-profile';
@@ -360,7 +360,9 @@ export function getTools({
         execute: async ({ userRequest }) => {
             try {
                 // Filters only from Constraint profile (route already seeded wire strings via initialize + merge)
-                const excludedEquipment = constraintProfile?.excludedEquipment ?? [];
+                const excludedEquipment = sanitizeExcludedEquipment(
+                    constraintProfile?.excludedEquipment ?? [],
+                );
                 const excludedAreas = constraintProfile?.excludedAreas ?? [];
 
                 // Fetch all available Hevy exercises
@@ -1263,7 +1265,7 @@ export function getTools({
             addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
             removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
             addExcludedEquipment: z.array(z.string()).optional().describe(
-                'Equipment to exclude (Hevy values: barbell, dumbbell, kettlebell, machine, plate, resistance_band, suspension, other, none). Use none for bodyweight / no-gear exercises - not the word bodyweight.',
+                'Equipment to exclude (Hevy values: barbell, dumbbell, kettlebell, machine, plate, resistance_band, suspension, other).',
             ),
             removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
@@ -1307,6 +1309,9 @@ export function getTools({
             for (const [field, add, remove] of arrayFields) {
                 constraintProfile[field] = patchStringArray(constraintProfile[field] as string[], add, remove);
             }
+            constraintProfile.excludedEquipment = sanitizeExcludedEquipment(
+                constraintProfile.excludedEquipment,
+            );
 
             if (preferences) {
                 const canonicalEntries = (

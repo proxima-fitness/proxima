@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useReducer, useCallback, useMemo } from "react";
+/** Gym-default excludes. Never include Hevy `"none"` — that is no-equipment, not a real exclude. */
 const DEFAULT_EXCLUDE_EQUIPMENT: TSelectOption[] = [
     { label: "Band", value: "band" },
     { label: "Suspension", value: "suspension" },

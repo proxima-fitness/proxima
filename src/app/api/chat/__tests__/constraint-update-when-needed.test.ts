@@ -156,7 +156,6 @@ describe("constraint update only when needed", () => {
 
         expect(updated.injuries).toEqual(["knee pain", "stiff ankle"]);
         expect(updated.excludedEquipment).toEqual([
-            "none",
             "band",
             "suspension",
             "resistance_band",
@@ -164,6 +163,7 @@ describe("constraint update only when needed", () => {
             "other",
             "cardio",
         ]);
+        expect(updated.excludedEquipment).not.toContain("none");
         expect(updated.injuries.every((s) => !s.includes(","))).toBe(true);
         expect(updated.excludedEquipment.every((s) => !s.includes(","))).toBe(true);
     });

@@ -24,7 +24,7 @@ export function LegalPolicyTextarea({ className }: ILegalPolicyTextareaProps = {
             aria-label="Privacy Policy and Terms of Use"
             value={COMBINED_LEGAL_POLICY_TEXT}
             className={cn(
-                "min-h-72 h-[50vh] max-h-128 resize-none overflow-y-auto bg-muted/30 text-sm leading-relaxed cursor-default focus-visible:ring-0",
+                "min-h-72 h-[50vh] max-h-128 resize-none overflow-y-auto bg-muted text-sm leading-relaxed cursor-default focus-visible:ring-0",
                 className,
             )}
         />

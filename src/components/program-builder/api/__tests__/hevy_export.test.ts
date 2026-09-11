@@ -4,6 +4,7 @@ import {
     mapSupabaseExerciseTemplateRowToPostExercise,
 } from "../hevy_export";
 
+
 describe("mapSupabaseExerciseTemplateRowToPostExercise", () => {
     const validRow = {
         title: "  My Lift  ",

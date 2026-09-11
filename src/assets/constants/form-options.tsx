@@ -144,6 +144,14 @@ export const equipmentOptions: TSelectOption[] = [
     { label: "Sled, box, rope & similar", value: "other"},
 ];
 
+/**
+ * Exclude-equipment catalog — drops Hevy `"none"` (no-equipment sentinel).
+ * Selecting it would block warmups / mobility that legitimately use no gear.
+ */
+export const excludeEquipmentOptions: TSelectOption[] = equipmentOptions.filter(
+    (opt) => opt.value !== "none",
+);
+
 /** Focus area options such as body regions or performance attributes. */
 export const focusAreasOptions: TSelectOption[] = [
     { label: "Back", value: "back"},
@@ -213,7 +221,7 @@ export const sampleQuestionsCore: TQuestion[] = [
       section: "core",
       subtitle: { text: "Selected equipment will be excluded from your program-not included." },
       type: "multi-select",
-      options: toQuestionOptions(equipmentOptions),
+      options: toQuestionOptions(excludeEquipmentOptions),
       allowOther: false,
     },
     {

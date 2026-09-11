@@ -57,4 +57,6 @@ export type TProgramMutationRunContext = {
     program: THevyRoutine[];
     commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     isAgentStreaming: boolean;
+    /** **Day complete** Hevy routine IDs — mutations that target these days no-op. */
+    completedHevyRoutineIds?: readonly string[];
 };

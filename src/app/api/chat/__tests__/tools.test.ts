@@ -589,7 +589,7 @@ describe("chat tools.ts", () => {
             expect(output.parameters).not.toHaveProperty("healthIssues");
         });
 
-        it("filters excluded equipment by Hevy equipment field (none = bodyweight)", async () => {
+        it("does not filter Hevy equipment none — sentinel is stripped, not an exclusion", async () => {
             vi.mocked(getHevyExercises).mockResolvedValueOnce([
                 ...multiExerciseTemplates,
                 {
@@ -630,8 +630,8 @@ describe("chat tools.ts", () => {
                 "ex-1",
                 "ex-2",
                 "ex-3",
+                "ex-bw",
             ]);
-            expect(output.availableExercises?.some((e) => e.id === "ex-bw")).toBe(false);
         });
 
         it("injuries do not filter the list", async () => {

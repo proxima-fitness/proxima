@@ -42,4 +42,12 @@ describe("initializeConstraintProfile", () => {
         expect(profile.excludedAreas).toEqual([]);
         expect(profile.preferences.splitType).toBe("ppl");
     });
+
+    it('drops Hevy "none" sentinel from excludedEquipment', () => {
+        const profile = initializeConstraintProfile({
+            excludeEquipment: "band, none, plate",
+        });
+
+        expect(profile.excludedEquipment).toEqual(["band", "plate"]);
+    });
 });

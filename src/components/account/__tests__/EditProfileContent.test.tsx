@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 const useUserContext = vi.fn();
-const useEditProfileLeaveGuard = vi.fn();
+const useLeaveGuard = vi.fn();
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -30,10 +30,12 @@ vi.mock("@/components/account/BodyMeasurementsSection", () => ({
     ),
 }));
 
-vi.mock("@/components/account/use-edit-profile-leave-guard", () => ({
-    EDIT_PROFILE_LEAVE_TITLE: "Discard unsaved changes?",
-    EDIT_PROFILE_LEAVE_DESCRIPTION: "You have unsaved edits.",
-    useEditProfileLeaveGuard: (...args: unknown[]) => useEditProfileLeaveGuard(...args),
+vi.mock("@/hooks/create-leave-guard", () => ({
+    editProfileLeaveGuard: {
+        title: "Discard unsaved changes?",
+        description: "You have unsaved edits.",
+        useLeaveGuard: (...args: unknown[]) => useLeaveGuard(...args),
+    },
 }));
 
 vi.mock("@/components/ConfirmDialog", () => ({
@@ -51,10 +53,11 @@ import { EditProfileContent } from "@/components/account/EditProfileContent";
 describe("EditProfileContent", () => {
     beforeEach(() => {
         useUserContext.mockReset();
-        useEditProfileLeaveGuard.mockReset();
-        useEditProfileLeaveGuard.mockReturnValue({
+        useLeaveGuard.mockReset();
+        useLeaveGuard.mockReturnValue({
             setDirty: vi.fn(),
             leaveDialogOpen: false,
+            pendingHref: null,
             onLeaveDialogOpenChange: vi.fn(),
             onDiscardLeave: vi.fn(),
         });
@@ -136,6 +139,6 @@ describe("EditProfileContent", () => {
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
 
-        expect(useEditProfileLeaveGuard).toHaveBeenCalled();
+        expect(useLeaveGuard).toHaveBeenCalled();
     });
 });

@@ -20,16 +20,12 @@ import { ArrowLeft } from "lucide-react";
 import { BodyMeasurementsSection } from "@/components/account/BodyMeasurementsSection";
 import { ConstraintProfileSection } from "@/components/account/ConstraintProfileSection";
 import { TrainingProfileSection } from "@/components/account/TrainingProfileSection";
-import {
-    EDIT_PROFILE_LEAVE_DESCRIPTION,
-    EDIT_PROFILE_LEAVE_TITLE,
-    useEditProfileLeaveGuard,
-} from "@/components/account/use-edit-profile-leave-guard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditProfile } from "@/components/profile/EditProfile";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserContext } from "@/contexts/UserContext";
+import { editProfileLeaveGuard } from "@/hooks/create-leave-guard";
 import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const EDIT_PROFILE_CARD_CLASS =
@@ -44,9 +40,10 @@ export function EditProfileContent() {
     const {
         setDirty,
         leaveDialogOpen,
+        pendingHref,
         onLeaveDialogOpenChange,
         onDiscardLeave,
-    } = useEditProfileLeaveGuard();
+    } = editProfileLeaveGuard.useLeaveGuard();
     const dirtyPartsRef = useRef({
         identity: false,
         constraint: false,
@@ -98,7 +95,7 @@ export function EditProfileContent() {
     }
 
     return (
-        <div className="min-h-screen bg-muted/30 px-3 py-6 text-foreground sm:px-4 sm:py-10">
+        <div className="min-h-screen bg-muted px-3 py-6 text-foreground sm:px-4 sm:py-10">
             <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
                 <div>
                     <Link
@@ -206,10 +203,11 @@ export function EditProfileContent() {
             <ConfirmDialog
                 open={leaveDialogOpen}
                 onOpenChange={onLeaveDialogOpenChange}
-                title={EDIT_PROFILE_LEAVE_TITLE}
-                description={EDIT_PROFILE_LEAVE_DESCRIPTION}
+                title={editProfileLeaveGuard.title}
+                description={editProfileLeaveGuard.description}
                 cancelLabel="Stay"
                 confirmLabel="Discard"
+                confirmHref={pendingHref ?? undefined}
                 onConfirm={onDiscardLeave}
             />
         </div>

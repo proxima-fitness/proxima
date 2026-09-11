@@ -4,7 +4,7 @@ vi.mock("@/api/index", () => ({
     supabase: {},
 }));
 
-import { defaultFetch, defaultPost, defaultPut, parsePostCustomExerciseBody, postHevyCustomExercise } from "../hevy";
+import { defaultFetch, defaultPost, defaultPut, emptyRoutineOnHevy, firstHevyExerciseTemplateId, parsePostCustomExerciseBody, placeholderExerciseForRemovedRoutine, postHevyCustomExercise, REMOVED_ROUTINE_NOTES } from "../hevy";
 
 describe("Hevy HTTP helpers", () => {
     const url = "https://api.hevyapp.com/v1/test";
@@ -76,6 +76,94 @@ describe("Hevy HTTP helpers", () => {
         expect(headers["Content-Type"]).toBe("application/json");
         expect(headers.Accept).toBe("application/json");
         expect(headers["api-key"]).toBe(apiKey);
+    });
+
+    it("defaultPut includes the Hevy error body on 400", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(JSON.stringify({ error: "Array must contain at least 1 element(s)" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+
+        await expect(defaultPut(url, apiKey, { routine: { exercises: [] } })).rejects.toThrow(
+            'HTTP PUT error! Status: 400: {"error":"Array must contain at least 1 element(s)"}',
+        );
+    });
+
+    it("emptyRoutineOnHevy GETs the routine then PUTs [Removed] with one placeholder exercise", async () => {
+        vi.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        routine: {
+                            id: "routine-1",
+                            title: "1 - Push",
+                            exercises: [{ exercise_template_id: "D04AC939" }],
+                        },
+                    }),
+                    { status: 200, headers: { "Content-Type": "application/json" } },
+                ),
+            )
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify(responseJson), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                }),
+            );
+
+        await emptyRoutineOnHevy("routine-1", "1 - Push", apiKey);
+
+        expect(fetch).toHaveBeenCalledTimes(2);
+        const getCall = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+        expect(getCall[0]).toBe("https://api.hevyapp.com/v1/routines/routine-1");
+        expect((getCall[1] as RequestInit).method).toBe("GET");
+
+        const putCall = (fetch as ReturnType<typeof vi.fn>).mock.calls[1];
+        expect(putCall[0]).toBe("https://api.hevyapp.com/v1/routines/routine-1");
+        const init = putCall[1] as RequestInit;
+        expect(init.method).toBe("PUT");
+        expect(JSON.parse(init.body as string)).toEqual({
+            routine: {
+                title: "[Removed] 1 - Push",
+                notes: REMOVED_ROUTINE_NOTES,
+                exercises: [placeholderExerciseForRemovedRoutine("D04AC939")],
+            },
+        });
+        expect(JSON.parse(init.body as string).routine.exercises).toHaveLength(1);
+        expect(JSON.parse(init.body as string).routine.notes).toBe(
+            "You marked this routine for removal in Proxima. You can now delete this routine.",
+        );
+    });
+
+    it("emptyRoutineOnHevy throws when the live routine has no exercise template", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(JSON.stringify({ routine: { id: "routine-1", title: "1 - Push", exercises: [] } }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+
+        await expect(emptyRoutineOnHevy("routine-1", "1 - Push", apiKey)).rejects.toThrow(
+            "no exercise template to keep as placeholder",
+        );
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("firstHevyExerciseTemplateId", () => {
+    it("reads a nested routine object or a one-item routine array", () => {
+        expect(
+            firstHevyExerciseTemplateId({
+                routine: { exercises: [{ exercise_template_id: "D04AC939" }] },
+            }),
+        ).toBe("D04AC939");
+        expect(
+            firstHevyExerciseTemplateId({
+                routine: [{ exercises: [{ exercise_template_id: "AABBCCDD" }] }],
+            }),
+        ).toBe("AABBCCDD");
+        expect(firstHevyExerciseTemplateId({ routine: { exercises: [] } })).toBeUndefined();
     });
 });
 

@@ -352,6 +352,35 @@ export const convertHevyOutputIntoInput = (routine: THevyRoutine, folderId: numb
 
 
 /**
+ * Build rectangular `number[][]` for `program_workout_exercises.reps_range` (`float4[]`).
+ * Postgres multi-dim arrays cannot contain null holes (`[[8,12], null]` → insert error).
+ * Returns null when no set has a range, or when any set is missing a valid range
+ * (fixed-rep sets stay on the `reps` column only).
+ *
+ * @param sets - Hevy sets from the Program prescription
+ */
+export function buildRepsRange2DForDb(sets: THevySets[] | undefined): number[][] | null {
+    if (!sets?.length) {
+        return null;
+    }
+
+    const pairs: number[][] = [];
+    for (const set of sets) {
+        const range = set.rep_range;
+        if (range == null) {
+            return null;
+        }
+        const start = Number(range.start);
+        const end = Number(range.end);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+            return null;
+        }
+        pairs.push([start, end]);
+    }
+    return pairs;
+}
+
+/**
  * Generates Hevy sets from a Proxima saved workout exercise.
  *
  * Converts Proxima exercise data (reps, weights, time, RPE, etc.) into Hevy set format.

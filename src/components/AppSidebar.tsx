@@ -73,11 +73,12 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { RecentChatMenuItem } from "@/components/sidebar/RecentChatMenuItem";
 import { authenticatedNavLinks, navLinks, navIdToUrl } from "@/assets/constants/nav-links";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
+import { newPathLeaveGuard } from "@/hooks/create-leave-guard";
+import { BUILDER_DRAFT_KEY, clearBuilderDraft } from "@/lib/builder-draft";
 import { deleteChatHistory, setChatPinned, updateChatTitle } from "@/api/chat-history";
 import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
 const CHAT_MESSAGES_KEY = "messages";
-const HEVY_PROGRAM_IN_PROGRESS_KEY = "hevy-program-in-progress";
 
 const signOutServer = async () => {
     try {
@@ -185,13 +186,15 @@ export function AppSidebar() {
     };
 
     const startNewChat = useCallback(() => {
-        if (typeof window !== "undefined") {
-            localStorage.removeItem(CHAT_MESSAGES_KEY);
-            localStorage.removeItem(HEVY_PROGRAM_IN_PROGRESS_KEY);
-        }
-        clearChat();
-        closeMobileSidebar();
-        router.push("/build-program?empty=true");
+        const href = "/build-program?empty=true";
+        const prepareEmptyChat = () => {
+            clearBuilderDraft();
+            clearChat();
+            closeMobileSidebar();
+        };
+        if (newPathLeaveGuard.requestLeave(href, prepareEmptyChat)) return;
+        prepareEmptyChat();
+        router.push(href);
     }, [clearChat, closeMobileSidebar, router]);
 
     const handleNewChatClick = () => {
@@ -202,7 +205,7 @@ export function AppSidebar() {
         const hasProgress =
             typeof window !== "undefined" &&
             (!!localStorage.getItem(CHAT_MESSAGES_KEY) ||
-                !!localStorage.getItem(HEVY_PROGRAM_IN_PROGRESS_KEY));
+                !!localStorage.getItem(BUILDER_DRAFT_KEY));
         if (hasProgress) {
             setShowNewChatConfirm(true);
         } else {
@@ -265,9 +268,16 @@ export function AppSidebar() {
             });
 
             if (deleteDraft.id === selectedChatId) {
-                clearChat();
-                closeMobileSidebar();
-                router.push("/build-program?empty=true");
+                const href = "/build-program?empty=true";
+                const leaveBlocked = newPathLeaveGuard.requestLeave(href, () => {
+                    clearChat();
+                    closeMobileSidebar();
+                });
+                if (!leaveBlocked) {
+                    clearChat();
+                    closeMobileSidebar();
+                    router.push(href);
+                }
             }
 
             setDeleteDraft(null);

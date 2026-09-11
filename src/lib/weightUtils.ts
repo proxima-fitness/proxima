@@ -92,3 +92,25 @@ export function roundWeightKgToDisplayDecimals(
     const roundedDisplay = Math.round(display * factor) / factor;
     return isInLbs ? roundedDisplay * LBS_TO_KG : roundedDisplay;
 }
+
+/**
+ * Snap a stored kg weight to the nearest quarter-**lb** so Hevy/UI don't show
+ * float junk (95.25 kg → 209.99 lbs). No-op when the user is in kg mode —
+ * storage already matches what they specified; only lbs display needs the
+ * round-trip through a clean plate step (`.00` / `.25` / `.50` / `.75`).
+ *
+ * @param weightKg - Stored weight in kilograms
+ * @param isInLbs - Whether the user's UI / Hevy account shows pounds
+ * @returns Weight in kg derived from a clean lb quarter, or `weightKg` unchanged
+ */
+export function snapWeightKgToDisplayQuarter(
+    weightKg: number,
+    isInLbs: boolean,
+): number {
+    if (!isInLbs) {
+        return weightKg;
+    }
+    const displayLbs = weightKg * KG_TO_LBS;
+    const roundedLbs = Math.round(displayLbs * 4) / 4;
+    return roundedLbs * LBS_TO_KG;
+}

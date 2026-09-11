@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export { normalizeAgentOperationInput } from "./normalizeAgentInput";
-import { normalizeHevyApiRoutineForAddDay } from "./normalizeHevyApiRoutine";
+import { normalizeHevyApiRoutineForAddDay, normalizeRestSeconds } from "./normalizeHevyApiRoutine";
 
 const folderIdsSchema = z
     .array(z.number().int().nonnegative())
@@ -70,11 +70,16 @@ export function toHevySet(set: TZodHevySet, arrayIndex: number): THevySets {
     };
 }
 
+const restSecondsFieldSchema = z.preprocess(
+    (value) => (value === undefined ? undefined : normalizeRestSeconds(value)),
+    z.string().nullable().optional(),
+);
+
 export const insertExercisePayloadSchema = z.object({
     exercise_template_id: z.string().min(1).describe("ID from getExerciseList."),
     title: z.string().optional().describe("Optional; server resolves canonical title from template ID."),
     notes: z.string().optional(),
-    rest_seconds: z.string().nullable().optional(),
+    rest_seconds: restSecondsFieldSchema,
     sets: z
         .array(hevySetSchema)
         .min(1)

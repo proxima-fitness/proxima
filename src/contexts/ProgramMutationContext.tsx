@@ -25,6 +25,7 @@ interface IProgramMutationContext {
     commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     setProgramFromHydrate: (program: THevyRoutine[]) => void;
     isAgentStreaming: boolean;
+    completedHevyRoutineIds: readonly string[];
     runMutation: (id: string, args: Record<string, unknown>) => TMutationResult;
 }
 
@@ -35,6 +36,7 @@ interface IProgramMutationProviderProps {
     commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void;
     setProgramFromHydrate: (program: THevyRoutine[]) => void;
     isAgentStreaming?: boolean;
+    completedHevyRoutineIds?: readonly string[];
     children: ReactNode;
 }
 
@@ -43,6 +45,7 @@ export function ProgramMutationProvider({
     commitWithUndo,
     setProgramFromHydrate,
     isAgentStreaming = false,
+    completedHevyRoutineIds = [],
     children,
 }: IProgramMutationProviderProps) {
     const runMutation = useCallback(
@@ -51,6 +54,7 @@ export function ProgramMutationProvider({
                 program,
                 commitWithUndo,
                 isAgentStreaming,
+                completedHevyRoutineIds,
             });
 
             if (isValidationFailure(result)) {
@@ -59,7 +63,7 @@ export function ProgramMutationProvider({
 
             return result;
         },
-        [program, commitWithUndo, isAgentStreaming],
+        [program, commitWithUndo, isAgentStreaming, completedHevyRoutineIds],
     );
 
     const value = useMemo<IProgramMutationContext>(
@@ -68,9 +72,17 @@ export function ProgramMutationProvider({
             commitWithUndo,
             setProgramFromHydrate,
             isAgentStreaming,
+            completedHevyRoutineIds,
             runMutation,
         }),
-        [program, commitWithUndo, setProgramFromHydrate, isAgentStreaming, runMutation],
+        [
+            program,
+            commitWithUndo,
+            setProgramFromHydrate,
+            isAgentStreaming,
+            completedHevyRoutineIds,
+            runMutation,
+        ],
     );
 
     return (
@@ -89,4 +101,28 @@ export function useProgramMutation() {
 /** Agent streaming lock - safe outside {@link ProgramMutationProvider} (defaults to false). */
 export function useIsAgentStreaming(): boolean {
     return useContext(ProgramMutationContext)?.isAgentStreaming ?? false;
+}
+
+/** Day complete Hevy routine IDs for this Edit session. */
+export function useCompletedHevyRoutineIds(): readonly string[] {
+    return useContext(ProgramMutationContext)?.completedHevyRoutineIds ?? [];
+}
+
+/**
+ * True when the agent is streaming or this day's Hevy routine is **Day complete**.
+ *
+ * @param hevyRoutineId - The day's Hevy UUID, if it has one
+ */
+export function useIsDayLocked(hevyRoutineId?: string): boolean {
+    const context = useContext(ProgramMutationContext);
+    if (!context) {
+        return false;
+    }
+    if (context.isAgentStreaming) {
+        return true;
+    }
+    if (hevyRoutineId && context.completedHevyRoutineIds.includes(hevyRoutineId)) {
+        return true;
+    }
+    return false;
 }

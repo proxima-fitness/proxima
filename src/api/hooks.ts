@@ -37,6 +37,9 @@ import {
     getLatestBodyMeasurement,
     type TBodyMeasurementsQueryOptions,
 } from "./body-measurements-read";
+import { getProgramHevyWeekLinks } from "./program-hevy-links";
+import { getProgramScheduleHistoryDays } from "./program-schedule-history";
+import { getWorkoutRoutineIds, WORKOUT_ROUTINE_IDS_QUERY_KEY } from "./workout-routine-ids";
 import { supabase } from ".";
 
 /** React Query key for latest backed-up body measurement. */
@@ -44,6 +47,17 @@ export const LATEST_BODY_MEASUREMENT_QUERY_KEY = ["body-measurements", "latest"]
 
 /** React Query key for body-measurement history pages. */
 export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "history"] as const;
+
+/** React Query key for the live Hevy folder list (`useHevyPrograms`). */
+export const HEVY_PROGRAMS_QUERY_KEY = ["hevy-programs"] as const;
+
+/** React Query key for Program–Hevy week links by program. */
+export const PROGRAM_HEVY_LINKS_QUERY_KEY = ["program-hevy-links"] as const;
+
+/** React Query key for program schedule-history day rows by program. */
+export const PROGRAM_SCHEDULE_HISTORY_QUERY_KEY = ["program-schedule-history"] as const;
+
+export { WORKOUT_ROUTINE_IDS_QUERY_KEY };
 
 /* ================================
    CLIENT-SIDE RENDERED HOOKS
@@ -57,7 +71,7 @@ export const BODY_MEASUREMENTS_HISTORY_QUERY_KEY = ["body-measurements", "histor
  */
 export const useHevyPrograms = (user: User | undefined | null, hevyApiKey: string) => {
     return useQuery({
-        queryKey: ["hevy-programs"],
+        queryKey: HEVY_PROGRAMS_QUERY_KEY,
         queryFn: () => getHevyPrograms(user, hevyApiKey),
         enabled: !!user && !!hevyApiKey,
     });
@@ -477,6 +491,51 @@ export const useUserConstraints = (user: User | undefined | null) => {
         queryKey: ["user-constraints", user?.id],
         queryFn: () => getUserConstraints(user!.id),
         enabled: !!user,
+    });
+};
+
+/**
+ * Program–Hevy week links for one Proxima program (ascending nth_week).
+ * Current week = max nth_week among rows (see getCurrentLinkedWeek).
+ *
+ * @param programId - Proxima program id (query disabled when undefined)
+ */
+export const useProgramHevyWeekLinks = (programId: number | undefined) => {
+    return useQuery({
+        queryKey: [...PROGRAM_HEVY_LINKS_QUERY_KEY, programId],
+        queryFn: () => getProgramHevyWeekLinks(programId!),
+        enabled: programId != null,
+    });
+};
+
+/**
+ * Schedule-history day-complete rows for one Proxima program (overview status).
+ *
+ * @param programId - Proxima program id (query disabled when undefined)
+ * @param userId - Owner user id (query disabled when undefined)
+ */
+export const useProgramScheduleHistoryDays = (
+    programId: number | undefined,
+    userId: string | undefined,
+) => {
+    return useQuery({
+        queryKey: [...PROGRAM_SCHEDULE_HISTORY_QUERY_KEY, programId, userId],
+        queryFn: () => getProgramScheduleHistoryDays(programId!, userId!),
+        enabled: programId != null && !!userId,
+    });
+};
+
+/**
+ * Distinct Hevy routine IDs from the signed-in user's Workout backup.
+ * Day complete / auto Week complete intersect this set with link IDs.
+ *
+ * @param userId - Owner user id (query disabled when undefined)
+ */
+export const useWorkoutRoutineIds = (userId: string | undefined) => {
+    return useQuery({
+        queryKey: [...WORKOUT_ROUTINE_IDS_QUERY_KEY, userId],
+        queryFn: () => getWorkoutRoutineIds(userId!),
+        enabled: !!userId,
     });
 };
 

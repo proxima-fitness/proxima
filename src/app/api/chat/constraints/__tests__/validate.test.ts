@@ -84,15 +84,12 @@ describe('validateAgainstConstraints', () => {
         if (!result.valid) expect(result.violations).toHaveLength(2);
     });
 
-    it('flags exercise using excluded equipment none (Hevy bodyweight / no gear)', () => {
+    it('does not flag bodyweight when excludedEquipment is only none (sentinel stripped)', () => {
         const result = validateAgainstConstraints(
             profile({ excludedEquipment: ['none'] }),
             [{ title: 'Push Up', equipment: 'none', primary_muscle_group: 'Chest' }],
         );
-        expect(result.valid).toBe(false);
-        if (!result.valid) {
-            expect(result.violations[0].reason).toContain('uses excluded equipment: none');
-        }
+        expect(result.valid).toBe(true);
     });
 
     it('passes dumbbell exercise when only none is excluded', () => {

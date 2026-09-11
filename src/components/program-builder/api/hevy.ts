@@ -16,7 +16,7 @@
  * Depends on: hevy_export (convertHevyOutputIntoInput), @/api/index (supabase),
  *             @/api/custom-movements (minting imported share customs),
  *             @/components/program-builder/utils (getMaxFolderId), uuid
- * Used by: program-builder UI components, Agent chat flow, API routes
+ * Used by: program-builder UI components, Agent chat flow, API routes, hevy_sync
  */
 import { v4 as uuidv4 } from "uuid";
 import { validate as validateUuid } from "uuid";
@@ -25,6 +25,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
 import { mapHevyTemplateToCustomMovement, mintCustomMovement } from "@/api/custom-movements";
 import {
+    buildRepsRange2DForDb,
     convertHevyOutputIntoInput,
     mapSharedTemplateToPostExercise,
     mapSupabaseExerciseTemplateRowToPostExercise,
@@ -36,6 +37,21 @@ const HEVY_EXERCISE_TEMPLATES_MAX_PAGES = 40;
 
 /** Chunk size for Supabase `.in("id", ...)` when loading templates for Hevy export. */
 const EXPORT_TEMPLATE_IDS_CHUNK_SIZE = 150;
+
+/**
+ * Hevy error text, appended so a 400 is diagnosable in the Sync dialog.
+ *
+ * @param method - GET / POST / PUT
+ * @param response - Failed fetch response
+ */
+async function throwHevyHttpError(method: string, response: Response): Promise<never> {
+    const detail = (await response.text()).trim();
+    throw new Error(
+        detail
+            ? `HTTP ${method} error! Status: ${response.status}: ${detail}`
+            : `HTTP ${method} error! Status: ${response.status}`,
+    );
+}
 
 /**
  * Generic authenticated GET request against the Hevy public API.
@@ -58,7 +74,7 @@ export const defaultFetch = async <T>(url: string, apiKey: string): Promise<T> =
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP GET error! Status: ${response.status}`);
+        await throwHevyHttpError("GET", response);
     }
 
     return (await response.json()) as T;
@@ -675,16 +691,8 @@ async function runSaveProgramToSupabase(
                     }
 
                     const reps = exercise.sets?.map((set) => set.reps) ?? null;
-                    const repsRangeFromSets =
-                        exercise.sets?.map((set) =>
-                            set.rep_range != null
-                                ? ([set.rep_range.start, set.rep_range.end] as [number, number])
-                                : null,
-                        ) ?? null;
-                    const reps_range =
-                        repsRangeFromSets == null || repsRangeFromSets.every((r) => r == null)
-                            ? null
-                            : repsRangeFromSets;
+                    // Rectangular number[][] only — null holes in multi-dim float4[] fail insert.
+                    const reps_range = buildRepsRange2DForDb(exercise.sets);
                     const timeTaken = exercise.sets?.map((set) => set.duration_seconds) ?? null;
                     const weights = exercise.sets?.map((set) => set.weight_kg) ?? null;
                     const rpe = exercise.sets?.map((set) => set.rpe) ?? null;
@@ -862,12 +870,14 @@ export type THevyUploadProgressCallback = (
  * @param ms - Milliseconds to wait before resolving
  * @returns A promise that resolves after the specified delay
  */
-export const delay = (ms: number) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export const delay = (ms: number): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 };
 
 /** Runs waitSeconds delay while calling onProgress every second with countdown (waitSeconds down to 0). */
-async function delayWithRateLimitCountdown(
+export async function delayWithRateLimitCountdown(
     uploaded: number,
     total: number,
     onProgress?: THevyUploadProgressCallback,
@@ -1343,7 +1353,7 @@ export const defaultPost = async <T, U = unknown>(url: string, apiKey: string, b
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP POST error! Status: ${response.status}`);
+        await throwHevyHttpError("POST", response);
     }
 
     return (await response.json()) as T;
@@ -1374,7 +1384,7 @@ export const defaultPut = async <T, U = unknown>(url: string, apiKey: string, bo
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP PUT error! Status: ${response.status}`);
+        await throwHevyHttpError("PUT", response);
     }
 
     return (await response.json()) as T;
@@ -1744,6 +1754,35 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
 
 
 
+/** Folder + routine IDs created by a one-folder Week Export (for Program–Hevy link). */
+export type THevyOneFolderUploadIds = {
+    hevyFolderId: number;
+    hevyRoutineIds: string[];
+};
+
+export type TPostProgramToHevyOneFolderResult =
+    | { success: true; data: THevyOneFolderUploadIds; createdNewHevyCustomTemplates: number }
+    | { success: false; data: unknown };
+
+/** Pulls routine id from Hevy POST /v1/routines body (`{ id }` or `{ routine: { id } }`). */
+export function extractHevyCreatedRoutineId(response: unknown): string | null {
+    if (!response || typeof response !== "object") {
+        return null;
+    }
+    const body = response as Record<string, unknown>;
+    if (typeof body.id === "string" && body.id.length > 0) {
+        return body.id;
+    }
+    const routine = body.routine;
+    if (routine && typeof routine === "object") {
+        const nestedId = (routine as Record<string, unknown>).id;
+        if (typeof nestedId === "string" && nestedId.length > 0) {
+            return nestedId;
+        }
+    }
+    return null;
+}
+
 /**
  * Uploads a week's worth of routines to Hevy inside a single routine folder.
  *
@@ -1761,7 +1800,7 @@ export const postRoutineFolders = async (title: string, apiKey: string) => {
  * @param programTitle - Program title metadata (first element's title is used)
  * @param onProgress - Optional callback receiving upload counts and rate-limit countdowns
  * @param user - Authenticated user; required to remap Proxima custom template IDs to Hevy before upload
- * @returns `{ success: true, data: [] }` on success, or `{ success: false, data: Error }`
+ * @returns `{ success: true, data: { hevyFolderId, hevyRoutineIds } }` on success, or `{ success: false, data: Error }`
  */
 export const postProgramToHevyOneFolder = async (
     hevyRoutines: THevyRoutine[],
@@ -1770,7 +1809,7 @@ export const postProgramToHevyOneFolder = async (
     programTitle: TProgramTitle[] | undefined,
     user: User,
     onProgress?: THevyUploadProgressCallback,
-) => {
+): Promise<TPostProgramToHevyOneFolderResult> => {
     let routinesToUpload = hevyRoutines;
     const resolved = await resolveCustomExerciseTemplatesForHevyUpload(user, apiKey, hevyRoutines, onProgress);
     if (resolved.success === false) {
@@ -1816,13 +1855,21 @@ export const postProgramToHevyOneFolder = async (
             return { success: false, data: new Error("Routine folder not found") };
         }
 
+        const createdRoutineIds: string[] = [];
         for (let batchStart = 0; batchStart < routinesToUpload.length; batchStart += ROUTINES_BATCH_SIZE) {
             const batchEnd = Math.min(batchStart + ROUTINES_BATCH_SIZE, routinesToUpload.length);
             for (let i = batchStart; i < batchEnd; i++) {
                 for (let retry = 0; retry <= RATE_LIMIT_MAX_RETRIES; retry++) {
                     try {
                         onProgress?.(i + 1, total, 'uploading');
-                        await postRoutine(convertHevyOutputIntoInput(routinesToUpload[i], folderId.id), apiKey);
+                        const created = await postRoutine(
+                            convertHevyOutputIntoInput(routinesToUpload[i], folderId.id),
+                            apiKey,
+                        );
+                        const routineId = extractHevyCreatedRoutineId(created);
+                        if (routineId) {
+                            createdRoutineIds.push(routineId);
+                        }
                         break;
                     } catch (error: unknown) {
                         if (retry >= RATE_LIMIT_MAX_RETRIES) {
@@ -1838,7 +1885,24 @@ export const postProgramToHevyOneFolder = async (
             }
         }
 
-        return { success: true, data: [], createdNewHevyCustomTemplates };
+        let hevyRoutineIds = createdRoutineIds;
+        if (hevyRoutineIds.length < routinesToUpload.length) {
+            const folderRoutines = await getRoutinesInFolder(apiKey, folderId.id);
+            hevyRoutineIds = folderRoutines.map((routine) => routine.id);
+        }
+
+        if (hevyRoutineIds.length === 0) {
+            return {
+                success: false,
+                data: new Error("Hevy folder created but no routine IDs were returned"),
+            };
+        }
+
+        return {
+            success: true,
+            data: { hevyFolderId: folderId.id, hevyRoutineIds },
+            createdNewHevyCustomTemplates,
+        };
     } catch (error: unknown) {
         console.error("Error saving program to Hevy", error);
         return { success: false, data: error };
@@ -2241,13 +2305,17 @@ export const sortWorkouts = (scheduleWorkouts: TScheduleWorkouts[]) => {
  * @param apiKey - The hevy api key
  * @returns The updated routine
  */
-export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineRequest, apiKey: string) => {
+export const putRoutine = async (
+    routineId: string,
+    updateRoutine: Omit<THevyRoutineRequest, "folder_id"> & { folder_id?: number | null },
+    apiKey: string,
+) => {
 
-    const body: THevyRoutineRequestObject = {
+    const body = {
         routine: updateRoutine,
     };
 
-    const response = await defaultPut<THevyRoutineRequest, THevyRoutineRequestObject>(
+    const response = await defaultPut<typeof updateRoutine, typeof body>(
         `https://api.hevyapp.com/v1/routines/${routineId}`,
         apiKey,
         body,
@@ -2255,6 +2323,106 @@ export const putRoutine = async (routineId: string, updateRoutine: THevyRoutineR
 
     return response;
 };
+
+/** Hevy routine notes (description) written on empty PUT. Non-empty so Hevy accepts it. */
+export const REMOVED_ROUTINE_NOTES =
+    "You marked this routine for removal in Proxima. You can now delete this routine.";
+
+/**
+ * One-set stub Hevy requires on empty PUT. Live Hevy 400s `exercises: []`
+ * ("Array must contain at least 1 element(s)") and 400s when `exercises` is omitted.
+ *
+ * @param exerciseTemplateId - Template id taken from the routine being emptied
+ */
+export function placeholderExerciseForRemovedRoutine(
+    exerciseTemplateId: string,
+): THevyExerciseRequest {
+    return {
+        exercise_template_id: exerciseTemplateId,
+        superset_id: null,
+        rest_seconds: 0,
+        notes: "...",
+        sets: [
+            {
+                type: "normal",
+                weight_kg: null,
+                reps: 0,
+                distance_meters: null,
+                duration_seconds: null,
+                custom_metric: null,
+            },
+        ],
+    };
+}
+
+/**
+ * First `exercise_template_id` on a Hevy GET/PUT routine payload.
+ * Hevy sometimes wraps `routine` as an object, sometimes as a one-item array.
+ *
+ * @param body - Parsed JSON from GET `/v1/routines/{id}`
+ */
+export function firstHevyExerciseTemplateId(body: unknown): string | undefined {
+    if (!body || typeof body !== "object") {
+        return undefined;
+    }
+    const wrapped = (body as { routine?: unknown }).routine ?? body;
+    const routine = Array.isArray(wrapped) ? wrapped[0] : wrapped;
+    if (!routine || typeof routine !== "object") {
+        return undefined;
+    }
+    const exercises = (routine as { exercises?: unknown }).exercises;
+    if (!Array.isArray(exercises)) {
+        return undefined;
+    }
+    for (const exercise of exercises) {
+        if (!exercise || typeof exercise !== "object") {
+            continue;
+        }
+        const id = (exercise as { exercise_template_id?: unknown }).exercise_template_id;
+        if (typeof id === "string" && id.length > 0) {
+            return id;
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Empties a Hevy routine in place (no DELETE). Title becomes `[Removed] {original}`,
+ * notes are {@link REMOVED_ROUTINE_NOTES}, and exercises collapse to one placeholder set.
+ * Hevy PUT rejects `exercises: []`.
+ *
+ * @param routineId - Hevy routine UUID
+ * @param originalTitle - Title before emptying; existing `[Removed] ` is stripped first
+ * @param apiKey - User's Hevy API key
+ */
+export async function emptyRoutineOnHevy(
+    routineId: string,
+    originalTitle: string,
+    apiKey: string,
+): Promise<unknown> {
+    const stripped = originalTitle.startsWith("[Removed] ")
+        ? originalTitle.slice("[Removed] ".length)
+        : originalTitle;
+    const current = await defaultFetch<unknown>(
+        `https://api.hevyapp.com/v1/routines/${routineId}`,
+        apiKey,
+    );
+    const templateId = firstHevyExerciseTemplateId(current);
+    if (!templateId) {
+        throw new Error(
+            `Cannot empty Hevy routine ${routineId}: no exercise template to keep as placeholder`,
+        );
+    }
+    return putRoutine(
+        routineId,
+        {
+            title: `[Removed] ${stripped}`,
+            notes: REMOVED_ROUTINE_NOTES,
+            exercises: [placeholderExerciseForRemovedRoutine(templateId)],
+        },
+        apiKey,
+    );
+}
 
 /**
  * APPENDS "  ✅" TO THE ROUTINE TITLE OF A COMPLETED ROUTINE

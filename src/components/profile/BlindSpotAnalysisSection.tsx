@@ -23,6 +23,7 @@ import {
     useMyFeatureLimits,
     useSubscribedPrograms,
 } from "@/api/hooks";
+import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 import {
     fetchWorkoutHistorySyncProgress,
     isWorkoutHistorySyncInProgress,
@@ -44,6 +45,7 @@ import { STALL_PROMPT } from "@/assets/constants/ui-constants";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { formatWeight, getWeightUnit } from "@/lib/weightUtils";
 import { ExerciseStalls } from "./ExerciseStalls";
+import { ProfileSectionHeader } from "./profileSectionShell";
 import Link from "next/link";
 import { ChartLineIcon, RefreshCwIcon } from "lucide-react";
 
@@ -131,6 +133,7 @@ export function BlindSpotAnalysisSection({
 }: TBlindSpotAnalysisSectionProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const navigateToEditHevyProgram = useNavigateToEditHevyProgram();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyApiKey } = useHevySecret(user);
@@ -192,19 +195,12 @@ export function BlindSpotAnalysisSection({
         (program: THevyProgramItem) => {
             if (!exploreFixesExercise) return;
             const search = buildStallSearchString(exploreFixesExercise, isInLbs, isPro);
-            for (const routine of program.program) {
-                routine.folder_id = 0;
-            }
-            localStorage.setItem("hevy-program-in-progress", JSON.stringify(program.program));
-            const params = new URLSearchParams({
-                resume: "true",
-                search,
+            void navigateToEditHevyProgram(program, { extraParams: { search } }).then(() => {
+                setExploreFixesDialogOpen(false);
+                setExploreFixesExercise(null);
             });
-            router.push(`/build-program?${params.toString()}`);
-            setExploreFixesDialogOpen(false);
-            setExploreFixesExercise(null);
         },
-        [exploreFixesExercise, isInLbs, isPro, router],
+        [exploreFixesExercise, isInLbs, isPro, navigateToEditHevyProgram],
     );
 
     const filteredAndSorted = useMemo(() => {
@@ -263,31 +259,34 @@ export function BlindSpotAnalysisSection({
 
     return (
         <section>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-3">
-                <div className="min-w-0 space-y-0.5">
-                    <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5 flex-wrap">
-                        <ChartLineIcon className="size-4 shrink-0 opacity-80" aria-hidden />
-                        Blind spot analysis{titleSuffix ? ` ${titleSuffix}` : ""}
-                    </h2>
-                    <p className="text-xs text-muted-foreground max-w-2xl">
+            <ProfileSectionHeader
+                className="mb-3"
+                icon={<ChartLineIcon className="size-4 shrink-0 opacity-80" aria-hidden />}
+                title={`Blind spot analysis${titleSuffix ? ` ${titleSuffix}` : ""}`}
+                description={
+                    <span className="max-w-2xl">
                         Quick check on lift progress. Open fixes for exercises that stall.
-                    </p>
-                </div>
-                {stallAnalysisResolved && analysisEnabled ? (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0 rounded-full border-border/80"
-                        disabled={isFetchingExerciseStalls}
-                        onClick={() => {
-                            void refetchExerciseStalls();
-                        }}
-                    >
-                        <RefreshCwIcon className={`size-4${isFetchingExerciseStalls ? " animate-spin" : ""}`} />
-                    </Button>
-                ) : null}
-            </div>
+                    </span>
+                }
+                action={
+                    stallAnalysisResolved && analysisEnabled ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0 rounded-full border-border/80"
+                            disabled={isFetchingExerciseStalls}
+                            onClick={() => {
+                                void refetchExerciseStalls();
+                            }}
+                        >
+                            <RefreshCwIcon
+                                className={`size-4${isFetchingExerciseStalls ? " animate-spin" : ""}`}
+                            />
+                        </Button>
+                    ) : null
+                }
+            />
             {!hevyConnected ? (
                 <p className="mb-3 text-xs text-muted-foreground max-w-2xl">
                     Connect Hevy to analyze lift progress from your backed-up workouts.

@@ -207,4 +207,17 @@ describe("convertHevyExerciseIntoHevyAddExercise round-trip", () => {
         expect(form.weightKg).toBeNull();
         expect(form.rpe).toBeNull();
     });
+
+    it("stringifies Hevy numeric rest_seconds for the edit dialog", async () => {
+        const hevyExercise: object = {
+            ...makeExercise([makeSet({ index: 0 })]),
+            rest_seconds: 90,
+        };
+        const form = await convertHevyExerciseIntoHevyAddExercise(
+            hevyExercise as THevyExercise,
+            undefined,
+            [mockTemplate],
+        );
+        expect(form.restSeconds).toBe("90");
+    });
 });

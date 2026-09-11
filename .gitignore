@@ -43,5 +43,8 @@ dist
 .cursor
 coverage
 docs/
+# TEMP: local serve copy of edge fns — delete at end of new-path week-loop ADR cycle
+# (see supabase/functions/README.md). Source of truth: edge-functions repo.
+supabase/functions/
 
 tsconfig.tsbuildinfo

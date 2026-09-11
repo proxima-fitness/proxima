@@ -2,9 +2,10 @@
 
 /*
  * @module MyProgramsVault
- * @description Dashboard section that surfaces a user’s saved workout programs, including loading, empty, and error states.
- * @dependsOn User context, subscribed program query hooks, program card presentation components, and PostHog analytics.
- * @usedBy Authenticated profile page to act as a permanent vault for user-owned programs.
+ * @description Legacy vault grid of saved Proxima programs (retired from profile —
+ * ADR 0010 / 04; Program overview carousel owns active programs). Kept for potential reuse.
+ * @dependsOn User context, subscribed program query hooks, program card presentation components,
+ *            thin Week Export CTA (ADR 0009), and PostHog analytics.
  */
 
 /**
@@ -12,6 +13,7 @@
  */
 import { useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { ProgramOverviewExportWeekCTA } from "@/components/profile/ProgramOverviewExportWeekCTA";
 import { ProgramCard } from "./ProgramCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
@@ -70,7 +72,7 @@ export const MyProgramsVault = () => {
     if (!user) {
         return (
             <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
-                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted shadow-sm dark:border-white/10 dark:bg-card/40">
                     <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Authentication required</h2>
                     <p className="text-sm text-muted-foreground mb-6">
@@ -89,7 +91,7 @@ export const MyProgramsVault = () => {
     if (errorFetchingPrograms) {
         return (
             <div className="pt-0 min-h-125 flex flex-col items-center justify-center">
-                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted/30 shadow-sm dark:border-white/10 dark:bg-card/40">
+                <Card className="p-8 max-w-md w-full text-center rounded-2xl border border-border/50 bg-muted shadow-sm dark:border-white/10 dark:bg-card/40">
                     <h2 className="text-xl font-semibold tracking-tight mb-2 text-foreground">Couldn&apos;t load programs</h2>
                     <p className="text-sm text-muted-foreground">
                         An error occurred while fetching your saved programs. Please try again later.
@@ -159,6 +161,16 @@ export const MyProgramsVault = () => {
                         </Button>
                     </Link>
                 </div>
+            </div>
+            {/* Thin Week Export entry until ADR 0010 overview layout */}
+            <div className="flex flex-col gap-2 pb-6">
+                {programs.map((program) => (
+                    <ProgramOverviewExportWeekCTA
+                        key={program.id}
+                        programId={program.id}
+                        programTitle={program.title}
+                    />
+                ))}
             </div>
             <div className="grid grid-cols-3 gap-5 max-sm:grid-cols-1 max-md:grid-cols-2 pb-8">
                 {programs.map((program) => (

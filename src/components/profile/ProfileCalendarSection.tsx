@@ -30,9 +30,10 @@ import {
     formatWorkoutWallDuration,
 } from "@/utils/general/helpers";
 import { cn } from "@/lib/utils";
-
-const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
+import {
+    PROFILE_SECTION_CARD_CLASS,
+    ProfileSectionHeader,
+} from "./profileSectionShell";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
 
@@ -200,41 +201,42 @@ export function ProfileCalendarSection() {
 
     return (
         <section aria-labelledby="profile-calendar-heading" className="h-full">
-            <Card className={cn(PROFILE_CARD_CLASS, "h-full flex flex-col")}>
-                <div className="flex items-center justify-between gap-2">
-                    <h2
-                        id="profile-calendar-heading"
-                        className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5"
-                    >
+            <Card className={cn(PROFILE_SECTION_CARD_CLASS, "flex h-full flex-col")}>
+                <ProfileSectionHeader
+                    id="profile-calendar-heading"
+                    className="sm:items-center"
+                    icon={
                         <CalendarDays className="size-4 shrink-0 opacity-80" aria-hidden />
-                        Calendar
-                    </h2>
-                    <div className="flex items-center gap-0.5">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 rounded-full bg-muted/50 text-foreground hover:bg-muted"
-                            aria-label="Previous month"
-                            onClick={goToPreviousMonth}
-                        >
-                            <ChevronLeft className="size-4" aria-hidden />
-                        </Button>
-                        <p className="min-w-28 text-center text-xs font-medium tabular-nums text-foreground">
-                            {formatMonthLabel(visibleYear, visibleMonth)}
-                        </p>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 rounded-full bg-muted/50 text-foreground hover:bg-muted"
-                            aria-label="Next month"
-                            onClick={goToNextMonth}
-                        >
-                            <ChevronRight className="size-4" aria-hidden />
-                        </Button>
-                    </div>
-                </div>
+                    }
+                    title="Calendar"
+                    action={
+                        <div className="flex items-center gap-0.5">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 rounded-full bg-muted/50 text-foreground hover:bg-muted"
+                                aria-label="Previous month"
+                                onClick={goToPreviousMonth}
+                            >
+                                <ChevronLeft className="size-4" aria-hidden />
+                            </Button>
+                            <p className="min-w-28 text-center text-xs font-medium tabular-nums text-foreground">
+                                {formatMonthLabel(visibleYear, visibleMonth)}
+                            </p>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 rounded-full bg-muted/50 text-foreground hover:bg-muted"
+                                aria-label="Next month"
+                                onClick={goToNextMonth}
+                            >
+                                <ChevronRight className="size-4" aria-hidden />
+                            </Button>
+                        </div>
+                    }
+                />
 
                 <div className="border-b border-border/60 pb-2 pt-2">
                     <div className="grid grid-cols-7">

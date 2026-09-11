@@ -25,6 +25,11 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHistorySyncPoller";
 import { ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
+import {
+    PROFILE_SECTION_CARD_CLASS,
+    ProfileSectionHeader,
+} from "./profileSectionShell";
+import { cn } from "@/lib/utils";
 
 function PreviewCardSkeleton() {
     return (
@@ -129,19 +134,13 @@ export function RecentWorkoutsSection() {
 
     return (
         <section aria-labelledby="recent-workouts-heading">
-            <Card className="rounded-2xl border border-border/60 bg-card px-4 py-5 shadow-sm sm:px-6 sm:py-6">
-                <div className="min-w-0 space-y-1">
-                    <h2
-                        id="recent-workouts-heading"
-                        className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5"
-                    >
-                        <History className="size-4 shrink-0 opacity-80" aria-hidden />
-                        Recent workouts
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Synced from Hevy.
-                    </p>
-                </div>
+            <Card className={cn(PROFILE_SECTION_CARD_CLASS, "sm:overflow-visible")}>
+                <ProfileSectionHeader
+                    id="recent-workouts-heading"
+                    icon={<History className="size-4 shrink-0 opacity-80" aria-hidden />}
+                    title="Recent workouts"
+                    description="Synced from Hevy."
+                />
 
                 {isLoading ? (
                     <div className="flex gap-4 overflow-x-auto pb-2 pt-4">

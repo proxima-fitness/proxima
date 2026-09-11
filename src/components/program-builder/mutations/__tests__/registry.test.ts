@@ -75,6 +75,27 @@ describe("runProgramMutation", () => {
         expect(commitWithUndo).not.toHaveBeenCalled();
     });
 
+    it("blocks mutations on a Day complete day", () => {
+        const commitWithUndo = vi.fn();
+        const hevyRoutineId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+        const result = runProgramMutation(
+            "edit_day_title",
+            { folderIds: [0], dayOrder: 1, title: "New" },
+            {
+                program: [makeDay({ hevyRoutineId })],
+                commitWithUndo,
+                isAgentStreaming: false,
+                completedHevyRoutineIds: [hevyRoutineId],
+            },
+        );
+
+        expect(isValidationFailure(result)).toBe(true);
+        if (!isValidationFailure(result)) return;
+        expect(result.reason).toContain("complete");
+        expect(commitWithUndo).not.toHaveBeenCalled();
+    });
+
     it("insert_exercise from dialog form commits with 0-based set indices", () => {
         const program = [makeDay()];
         const commitWithUndo = vi.fn();
@@ -99,6 +120,62 @@ describe("runProgramMutation", () => {
         expect(isValidationFailure(result)).toBe(false);
         expect(commitWithUndo).toHaveBeenCalledOnce();
         expect(commitWithUndo.mock.calls[0][0][0].exercises[0].title).toBe("Bench Press");
+    });
+
+    it("edit_exercise from Hevy-loaded numeric rest_seconds commits after adding a set", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    {
+                        index: 0,
+                        title: "Bench Press",
+                        notes: "",
+                        exercise_template_id: "bench-1",
+                        supersets_id: null,
+                        sets: [
+                            {
+                                index: 0,
+                                type: "normal",
+                                weight_kg: 60,
+                                reps: 8,
+                                distance_meters: null,
+                                duration_seconds: null,
+                                rpe: null,
+                                custom_metric: null,
+                                rep_range: null,
+                            },
+                        ],
+                        rest_seconds: "90",
+                    },
+                ],
+            }),
+        ];
+        const commitWithUndo = vi.fn();
+        // Edit current week hydrates from GET /v1/routines (rest_seconds is a number).
+        // The dialog copies that into restSeconds and the user adds a set without touching rest.
+        const exercise = {
+            ...addExerciseFormToInsertPayload({
+                selectedExercise: mockTemplate,
+                repTypeValue: "reps",
+                reps: [8, 8],
+                weightKg: [60, 60],
+                rpe: null,
+                setTypes: ["normal", "normal"],
+                restSeconds: "90",
+            }),
+            rest_seconds: 90,
+        };
+
+        const result = runProgramMutation(
+            "edit_exercise",
+            { folderIds: [0], dayOrder: 1, exerciseIndex: 0, exercise },
+            { program, commitWithUndo, isAgentStreaming: false },
+        );
+
+        expect(isValidationFailure(result)).toBe(false);
+        expect(commitWithUndo).toHaveBeenCalledOnce();
+        expect(commitWithUndo.mock.calls[0][0][0].exercises[0].sets).toHaveLength(2);
+        expect(commitWithUndo.mock.calls[0][0][0].exercises[0].rest_seconds).toBe("90");
     });
 
     it("create_superset commits via registry", () => {

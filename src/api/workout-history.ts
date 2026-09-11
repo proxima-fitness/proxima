@@ -50,7 +50,66 @@ export function mapHevyWorkoutToInsert(workout: THevyWorkout, userId: string, wo
         description: workout.description ?? null,
         started_at: workout.start_time,
         ended_at: workout.end_time,
+        // Hevy's own revision stamp — how a later sync spots an edited session.
+        source_updated_at: workout.updated_at ?? null,
+        // Linked-day match key for Day complete. Null for ad-hoc Hevy sessions.
+        routine_id: workout.routine_id ?? null,
     };
+}
+
+/** Backed-up row fields that decide whether Hevy's copy has moved on. */
+export type TBackedUpWorkoutFreshness = {
+    source_updated_at: string | null;
+    started_at: string | null;
+    ended_at: string | null;
+    routine_id?: string | null;
+};
+
+/**
+ * True only when both timestamps are readable and name different instants.
+ * Unknown on either side reads as unchanged — a missing value is not evidence
+ * of an edit, and guessing otherwise would re-import an untouched backup.
+ */
+function differsInstant(stored: string | null | undefined, hevy: string | null | undefined): boolean {
+    if (!stored || !hevy) {
+        return false;
+    }
+    const storedMs = Date.parse(stored);
+    const hevyMs = Date.parse(hevy);
+    if (Number.isNaN(storedMs) || Number.isNaN(hevyMs)) {
+        return false;
+    }
+    return storedMs !== hevyMs;
+}
+
+/**
+ * Whether Hevy's copy of an already-backed-up workout has changed.
+ *
+ * Hevy keeps the same workout id when a session is edited or re-finished, and
+ * the backup cursor is count-based, so an edit is invisible unless the row is
+ * compared field by field. Prefers Hevy's `updated_at`; rows imported before
+ * `source_updated_at` was recorded fall back to comparing the session bounds,
+ * which keeps this from re-importing an entire untouched backup.
+ *
+ * @param existing - Backed-up row's freshness fields
+ * @param workout - Hevy's current copy of the same workout
+ */
+export function isBackedUpWorkoutStale(
+    existing: TBackedUpWorkoutFreshness,
+    workout: THevyWorkout,
+): boolean {
+    if (existing.source_updated_at && workout.updated_at) {
+        const storedMs = Date.parse(existing.source_updated_at);
+        const hevyMs = Date.parse(workout.updated_at);
+        if (!Number.isNaN(storedMs) && !Number.isNaN(hevyMs)) {
+            return hevyMs > storedMs;
+        }
+    }
+
+    return (
+        differsInstant(existing.started_at, workout.start_time) ||
+        differsInstant(existing.ended_at, workout.end_time)
+    );
 }
 
 /**
@@ -100,17 +159,22 @@ export function mapHevySetToInsert(set: THevySets, workoutExerciseId: string, se
 }
 
 /**
- * Returns an existing backup workout ID when the Hevy external ID was already imported.
+ * Returns the existing backup row when the Hevy external ID was already imported.
+ * Carries the freshness fields so the caller can spot a Hevy-side edit.
  *
  * @param db - Supabase client (user or service role)
  * @param userId - Proxima user ID
  * @param externalId - Hevy workout UUID (`workout.id`)
- * @returns Existing workout row ID, or `null` when not yet backed up
+ * @returns Existing row id + freshness fields, or `null` when not yet backed up
  */
-async function findExistingWorkoutId(db: TWorkoutHistoryDb, userId: string, externalId: string): Promise<string | null> {
+async function findExistingWorkout(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    externalId: string,
+): Promise<({ id: string } & TBackedUpWorkoutFreshness) | null> {
     const { data, error } = await db
         .from("workouts")
-        .select("id")
+        .select("id, source_updated_at, started_at, ended_at, routine_id")
         .eq("user_id", userId)
         .eq("source", HEVY_WORKOUT_SOURCE)
         .eq("external_id", externalId)
@@ -120,7 +184,17 @@ async function findExistingWorkoutId(db: TWorkoutHistoryDb, userId: string, exte
         throw new Error(error.message);
     }
 
-    return data?.id ?? null;
+    if (!data?.id) {
+        return null;
+    }
+
+    return {
+        id: data.id,
+        source_updated_at: data.source_updated_at ?? null,
+        started_at: data.started_at ?? null,
+        ended_at: data.ended_at ?? null,
+        routine_id: data.routine_id ?? null,
+    };
 }
 
 /**
@@ -157,6 +231,37 @@ async function deleteWorkout(db: TWorkoutHistoryDb, workoutId: string): Promise<
     const { error } = await db.from("workouts").delete().eq("id", workoutId);
 
     return error?.message ?? null;
+}
+
+/**
+ * Removes a backed-up workout that no longer exists in Hevy.
+ *
+ * Deletions never move Hevy's workout count, so this is driven by the events
+ * feed rather than inferred from a count gap. Exercises and sets cascade.
+ *
+ * @param db - Supabase client (user or service role)
+ * @param userId - Proxima user ID owning the backup row
+ * @param externalId - Hevy workout UUID that was deleted
+ * @returns True when a row was removed, false when it was never backed up
+ */
+export async function deleteBackedUpWorkoutByExternalId(
+    db: TWorkoutHistoryDb,
+    userId: string,
+    externalId: string,
+): Promise<boolean> {
+    const existing = await findExistingWorkout(db, userId, externalId);
+
+    if (!existing) {
+        return false;
+    }
+
+    const message = await deleteWorkout(db, existing.id);
+
+    if (message) {
+        throw new Error(message);
+    }
+
+    return true;
 }
 
 /**
@@ -561,12 +666,17 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
  * counts as imported - a shell left by an earlier failure is deleted and re-imported. Any failure
  * after the `workouts` insert rolls that row back, so a retry is never blocked by its own wreckage.
  *
+ * A session Hevy has since changed (edited sets, re-finished, retimed) keeps its Hevy id, so the
+ * count-based sync cursor cannot see it; {@link isBackedUpWorkoutStale} does, and the row is
+ * replaced rather than skipped.
+ *
  * @param db - Supabase client (user or service role)
  * @param params - Import context
  * @param params.userId - Proxima user ID owning the backup
  * @param params.workout - Completed workout from the Hevy API
  * @param params.apiKey - Syncing user's Hevy API key, for exercise ownership resolution
- * @returns Insert outcome: `inserted`, `skipped` (duplicate), or `error`
+ * @returns Insert outcome: `inserted`, `skipped` (duplicate), `patched` (filled
+ *   missing `routine_id` on an otherwise current row), or `error`
  * @throws {HevyRateLimitError} When Hevy rate-limits a template lookup, so the caller backs off
  */
 export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
@@ -574,13 +684,25 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
     let insertedWorkoutId: string | null = null;
 
     try {
-        const existingWorkoutId = await findExistingWorkoutId(db, userId, workout.id);
-        if (existingWorkoutId) {
-            if (await hasWorkoutExercises(db, existingWorkoutId)) {
-                return { status: "skipped", workoutId: existingWorkoutId };
+        const existing = await findExistingWorkout(db, userId, workout.id);
+        if (existing) {
+            const isComplete = await hasWorkoutExercises(db, existing.id);
+            if (isComplete && !isBackedUpWorkoutStale(existing, workout)) {
+                const incomingRoutineId = workout.routine_id ?? null;
+                if (!existing.routine_id && incomingRoutineId) {
+                    const { error: patchError } = await db
+                        .from("workouts")
+                        .update({ routine_id: incomingRoutineId })
+                        .eq("id", existing.id);
+                    if (patchError) {
+                        return { status: "error", message: patchError.message };
+                    }
+                    return { status: "patched", workoutId: existing.id };
+                }
+                return { status: "skipped", workoutId: existing.id };
             }
 
-            const deleteMessage = await deleteWorkout(db, existingWorkoutId);
+            const deleteMessage = await deleteWorkout(db, existing.id);
             if (deleteMessage) {
                 return { status: "error", message: deleteMessage };
             }

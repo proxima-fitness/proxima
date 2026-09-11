@@ -1,7 +1,10 @@
 /**
  * @module ExportDialog
  * Modal to choose export destination (PDF, Hevy, spreadsheet) and render PDF preview or Hevy setup / CSV download.
- * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog. Used by: StepButton.
+ * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog.
+ * Builder New-path toolbar no longer opens this (ADR 0007). Program overview reuses PDF /
+ * spreadsheet destinations with prescription routines (ADR 0010 / 03); Hevy Week Export is
+ * outside this dialog.
  */
 "use client";
 
@@ -32,18 +35,24 @@ interface IProps {
     open: boolean;
     /** Called when dialog open state should change. */
     onOpenChange: (open: boolean) => void;
-    /** Program id (e.g. for analytics); export data comes from localStorage. */
+    /** Program id (e.g. for analytics); export data comes from localStorage unless overridden. */
     programId: number;
+    /** Skip picker and open this destination (overview PDF / spreadsheet). */
+    initialExportId?: "pdf" | "spreadsheet" | null;
+    /** Prescription routines for PDF/CSV (overview). When set, skips localStorage. */
+    hevyRoutines?: THevyRoutine[] | null;
 }
 
 /** Export modal: pick PDF / Hevy / spreadsheet, then show preview or ExportToHevySetup / CSV download. */
 export const ExportDialog: React.FC<IProps> = (props) => {
-    const { open, onOpenChange, programId } = props;
+    const { open, onOpenChange, programId, initialExportId = null, hevyRoutines = null } = props;
     const { isInLbs } = usePoundsOrKgContext();
     const { user } = useUserContext();
     const { data: featureLimits } = useMyFeatureLimits(user);
 
-    const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
+    // Picker choice only — overview `initialExportId` wins when set (no prop→state effect).
+    const [pickedExportId, setPickedExportId] = useState<string | null>(null);
+    const selectedExportId = initialExportId ?? pickedExportId;
     const [hevyUploading, setHevyUploading] = useState(false);
     const [showBackConfirm, setShowBackConfirm] = useState(false);
 
@@ -51,29 +60,20 @@ export const ExportDialog: React.FC<IProps> = (props) => {
 
     const handleOpenChange = (nextOpen: boolean) => {
         if (!nextOpen) {
-            setSelectedExportId(null);
+            setPickedExportId(null);
             setShowBackConfirm(false);
         }
         onOpenChange(nextOpen);
     };
 
     const handleSelectExport = (id: string) => {
-        setSelectedExportId(id);
+        setPickedExportId(id);
     };
 
-    const hevyProgramFromStorage = (): THevyRoutine[][] | null => {
-        if (typeof window === "undefined") return null;
-        const raw = localStorage.getItem("hevy-program-in-progress");
-        if (!raw) return null;
-        try {
-            const parsed = JSON.parse(raw) as THevyRoutine[];
-            return deFlattenHevyRoutine(parsed);
-        } catch {
-            return null;
+    const hevyProgramFlattened = (): THevyRoutine[] | null => {
+        if (hevyRoutines != null) {
+            return hevyRoutines.length > 0 ? hevyRoutines : null;
         }
-    };
-
-    const hevyProgramFlattenedFromStorage = (): THevyRoutine[] | null => {
         if (typeof window === "undefined") return null;
         const raw = localStorage.getItem("hevy-program-in-progress");
         if (!raw) return null;
@@ -84,8 +84,14 @@ export const ExportDialog: React.FC<IProps> = (props) => {
         }
     };
 
+    const hevyProgramNested = (): THevyRoutine[][] | null => {
+        const flat = hevyProgramFlattened();
+        if (!flat || flat.length === 0) return null;
+        return deFlattenHevyRoutine(flat);
+    };
+
     const handleDownloadCsv = () => {
-        const routines = hevyProgramFlattenedFromStorage();
+        const routines = hevyProgramFlattened();
         if (!routines || routines.length === 0) return;
         const csv = hevyRoutinesToCsvWithWeekAndDayTitles(routines);
         const bom = "\uFEFF";
@@ -98,19 +104,24 @@ export const ExportDialog: React.FC<IProps> = (props) => {
         URL.revokeObjectURL(url);
     };
 
+    const emptyPrescriptionCopy =
+        hevyRoutines != null
+            ? "No program prescription to export. Save the program first."
+            : "No program in progress. Build a program first to export.";
+
     const isHevyStepAndUploading = selectedExportId === "hevy" && hevyUploading;
 
     const handleHevyBackClick = () => {
         if (hevyUploading) {
             setShowBackConfirm(true);
         } else {
-            setSelectedExportId(null);
+            setPickedExportId(null);
         }
     };
 
     const handleConfirmStopUpload = () => {
         setShowBackConfirm(false);
-        setSelectedExportId(null);
+        setPickedExportId(null);
     };
 
     return (
@@ -144,22 +155,24 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                 )}
                 {selectedExportId === "pdf" && (
                     <div className="flex flex-col items-start w-full gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
-                            onClick={() => setSelectedExportId(null)}
-                            aria-label="Back to export options"
-                        >
-                            <ChevronLeft className="w-3 h-3 shrink-0" />
-                            Back
-                        </Button>
+                        {initialExportId == null ? (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
+                                onClick={() => setPickedExportId(null)}
+                                aria-label="Back to export options"
+                            >
+                                <ChevronLeft className="w-3 h-3 shrink-0" />
+                                Back
+                            </Button>
+                        ) : null}
                         {(() => {
-                            const hevyRoutine = hevyProgramFromStorage();
+                            const hevyRoutine = hevyProgramNested();
                             if (!hevyRoutine || hevyRoutine.length === 0) {
                                 return (
                                     <p className="text-sm text-muted-foreground py-4">
-                                        No program in progress. Build a program first to export as PDF.
+                                        {emptyPrescriptionCopy}
                                     </p>
                                 );
                             }
@@ -190,22 +203,24 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                 )}
                 {selectedExportId === "spreadsheet" && (
                     <div className="flex flex-col items-start w-full gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
-                            onClick={() => setSelectedExportId(null)}
-                            aria-label="Back to export options"
-                        >
-                            <ChevronLeft className="w-3 h-3 shrink-0" />
-                            Back
-                        </Button>
+                        {initialExportId == null ? (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
+                                onClick={() => setPickedExportId(null)}
+                                aria-label="Back to export options"
+                            >
+                                <ChevronLeft className="w-3 h-3 shrink-0" />
+                                Back
+                            </Button>
+                        ) : null}
                         {(() => {
-                            const routines = hevyProgramFlattenedFromStorage();
+                            const routines = hevyProgramFlattened();
                             if (!routines || routines.length === 0) {
                                 return (
                                     <p className="text-sm text-muted-foreground py-4">
-                                        No program in progress. Build a program first to export as CSV.
+                                        {emptyPrescriptionCopy}
                                     </p>
                                 );
                             }

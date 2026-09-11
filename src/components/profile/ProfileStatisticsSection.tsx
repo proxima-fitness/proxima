@@ -46,9 +46,10 @@ import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHisto
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWorkoutHistorySyncProgress } from "@/api/workout-history-sync";
-
-const PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-4";
+import {
+    PROFILE_SECTION_CARD_CLASS,
+    ProfileSectionHeader,
+} from "./profileSectionShell";
 
 type TMetric = "duration" | "reps" | "volume";
 type TWeekRange = 4 | 12;
@@ -210,45 +211,43 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
     return (
         <>
             <section aria-labelledby="profile-statistics-heading" className="h-full">
-                <Card className={cn(PROFILE_CARD_CLASS, "h-full flex flex-col")}>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="min-w-0 space-y-0.5">
-                            <h2
-                                id="profile-statistics-heading"
-                                className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-1.5"
-                            >
-                                <ChartLineIcon className="size-4 shrink-0 opacity-80" aria-hidden />
-                                Statistics
-                            </h2>
-                            <p className="text-xs text-muted-foreground">
-                                Weekly totals from your Hevy backup.
-                            </p>
-                        </div>
-                        {hevyConnected ? (
-                            <Select
-                                value={String(weekRange)}
-                                onValueChange={(value) =>
-                                    setWeekRange(value === "12" ? 12 : 4)
-                                }
-                            >
-                                <SelectTrigger
-                                    className="h-8 w-[132px] shrink-0 rounded-full border-border/60 text-xs"
-                                    aria-label="Chart time range"
+                <Card className={cn(PROFILE_SECTION_CARD_CLASS, "flex h-full flex-col")}>
+                    <ProfileSectionHeader
+                        id="profile-statistics-heading"
+                        icon={
+                            <ChartLineIcon
+                                className="size-4 shrink-0 opacity-80"
+                                aria-hidden
+                            />
+                        }
+                        title="Statistics"
+                        description="Weekly totals from your Hevy backup."
+                        action={
+                            hevyConnected ? (
+                                <Select
+                                    value={String(weekRange)}
+                                    onValueChange={(value) =>
+                                        setWeekRange(value === "12" ? 12 : 4)
+                                    }
                                 >
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="4">Last 4 weeks</SelectItem>
-                                    <SelectItem value="12">Last 12 weeks</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        ) : null}
-                    </div>
+                                    <SelectTrigger
+                                        className="h-8 w-[132px] shrink-0 rounded-full border-border/60 text-xs"
+                                        aria-label="Chart time range"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="4">Last 4 weeks</SelectItem>
+                                        <SelectItem value="12">Last 12 weeks</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : null
+                        }
+                    />
 
                     {!hevyConnected ? (
-                        <div className="pt-2">
-                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/20 px-3 py-6 text-center">
-                            <p className="text-xs text-muted-foreground max-w-sm">
+                        <div className="flex flex-col items-center justify-center px-1 py-6 text-center">
+                            <p className="max-w-sm text-xs text-muted-foreground">
                                 Connect Hevy to see weekly duration, rep, and volume totals from
                                 your backed-up workouts.
                             </p>
@@ -259,7 +258,6 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                             >
                                 Connect Hevy
                             </Button>
-                            </div>
                         </div>
                     ) : isLoading ? (
                         <StatisticsChartSkeleton />
@@ -334,14 +332,17 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                             </div>
 
                             {!hasChartData ? (
-                                <div className="mt-3 rounded-xl border border-dashed border-border/60 bg-muted/20 px-3 py-6 text-center">
+                                <div className="mt-3 px-1 py-6 text-center">
                                     {isSyncing ? (
                                         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                                             <Loader2
                                                 className="size-4 shrink-0 animate-spin"
                                                 aria-hidden
                                             />
-                                            <span>Syncing workout history… charts fill in as data arrives.</span>
+                                            <span>
+                                                Syncing workout history… charts fill in as data
+                                                arrives.
+                                            </span>
                                         </div>
                                     ) : (
                                         <p className="text-xs text-muted-foreground">

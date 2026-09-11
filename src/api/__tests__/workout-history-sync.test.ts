@@ -11,6 +11,7 @@ import {
     computeSyncPage,
     countBackedUpWorkouts,
     runSyncChunk,
+    syncHevyWorkoutEvents,
 } from "../workout-history-sync";
 
 const USER_ID = "user-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -459,5 +460,146 @@ describe("countBackedUpWorkouts", () => {
 
         const count = await countBackedUpWorkouts(asDb(mockDb), USER_ID);
         expect(count).toBe(2);
+    });
+});
+
+describe("syncHevyWorkoutEvents", () => {
+    let mockDb: ReturnType<typeof createSyncMockDb>;
+
+    const MAPPINGS = [
+        {
+            id: "mapping-known",
+            source: HEVY_WORKOUT_SOURCE,
+            external_exercise_id: "11111111-1111-1111-1111-111111111111",
+            canonical_exercise_id: "canonical-known-aaaa-bbbb-cccc-dddddddddddd",
+        },
+        {
+            id: "mapping-ohp",
+            source: HEVY_WORKOUT_SOURCE,
+            external_exercise_id: "22222222-2222-2222-2222-222222222222",
+            canonical_exercise_id: "canonical-ohp-aaaa-bbbb-cccc-dddddddddddd",
+        },
+    ];
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockDb = createSyncMockDb({ canonical_exercise_mappings: MAPPINGS });
+    });
+
+    function seedBackedUpWorkout(externalId: string) {
+        mockDb.tables.workouts.push({
+            id: `row-${externalId}`,
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: externalId,
+            started_at: "2024-06-10T09:00:00.000Z",
+            ended_at: "2024-06-10T10:15:00.000Z",
+        });
+    }
+
+    it("removes a backed-up workout Hevy reports as deleted", async () => {
+        seedBackedUpWorkout("deleted-ext-id");
+
+        vi.mocked(defaultFetch).mockResolvedValueOnce({
+            page: 1,
+            page_count: 1,
+            events: [
+                {
+                    type: "deleted",
+                    id: "deleted-ext-id",
+                    deleted_at: "2026-07-26T17:43:11.966Z",
+                },
+            ],
+        });
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+        });
+
+        expect(result).toMatchObject({ deleted: 1, imported: 0, complete: true });
+        expect(mockDb.tables.workouts).toHaveLength(0);
+    });
+
+    it("ignores a deletion for a workout that was never backed up", async () => {
+        vi.mocked(defaultFetch).mockResolvedValueOnce({
+            page: 1,
+            page_count: 1,
+            events: [
+                { type: "deleted", id: "never-seen", deleted_at: "2026-07-26T17:43:11.966Z" },
+            ],
+        });
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+        });
+
+        expect(result.deleted).toBe(0);
+    });
+
+    it("imports a workout from an updated event", async () => {
+        vi.mocked(defaultFetch).mockResolvedValueOnce({
+            page: 1,
+            page_count: 1,
+            events: [{ type: "updated", workout: hevyWorkoutFixture }],
+        });
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+        });
+
+        expect(result.imported).toBe(1);
+        expect(mockDb.tables.workouts).toHaveLength(1);
+        expect(mockDb.tables.workouts[0].external_id).toBe(hevyWorkoutFixture.id);
+    });
+
+    it("advances the events cursor after a complete pass", async () => {
+        vi.mocked(defaultFetch).mockResolvedValueOnce({
+            page: 1,
+            page_count: 1,
+            events: [{ type: "updated", workout: hevyWorkoutFixture }],
+        });
+
+        await syncHevyWorkoutEvents(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(mockDb.tables.hevy_workouts_count[0].last_workout_events_at).toEqual(
+            expect.any(String),
+        );
+    });
+
+    it("leaves the cursor alone when the page budget runs out", async () => {
+        vi.mocked(defaultFetch).mockResolvedValue({
+            page: 1,
+            page_count: 9,
+            events: [{ type: "updated", workout: hevyWorkoutFixture }],
+        });
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+            maxPages: 1,
+        });
+
+        expect(result.complete).toBe(false);
+        expect(mockDb.tables.hevy_workouts_count).toHaveLength(0);
+    });
+
+    it("reads from the stored cursor when one exists", async () => {
+        mockDb.tables.hevy_workouts_count.push({
+            id: "cursor-1",
+            user_id: USER_ID,
+            last_known_workout_count: 80,
+            last_workout_events_at: "2026-07-26T12:00:00.000Z",
+        });
+
+        vi.mocked(defaultFetch).mockResolvedValueOnce({ page: 1, page_count: 1, events: [] });
+
+        await syncHevyWorkoutEvents(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+
+        expect(vi.mocked(defaultFetch).mock.calls[0][0]).toContain(
+            `since=${encodeURIComponent("2026-07-26T12:00:00.000Z")}`,
+        );
     });
 });

@@ -15,7 +15,29 @@ export type TEditorAction =
           recordUndo?: boolean;
       }
     | { type: "UNDO" }
-    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] };
+    | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
+    /** After successful New-path Save: current grid is baseline; dirty clears. */
+    | { type: "CLEAR_UNDO_BASELINE" };
+
+/** Undo-stack dirty only (after a Save baseline exists). */
+export function isNewPathDirty(undoStackLength: number): boolean {
+    return undoStackLength > 0;
+}
+
+/**
+ * New-path Save/leave dirty: never Saved with a program, or undo stack non-empty vs last Save.
+ * ADR 0007 — Save clears baseline; further edits re-dirty.
+ */
+export function isNewPathSaveDirty(
+    undoStackLength: number,
+    hasSaveBaseline: boolean,
+    hasProgram: boolean,
+): boolean {
+    if (!hasSaveBaseline) {
+        return hasProgram;
+    }
+    return isNewPathDirty(undoStackLength);
+}
 
 function pushUndoSnapshot(stack: THevyRoutine[][], snapshot: THevyRoutine[]): THevyRoutine[][] {
     const nextStack = [...stack, structuredClone(snapshot)];
@@ -69,6 +91,11 @@ export function editorReducer(state: TEditorState, action: TEditorAction): TEdit
         }
         case "REPLACE_PROGRAM":
             return { hevyProgram: action.program, undoStack: [] };
+        case "CLEAR_UNDO_BASELINE":
+            if (state.undoStack.length === 0) {
+                return state;
+            }
+            return { ...state, undoStack: [] };
         default:
             return state;
     }

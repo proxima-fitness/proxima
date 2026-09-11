@@ -452,8 +452,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_hevy_program_sync_count: number
           last_known_workout_count: number | null
           last_synced_page: number | null
+          last_workout_events_at: string | null
           sync_error: string | null
           updated_at: string | null
           user_id: string | null
@@ -461,8 +463,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
+          last_workout_events_at?: string | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -470,8 +474,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_hevy_program_sync_count?: number
           last_known_workout_count?: number | null
           last_synced_page?: number | null
+          last_workout_events_at?: string | null
           sync_error?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -598,38 +604,6 @@ export type Database = {
           },
         ]
       }
-      personal_records: {
-        Row: {
-          created_at: string | null
-          exercise_id: string | null
-          id: string
-          personalRecordMaxes: number[] | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          exercise_id?: string | null
-          id: string
-          personalRecordMaxes?: number[] | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          exercise_id?: string | null
-          id?: string
-          personalRecordMaxes?: number[] | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "personal_records_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       policy_versions: {
         Row: {
           created_at: string
@@ -680,6 +654,60 @@ export type Database = {
           product_title?: string | null
         }
         Relationships: []
+      }
+      program_hevy_week_links: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          exported_hevy_routine_ids: string[]
+          hevy_folder_id: number
+          hevy_routine_ids: string[]
+          id: string
+          nth_week: number
+          program_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          exported_hevy_routine_ids?: string[]
+          hevy_folder_id: number
+          hevy_routine_ids?: string[]
+          id?: string
+          nth_week: number
+          program_id: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          exported_hevy_routine_ids?: string[]
+          hevy_folder_id?: number
+          hevy_routine_ids?: string[]
+          id?: string
+          nth_week?: number
+          program_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_hevy_week_links_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_hevy_week_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_history: {
         Row: {
@@ -794,6 +822,57 @@ export type Database = {
           },
           {
             foreignKeyName: "program_subscribers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_week_suggestions: {
+        Row: {
+          based_on_week: number
+          changes: Json
+          created_at: string
+          generated_at: string
+          id: string
+          program_id: number
+          summary: string
+          target_week: number
+          user_id: string
+        }
+        Insert: {
+          based_on_week: number
+          changes?: Json
+          created_at?: string
+          generated_at?: string
+          id?: string
+          program_id: number
+          summary: string
+          target_week: number
+          user_id: string
+        }
+        Update: {
+          based_on_week?: number
+          changes?: Json
+          created_at?: string
+          generated_at?: string
+          id?: string
+          program_id?: number
+          summary?: string
+          target_week?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_week_suggestions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_week_suggestions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -1047,110 +1126,6 @@ export type Database = {
           },
         ]
       }
-      saved_workout_exercises: {
-        Row: {
-          amrap: string[] | null
-          created_at: string
-          exercise_id: string | null
-          id: string
-          old_exercise_id: string | null
-          percent_rm: number[] | null
-          reps: number[] | null
-          reps_max: number[] | null
-          reps_range: number[] | null
-          rpe: number[] | null
-          rpe_range: number[] | null
-          saved_workout_id: string | null
-          set_types: string[] | null
-          supersets_id: number | null
-          time_range: number[] | null
-          time_taken: number[] | null
-          weights: number[] | null
-        }
-        Insert: {
-          amrap?: string[] | null
-          created_at?: string
-          exercise_id?: string | null
-          id?: string
-          old_exercise_id?: string | null
-          percent_rm?: number[] | null
-          reps?: number[] | null
-          reps_max?: number[] | null
-          reps_range?: number[] | null
-          rpe?: number[] | null
-          rpe_range?: number[] | null
-          saved_workout_id?: string | null
-          set_types?: string[] | null
-          supersets_id?: number | null
-          time_range?: number[] | null
-          time_taken?: number[] | null
-          weights?: number[] | null
-        }
-        Update: {
-          amrap?: string[] | null
-          created_at?: string
-          exercise_id?: string | null
-          id?: string
-          old_exercise_id?: string | null
-          percent_rm?: number[] | null
-          reps?: number[] | null
-          reps_max?: number[] | null
-          reps_range?: number[] | null
-          rpe?: number[] | null
-          rpe_range?: number[] | null
-          saved_workout_id?: string | null
-          set_types?: string[] | null
-          supersets_id?: number | null
-          time_range?: number[] | null
-          time_taken?: number[] | null
-          weights?: number[] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_workout_exercises_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "hevy_exercise_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "saved_workout_exercises_saved_workout_id_fkey"
-            columns: ["saved_workout_id"]
-            isOneToOne: false
-            referencedRelation: "saved_workouts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      saved_workouts: {
-        Row: {
-          created_at: string | null
-          id: string
-          user_id: string | null
-          workout_name: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          user_id?: string | null
-          workout_name?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          user_id?: string | null
-          workout_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_workouts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       schedule_workouts: {
         Row: {
           created_at: string
@@ -1255,36 +1230,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      trending: {
-        Row: {
-          created_at: string
-          id: string
-          program_ids: string[] | null
-          title_english: string | null
-          title_espanol: string | null
-          title_francais: string | null
-          title_portugues: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          program_ids?: string[] | null
-          title_english?: string | null
-          title_espanol?: string | null
-          title_francais?: string | null
-          title_portugues?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          program_ids?: string[] | null
-          title_english?: string | null
-          title_espanol?: string | null
-          title_francais?: string | null
-          title_portugues?: string | null
-        }
-        Relationships: []
       }
       user_consents: {
         Row: {
@@ -1588,6 +1533,7 @@ export type Database = {
           ended_at: string
           external_id: string | null
           id: string
+          routine_id: string | null
           source: Database["public"]["Enums"]["source_type"] | null
           source_updated_at: string | null
           started_at: string
@@ -1601,6 +1547,7 @@ export type Database = {
           ended_at: string
           external_id?: string | null
           id: string
+          routine_id?: string | null
           source?: Database["public"]["Enums"]["source_type"] | null
           source_updated_at?: string | null
           started_at: string
@@ -1614,6 +1561,7 @@ export type Database = {
           ended_at?: string
           external_id?: string | null
           id?: string
+          routine_id?: string | null
           source?: Database["public"]["Enums"]["source_type"] | null
           source_updated_at?: string | null
           started_at?: string
@@ -1750,12 +1698,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1779,11 +1727,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1804,11 +1752,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1829,11 +1777,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1846,11 +1794,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

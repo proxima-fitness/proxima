@@ -12,8 +12,30 @@ import {
     sortHevyByOrder,
 } from "@/components/program-builder/utils/format-responses";
 
+import { normalizeRestSeconds } from "./normalizeHevyApiRoutine";
 import type { TInsertExercisePayload, TSwapExerciseTemplateMinimalTo } from "./schemas";
 import { toHevySet } from "./schemas";
+
+
+// --- Identity ---
+
+/**
+ * Next builder day id, ignoring ids that are not numeric.
+ *
+ * Edit-path routines can carry non-numeric ids, so `Math.max(...map(Number))`
+ * returns `NaN` and every minted day collides on the id `"NaN"` — which then
+ * misroutes `delete_day` and `edit_day_title` (ADR 0013 / 02). Non-numeric ids
+ * are skipped rather than coerced; an all-non-numeric program starts at 1.
+ *
+ * @param program - Current program snapshot.
+ * @returns Next free numeric id.
+ */
+export function nextBuilderDayId(program: readonly THevyRoutine[]): number {
+    const numericIds = program
+        .map((day) => Number(day.id))
+        .filter((id) => Number.isFinite(id));
+    return (numericIds.length > 0 ? Math.max(...numericIds) : 0) + 1;
+}
 
 
 // --- Duplication ---
@@ -37,7 +59,7 @@ export function duplicateWeek(
 ): THevyRoutine[] {
     const filteredPrev = program.filter((day) => !toWeekIndexes.includes(Number(day.folder_id)));
     const daysToCopy = program.filter((day) => day.folder_id === fromWeekIndex);
-    let maxId = Math.max(...program.map((d) => Number(d.id)));
+    let maxId = nextBuilderDayId(program) - 1;
     const newDays = toWeekIndexes.flatMap((week) =>
         daysToCopy.map((day) => ({
             ...day,
@@ -81,7 +103,7 @@ export function duplicateDay(
         0,
     );
 
-    let newId = Math.max(...program.map((day) => Number(day.id)), 0) + 1;
+    let newId = nextBuilderDayId(program);
     let updatedDays = [...program];
 
     const maxToDayOrder = Math.max(...toDayOrders);
@@ -136,9 +158,8 @@ export function addDay(program: THevyRoutine[], folder_id: number): THevyRoutine
         return program;
     }
     const nthDayOrder = daysInFolder.length + 1;
-    const maxId = Math.max(...program.map((d) => Number(d.id)));
     const newEmptyDay: THevyRoutine = {
-        id: String(maxId + 1),
+        id: String(nextBuilderDayId(program)),
         folder_id,
         order: String(nthDayOrder),
         exercises: [],
@@ -313,7 +334,7 @@ export function addExercise(
             exercise_template_id: exercise?.selectedExercise?.id ?? "",
             supersets_id: null,
             sets,
-            rest_seconds: exercise?.restSeconds ?? null,
+            rest_seconds: normalizeRestSeconds(exercise?.restSeconds),
         };
 
         if (exerciseIndex === undefined || exerciseIndex === day.exercises.length) {
@@ -337,7 +358,7 @@ export function addExerciseFormToInsertPayload(exercise: THevyAddExercise): TIns
         exercise_template_id: exercise.selectedExercise?.id ?? "",
         title: exercise.selectedExercise?.title ?? "",
         notes: "",
-        rest_seconds: exercise.restSeconds ?? null,
+        rest_seconds: normalizeRestSeconds(exercise.restSeconds),
         sets: hevyAddExerciseToHevySetsConverter(exercise),
     };
 }
@@ -412,9 +433,8 @@ export function addRoutineAsDay(
         return program;
     }
     const nthDayOrder = daysInFolder.length + 1;
-    const maxId = Math.max(...program.map((d) => Number(d.id)));
     const newEmptyDay: THevyRoutine = {
-        id: String(maxId + 1),
+        id: String(nextBuilderDayId(program)),
         folder_id,
         order: String(nthDayOrder),
         exercises: renumberExercises(routine.exercises),

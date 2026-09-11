@@ -3,7 +3,7 @@
 /**
  * @module program-builder/shared/agent/AgenticMemoryPeek
  *
- * Read-only Agentic memory peek for build-program chat chrome near the prompt.
+ * Read-only Agentic memory peek for build-program chat shell near the prompt.
  * Accordion: Constraint profile + Training profile + latest body measurement.
  * Props-driven - AgenticMemoryPeekHost wires React Query.
  *

@@ -1,6 +1,7 @@
 /*
  * @module ConfirmDialog
- * @description Reusable confirm/cancel dialog. Pass title, description, and labels per use case.
+ * @description Reusable confirm dialog. Cancel is a footer button by default;
+ * hide it to dismiss via the dialog X only. Optional secondary footer action.
  * @dependsOn UI dialog, Button.
  */
 
@@ -19,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface IConfirmDialogProps {
     open: boolean;
@@ -26,7 +28,11 @@ interface IConfirmDialogProps {
     title: string;
     description?: string;
     onConfirm: () => void;
+    /** When set, confirm renders as Next.js Link (soft nav) instead of a plain button. */
+    confirmHref?: string;
     cancelLabel?: string;
+    /** Hide the Cancel button; the dialog X still dismisses. */
+    hideCancel?: boolean;
     confirmLabel?: string;
     confirmLoadingLabel?: string;
     confirmVariant?: "default" | "destructive";
@@ -35,6 +41,10 @@ interface IConfirmDialogProps {
     preventAutoFocus?: boolean;
     closeOnConfirm?: boolean;
     confirmDisabled?: boolean;
+    /** Extra footer action (e.g. Sync and Continue beside Discard). */
+    secondaryLabel?: string;
+    secondaryClassName?: string;
+    onSecondary?: () => void;
     inputLabel?: string;
     inputPlaceholder?: string;
     inputValue?: string;
@@ -50,7 +60,9 @@ export function ConfirmDialog({
     title,
     description,
     onConfirm,
+    confirmHref,
     cancelLabel = "Cancel",
+    hideCancel = false,
     confirmLabel = "Confirm",
     confirmLoadingLabel,
     confirmVariant = "destructive",
@@ -59,6 +71,9 @@ export function ConfirmDialog({
     preventAutoFocus = false,
     closeOnConfirm = true,
     confirmDisabled = false,
+    secondaryLabel,
+    secondaryClassName,
+    onSecondary,
     inputLabel,
     inputPlaceholder,
     inputValue,
@@ -79,7 +94,19 @@ export function ConfirmDialog({
         }
     };
 
+    const handleSecondary = () => {
+        onOpenChange(false);
+        onSecondary?.();
+    };
+
     const loadingLabel = confirmLoadingLabel ?? confirmLabel;
+    const footerButtonClassName = preventAutoFocus ? "w-full sm:w-auto" : undefined;
+    const confirmButtonClassName = cn(
+        footerButtonClassName,
+        confirmClassName,
+    );
+    const confirmDisabledState = isConfirmLoading || confirmDisabled;
+    const showSecondary = secondaryLabel != null && onSecondary != null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,27 +155,48 @@ export function ConfirmDialog({
                     </div>
                 )}
                 <DialogFooter className="sm:justify-end gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancel}
-                        disabled={isConfirmLoading}
-                        className={preventAutoFocus ? "w-full sm:w-auto" : undefined}
-                    >
-                        {cancelLabel}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={confirmVariant}
-                        onClick={handleConfirm}
-                        disabled={isConfirmLoading || confirmDisabled}
-                        className={cn(
-                            preventAutoFocus && "w-full sm:w-auto",
-                            confirmClassName,
-                        )}
-                    >
-                        {isConfirmLoading ? loadingLabel : confirmLabel}
-                    </Button>
+                    {hideCancel ? null : (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCancel}
+                            disabled={isConfirmLoading}
+                            className={footerButtonClassName}
+                        >
+                            {cancelLabel}
+                        </Button>
+                    )}
+                    {confirmHref && !confirmDisabledState ? (
+                        <Button
+                            asChild
+                            variant={confirmVariant}
+                            className={confirmButtonClassName}
+                        >
+                            <Link href={confirmHref} onClick={handleConfirm}>
+                                {isConfirmLoading ? loadingLabel : confirmLabel}
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button
+                            type="button"
+                            variant={confirmVariant}
+                            onClick={handleConfirm}
+                            disabled={confirmDisabledState}
+                            className={confirmButtonClassName}
+                        >
+                            {isConfirmLoading ? loadingLabel : confirmLabel}
+                        </Button>
+                    )}
+                    {showSecondary ? (
+                        <Button
+                            type="button"
+                            onClick={handleSecondary}
+                            disabled={isConfirmLoading}
+                            className={cn(footerButtonClassName, secondaryClassName)}
+                        >
+                            {secondaryLabel}
+                        </Button>
+                    ) : null}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

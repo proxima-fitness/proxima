@@ -9,6 +9,7 @@ import {
     ensureWorkoutHistoryFresh,
     getSyncProgress,
     getWorkoutById,
+    getWorkoutsByRoutineIds,
     getWorkoutsForMonthForUser,
     getWorkoutsForUser,
     mapBackedUpWorkoutToHevyRoutine,
@@ -587,6 +588,82 @@ describe("getWorkoutsForMonthForUser", () => {
             0,
         );
 
+        expect(workouts).toEqual([]);
+    });
+});
+
+describe("getWorkoutsByRoutineIds", () => {
+    it("returns nested Workouts for the requested routine IDs, newest first", async () => {
+        const push = {
+            ...backedUpWorkoutFixture,
+            id: "w-push",
+            routine_id: "r-push",
+            started_at: "2026-08-01T10:00:00.000Z",
+        };
+        const pullNewer = {
+            ...backedUpWorkoutFixture,
+            id: "w-pull-new",
+            routine_id: "r-pull",
+            started_at: "2026-08-20T10:00:00.000Z",
+        };
+        const pullOlder = {
+            ...backedUpWorkoutFixture,
+            id: "w-pull-old",
+            routine_id: "r-pull",
+            started_at: "2026-08-10T10:00:00.000Z",
+        };
+        const other = {
+            ...backedUpWorkoutFixture,
+            id: "w-other",
+            routine_id: "r-other",
+            started_at: "2026-08-21T10:00:00.000Z",
+        };
+
+        const inValues: string[] = [];
+        const db = {
+            from(table: string) {
+                if (table !== "workouts") {
+                    throw new Error(`Unexpected table: ${table}`);
+                }
+                const builder = {
+                    select() {
+                        return builder;
+                    },
+                    eq() {
+                        return builder;
+                    },
+                    in(_column: string, values: string[]) {
+                        inValues.push(...values);
+                        return builder;
+                    },
+                    order() {
+                        return builder;
+                    },
+                    then(resolve: (value: { data: TBackedUpWorkout[]; error: null }) => void) {
+                        const wanted = new Set(inValues);
+                        const rows = [push, pullNewer, pullOlder, other]
+                            .filter((row) => row.routine_id && wanted.has(row.routine_id))
+                            .sort((a, b) => (a.started_at < b.started_at ? 1 : -1));
+                        resolve({ data: rows, error: null });
+                    },
+                };
+                return builder;
+            },
+        };
+
+        const workouts = await getWorkoutsByRoutineIds(asBrowseDb(db), USER_ID, [
+            "r-push",
+            "r-pull",
+        ]);
+        expect(workouts.map((workout) => workout.id)).toEqual([
+            "w-pull-new",
+            "w-pull-old",
+            "w-push",
+        ]);
+    });
+
+    it("returns empty when no routine IDs are given", async () => {
+        const workouts = await getWorkoutsByRoutineIds(asBrowseDb({}), USER_ID, []);
         expect(workouts).toEqual([]);
     });
 });
