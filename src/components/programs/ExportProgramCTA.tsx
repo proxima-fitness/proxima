@@ -102,7 +102,7 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
 
     return (
         <>
-            <div className="flex w-full max-sm:h-auto flex-col items-center justify-start rounded-2xl border border-border/60 bg-card/80 px-6 py-6 text-center text-foreground shadow-sm backdrop-blur-sm dark:bg-card/60 max-sm:pb-5 sm:px-8">
+            <div className="flex w-full max-sm:h-auto flex-col items-center justify-start rounded-2xl border-0 bg-card/80 px-6 py-6 text-center text-foreground shadow-none backdrop-blur-sm dark:border dark:border-white/10 dark:bg-card/60 max-sm:pb-5 sm:px-8">
                 <div className="flex w-full flex-col items-center">
                     {(authLoading || user) && (
                         <h2 className="font-third pb-3 pt-1 text-2xl font-semibold tracking-tight max-sm:text-3xl">

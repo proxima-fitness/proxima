@@ -68,7 +68,7 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                             <ProgramThumbnail id={ id } />
                         </div>
                         <Card
-                            className="order-2 border-border/60 bg-card/80 shadow-sm backdrop-blur-sm dark:bg-card/60 lg:col-start-1 lg:row-start-2 rounded-2xl p-6 sm:p-8"
+                            className="order-2 border-0 bg-card/80 shadow-none backdrop-blur-sm dark:border dark:border-white/10 dark:bg-card/60 lg:col-start-1 lg:row-start-2 rounded-2xl p-6 sm:p-8"
                             id="program-title-card"
                         >
                             <div className="text-sm font-medium text-muted-foreground">

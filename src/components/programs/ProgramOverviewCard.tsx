@@ -38,7 +38,7 @@ export const ProgramOverviewCard: React.FC<IProps> = (props) => {
         p0?.equipment && p0.equipment.length > 0 ? p0.equipment : "n/a";
 
     return (
-        <Card className="rounded-2xl border-border/60 bg-card/80 p-6 shadow-sm backdrop-blur-sm dark:bg-card/60 sm:p-8">
+        <Card className="rounded-2xl border-0 bg-card/80 p-6 shadow-none backdrop-blur-sm dark:border dark:border-white/10 dark:bg-card/60 sm:p-8">
             <h2 className="font-third text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 Details
             </h2>

@@ -104,7 +104,7 @@ export const ProgramPreview: React.FC<IProps> = (props) => {
                             Week {index + 1}
                         </span>
                         { week.map((day) => (
-                            <Card className="my-3 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] rounded-2xl border border-border/60 bg-card/90 px-5 py-5 shadow-sm backdrop-blur-sm dark:bg-card/50" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
+                            <Card className="my-3 min-w-[400px] max-w-[400px] w-[400px] max-sm:min-w-[99%] max-sm:max-w-[99%] max-sm:w-[99%] rounded-2xl border-0 bg-card/90 px-5 py-5 shadow-none backdrop-blur-sm dark:border dark:border-white/10 dark:bg-card/50" key={ "week " + day.nthWeek + "day " + day.nthDay + " " }>
                                 <div className="border-b border-black/5 pb-3 dark:border-white/10">
                                     <div>
                                         <h3 className="font-third text-lg font-semibold tracking-tight text-foreground">
