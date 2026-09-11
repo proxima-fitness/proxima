@@ -42,6 +42,8 @@ export type TProgramOverviewWeekPreviewProps = {
     nthWeek: number;
     link: TWeekPreviewLink | null;
     hevyFolderRoutines: readonly THevyRoutine[];
+    /** Linked folder is in the Hevy fetch. Empty folder still counts as present. */
+    hevyFolderPresent: boolean;
     hevyFolderPending: boolean;
     workoutRoutineIds: readonly string[];
     userId: string | undefined;
@@ -129,6 +131,7 @@ export function ProgramOverviewWeekPreview({
     nthWeek,
     link,
     hevyFolderRoutines,
+    hevyFolderPresent,
     hevyFolderPending,
     workoutRoutineIds,
     userId,
@@ -159,10 +162,7 @@ export function ProgramOverviewWeekPreview({
     const [dayIndex, setDayIndex] = useState(0);
 
     const prescriptionDays = slicePrescriptionWeekDays(routines ?? [], nthWeek);
-    const persistedGone =
-        link?.completed_at != null &&
-        !isPlannedVsCompletedWeek(link, workoutRoutineIds);
-    const waitForHevy = Boolean(link) && !pair && !persistedGone && hevyFolderPending;
+    const waitForHevy = Boolean(link) && !pair && hevyFolderPending;
 
     if (isLoading || waitForHevy || (pair && workoutsLoading)) {
         return <PreviewSkeleton />;
@@ -181,6 +181,7 @@ export function ProgramOverviewWeekPreview({
         link,
         prescriptionDays,
         hevyFolderRoutines,
+        hevyFolderPresent,
         workouts: pairWorkouts ?? [],
     });
 

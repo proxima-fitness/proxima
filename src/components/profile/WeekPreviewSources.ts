@@ -56,6 +56,11 @@ export type TResolveWeekPreviewInput = {
     link: TWeekPreviewLink | null;
     prescriptionDays: readonly THevyRoutine[];
     hevyFolderRoutines: readonly THevyRoutine[];
+    /**
+     * Linked Hevy folder is in the fetched list. Empty folder is still present
+     * (C4). Missing folder is not (C10).
+     */
+    hevyFolderPresent: boolean;
     workouts: readonly TBackedUpWorkout[];
 };
 
@@ -238,7 +243,7 @@ function inHevyDays(input: TResolveWeekPreviewInput): TWeekPreviewDay[] {
  * @param input - Link, this week's prescription days, live folder, Workouts
  */
 export function resolveWeekPreview(input: TResolveWeekPreviewInput): TResolvedWeekPreview {
-    const { nthWeek, link, prescriptionDays, workouts } = input;
+    const { nthWeek, link, prescriptionDays, workouts, hevyFolderPresent } = input;
 
     if (link == null) {
         return { days: plannedDays(prescriptionDays, nthWeek), shouldUncomplete: false };
@@ -254,11 +259,11 @@ export function resolveWeekPreview(input: TResolveWeekPreviewInput): TResolvedWe
         return { days: pairDays(input), shouldUncomplete: false };
     }
 
-    if (shouldUncomplete) {
-        return { days: plannedDays(prescriptionDays, nthWeek), shouldUncomplete: true };
-    }
+    const days = hevyFolderPresent
+        ? inHevyDays(input)
+        : plannedDays(prescriptionDays, nthWeek);
 
-    return { days: inHevyDays(input), shouldUncomplete: false };
+    return { days, shouldUncomplete };
 }
 
 /**

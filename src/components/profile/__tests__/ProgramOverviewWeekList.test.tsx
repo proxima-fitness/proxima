@@ -180,4 +180,29 @@ describe("ProgramOverviewWeekList mark week complete", () => {
         };
         expect(props.currentWeek).toBe(1);
     });
+
+    it("does not offer Edit Week N when the Current week folder is gone from Hevy", () => {
+        useHevySecret.mockReturnValue({ data: "hevy-key" });
+        useHevyPrograms.mockReturnValue({
+            data: [],
+            isLoading: false,
+        });
+
+        renderList(
+            <ProgramOverviewWeekList
+                programId={11}
+                programTitle="Strength Block A"
+                programLength={8}
+            />,
+        );
+
+        const props = programOverviewCtas.mock.calls.at(-1)?.[0] as {
+            currentWeek?: number | null;
+            missingFolderWeeks?: readonly number[];
+            onEditCurrentWeek?: () => void;
+        };
+        expect(props.currentWeek).toBe(1);
+        expect(props.missingFolderWeeks).toEqual([1]);
+        expect(props.onEditCurrentWeek).toBeUndefined();
+    });
 });

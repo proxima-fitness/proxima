@@ -172,10 +172,10 @@ _Avoid_: Week detail (builder edit), name-only exercise lists, treating preview 
 ### Week preview source
 
 
-Which document(s) the **Week preview** shows for the **Selected week**. Not exported → **Program prescription**. Exported and not **Week complete** → **Hevy week copy** (empty folder stays empty). **Week complete** → **Program prescription** and logged **Workouts** together (**Planned vs completed**). If those **Workouts** are gone, the week is not complete and preview is the **Program prescription**. Deleting **Hevy routines** does not by itself change a complete week's preview. Named by a **Day card source badge**.
+Which document(s) the **Week preview** shows for the **Selected week**. Not exported → **Program prescription**. Exported and not **Week complete**, linked folder still in Hevy → **Hevy week copy** (empty folder stays empty). Exported and not **Week complete**, linked folder gone from Hevy → **Program prescription**. **Week complete** → **Program prescription** and logged **Workouts** together (**Planned vs completed**). Deleting those **Workouts** un-completes the week; preview then follows the incomplete rule (folder still there → **Hevy week copy**; folder gone → prescription). Deleting **Hevy routines** or the folder of a complete week does not by itself change that week's preview. Named by a **Day card source badge**.
 
 
-_Avoid_: One document for a complete week that still has Workouts, using **Hevy week copy** as the planned side of the record, always reading the prescription for an exported incomplete week, substituting Workouts or prescription for an empty in-progress folder
+_Avoid_: One document for a complete week that still has Workouts, using **Hevy week copy** as the planned side of the record, always reading the prescription for an exported incomplete week whose folder still exists, substituting Workouts or prescription for an empty in-progress folder, treating a missing complete-week folder as not exported
 
 
 
@@ -357,10 +357,10 @@ _Avoid_: Edit current week, Update program, Syncing Hevy from this entry, lockin
 ### Current week (overview)
 
 
-The earliest week with a **Program–Hevy link** that is not yet **Week complete**. Later linked weeks can exist (already exported). Those later weeks still match **Workouts** on their link and can become **Week complete** if the athlete trains them; if unused they may be **Week Export**ed again. **Edit current week** / Sync target only this earliest incomplete week — it cannot be re-Exported. When every linked week is complete, there is no Current week; the forward action is **Week Export** of N+1, blocked until week N is complete.
+The earliest week with a **Program–Hevy link** that is not yet **Week complete**. Later linked weeks can exist (already exported). Those later weeks still match **Workouts** on their link and can become **Week complete** if the athlete trains them; if unused they may be **Week Export**ed again. **Edit current week** / Sync target this week only, and only while its linked folder still exists. If that folder is gone, the writer is **Week Export** of this week again (fresh Hevy copy). When every linked week is complete, there is no Current week; the forward action is **Week Export** of N+1, blocked until week N is complete.
 
 
-_Avoid_: Calendar week, Selected week, using the highest incomplete week when an earlier week is open again, re-Export of **Current week**, deriving current week from Hevy folder titles
+_Avoid_: Calendar week, Selected week, using the highest incomplete week when an earlier week is open again, Re-Export of **Current week** while its folder still exists, deriving current week from Hevy folder titles
 
 
 
@@ -368,7 +368,7 @@ _Avoid_: Calendar week, Selected week, using the highest incomplete week when an
 ### Program prescription
 
 
-The trainer plan stored as the **Proxima program**. Source of **Week Export**, including N+1 after **Week complete**, and of **Re-Export** for a later unused linked week. SoT for a week that has not been exported. After Export, this week's execution document is the **Hevy week copy** until **Week complete**; gym-week changes do not rewrite this plan. **Edit program** may rewrite a slot only when it can still be Exported; that does not change the **Hevy week copy**.
+The trainer plan stored as the **Proxima program**. Source of **Week Export**, including N+1 after **Week complete**, **Re-Export** of a later unused linked week, and **Re-Export** of **Current week** when its linked folder is gone. SoT for a week that has not been exported, and for an incomplete week whose linked folder is gone. After Export, this week's execution document is the **Hevy week copy** until **Week complete**; gym-week changes do not rewrite this plan. **Edit program** may rewrite a slot only when it can still be Exported; that does not change the **Hevy week copy**.
 
 
 _Avoid_: Using it as this-week SoT after Export, treating last week's Hevy divergences as the next **Week Export**, Program (alone), template (ambiguous with exercise template)
@@ -379,7 +379,7 @@ _Avoid_: Using it as this-week SoT after Export, treating last week's Hevy diver
 ### Week complete
 
 
-Week N finished: its planned days each have a matching **Workout**, or the athlete marks it complete. That status survives deleting the week's **Hevy routines** or folder; the proof is the **Workouts**, against the **Program prescription**. A complete week cannot be **Week Export**ed again. If those **Workouts** are later gone, it is not **Week complete** and preview is the prescription.
+Week N finished: its planned days each have a matching **Workout**, or the athlete marks it complete. That status survives deleting the week's **Hevy routines** or folder; the proof is the **Workouts**, against the **Program prescription**. A complete week cannot be **Week Export**ed again. Deleting the folder of a complete week is cleanup, not un-complete. If those **Workouts** are later gone, it is not **Week complete**; preview follows **Week preview source**.
 
 
 _Avoid_: Treating Hevy folder deletion as un-complete, treating routine deletion as history deletion, allowing re-Export of a complete week
@@ -390,7 +390,10 @@ _Avoid_: Treating Hevy folder deletion as un-complete, treating routine deletion
 ### Day complete
 
 
-A planned **Hevy routine** already has a matching **Workout**: `workouts.routine_id` is in that week’s `hevy_routine_ids`. In **Edit current week** that day is visible, locked, and marked done. Distinct from **Week complete**. Deleting the routine does not undo this; deleting the **Workout** does.
+A planned **Hevy routine** already has a matching **Workout**: `workouts.routine_id` is in that week’s `hevy_routine_ids`. In **Edit current week** that day is visible, locked, and marked done. Distinct from **Week complete**. Deleting the routine does not undo this; deleting the **Workout** does. If the week is not **Week complete** and the linked folder is gone, a later **Re-Export** is a fresh slate: old **Workouts** stay in history and do not count on the new IDs.
+
+
+_Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match, carrying old logs onto a missing-folder Re-Export
 
 
 _Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match
@@ -401,10 +404,13 @@ _Avoid_: Calling a Workout a routine, implying the planned routine was deleted, 
 ### Week Export
 
 
-Push one week of a **Proxima program** to Hevy as a new folder + **Hevy routines**, and write that week's **Program–Hevy link**. Week N+1 requires week N **Week complete**. **Re-Export** is allowed only when that week is already linked, is not **Week complete**, and is not the **Current week** (a later unused copy after an earlier week re-opened). The **Current week** is updated with **Edit current week** Sync, never a second Export. A **Week complete** week cannot be Exported again, even if the Hevy folder is gone.
+Push one week of a **Proxima program** to Hevy as a new folder + **Hevy routines**, and write that week's **Program–Hevy link**. Week N+1 requires week N **Week complete**. **Re-Export** is allowed when the week is linked and not **Week complete**, and either is not **Current week**, or is **Current week** whose linked folder is gone. That missing-folder **Re-Export** is a reset: new folder, new routine IDs on the same week row, old **Workouts** unrelated. While the **Current week** folder exists, **Edit current week** Sync is the writer, never a second Export. A **Week complete** week cannot be Exported again. Deleting its Hevy folder is cleanup; **Workouts** still prove the week.
 
 
-_Avoid_: Re-Export of **Current week** or a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
+_Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export of a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
+
+
+_Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export of a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
 
 
 
@@ -467,7 +473,7 @@ _Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit
 ### Hevy week copy
 
 
-The live Hevy folder for an exported week that is not yet **Week complete**: this week's execution document. Created by **Week Export**. Changed by **Edit current week** Sync or by edits in the Hevy app, not by Proxima's last snapshot alone. Distinct from the **Program prescription**.
+The live Hevy folder for an exported week that is not yet **Week complete**: this week's execution document when that folder still exists. Created by **Week Export**. Changed by **Edit current week** Sync or by edits in the Hevy app, not by Proxima's last write alone. Distinct from the **Program prescription**. If the linked folder is gone and the week is not **Week complete**, **Week preview** is the prescription again.
 
 
 _Avoid_: Treating prescription as this-week SoT after Export; treating this as Proxima's last write rather than the live folder; using a **Week complete** week's folder as the plan

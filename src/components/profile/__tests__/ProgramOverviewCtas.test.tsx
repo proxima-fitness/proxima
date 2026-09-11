@@ -8,9 +8,6 @@ import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const updateProgramTitle = vi.fn();
-const nextExportableWeek = vi.fn((linkedWeeks: readonly number[]) =>
-    linkedWeeks.length === 0 ? 1 : Math.max(...linkedWeeks) + 1,
-);
 const evaluateWeekExportGate = vi.fn(() => ({ allowed: false, reason: "gated" }));
 
 vi.mock("@/contexts/UserContext", () => ({
@@ -35,12 +32,15 @@ vi.mock("@/components/program-builder/shared/ExportDialog", () => ({
     ExportDialog: () => null,
 }));
 
-vi.mock("./ProgramOverviewExportWeek", () => ({
-    evaluateWeekExportGate: () => evaluateWeekExportGate(),
-    exportProgramWeekToHevy: vi.fn(),
-    loadPrescriptionHevyRoutines: vi.fn(),
-    nextExportableWeek: (linkedWeeks: readonly number[]) => nextExportableWeek(linkedWeeks),
-}));
+vi.mock("./ProgramOverviewExportWeek", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../ProgramOverviewExportWeek")>();
+    return {
+        ...actual,
+        evaluateWeekExportGate: () => evaluateWeekExportGate(),
+        exportProgramWeekToHevy: vi.fn(),
+        loadPrescriptionHevyRoutines: vi.fn(),
+    };
+});
 
 import { ProgramOverviewCtas } from "../ProgramOverviewCtas";
 
@@ -65,7 +65,6 @@ describe("ProgramOverviewCtas rename", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         updateProgramTitle.mockReset();
-        nextExportableWeek.mockClear();
         evaluateWeekExportGate.mockClear();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
@@ -108,7 +107,6 @@ describe("ProgramOverviewCtas rename", () => {
 describe("ProgramOverviewCtas chrome", () => {
     beforeEach(() => {
         useUserContext.mockReset();
-        nextExportableWeek.mockClear();
         evaluateWeekExportGate.mockClear();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
@@ -185,5 +183,19 @@ describe("ProgramOverviewCtas chrome", () => {
 
         expect(screen.queryByRole("button", { name: /Edit Week/ })).toBeNull();
         expect(screen.getByRole("link", { name: "Edit program" })).toBeTruthy();
+    });
+
+    it("hides Edit and labels Export Week 1 when the Current week folder is gone", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                missingFolderWeeks={[1]}
+            />,
+        );
+
+        expect(screen.queryByRole("button", { name: /Edit Week/ })).toBeNull();
+        expect(screen.getByRole("button", { name: "Export Week 1" })).toBeTruthy();
     });
 });

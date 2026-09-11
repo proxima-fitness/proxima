@@ -297,3 +297,31 @@ export function findHevyProgramForWeek(
         ) ?? null
     );
 }
+
+/**
+ * Incomplete linked weeks whose Hevy folder is missing from the fetched list.
+ * Empty until Hevy programs have loaded (`undefined`), so "not fetched yet"
+ * is not treated as folder-gone.
+ *
+ * @param hevyPrograms - Folders fetched from Hevy
+ * @param links - Program–Hevy link rows for this program
+ * @param completedWeeks - Weeks that are Week complete (excluded)
+ */
+export function missingHevyFolderWeeks(
+    hevyPrograms: readonly THevyProgramItem[] | undefined,
+    links: readonly TLinkFolderRow[],
+    completedWeeks: readonly number[] = [],
+): number[] {
+    if (hevyPrograms == null) {
+        return [];
+    }
+    const completed = new Set(completedWeeks);
+    return links
+        .filter((link) => {
+            if (completed.has(link.nth_week)) {
+                return false;
+            }
+            return findHevyProgramForWeek(hevyPrograms, links, link.nth_week) == null;
+        })
+        .map((link) => link.nth_week);
+}

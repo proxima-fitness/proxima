@@ -10,6 +10,7 @@ import {
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
     mergeCompletedWeeks,
+    missingHevyFolderWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
     weeksNeedingAutoMark,
@@ -263,5 +264,28 @@ describe("findHevyProgramForWeek", () => {
     it("returns null for missing week or unfetched Hevy programs", () => {
         expect(findHevyProgramForWeek(hevyPrograms, links, null)).toBeNull();
         expect(findHevyProgramForWeek(undefined, links, 1)).toBeNull();
+    });
+});
+
+describe("missingHevyFolderWeeks", () => {
+    const folder = (folderId: number, title: string): THevyProgramItem => ({
+        program_title: title,
+        program: [{ id: `r-${folderId}`, title: "1 - Push", folder_id: folderId, notes: "", exercises: [] }],
+    });
+    const links = [
+        { nth_week: 1, hevy_folder_id: 11 },
+        { nth_week: 2, hevy_folder_id: 22 },
+    ];
+
+    it("returns empty when Hevy programs have not loaded", () => {
+        expect(missingHevyFolderWeeks(undefined, links, [])).toEqual([]);
+    });
+
+    it("returns incomplete linked weeks whose folder is gone", () => {
+        expect(missingHevyFolderWeeks([folder(11, "Week 1")], links, [])).toEqual([2]);
+    });
+
+    it("omits Week complete weeks even if the folder is gone", () => {
+        expect(missingHevyFolderWeeks([], links, [1])).toEqual([2]);
     });
 });

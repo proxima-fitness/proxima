@@ -76,10 +76,33 @@ type TGetLinks = (programId: number) => Promise<TProgramHevyWeekLink[]>;
 
 /**
  * Next week to attempt after existing links (1 when none).
+ * Incomplete Current week whose linked folder is gone is that week (reset),
+ * not max(linked)+1.
  *
  * @param linkedWeeks - 1-based weeks that already have a Program–Hevy link
+ * @param options.currentWeek - Earliest incomplete linked week
+ * @param options.completedWeeks - Weeks marked Week complete
+ * @param options.missingFolderWeeks - Incomplete linked weeks whose Hevy folder is gone
  */
-export function nextExportableWeek(linkedWeeks: readonly number[]): number {
+export function nextExportableWeek(
+    linkedWeeks: readonly number[],
+    options: {
+        currentWeek?: number | null;
+        completedWeeks?: readonly number[];
+        missingFolderWeeks?: readonly number[];
+    } = {},
+): number {
+    const currentWeek = options.currentWeek ?? null;
+    const completedWeeks = options.completedWeeks ?? [];
+    const missingFolderWeeks = options.missingFolderWeeks ?? [];
+    if (
+        currentWeek != null &&
+        currentWeek >= 1 &&
+        !completedWeeks.includes(currentWeek) &&
+        missingFolderWeeks.includes(currentWeek)
+    ) {
+        return currentWeek;
+    }
     if (linkedWeeks.length === 0) {
         return 1;
     }
@@ -88,18 +111,20 @@ export function nextExportableWeek(linkedWeeks: readonly number[]): number {
 
 /**
  * Pure Week Export gate (C4, C5).
- * - C4: link exists for week N → blocked
+ * - C4: link exists for week N → blocked, unless N is incomplete and its folder is gone (reset)
  * - C5: Export N+1 blocked until week N is Week complete
  * Week 1 needs no prior complete. Week complete source is ADR 0011; pass completed weeks in.
  *
  * @param nthWeek - 1-based week to export
  * @param linkedWeeks - Weeks with Program–Hevy links
  * @param completedWeeks - Weeks marked Week complete
+ * @param missingFolderWeeks - Incomplete linked weeks whose Hevy folder is gone
  */
 export function evaluateWeekExportGate(
     nthWeek: number,
     linkedWeeks: readonly number[],
     completedWeeks: readonly number[],
+    missingFolderWeeks: readonly number[] = [],
 ): TWeekExportGateResult {
     if (!Number.isInteger(nthWeek) || nthWeek < 1) {
         return {
@@ -113,6 +138,9 @@ export function evaluateWeekExportGate(
     const completed = new Set(completedWeeks);
 
     if (linked.has(nthWeek)) {
+        if (!completed.has(nthWeek) && missingFolderWeeks.includes(nthWeek)) {
+            return { allowed: true };
+        }
         return {
             allowed: false,
             code: "already_linked",
@@ -212,6 +240,7 @@ export async function loadPrescriptionHevyRoutines(programId: number): Promise<T
  * @param params.apiKey - User Hevy API key
  * @param params.user - Authenticated user (custom exercise remap)
  * @param params.completedWeeks - Weeks marked Week complete (ADR 0011 owns compute; pass-through here)
+ * @param params.missingFolderWeeks - Incomplete linked weeks whose Hevy folder is gone (reset)
  * @param params.onProgress - Optional upload progress callback
  * @param params.prescriptionRoutines - Optional preloaded full prescription (skips fetch)
  * @param params.postOneFolder - Injectable upload (tests)
@@ -226,6 +255,7 @@ export async function exportProgramWeekToHevy(params: {
     apiKey: string;
     user: User;
     completedWeeks?: readonly number[];
+    missingFolderWeeks?: readonly number[];
     onProgress?: THevyUploadProgressCallback;
     prescriptionRoutines?: THevyRoutine[];
     postOneFolder?: TPostOneFolder;
@@ -240,6 +270,7 @@ export async function exportProgramWeekToHevy(params: {
         apiKey,
         user,
         completedWeeks = [],
+        missingFolderWeeks = [],
         onProgress,
         prescriptionRoutines: preloaded,
         postOneFolder = postProgramToHevyOneFolder,
@@ -251,7 +282,12 @@ export async function exportProgramWeekToHevy(params: {
     try {
         const links = await getLinks(programId);
         const linkedWeeks = links.map((link) => link.nth_week);
-        const gate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
+        const gate = evaluateWeekExportGate(
+            nthWeek,
+            linkedWeeks,
+            completedWeeks,
+            missingFolderWeeks,
+        );
         if (!gate.allowed) {
             return { success: false, error: new Error(gate.reason) };
         }

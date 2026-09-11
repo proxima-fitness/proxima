@@ -76,11 +76,16 @@ export type TProgramOverviewCtasProps = {
     /** Owner-only: show rename control next to the title. */
     canRenameTitle?: boolean;
     /**
-     * 1-based Current week when Edit current week can run. Null/omitted still
-     * shows disabled "Edit Week 1" before the first Week Export.
+     * 1-based Current week. Used for Edit Week N and for reset Export when
+     * that week's folder is gone.
      */
     currentWeek?: number | null;
-    /** Enter Edit current week for `currentWeek`. */
+    /**
+     * Incomplete linked weeks whose Hevy folder is gone. Enables reset
+     * Re-Export of Current week (D5).
+     */
+    missingFolderWeeks?: readonly number[];
+    /** Enter Edit current week for `currentWeek`. Omit when there is no Edit target. */
     onEditCurrentWeek?: () => void;
     /** Disable Edit Week N while Hevy is loading or the session is entering. */
     editCurrentWeekDisabled?: boolean;
@@ -138,6 +143,7 @@ export function ProgramOverviewCtas({
     linksLoading,
     canRenameTitle = false,
     currentWeek = null,
+    missingFolderWeeks = [],
     onEditCurrentWeek,
     editCurrentWeekDisabled = false,
 }: TProgramOverviewCtasProps) {
@@ -157,8 +163,17 @@ export function ProgramOverviewCtas({
     const [isRenaming, setIsRenaming] = useState(false);
     const [isApplyingSuggestion, setIsApplyingSuggestion] = useState(false);
 
-    const nthWeek = nextExportableWeek(linkedWeeks);
-    const gate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
+    const nthWeek = nextExportableWeek(linkedWeeks, {
+        currentWeek,
+        completedWeeks,
+        missingFolderWeeks,
+    });
+    const gate = evaluateWeekExportGate(
+        nthWeek,
+        linkedWeeks,
+        completedWeeks,
+        missingFolderWeeks,
+    );
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
     const meta = formatProgramMeta(programLength, specialization);
@@ -166,7 +181,11 @@ export function ProgramOverviewCtas({
     const showEditCurrentWeek =
         currentWeek != null && currentWeek >= 1 && onEditCurrentWeek != null;
     const liveEditWeek = currentWeek != null && currentWeek >= 1 ? currentWeek : null;
-    const editWeekNumber = liveEditWeek ?? (hasExported ? null : 1);
+    const editWeekNumber = showEditCurrentWeek
+        ? liveEditWeek
+        : hasExported
+          ? null
+          : 1;
     const editWeekDisabled =
         !hasExported || !showEditCurrentWeek || editCurrentWeekDisabled;
 
@@ -183,7 +202,12 @@ export function ProgramOverviewCtas({
             return;
         }
 
-        const liveGate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
+        const liveGate = evaluateWeekExportGate(
+            nthWeek,
+            linkedWeeks,
+            completedWeeks,
+            missingFolderWeeks,
+        );
         if (!liveGate.allowed) {
             toast.error(liveGate.reason);
             return;
@@ -199,6 +223,7 @@ export function ProgramOverviewCtas({
             apiKey: hevyApiKey,
             user,
             completedWeeks,
+            missingFolderWeeks,
             onProgress: (uploaded, total, status, rateLimitSecondsLeft) => {
                 setUploadProgress({ uploaded, total, status, rateLimitSecondsLeft });
             },

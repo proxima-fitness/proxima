@@ -90,8 +90,19 @@ describe("buildWeekExportUploadArgs", () => {
 });
 
 describe("evaluateWeekExportGate", () => {
-    it("blocks re-Export when week already linked (C4)", () => {
+    it("blocks re-Export when week already linked and the folder still exists", () => {
         const gate = evaluateWeekExportGate(1, [1], []);
+        expect(gate.allowed).toBe(false);
+        if (gate.allowed) return;
+        expect(gate.code).toBe("already_linked");
+    });
+
+    it("allows Re-Export of a linked incomplete week whose folder is gone", () => {
+        expect(evaluateWeekExportGate(1, [1], [], [1])).toEqual({ allowed: true });
+    });
+
+    it("still blocks Re-Export of a Week complete week whose folder is gone", () => {
+        const gate = evaluateWeekExportGate(1, [1], [1], [1]);
         expect(gate.allowed).toBe(false);
         if (gate.allowed) return;
         expect(gate.code).toBe("already_linked");
@@ -125,6 +136,26 @@ describe("nextExportableWeek", () => {
         expect(nextExportableWeek([])).toBe(1);
         expect(nextExportableWeek([1])).toBe(2);
         expect(nextExportableWeek([1, 2])).toBe(3);
+    });
+
+    it("returns Current week when that week's folder is gone", () => {
+        expect(
+            nextExportableWeek([1], {
+                currentWeek: 1,
+                missingFolderWeeks: [1],
+                completedWeeks: [],
+            }),
+        ).toBe(1);
+    });
+
+    it("still advances to N+1 when the Current week folder exists", () => {
+        expect(
+            nextExportableWeek([1], {
+                currentWeek: 1,
+                missingFolderWeeks: [],
+                completedWeeks: [],
+            }),
+        ).toBe(2);
     });
 });
 
@@ -226,6 +257,48 @@ describe("exportProgramWeekToHevy link persistence", () => {
         expect(result.error.message).toMatch(/already exported/i);
         expect(postOneFolder).not.toHaveBeenCalled();
         expect(upsertLink).not.toHaveBeenCalled();
+    });
+
+    it("allows reset Re-Export when the linked folder is gone", async () => {
+        const upsertLink = vi.fn().mockResolvedValue(
+            makeLink({
+                nth_week: 1,
+                hevy_folder_id: 999,
+                hevy_routine_ids: ["n1", "n2"],
+            }),
+        );
+        const getCurrentWeek = vi.fn().mockResolvedValue(1);
+        const postOneFolder = vi.fn().mockResolvedValue({
+            success: true,
+            data: { hevyFolderId: 999, hevyRoutineIds: ["n1", "n2"] },
+            createdNewHevyCustomTemplates: 0,
+        });
+        const getLinks = vi.fn().mockResolvedValue([makeLink({ nth_week: 1 })]);
+
+        const result = await exportProgramWeekToHevy({
+            programId: 42,
+            programTitle: "Block A",
+            nthWeek: 1,
+            apiKey: "key",
+            user: USER,
+            missingFolderWeeks: [1],
+            prescriptionRoutines: prescription,
+            postOneFolder,
+            upsertLink,
+            getCurrentWeek,
+            getLinks,
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success !== true) return;
+        expect(postOneFolder).toHaveBeenCalledTimes(1);
+        expect(upsertLink).toHaveBeenCalledWith({
+            userId: USER.id,
+            programId: 42,
+            nthWeek: 1,
+            hevyFolderId: 999,
+            hevyRoutineIds: ["n1", "n2"],
+        });
     });
 
     it("blocks N+1 export when prior week incomplete", async () => {

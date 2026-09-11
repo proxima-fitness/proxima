@@ -43,6 +43,7 @@ import {
     deriveEffectiveCompletedWeeks,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
+    missingHevyFolderWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
     weeksNeedingAutoMark,
@@ -153,6 +154,7 @@ export function ProgramOverviewWeekList({
 
     /** Still fetching Hevy — distinct from "fetched, folder is gone". */
     const hevyPending = Boolean(hevyApiKey) && isLoadingHevy;
+    const hevyFetched = Boolean(hevyApiKey) && !hevyPending;
     /** Link row for the Current week — carries the folder id and day-ordered routine ids. */
     const currentWeekLink =
         currentWeekNumber != null
@@ -165,6 +167,14 @@ export function ProgramOverviewWeekList({
             : null;
     const showEditCurrentWeek =
         currentWeekNumber != null && (hevyPending || currentWeekHevyProgram != null);
+    const missingFolderWeeks = hevyFetched
+        ? missingHevyFolderWeeks(hevyPrograms ?? [], links, completedWeeks)
+        : [];
+    const selectedHevyProgram = findHevyProgramForWeek(
+        hevyPrograms,
+        links,
+        resolvedSelected,
+    );
 
     /** Edit current week: hand the linked folder to the builder, ordered by the link. */
     const handleEditCurrentWeek = async (program: THevyProgramItem, week: number) => {
@@ -207,7 +217,8 @@ export function ProgramOverviewWeekList({
                 completedWeeks={completedWeeks}
                 linksLoading={linksLoading}
                 canRenameTitle={canRenameTitle}
-                currentWeek={showEditCurrentWeek ? currentWeekNumber : null}
+                currentWeek={currentWeekNumber}
+                missingFolderWeeks={missingFolderWeeks}
                 onEditCurrentWeek={
                     showEditCurrentWeek
                         ? () => {
@@ -259,13 +270,8 @@ export function ProgramOverviewWeekList({
                             link={
                                 links.find((row) => row.nth_week === resolvedSelected) ?? null
                             }
-                            hevyFolderRoutines={
-                                findHevyProgramForWeek(
-                                    hevyPrograms,
-                                    links,
-                                    resolvedSelected,
-                                )?.program ?? []
-                            }
+                            hevyFolderRoutines={selectedHevyProgram?.program ?? []}
+                            hevyFolderPresent={!hevyFetched || selectedHevyProgram != null}
                             hevyFolderPending={hevyPending}
                             workoutRoutineIds={workoutRoutineIds}
                             userId={user?.id}

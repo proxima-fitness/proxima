@@ -63,6 +63,7 @@ describe("resolveWeekPreview", () => {
             link: null,
             prescriptionDays: prescription,
             hevyFolderRoutines: hevyFolder,
+            hevyFolderPresent: true,
             workouts: [makeWorkout("r-push")],
         });
 
@@ -85,6 +86,7 @@ describe("resolveWeekPreview", () => {
             link: makeLink(),
             prescriptionDays: prescription,
             hevyFolderRoutines: liveFolder,
+            hevyFolderPresent: true,
             workouts: [],
         });
 
@@ -106,6 +108,7 @@ describe("resolveWeekPreview", () => {
             link: makeLink(),
             prescriptionDays: prescription,
             hevyFolderRoutines: [],
+            hevyFolderPresent: true,
             workouts: [],
         });
 
@@ -126,6 +129,7 @@ describe("resolveWeekPreview", () => {
             link: makeLink({ completed_at: "2026-09-01T00:00:00Z" }),
             prescriptionDays: prescription,
             hevyFolderRoutines: [],
+            hevyFolderPresent: false,
             workouts: [
                 makeWorkout("r-push", { title: "Logged Push", started_at: "2026-08-31T10:00:00Z" }),
                 makeWorkout("r-pull", { title: "Logged Pull", started_at: "2026-08-31T12:00:00Z" }),
@@ -150,6 +154,7 @@ describe("resolveWeekPreview", () => {
             link: makeLink({ completed_at: "2026-09-01T00:00:00Z" }),
             prescriptionDays: prescription,
             hevyFolderRoutines: hevyFolder,
+            hevyFolderPresent: true,
             workouts: [makeWorkout("r-push", { title: "Logged Push" })],
         });
 
@@ -176,6 +181,7 @@ describe("resolveWeekPreview", () => {
                 makeRoutine("3 - Legs", { order: "3" }),
             ],
             hevyFolderRoutines: [],
+            hevyFolderPresent: false,
             workouts: [
                 makeWorkout("r-push", { title: "Logged Push" }),
                 makeWorkout("r-legs", { title: "Logged Legs" }),
@@ -200,6 +206,7 @@ describe("resolveWeekPreview", () => {
             link: makeLink({ completed_at: "2026-09-01T00:00:00Z" }),
             prescriptionDays: prescription,
             hevyFolderRoutines: hevyFolder,
+            hevyFolderPresent: true,
             workouts: [
                 makeWorkout("r-push", {
                     id: "older",
@@ -219,12 +226,49 @@ describe("resolveWeekPreview", () => {
         expect(preview.days[0]?.slots[1]?.routine?.id).toBe("newer");
     });
 
-    it("un-completes and shows Planned prescription when complete-week Workouts are gone", () => {
+    it("un-completes and shows the Hevy week copy when the folder is still there", () => {
         const preview = resolveWeekPreview({
             nthWeek: 1,
             link: makeLink({ completed_at: "2026-09-01T00:00:00Z" }),
             prescriptionDays: prescription,
             hevyFolderRoutines: hevyFolder,
+            hevyFolderPresent: true,
+            workouts: [],
+        });
+
+        expect(preview.shouldUncomplete).toBe(true);
+        expect(preview.days.map((day) => day.slots.map((slot) => slot.source))).toEqual([
+            ["In Hevy"],
+            ["In Hevy"],
+        ]);
+        expect(preview.days[0]?.slots[0]?.routine?.title).toBe("1 - Push");
+    });
+
+    it("shows Program prescription when the linked folder is gone and the week is not complete", () => {
+        const preview = resolveWeekPreview({
+            nthWeek: 1,
+            link: makeLink(),
+            prescriptionDays: prescription,
+            hevyFolderRoutines: [],
+            hevyFolderPresent: false,
+            workouts: [makeWorkout("r-push")],
+        });
+
+        expect(preview.shouldUncomplete).toBe(false);
+        expect(preview.days.map((day) => day.slots.map((slot) => slot.source))).toEqual([
+            ["Planned"],
+            ["Planned"],
+        ]);
+        expect(preview.days[0]?.slots[0]?.routine?.title).toBe("1 - Push");
+    });
+
+    it("un-completes to Program prescription when Workouts and the folder are both gone", () => {
+        const preview = resolveWeekPreview({
+            nthWeek: 1,
+            link: makeLink({ completed_at: "2026-09-01T00:00:00Z" }),
+            prescriptionDays: prescription,
+            hevyFolderRoutines: [],
+            hevyFolderPresent: false,
             workouts: [],
         });
 
@@ -233,7 +277,6 @@ describe("resolveWeekPreview", () => {
             ["Planned"],
             ["Planned"],
         ]);
-        expect(preview.days[0]?.slots[0]?.routine?.title).toBe("1 - Push");
     });
 
     it("does not join Planned vs completed on live day number after add/remove", () => {
@@ -249,6 +292,7 @@ describe("resolveWeekPreview", () => {
                 makeRoutine("Arms", { id: "r-arms" }),
                 makeRoutine("Push", { id: "r-push" }),
             ],
+            hevyFolderPresent: true,
             workouts: [
                 makeWorkout("r-push", { title: "Logged Push" }),
                 makeWorkout("r-arms", { title: "Logged Arms" }),
