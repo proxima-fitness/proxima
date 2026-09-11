@@ -4,6 +4,7 @@ import {
     editorReducer,
     isNewPathDirty,
     isNewPathSaveDirty,
+    isNewPathToolbarSaveDisabled,
     UNDO_STACK_CAP,
     type TEditorState,
 } from "../editor-reducer";
@@ -142,11 +143,58 @@ describe("editorReducer", () => {
         expect(isNewPathDirty(3)).toBe(true);
     });
 
-    it("isNewPathSaveDirty: never Saved with program is dirty; after baseline uses undo stack", () => {
+    it("isNewPathSaveDirty: never Saved with exercises is dirty; after baseline uses undo stack", () => {
         expect(isNewPathSaveDirty(0, false, true)).toBe(true);
         expect(isNewPathSaveDirty(0, false, false)).toBe(false);
         expect(isNewPathSaveDirty(0, true, true)).toBe(false);
         expect(isNewPathSaveDirty(1, true, true)).toBe(true);
+    });
+
+    it("isNewPathToolbarSaveDisabled: signed in, idle, exercises, never Saved is enabled without chat", () => {
+        expect(isNewPathToolbarSaveDisabled({
+            hasProgramContent: true,
+            hasSaveBaseline: false,
+            isLoading: false,
+            isSaving: false,
+            undoStackLength: 0,
+            userPresent: true,
+        })).toBe(false);
+    });
+
+    it("isNewPathToolbarSaveDisabled: empty day shells stay disabled", () => {
+        expect(isNewPathToolbarSaveDisabled({
+            hasProgramContent: false,
+            hasSaveBaseline: false,
+            isLoading: false,
+            isSaving: false,
+            undoStackLength: 0,
+            userPresent: true,
+        })).toBe(true);
+    });
+
+    it("isNewPathToolbarSaveDisabled: anonymous, in-flight, and clean post-Save stay disabled", () => {
+        const readyWithExercises = {
+            hasProgramContent: true,
+            hasSaveBaseline: false,
+            isLoading: false,
+            isSaving: false,
+            undoStackLength: 0,
+            userPresent: true,
+        };
+
+        expect(isNewPathToolbarSaveDisabled({ ...readyWithExercises, userPresent: false })).toBe(true);
+        expect(isNewPathToolbarSaveDisabled({ ...readyWithExercises, isLoading: true })).toBe(true);
+        expect(isNewPathToolbarSaveDisabled({ ...readyWithExercises, isSaving: true })).toBe(true);
+        expect(isNewPathToolbarSaveDisabled({
+            ...readyWithExercises,
+            hasSaveBaseline: true,
+            undoStackLength: 0,
+        })).toBe(true);
+        expect(isNewPathToolbarSaveDisabled({
+            ...readyWithExercises,
+            hasSaveBaseline: true,
+            undoStackLength: 1,
+        })).toBe(false);
     });
 
     it(`drops oldest snapshot when stack exceeds cap ${UNDO_STACK_CAP}`, () => {

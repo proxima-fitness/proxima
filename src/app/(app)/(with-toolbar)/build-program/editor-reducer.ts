@@ -1,3 +1,10 @@
+/**
+ * @module editor-reducer
+ * Builder program + undo stack. New-path Save/leave dirty is exercise content
+ * vs last Save, not chat messages (CONTEXT: Save does not require chat).
+ * Depends on: nothing. Used by: BuildProgram, tests.
+ */
+
 /** Max undo snapshots retained; oldest dropped on overflow. */
 export const UNDO_STACK_CAP = 100;
 
@@ -25,18 +32,54 @@ export function isNewPathDirty(undoStackLength: number): boolean {
 }
 
 /**
- * New-path Save/leave dirty: never Saved with a program, or undo stack non-empty vs last Save.
+ * New-path Save/leave dirty: never Saved with at least one exercise, or undo
+ * stack non-empty vs last Save. Empty day shells are not dirty.
  * ADR 0007 — Save clears baseline; further edits re-dirty.
+ *
+ * @param undoStackLength - Snapshots since last Save
+ * @param hasSaveBaseline - True after a successful Save this session
+ * @param hasProgramContent - Any day has exercise rows
  */
 export function isNewPathSaveDirty(
     undoStackLength: number,
     hasSaveBaseline: boolean,
-    hasProgram: boolean,
+    hasProgramContent: boolean,
 ): boolean {
     if (!hasSaveBaseline) {
-        return hasProgram;
+        return hasProgramContent;
     }
     return isNewPathDirty(undoStackLength);
+}
+
+/** Inputs for New-path toolbar Save disable (chat messages are not a gate). */
+export interface INewPathToolbarSaveDisabledInput {
+    hasProgramContent: boolean;
+    hasSaveBaseline: boolean;
+    isLoading: boolean;
+    isSaving: boolean;
+    undoStackLength: number;
+    userPresent: boolean;
+}
+
+/**
+ * New-path toolbar Save disable. Signed in, chat idle, and save-dirty.
+ * Does not require a chat message.
+ *
+ * @param input - User, in-flight, and dirty snapshot
+ */
+export function isNewPathToolbarSaveDisabled(
+    input: INewPathToolbarSaveDisabledInput,
+): boolean {
+    return (
+        !input.userPresent
+        || input.isSaving
+        || input.isLoading
+        || !isNewPathSaveDirty(
+            input.undoStackLength,
+            input.hasSaveBaseline,
+            input.hasProgramContent,
+        )
+    );
 }
 
 function pushUndoSnapshot(stack: THevyRoutine[][], snapshot: THevyRoutine[]): THevyRoutine[][] {

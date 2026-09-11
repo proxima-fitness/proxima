@@ -23,14 +23,13 @@ import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
-import { normalizeProgramState } from "@/components/program-builder/utils/helpers";
+import { getMessageText, normalizeProgramState, programHasExerciseRows } from "@/components/program-builder/utils/helpers";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getSharedProgram, postNewProgramSubscriber } from "@/api/programs";
 import { CHAT_MESSAGES_KEY, COLLAPSED_SIZE, EXPANDED_SIZE, LONG_PROMPT_PLACEHOLDER, SIDEBAR_POSITION_KEY, SIDEBAR_SIZE_KEY } from "@/assets/constants/ui-constants";
 import { emptyHevyProgram } from "@/assets/constants";
-import { getMessageText } from "@/components/program-builder/utils/helpers";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,7 +69,7 @@ import {
 import { useEditSession } from "@/contexts/EditSessionContext";
 import { isHevyEditArrival, persistModeForBuilder, completedHevyRoutineIdsForWeek } from "@/hooks/edit-persist";
 import { PROGRAM_HEVY_LINKS_QUERY_KEY, useHevySecret, useWorkoutRoutineIds } from "@/api/hooks";
-import { editorReducer, isNewPathDirty, isNewPathSaveDirty } from "./editor-reducer";
+import { editorReducer, isNewPathDirty, isNewPathSaveDirty, isNewPathToolbarSaveDisabled } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
@@ -181,10 +180,11 @@ export function BuildProgram() {
     /** True after a successful New-path Save this session (undo baseline established). */
     const [hasSaveBaseline, setHasSaveBaseline] = useState(false);
     const editMode = searchParams.get("edit") === "true";
+    const hasProgramContent = programHasExerciseRows(hevyProgram);
     const newPathDirty = isNewPathSaveDirty(
         undoStack.length,
         hasSaveBaseline,
-        hevyProgram.length > 0,
+        hasProgramContent,
     );
     /** Mirror only — SoT is save baseline + undo stack. Silent assign for beforeunload / link capture. */
     newPathLeaveGuard.setDirty(!editMode && newPathDirty);
@@ -573,6 +573,7 @@ function BuildProgramShell({
         hasEditSession: editSession != null,
         isHevyEditArrival,
     });
+    const hasProgramContent = programHasExerciseRows(hevyProgram);
     const [isSaving, setIsSaving] = useState(false);
     const [syncDialogOpen, setSyncDialogOpen] = useState(false);
     const [syncPhase, setSyncPhase] = useState<TSyncDialogPhase>("uploading");
@@ -648,7 +649,7 @@ function BuildProgramShell({
             toast.error("Sign in to save.");
             return;
         }
-        if (hevyProgram.length === 0) {
+        if (!hasProgramContent) {
             toast.error("Add a program first.");
             return;
         }
@@ -708,7 +709,7 @@ function BuildProgramShell({
     }, [
         isLoading,
         user,
-        hevyProgram.length,
+        hasProgramContent,
         orderedProgram,
         programRequest.request,
         search,
@@ -946,8 +947,6 @@ function BuildProgramShell({
         <ProgramEditor orderedProgram={orderedProgram} isMobile={isMobile} />
     );
 
-    const hasProgramContent = hevyProgram.some((r) => (r.exercises ?? []).length > 0);
-
     return (
         <ProgramMutationProvider
             program={hevyProgram}
@@ -968,15 +967,14 @@ function BuildProgramShell({
                 saveDisabled={
                     persistMode === "sync"
                         ? !user || isSaving || isLoading
-                        : !user
-                            || isSaving
-                            || isLoading
-                            || messages.length === 0
-                            || !isNewPathSaveDirty(
-                                undoStackLength,
-                                hasSaveBaseline,
-                                hevyProgram.length > 0,
-                            )
+                        : isNewPathToolbarSaveDisabled({
+                            hasProgramContent,
+                            hasSaveBaseline,
+                            isLoading,
+                            isSaving,
+                            undoStackLength,
+                            userPresent: Boolean(user),
+                        })
                 }
                 isSaving={isSaving}
                 persistMode={persistMode}
