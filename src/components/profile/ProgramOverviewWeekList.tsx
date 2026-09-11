@@ -5,19 +5,20 @@
  * ADR 0011 / 04, mobile layout): shell (title | Export / overflow), week rail +
  * Selected week preview (mobile: sticky chips + compact list; desktop:
  * HevyDayCard), Mark week complete, AI week suggest, Hevy mirror.
+ * Title percent is **Day complete** / planned days.
  *
  * Depends on: useProgramHevyWeekLinks, useWorkoutRoutineIds, useHevyPrograms,
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
  *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
  *             ProgramOverviewCtas, ProgramOverviewHevyMirror, AiWeekSuggestPanel,
- *             ConfirmDialog
+ *             ConfirmDialog, loadPrescriptionHevyRoutines
  * Used by: ProgramOverviewSection (carousel children)
  */
 
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -43,6 +44,7 @@ import {
     WeekSuggestApplyError,
 } from "./AiWeekSuggestApply";
 import { AiWeekSuggestPanel } from "./AiWeekSuggestPanel";
+import { loadPrescriptionHevyRoutines } from "./ProgramOverviewExportWeek";
 import { ProgramOverviewCtas } from "./ProgramOverviewCtas";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import {
@@ -54,6 +56,7 @@ import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
     deriveEffectiveCompletedWeeks,
+    deriveProgramDayProgress,
     deriveProgramOverviewWeekStatuses,
     findHevyProgramForWeek,
     missingHevyFolderWeeks,
@@ -123,6 +126,11 @@ export function ProgramOverviewWeekList({
     const { data: workoutRoutineIds = [], isLoading: workoutIdsLoading } = useWorkoutRoutineIds(
         user?.id,
     );
+    const { data: prescriptionRoutines = [] } = useQuery({
+        queryKey: [...PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY, programId],
+        queryFn: () => loadPrescriptionHevyRoutines(programId),
+        enabled: Number.isInteger(programId) && programId > 0,
+    });
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [confirmCompleteWeek, setConfirmCompleteWeek] = useState<number | null>(null);
     const [isApplyingSuggestion, setIsApplyingSuggestion] = useState(false);
@@ -135,6 +143,12 @@ export function ProgramOverviewWeekList({
     const persistedCompleted = deriveCompletedWeeksFromLinks(links);
     const autoCompleted = deriveCompletedWeeksFromWorkoutRoutineIds(links, workoutRoutineIds);
     const completedWeeks = deriveEffectiveCompletedWeeks(links, workoutRoutineIds);
+    const dayProgress = deriveProgramDayProgress(
+        links,
+        workoutRoutineIds,
+        completedWeeks,
+        prescriptionRoutines,
+    );
     const autoMarkWeeks = weeksNeedingAutoMark(autoCompleted, persistedCompleted);
     const uncompleteWeeks = weeksNeedingUncomplete(links, workoutRoutineIds);
 
@@ -273,6 +287,8 @@ export function ProgramOverviewWeekList({
                 specialization={specialization}
                 linkedWeeks={linkedWeeks}
                 completedWeeks={completedWeeks}
+                completedDays={dayProgress.completed}
+                totalDays={dayProgress.total}
                 linksLoading={linksLoading}
                 canRenameTitle={canRenameTitle}
                 currentWeek={currentWeekNumber}

@@ -18,7 +18,18 @@ import {
     weekCompletePercent,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
+    deriveProgramDayProgress,
 } from "../ProgramOverviewWeekStatus";
+
+function makeDay(folderId: number, title: string): THevyRoutine {
+    return {
+        id: `${folderId}-${title}`,
+        title,
+        folder_id: folderId,
+        notes: "",
+        exercises: [],
+    };
+}
 
 describe("deriveProgramOverviewWeekStatuses", () => {
     it("returns empty when program length is invalid", () => {
@@ -215,9 +226,111 @@ describe("weekCompletePercent", () => {
     it("returns a 0–100 integer", () => {
         expect(weekCompletePercent(0, 8)).toBe(0);
         expect(weekCompletePercent(1, 8)).toBe(13);
+        expect(weekCompletePercent(1, 32)).toBe(3);
+        expect(weekCompletePercent(4, 32)).toBe(13);
         expect(weekCompletePercent(2, 8)).toBe(25);
         expect(weekCompletePercent(8, 8)).toBe(100);
         expect(weekCompletePercent(1, 0)).toBe(0);
+    });
+});
+
+describe("deriveProgramDayProgress", () => {
+    const prescription = [
+        makeDay(0, "W1D1"),
+        makeDay(0, "W1D2"),
+        makeDay(0, "W1D3"),
+        makeDay(0, "W1D4"),
+        makeDay(1, "W2D1"),
+        makeDay(1, "W2D2"),
+        makeDay(1, "W2D3"),
+        makeDay(1, "W2D4"),
+    ];
+
+    it("returns zeros when the prescription is empty", () => {
+        expect(deriveProgramDayProgress([], [], [], [])).toEqual({
+            completed: 0,
+            total: 0,
+        });
+        expect(
+            deriveProgramDayProgress(
+                [{ nth_week: 1, hevy_routine_ids: ["r1", "r2"] }],
+                ["r1"],
+                [],
+                [],
+            ),
+        ).toEqual({ completed: 0, total: 0 });
+    });
+
+    it("counts total planned days and zero complete before any logs", () => {
+        expect(deriveProgramDayProgress([], [], [], prescription)).toEqual({
+            completed: 0,
+            total: 8,
+        });
+    });
+
+    it("advances one day when one planned routine has a Workout", () => {
+        expect(
+            deriveProgramDayProgress(
+                [
+                    {
+                        nth_week: 1,
+                        hevy_routine_ids: ["r1", "r2", "r3", "r4"],
+                    },
+                ],
+                ["r1"],
+                [],
+                prescription,
+            ),
+        ).toEqual({ completed: 1, total: 8 });
+    });
+
+    it("does not wait for Week complete to count logged days in the week", () => {
+        expect(
+            deriveProgramDayProgress(
+                [
+                    {
+                        nth_week: 1,
+                        hevy_routine_ids: ["r1", "r2", "r3", "r4"],
+                    },
+                ],
+                ["r1", "r2"],
+                [],
+                prescription,
+            ),
+        ).toEqual({ completed: 2, total: 8 });
+    });
+
+    it("counts every planned day of a Week complete week", () => {
+        expect(
+            deriveProgramDayProgress(
+                [
+                    {
+                        nth_week: 1,
+                        hevy_routine_ids: ["r1", "r2", "r3", "r4"],
+                    },
+                ],
+                ["r1"],
+                [1],
+                prescription,
+            ),
+        ).toEqual({ completed: 4, total: 8 });
+    });
+
+    it("keeps a logged day after the live routine ID is dropped", () => {
+        expect(
+            deriveProgramDayProgress(
+                [
+                    {
+                        nth_week: 1,
+                        hevy_routine_ids: ["r2", "r3", "r4"],
+                        exported_hevy_routine_ids: ["r1", "r2", "r3", "r4"],
+                    },
+                ],
+                ["r1"],
+                [],
+                prescription,
+            ),
+        ).toEqual({ completed: 1, total: 8 });
     });
 });
 

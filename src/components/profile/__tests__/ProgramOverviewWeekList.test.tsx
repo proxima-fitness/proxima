@@ -2,7 +2,7 @@
  * Mark week complete confirm dialog on Program overview week list.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
@@ -14,6 +14,7 @@ const useWorkoutRoutineIds = vi.fn();
 const mutateMarkComplete = vi.fn();
 const useMarkProgramWeekComplete = vi.fn();
 const programOverviewCtas = vi.fn();
+const loadPrescriptionHevyRoutines = vi.fn();
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -43,12 +44,18 @@ vi.mock("../ProgramOverviewCtas", () => ({
     },
 }));
 
+vi.mock("../ProgramOverviewExportWeek", () => ({
+    loadPrescriptionHevyRoutines: (...args: unknown[]) =>
+        loadPrescriptionHevyRoutines(...args),
+}));
+
 vi.mock("../ProgramOverviewHevyMirror", () => ({
     ProgramOverviewHevyMirror: () => null,
 }));
 
 vi.mock("../ProgramOverviewWeekPreview", () => ({
     ProgramOverviewWeekPreview: () => null,
+    PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY: ["program-prescription-hevy"],
 }));
 
 import { ProgramOverviewWeekList } from "../ProgramOverviewWeekList";
@@ -81,6 +88,8 @@ describe("ProgramOverviewWeekList mark week complete", () => {
             data: [],
             isLoading: false,
         });
+        loadPrescriptionHevyRoutines.mockReset();
+        loadPrescriptionHevyRoutines.mockResolvedValue([]);
         mutateMarkComplete.mockReset();
         programOverviewCtas.mockClear();
         useMarkProgramWeekComplete.mockReturnValue({
@@ -224,5 +233,51 @@ describe("ProgramOverviewWeekList mark week complete", () => {
         expect(panel.querySelector("h4")).toBeNull();
         expect(panel.textContent).not.toMatch(/Current/);
         expect(panel.textContent).not.toMatch(/Not exported/);
+    });
+
+    it("passes Day complete progress to the title bar, not Week complete count", async () => {
+        loadPrescriptionHevyRoutines.mockResolvedValue([
+            { id: "d1", title: "W1D1", folder_id: 0, notes: "", exercises: [] },
+            { id: "d2", title: "W1D2", folder_id: 0, notes: "", exercises: [] },
+            { id: "d3", title: "W1D3", folder_id: 0, notes: "", exercises: [] },
+            { id: "d4", title: "W1D4", folder_id: 0, notes: "", exercises: [] },
+            { id: "d5", title: "W2D1", folder_id: 1, notes: "", exercises: [] },
+            { id: "d6", title: "W2D2", folder_id: 1, notes: "", exercises: [] },
+            { id: "d7", title: "W2D3", folder_id: 1, notes: "", exercises: [] },
+            { id: "d8", title: "W2D4", folder_id: 1, notes: "", exercises: [] },
+        ]);
+        useProgramHevyWeekLinks.mockReturnValue({
+            data: [
+                {
+                    id: "link-1",
+                    nth_week: 1,
+                    completed_at: null,
+                    hevy_folder_id: 10,
+                    hevy_routine_ids: ["r1", "r2", "r3", "r4"],
+                },
+            ],
+            isLoading: false,
+        });
+        useWorkoutRoutineIds.mockReturnValue({
+            data: ["r1"],
+            isLoading: false,
+        });
+
+        renderList(
+            <ProgramOverviewWeekList
+                programId={11}
+                programTitle="Strength Block A"
+                programLength={8}
+            />,
+        );
+
+        await waitFor(() => {
+            const props = programOverviewCtas.mock.calls.at(-1)?.[0] as {
+                completedDays?: number;
+                totalDays?: number;
+            };
+            expect(props.completedDays).toBe(1);
+            expect(props.totalDays).toBe(8);
+        });
     });
 });

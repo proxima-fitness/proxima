@@ -259,9 +259,29 @@ describe("ProgramOverviewCtas chrome", () => {
         ).toBeTruthy();
     });
 
-    it("shows Week complete percent under the title", () => {
+    it("shows Day complete percent under the title", () => {
         renderCtas(
-            <ProgramOverviewCtas {...baseProps} completedWeeks={[1]} />,
+            <ProgramOverviewCtas
+                {...baseProps}
+                completedDays={1}
+                totalDays={32}
+            />,
+        );
+
+        expect(screen.getByText("3%")).toBeTruthy();
+        expect(screen.getAllByRole("progressbar", { name: "3% complete" }).length).toBeGreaterThan(
+            0,
+        );
+    });
+
+    it("advances the percent for each completed day, not each Week complete", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                completedWeeks={[]}
+                completedDays={4}
+                totalDays={32}
+            />,
         );
 
         expect(screen.getByText("13%")).toBeTruthy();
@@ -271,7 +291,7 @@ describe("ProgramOverviewCtas chrome", () => {
     });
 
     it("shows 0% on mobile meta and hides the desktop percent label at 0%", () => {
-        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+        renderCtas(<ProgramOverviewCtas {...baseProps} completedDays={0} totalDays={32} />);
 
         expect(screen.getByText(/0% complete/)).toBeTruthy();
         expect(screen.queryByText("0%", { exact: true })).toBeNull();

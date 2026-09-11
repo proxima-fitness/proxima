@@ -3,8 +3,8 @@
  *
  * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01, mobile layout):
  * title + meta left (owner can rename). **Edit program** is always a quiet
- * title-row control on desktop. A **Week complete** percent bar sits under
- * the title (desktop: above 0%; mobile: always when length known).
+ * title-row control on desktop. A **Day complete** percent bar sits under
+ * the title (desktop: above 0%; mobile: always when planned-day total known).
  * Desktop header: split Export (Hevy Week Export left, PDF / spreadsheet
  * dropdown right) plus **Edit current week** ("Edit Week N").
  * Mobile: overflow ⋯ for occasional actions; full-width Export only while
@@ -67,6 +67,10 @@ export type TProgramOverviewCtasProps = {
     specialization?: string[] | null;
     linkedWeeks: readonly number[];
     completedWeeks: readonly number[];
+    /** Planned days with **Day complete**, plus full weeks that are **Week complete**. */
+    completedDays?: number;
+    /** Planned days in the **Program prescription**. */
+    totalDays?: number;
     linksLoading: boolean;
     /** Owner-only: show rename control next to the title. */
     canRenameTitle?: boolean;
@@ -128,7 +132,8 @@ function formatProgramMeta(
 function formatMobileProgressMeta(
     currentWeek: number | null,
     programLength: number | null,
-    completedWeeks: number,
+    completedDays: number,
+    totalDays: number,
 ): string | null {
     if (programLength == null || programLength < 1) {
         return null;
@@ -137,7 +142,7 @@ function formatMobileProgressMeta(
         currentWeek != null && currentWeek >= 1
             ? `Week ${currentWeek} of ${programLength}`
             : `${programLength}-week`;
-    const percent = weekCompletePercent(completedWeeks, programLength);
+    const percent = weekCompletePercent(completedDays, totalDays);
     return `${weekLabel} · ${percent}% complete`;
 }
 
@@ -194,6 +199,8 @@ export function ProgramOverviewCtas({
     specialization = null,
     linkedWeeks,
     completedWeeks,
+    completedDays = 0,
+    totalDays = 0,
     linksLoading,
     canRenameTitle = false,
     currentWeek = null,
@@ -233,7 +240,8 @@ export function ProgramOverviewCtas({
     const mobileMeta = formatMobileProgressMeta(
         currentWeek,
         programLength,
-        completedWeeks.length,
+        completedDays,
+        totalDays,
     );
     const hasExported = linkedWeeks.length > 0;
     const highlightExport = shouldHighlightOverviewExport({
@@ -470,8 +478,8 @@ export function ProgramOverviewCtas({
                         <p className="text-sm text-muted-foreground">{mobileMeta}</p>
                     ) : null}
                     <ProgramWeekCompleteBar
-                        completed={completedWeeks.length}
-                        total={programLength ?? 0}
+                        completed={completedDays}
+                        total={totalDays}
                         showAtZero
                         compact
                     />
@@ -526,8 +534,8 @@ export function ProgramOverviewCtas({
                         ) : null}
                     </div>
                     <ProgramWeekCompleteBar
-                        completed={completedWeeks.length}
-                        total={programLength ?? 0}
+                        completed={completedDays}
+                        total={totalDays}
                     />
                     <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
                         {meta ? (

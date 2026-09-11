@@ -4,7 +4,8 @@
  * Pure week-status derivation for Program overview (ADR 0010 / 02, ADR 0020 / 02,
  * ADR 0011 / 04, ADR 0013 / SP5). Statuses: not exported / current / complete /
  * exported. Completion: Workout ∩ link IDs, or persisted `completed_at` only
- * while matching Workouts remain.
+ * while matching Workouts remain. Overview percent is **Day complete** / planned
+ * days, not **Week complete** / program length.
  *
  * Depends on: none
  * Used by: ProgramOverviewWeekList, ProgramOverviewWeekRail,
@@ -249,7 +250,7 @@ export function weekStatusVisibleLabel(
 }
 
 /**
- * **Week complete** count vs consecutive week total for the overview bar.
+ * **Week complete** count vs consecutive week total.
  *
  * @param rows - Derived week status rows
  */
@@ -263,10 +264,121 @@ export function countCompleteWeeks(
 }
 
 /**
- * **Week complete** as a 0–100 integer.
+ * Planned days per 1-based week from **Program prescription** (`folder_id` + 1).
  *
- * @param completed - Weeks that are Week complete
- * @param total - Program length in weeks
+ * @param prescriptionRoutines - Full Program prescription as Hevy routines
+ */
+export function countPrescriptionDaysByWeek(
+    prescriptionRoutines: readonly THevyRoutine[],
+): Map<number, number> {
+    const counts = new Map<number, number>();
+    for (const routine of prescriptionRoutines) {
+        const folderId = Number(routine.folder_id);
+        if (!Number.isInteger(folderId) || folderId < 0) {
+            continue;
+        }
+        const week = folderId + 1;
+        counts.set(week, (counts.get(week) ?? 0) + 1);
+    }
+    return counts;
+}
+
+function uniqueNonemptyIds(ids: readonly string[] | null | undefined): string[] {
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const id of ids ?? []) {
+        if (id.length < 1 || seen.has(id)) {
+            continue;
+        }
+        seen.add(id);
+        unique.push(id);
+    }
+    return unique;
+}
+
+function loggedDayCount(link: TLinkRoutineRow, logged: ReadonlySet<string>): number {
+    const ids = uniqueNonemptyIds([
+        ...(link.exported_hevy_routine_ids ?? []),
+        ...(link.hevy_routine_ids ?? []),
+    ]);
+    let count = 0;
+    for (const id of ids) {
+        if (logged.has(id)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+/**
+ * Overview percent numerator/denominator: **Day complete** (and **Week complete**
+ * weeks at full planned-day count) over planned days in the **Program
+ * prescription**. Not **Week complete** / program length.
+ *
+ * @param links - Program–Hevy link rows
+ * @param workoutRoutineIds - Distinct `workouts.routine_id` values
+ * @param completedWeeks - 1-based weeks that are Week complete
+ * @param prescriptionRoutines - Full Program prescription as Hevy routines
+ */
+export function deriveProgramDayProgress(
+    links: readonly TLinkRoutineRow[],
+    workoutRoutineIds: readonly string[],
+    completedWeeks: readonly number[],
+    prescriptionRoutines: readonly THevyRoutine[],
+): { completed: number; total: number } {
+    const daysByWeek = countPrescriptionDaysByWeek(prescriptionRoutines);
+    if (daysByWeek.size < 1) {
+        return { completed: 0, total: 0 };
+    }
+    const linkByWeek = new Map<number, TLinkRoutineRow>();
+    for (const link of links) {
+        if (!Number.isInteger(link.nth_week) || link.nth_week < 1) {
+            continue;
+        }
+        linkByWeek.set(link.nth_week, link);
+    }
+
+    const weeks = new Set<number>([...daysByWeek.keys(), ...linkByWeek.keys()]);
+    let total = 0;
+    for (const week of weeks) {
+        const planned = daysByWeek.get(week) ?? 0;
+        if (planned > 0) {
+            total += planned;
+            continue;
+        }
+        const link = linkByWeek.get(week);
+        total += uniqueNonemptyIds(link?.hevy_routine_ids).length;
+    }
+    if (total < 1) {
+        return { completed: 0, total: 0 };
+    }
+
+    const logged = new Set(workoutRoutineIds.filter((id) => id.length > 0));
+    const completedWeekSet = new Set(completedWeeks);
+    let completed = 0;
+    for (const week of weeks) {
+        const planned = daysByWeek.get(week) ?? 0;
+        const link = linkByWeek.get(week);
+        const weekTotal =
+            planned > 0 ? planned : uniqueNonemptyIds(link?.hevy_routine_ids).length;
+        if (completedWeekSet.has(week)) {
+            completed += weekTotal;
+            continue;
+        }
+        if (link == null) {
+            continue;
+        }
+        completed += loggedDayCount(link, logged);
+    }
+
+    return { completed: Math.min(completed, total), total };
+}
+
+/**
+ * Complete count as a 0–100 integer (days or weeks).
+ *
+ * @param completed - Completed units
+ * @param total - Total units
  */
 export function weekCompletePercent(completed: number, total: number): number {
     if (total < 1) {
