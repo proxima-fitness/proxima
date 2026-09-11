@@ -245,6 +245,17 @@ _Avoid_: A second toolbar persist button, using this operation on **Edit current
 
 
 
+### Join
+
+
+Signed-in user who does not own a public **Proxima program** subscribes to it. The program then appears on their **Program overview**. Distinct from **Save** (persist the **Program prescription**) and from **Personalize** (fork into a new owned program). Toggle off is **Leave** (confirm; drops the program from overview). The owner does not Join their own program; **Save** already puts it on overview.
+
+
+_Avoid_: Save, Bookmark, My Programs, using Export to Hevy as the subscribe trigger
+
+
+
+
 ### Start
 
 

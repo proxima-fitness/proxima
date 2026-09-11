@@ -15,8 +15,8 @@ import { FC } from "react";
 import { Card } from "../ui/card";
 import { ProgramOverviewCard } from "./ProgramOverviewCard";
 import { ProgramCreatorHoverCard } from "./ProgramCreatorHoverCard";
+import { ProgramJoinMeta } from "./ProgramJoinMeta";
 import { ProgramThumbnail } from "./ProgramThumbnail";
-import { User } from "lucide-react";
 import { convertSupabaseDateToReadable } from "@/utils/general/helpers";
 
 interface IProps {
@@ -83,10 +83,11 @@ export const ProgramsSlugLayout: FC<IProps> =  async (props) => {
                                 { program.program[0].title }
                             </h1>
                             <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                                <User className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                <span>
-                                    {program.program[0].saves} {program.program[0].saves === 1 ? "lifter has" : "lifters have"} joined
-                                </span>
+                                <ProgramJoinMeta
+                                    programId={id}
+                                    ownerUserId={program.program[0].user_id}
+                                    saves={program.program[0].saves}
+                                />
                             </div>
                         </Card>
                         <div className="order-3 lg:col-start-1 lg:row-start-3">

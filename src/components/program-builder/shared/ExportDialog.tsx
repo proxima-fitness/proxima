@@ -1,7 +1,7 @@
 /**
  * @module ExportDialog
- * Modal to choose export destination (PDF, Hevy, spreadsheet) and render PDF preview or Hevy setup / CSV download.
- * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, ExportToHevySetup, usePoundsOrKgContext, dialog.
+ * Modal to choose export destination (PDF, spreadsheet) and render PDF preview or CSV download.
+ * Depends on: ExportProgramCTAButtons, HevyPdfRenderer, usePoundsOrKgContext, dialog.
  * Builder New-path toolbar no longer opens this (ADR 0007). Program overview reuses PDF /
  * spreadsheet destinations with prescription routines (ADR 0010 / 03); Hevy Week Export is
  * outside this dialog.
@@ -12,8 +12,6 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-    DialogFooter,
-    DialogHeader,
     DialogDescription,
 } from "@/components/ui/dialog";
 import { useState } from "react";
@@ -24,10 +22,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { HevyPdfRenderer } from "../hevy/HevyPdfRenderer";
 import { deFlattenHevyRoutine, hevyRoutinesToCsvWithWeekAndDayTitles } from "../utils";
 import { ChevronLeft } from "lucide-react";
-import { ExportToHevySetup } from "./ExportToHevySetup";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { useUserContext } from "@/contexts/UserContext";
-import { useMyFeatureLimits } from "@/api/hooks";
 
 /** Props for the export destination modal. */
 interface IProps {
@@ -43,25 +38,18 @@ interface IProps {
     hevyRoutines?: THevyRoutine[] | null;
 }
 
-/** Export modal: pick PDF / Hevy / spreadsheet, then show preview or ExportToHevySetup / CSV download. */
+/** Export modal: pick PDF / spreadsheet, then show preview or CSV download. */
 export const ExportDialog: React.FC<IProps> = (props) => {
     const { open, onOpenChange, programId, initialExportId = null, hevyRoutines = null } = props;
     const { isInLbs } = usePoundsOrKgContext();
-    const { user } = useUserContext();
-    const { data: featureLimits } = useMyFeatureLimits(user);
 
     // Picker choice only — overview `initialExportId` wins when set (no prop→state effect).
     const [pickedExportId, setPickedExportId] = useState<string | null>(null);
     const selectedExportId = initialExportId ?? pickedExportId;
-    const [hevyUploading, setHevyUploading] = useState(false);
-    const [showBackConfirm, setShowBackConfirm] = useState(false);
-
-    const isPro = featureLimits?.has_active_subscription === true;
 
     const handleOpenChange = (nextOpen: boolean) => {
         if (!nextOpen) {
             setPickedExportId(null);
-            setShowBackConfirm(false);
         }
         onOpenChange(nextOpen);
     };
@@ -109,34 +97,15 @@ export const ExportDialog: React.FC<IProps> = (props) => {
             ? "No program prescription to export. Save the program first."
             : "No program in progress. Build a program first to export.";
 
-    const isHevyStepAndUploading = selectedExportId === "hevy" && hevyUploading;
-
-    const handleHevyBackClick = () => {
-        if (hevyUploading) {
-            setShowBackConfirm(true);
-        } else {
-            setPickedExportId(null);
-        }
-    };
-
-    const handleConfirmStopUpload = () => {
-        setShowBackConfirm(false);
-        setPickedExportId(null);
-    };
-
     return (
-        <>
-            <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogContent
-                    className={
-                        selectedExportId === "pdf" || selectedExportId === "hevy"
-                            ? "sm:max-w-6xl max-sm:w-[95vw] sm:rounded-2xl"
-                            : "sm:rounded-2xl"
-                    }
-                    hideClose={isHevyStepAndUploading}
-                    onPointerDownOutside={isHevyStepAndUploading ? (e) => e.preventDefault() : undefined}
-                    onEscapeKeyDown={isHevyStepAndUploading ? (e) => e.preventDefault() : undefined}
-                >
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent
+                className={
+                    selectedExportId === "pdf"
+                        ? "sm:max-w-6xl max-sm:w-[95vw] sm:rounded-2xl"
+                        : "sm:rounded-2xl"
+                }
+            >
                 <DialogTitle className="font-bold font-main text-xl sm:text-2xl text-center ">
                     Export program
                 </DialogTitle>
@@ -150,7 +119,6 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                         programId={programId}
                         exportOptions={exportOptions}
                         onSelectExport={handleSelectExport}
-                        hideHevyCrown={isPro}
                     />
                 )}
                 {selectedExportId === "pdf" && (
@@ -182,23 +150,6 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                                 </PDFViewer>
                             );
                         })()}
-                    </div>
-                )}
-                {selectedExportId === "hevy" && (
-                    <div className="flex flex-col items-start w-full gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="-ml-2 h-8 min-w-0 gap-1 rounded-full px-3 text-xs"
-                            onClick={handleHevyBackClick}
-                            aria-label="Back to export options"
-                        >
-                            <ChevronLeft className="w-3 h-3 shrink-0" />
-                            Back
-                        </Button>
-                        <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
-                            <ExportToHevySetup onUploadStateChange={setHevyUploading} />
-                        </div>
                     </div>
                 )}
                 {selectedExportId === "spreadsheet" && (
@@ -242,24 +193,5 @@ export const ExportDialog: React.FC<IProps> = (props) => {
                 )}
             </DialogContent>
         </Dialog>
-            <Dialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
-                <DialogContent className="sm:max-w-[425px] sm:rounded-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Stop upload?</DialogTitle>
-                        <DialogDescription>
-                            Are you sure? Closing will stop the upload.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button variant="outline" className="rounded-full border-border/80" onClick={() => setShowBackConfirm(false)}>
-                            Cancel
-                        </Button>
-                        <Button variant="destructive" className="rounded-full px-4" onClick={handleConfirmStopUpload}>
-                            Yes, stop upload
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
     );
 };

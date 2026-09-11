@@ -1,13 +1,11 @@
-/* eslint-disable @next/next/no-img-element */
 /*
  * @module ExportProgramCTAButtons
- * @description Button list for selecting how to export a program (e.g., to partner apps or file formats).
- * @dependsOn React JSX runtime, shared icon components provided via props, and parent export CTA wrappers.
- * @usedBy `ExportProgramCTA` to render export options for the current program.
+ * @description Button list for selecting how to export a program (PDF, spreadsheet, coming-soon destinations).
+ * @dependsOn React JSX runtime and shared icon components provided via props.
+ * @usedBy `ExportProgramCTA` and `ExportDialog`.
  */
 
 import { JSX } from "react";
-import { hevy_logo, hevy_logo_black } from "public";
 
 /**
  * Props for `ExportProgramCTAButtons`.
@@ -15,7 +13,6 @@ import { hevy_logo, hevy_logo_black } from "public";
  * @property exportOptions List of export options including metadata such as id, label, icon, and disabled state.
  * @property onSelectExport Optional callback fired when a user selects a non-disabled export option.
  * @property showComingSoonLabel Whether to show a "Coming soon" label above disabled options.
- * @property hideHevyCrown When true, render the Hevy option without the Crown icon.
  */
 interface IProps {
     programId: number;
@@ -29,7 +26,6 @@ interface IProps {
     }[];
     onSelectExport?: (id: string) => void;
     showComingSoonLabel?: boolean;
-    hideHevyCrown?: boolean;
 }
 
 /**
@@ -39,7 +35,6 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
     exportOptions,
     onSelectExport,
     showComingSoonLabel = true,
-    hideHevyCrown = false,
 }) => {
 
     const handleClick = (option: { id: string; disabled?: boolean }) => {
@@ -53,25 +48,6 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
     const disabledOptions = exportOptions.filter((o) => o.disabled);
 
     const renderOption = (option: (typeof exportOptions)[number]) => {
-        const isHevy = option.id === "hevy";
-        const effectiveIcon =
-            hideHevyCrown && isHevy ? (
-                <div className="flex items-center gap-2">
-                    <img
-                        src={(hevy_logo_black).src}
-                        alt="Hevy"
-                        className="h-6 w-auto max-w-36 object-contain object-left dark:hidden"
-                    />
-                    <img
-                        src={(hevy_logo).src}
-                        alt="Hevy"
-                        className="hidden h-6 w-auto max-w-36 object-contain object-left dark:block"
-                    />
-                </div>
-            ) : (
-                option.icon
-            );
-
         return (
         <button
             key={option.id}
@@ -81,7 +57,7 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             aria-label={`Export as ${option.name}`}
         >
             <div className="flex flex-row items-center gap-3">
-                <span className="flex shrink-0 items-center text-foreground [&_svg]:h-6 [&_svg]:w-6">{effectiveIcon}</span>
+                <span className="flex shrink-0 items-center text-foreground [&_svg]:h-6 [&_svg]:w-6">{option.icon}</span>
                 {!option.brand ? <span className="font-third text-base font-semibold">{option.name}</span> : null}
             </div>
             {option.subtitle ? <span className="text-sm text-muted-foreground">{option.subtitle}</span> : null}
@@ -94,7 +70,6 @@ export const ExportProgramCTAButtons: React.FC<IProps> = ({
             {enabledOptions.map(renderOption)}
             {showComingSoonLabel && disabledOptions.length > 0 ? (
                 <>
-                    {/* <p className="text-sm text-gray-400 pt-2">Coming soon…</p> */}
                     {disabledOptions.map(renderOption)}
                 </>
             ) : (

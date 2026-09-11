@@ -1,30 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
-import { hevy_logo, hevy_logo_black, google_sheets_logo_icon } from "public";
-import { Crown, Dumbbell, FileText, Table } from "lucide-react";
+import { google_sheets_logo_icon } from "public";
+import { Dumbbell, FileText, Table } from "lucide-react";
 
-/** Export destinations available for generated programs. */
+/** File and coming-soon export destinations. Hevy push is **Week Export** on Program overview. */
 export const exportOptions = [
-    {
-        id: "hevy",
-        name: "Hevy",
-        icon: (
-            <div className="flex items-center gap-2">
-                <Crown className="w-6 h-6 text-lightGold" />
-                <img
-                    src={(hevy_logo_black).src}
-                    alt="Hevy"
-                    className="h-6 w-auto max-w-36 object-contain object-left dark:hidden"
-                />
-                <img
-                    src={(hevy_logo).src}
-                    alt="Hevy"
-                    className="hidden h-6 w-auto max-w-36 object-contain object-left dark:block"
-                />
-            </div>
-        ),
-        subtitle: "Upload your program to Hevy so you can train from the app",
-        brand: true,
-    },
     {
         id: "volm",
         name: "VOLM",

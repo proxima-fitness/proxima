@@ -3,7 +3,7 @@
  * Shared validate → vault write → query invalidate for every Hevy API key connect UI.
  * Never logs or returns the key itself; callers own their own toasts / sync triggers.
  * Depends on: hevy (postHevyApikey, updateHevyApiKey), uuid, react-query QueryClient.
- * Used by: HevyExportGate, ConnectHevyDialog, ExportToHevySetup.
+ * Used by: HevyExportGate, ConnectHevyDialog.
  */
 import type { QueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";

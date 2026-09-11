@@ -9,9 +9,6 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-    DialogFooter,
-    DialogHeader,
-    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     convertToHevyRoutine,
@@ -21,8 +18,6 @@ import {
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useQuery } from "@tanstack/react-query";
-import { ExportToHevySetup } from "@/components/program-builder/shared/ExportToHevySetup";
-import { postNewProgramSubscriber } from "@/api/programs";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,15 +45,12 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
     const loginWithNext = buildAuthLoginHref(pathname, searchParams);
 
     const [pdfOpen, setPdfOpen] = useState(false);
-    const [hevyOpen, setHevyOpen] = useState(false);
     const [spreadsheetOpen, setSpreadsheetOpen] = useState(false);
-    const [hevyUploading, setHevyUploading] = useState(false);
-    const [showBackConfirm, setShowBackConfirm] = useState(false);
 
     const { data: flatHevyRoutines, isPending: exportRoutinesPending } = useQuery({
         queryKey: ["export-hevy-routines", programId],
         queryFn: () => convertToHevyRoutine(sortedWorkoutsByWeek),
-        enabled: (pdfOpen || hevyOpen || spreadsheetOpen) && sortedWorkoutsByWeek.length > 0,
+        enabled: (pdfOpen || spreadsheetOpen) && sortedWorkoutsByWeek.length > 0,
     });
 
     const hevyRoutine = flatHevyRoutines ? deFlattenHevyRoutine(flatHevyRoutines) : undefined;
@@ -67,8 +59,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
         if (!user) return;
         if (id === "pdf") {
             setPdfOpen(true);
-        } else if (id === "hevy") {
-            setHevyOpen(true);
         } else if (id === "spreadsheet") {
             setSpreadsheetOpen(true);
         }
@@ -85,19 +75,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
         a.download = "my-proxima-program.csv";
         a.click();
         URL.revokeObjectURL(url);
-    };
-
-    const handleHevyOpenChange = (nextOpen: boolean) => {
-        if (!nextOpen && hevyUploading) {
-            setShowBackConfirm(true);
-            return;
-        }
-        setHevyOpen(nextOpen);
-    };
-
-    const handleConfirmStopUpload = () => {
-        setShowBackConfirm(false);
-        setHevyOpen(false);
     };
 
     return (
@@ -120,7 +97,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                             programId={programId}
                             exportOptions={exportOptions}
                             onSelectExport={handleSelectExport}
-                            hideHevyCrown
                         />
                     ) : (
                         <div className="relative w-full pb-4 ">
@@ -135,7 +111,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                                     programId={programId}
                                     exportOptions={exportOptions}
                                     onSelectExport={handleSelectExport}
-                                    hideHevyCrown
                                 />
                             </div>
                             <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-2xl bg-background/40 px-4 backdrop-blur-sm dark:bg-background/25">
@@ -161,36 +136,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                     ) : (
                         <PdfPreviewSkeleton />
                     )}
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={hevyOpen} onOpenChange={handleHevyOpenChange}>
-                <DialogContent
-                    className="sm:max-w-6xl max-sm:w-[95vw]"
-                    hideClose={hevyUploading}
-                    onPointerDownOutside={hevyUploading ? (e) => e.preventDefault() : undefined}
-                    onEscapeKeyDown={hevyUploading ? (e) => e.preventDefault() : undefined}
-                >
-                    <DialogTitle className="text-center font-third text-xl font-semibold tracking-tight sm:text-2xl">
-                        Export to Hevy
-                    </DialogTitle>
-                    <div className="w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-6">
-                        {flatHevyRoutines ? (
-                            <ExportToHevySetup
-                                onUploadStateChange={setHevyUploading}
-                                hevyRoutines={flatHevyRoutines}
-                                onExportSuccess={() => {
-                                    // Trigger function increments `programs.saves` when we subscribe the user.
-                                    if (!user) return;
-                                    void postNewProgramSubscriber(user, String(programId));
-                                }}
-                            />
-                        ) : (
-                            <p className="text-sm text-muted-foreground py-4 text-center">
-                                Preparing program data…
-                            </p>
-                        )}
-                    </div>
                 </DialogContent>
             </Dialog>
 
@@ -224,25 +169,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                             This program has no workouts to export as CSV.
                         </p>
                     )}
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
-                <DialogContent className="sm:max-w-106.25">
-                    <DialogHeader>
-                        <DialogTitle>Stop upload?</DialogTitle>
-                        <DialogDescription>
-                            Are you sure? Closing will stop the upload.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowBackConfirm(false)}>
-                            Cancel
-                        </Button>
-                        <Button variant="destructive" onClick={handleConfirmStopUpload}>
-                            Yes, stop upload
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>
