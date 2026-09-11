@@ -13,7 +13,7 @@ import { ProgramsSlugLayout } from "@/components/programs/ProgramsSlugLayout";
 import { Suspense } from "react";
 
 const programDetailShell =
- "w-full min-h-0 bg-background text-foreground font-third";
+    "w-full min-h-screen bg-muted text-foreground font-third";
 
 const programDetailInner =
     "mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10 lg:px-8";
