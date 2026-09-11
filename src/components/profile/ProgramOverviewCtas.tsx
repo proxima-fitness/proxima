@@ -5,15 +5,16 @@
  * title + meta left (owner can rename). **Edit program** is always a quiet
  * title-row control. Header: split Export (Hevy Week Export left, PDF /
  * spreadsheet dropdown right) plus **Edit current week** ("Edit Week N").
- * Edit Week 1 is shown disabled until the first Week Export. AI week suggest
- * disclosure below (ADR 0012 / 02).
+ * Edit Week 1 is shown disabled until the first Week Export. Zero-link
+ * overview emphasizes **Export** on load (ADR 0016 / 02); **Edit program**
+ * is not highlighted. AI week suggest disclosure below (ADR 0012 / 02).
  *
  * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
  * and refreshes the Week preview read; Export stays a separate, explicit step.
  *
  * Depends on: ExportDialog, ProgramOverviewExportWeek,
  *             refreshOverviewQueriesAfterWeekExport, AiWeekSuggestPanel,
- *             AiWeekSuggestApply, ProgramOverviewWeekPreview, hooks,
+ *             AiWeekSuggestApply, ProgramOverviewWeekPreview, overview-start,
  *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress
  * Used by: ProgramOverviewWeekList
  */
@@ -41,6 +42,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { shouldHighlightOverviewExport } from "@/hooks/overview-start";
+import { cn } from "@/lib/utils";
 import { ExportDialog } from "@/components/program-builder/shared/ExportDialog";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import {
@@ -178,6 +181,10 @@ export function ProgramOverviewCtas({
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
     const meta = formatProgramMeta(programLength, specialization);
     const hasExported = linkedWeeks.length > 0;
+    const highlightExport = shouldHighlightOverviewExport({
+        hevyLinkCount: linkedWeeks.length,
+        linksLoading,
+    });
     const showEditCurrentWeek =
         currentWeek != null && currentWeek >= 1 && onEditCurrentWeek != null;
     const liveEditWeek = currentWeek != null && currentWeek >= 1 ? currentWeek : null;
@@ -391,9 +398,15 @@ export function ProgramOverviewCtas({
                 <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
                     <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                         <div
-                            className="inline-flex rounded-full shadow-sm"
+                            className={cn(
+                                "inline-flex rounded-full shadow-sm",
+                                highlightExport
+                                    ? "ring-2 ring-lightSecondary/80 ring-offset-2 ring-offset-background animate-overview-export-nudge"
+                                    : null,
+                            )}
                             role="group"
                             aria-label="Export"
+                            data-export-highlight={highlightExport ? "true" : undefined}
                         >
                             <Button
                                 type="button"

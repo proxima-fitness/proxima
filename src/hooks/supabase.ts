@@ -1680,6 +1680,10 @@ export type Database = {
           allowed: boolean
         }[]
       }
+      workout_set_parent_owned_by_uid: {
+        Args: { p_workout_exercise_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       source_type: "hevy"

@@ -70,7 +70,7 @@ interface IProps {
     isInLbs?: boolean;
     /**
      * Whether the chat request has an authenticated user.
-     * Used with hasHevyApiKey for Hevy export gate / Week Export guidance.
+     * Used with hasHevyApiKey for Hevy export gate / Start guidance.
      */
     isAuthenticated?: boolean;
     /**
@@ -296,11 +296,11 @@ export const instructions = ({
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
         ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
-        **Upload to Hevy / Week Export:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). Session flags: authenticated = **${isAuthenticated ? 'yes' : 'no'}**; Hevy API key on file = **${hasHevyApiKey ? 'yes' : 'no'}** (boolean presence only - never ask for or repeat a key). If the user asks to upload / export / send / sync / push to Hevy:
-        - **Empty program:** Do **not** call **openHevyExportGate**. Tell them to build (or finish) a program first - the gate only applies when there is something on the grid to **Save** / **Week Export**.
-        - **Questionnaire gate active:** If **getMoreInfoQuestions** is still open / unanswered, do **not** call **openHevyExportGate**. Tell them to dismiss or complete the questionnaire before attempting to export to Hevy.
-        - **Both prerequisites done** (authenticated **and** Hevy API key on file): Do **not** call **openHevyExportGate**. Text only: toolbar **Save** (if needed) → open profile → **Program overview** → **Week Export**. Never tell them to click **Export** in the builder toolbar - New path has **Save** there; Hevy push is **Week Export** on profile.
-        - **At least one prerequisite missing** + non-empty program + clear Hevy-export intent: Call **openHevyExportGate** once. In that same turn's visible reply, say: finish the gate steps → toolbar **Save** → profile **Week Export**. The gate only collects sign-in / Hevy API key; it does not **Save** or run **Week Export** for them.
+        **Upload to Hevy:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). Session flags: authenticated = **${isAuthenticated ? 'yes' : 'no'}**; Hevy API key on file = **${hasHevyApiKey ? 'yes' : 'no'}** (boolean presence only - never ask for or repeat a key). If the user asks to upload / export / send / sync / push to Hevy:
+        - **Empty program:** Do **not** call **openHevyExportGate**. Tell them to build (or finish) a program first - the gate only applies when there is something on the grid to **Save**.
+        - **Questionnaire gate active:** If **getMoreInfoQuestions** is still open / unanswered, do **not** call **openHevyExportGate**. Tell them to finish or dismiss the questions first.
+        - **Both prerequisites done** (authenticated **and** Hevy API key on file): Do **not** call **openHevyExportGate**. Text only: toolbar **Save** (if needed) then **Start**.
+        - **At least one prerequisite missing** + non-empty program + clear Hevy-export intent: Call **openHevyExportGate** once. In that same turn's visible reply, say: finish the gate steps → toolbar **Save** then **Start**. The gate only collects sign-in / Hevy API key; it does not **Save** or **Start** for them.
         ${weightUnitsGuidance}
         Be conversational, helpful, and provide clear explanations about the workouts you create. DO NOT answer questions unrelated to fitness.
     `);

@@ -2,6 +2,7 @@
  * @module HevyExportGate
  * Multi-step chat footer for Hevy export prerequisites: sign-in, then inline Hevy API key paste.
  * Skips steps already satisfied from auth + useHevySecret. Key save uses the shared vault write.
+ * Next-chrome copy is **Save** then **Start** (ADR 0016 / 03); the gate does not Save, Start, or Week Export.
  * Depends on: UserContext, useHevySecret, connectHevyKey, Hevy syncs, Button/Input/Label. Used by: Chat.
  */
 "use client";
@@ -22,8 +23,22 @@ import { triggerBodyMeasurementsSync } from "@/api/body-measurements-sync";
 import { cn } from "@/lib/utils";
 import { buildAuthLoginHref } from "@/lib/sign-in-return";
 
-export const HEVY_EXPORT_GATE_COMPLETE_TOAST =
-    "You're set - Now Press Export in the top right corner";
+export const HEVY_EXPORT_GATE_TITLE = "Connect Hevy";
+export const HEVY_EXPORT_GATE_PROGRESS_LABEL = "Connecting Hevy";
+export const HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED = "Press Save, then Start";
+export const HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED = "Press Start";
+
+/**
+ * Gate-complete toast: **Start** when that button is showing, otherwise
+ * **Save** then **Start**.
+ *
+ * @param showStart - Whether toolbar **Start** is visible (Saved, zero links)
+ */
+export function hevyExportGateCompleteToast(showStart: boolean): string {
+    return showStart
+        ? HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED
+        : HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED;
+}
 
 interface IProps {
     onDismiss: () => void;
@@ -102,13 +117,13 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                         type="button"
                         onClick={onDismiss}
                         className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        aria-label="Dismiss export setup"
+                        aria-label="Dismiss Hevy setup"
                         data-testid="hevy-export-gate-dismiss"
                     >
                         <X className="size-4" />
                     </button>
                     <KeyRoundIcon className="size-4 text-muted-foreground" />
-                    <span>Export to Hevy</span>
+                    <span>{HEVY_EXPORT_GATE_TITLE}</span>
                 </div>
                 <span className="text-sm text-muted-foreground" data-testid="hevy-export-gate-step">
                     {waitingOnAuth ? "…" : stepLabel}
@@ -119,7 +134,7 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                 {showSignIn ? (
                     <div className="space-y-3" data-testid="hevy-export-gate-sign-in-step">
                         <p className="text-sm text-muted-foreground">
-                            Sign in to connect Hevy and push this program from your profile.
+                            Sign in to connect Hevy.
                         </p>
                         <div className="flex justify-end">
                             <Link href={loginHref} data-testid="hevy-export-gate-sign-in-link">
@@ -136,8 +151,8 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                     <div className="space-y-3" data-testid="hevy-export-gate-key-step">
                         <p className="text-sm text-muted-foreground">
                             Connect your Hevy API key to finish setup. Then use toolbar{" "}
-                            <span className="font-medium text-foreground">Save</span> and profile{" "}
-                            <span className="font-medium text-foreground">Week Export</span>.
+                            <span className="font-medium text-foreground">Save</span>, then{" "}
+                            <span className="font-medium text-foreground">Start</span>.
                         </p>
                         <Button
                             variant="ghost"

@@ -4,6 +4,7 @@ import {
     BUILDER_DRAFT_KEY,
     BUILDER_PROMPT_KEY,
     BUILDER_REQUEST_KEY,
+    NEW_PATH_SAVE_SUCCESS_TOAST,
     __resetBuilderDraftForTests,
     canWriteBuilderDraft,
     clearBuilderDraft,
@@ -32,5 +33,10 @@ describe("builder-draft", () => {
 
         enableBuilderDraftWrites();
         expect(canWriteBuilderDraft()).toBe(true);
+    });
+
+    it("New path Save toast is Saved and does not name Export", () => {
+        expect(NEW_PATH_SAVE_SUCCESS_TOAST).toBe("Saved");
+        expect(NEW_PATH_SAVE_SUCCESS_TOAST).not.toMatch(/export/i);
     });
 });

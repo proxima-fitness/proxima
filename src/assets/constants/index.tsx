@@ -175,7 +175,7 @@ export const programBuilderSteps = [
     { title: "Step 1", description: "Prompt your Program" },
     { title: "Step 2", description: "Edit and Refine" },
     { title: "Step 3", description: "Sign in to save" },
-    { title: "Step 4", description: "Export program" },
+    { title: "Step 4", description: "Save, then Start" },
 ];
 
 /** Primary muscle groups used for tagging exercises and programs. */

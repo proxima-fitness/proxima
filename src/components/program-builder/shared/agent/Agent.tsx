@@ -33,7 +33,7 @@ import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
 import { LiveAgentProgress } from "./LiveAgentProgress"
 import { findHevyExportGateMessageId } from "./hevy-export-gate"
-import { HEVY_EXPORT_GATE_COMPLETE_TOAST } from "./HevyExportGate"
+import { hevyExportGateCompleteToast } from "./HevyExportGate"
 
 /** Props for the agent container (navbar, messages, chat input, and all filter/program/send state). */
 interface IProps {
@@ -117,6 +117,11 @@ interface IProps {
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
     lastHevyShareImportKeyRef: RefObject<string | null>;
+    /**
+     * Toolbar **Start** is visible (Saved prescription, zero **Program–Hevy
+     * links**). Gate-complete toast says **Start** only in that case.
+     */
+    showStart?: boolean;
 }
 
 /** Renders Navbar, conversation area (empty state or MessageBubbles), loading status, and Chat. */
@@ -176,6 +181,7 @@ export const Agent: React.FC<IProps> = (props) => {
         lastAtomicBuildCommitKeyRef,
         appliedMutateProgramKeysRef,
         lastHevyShareImportKeyRef,
+        showStart = false,
     } = props;
 
     const chatFooterRef = useRef<HTMLDivElement>(null);
@@ -183,7 +189,7 @@ export const Agent: React.FC<IProps> = (props) => {
     const isMobile = useIsMobile();
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
-    /** Both gate steps already satisfied - hide footer (no effect / no toast; toast is SP3 save event). */
+    /** Both gate steps already satisfied - hide footer (no effect / no toast; toast is gate-complete). */
     const hevyExportPrerequisitesMet =
         user != null && Boolean(hevyApiKey && hevyApiKey.length > 0);
 
@@ -273,9 +279,9 @@ export const Agent: React.FC<IProps> = (props) => {
 
     const handleHevyExportGateComplete = useCallback(() => {
         if (!hevyExportGateMessageId) return
-        toast.success(HEVY_EXPORT_GATE_COMPLETE_TOAST)
+        toast.success(hevyExportGateCompleteToast(showStart))
         setHevyGateDismissedForMessageId(hevyExportGateMessageId)
-    }, [hevyExportGateMessageId])
+    }, [hevyExportGateMessageId, showStart])
 
     const convertStringArrayToOptions = useCallback((values: string[], options: TSelectOption[]): TSelectOption[] => {
         return values

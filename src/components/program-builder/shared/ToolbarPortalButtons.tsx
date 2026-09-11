@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
+import { ToolbarStartButton } from "@/components/program-builder/shared/ToolbarStartButton";
 
 interface IToolbarPortalButtonsProps {
     canUndo: boolean;
@@ -14,12 +15,14 @@ interface IToolbarPortalButtonsProps {
     saveDisabled: boolean;
     isSaving: boolean;
     persistMode?: "save" | "sync";
+    /** Overview href when **Start** is visible (ADR 0016 / 01). */
+    startHref?: string | null;
 }
 
 /**
- * Renders Undo and persist buttons into toolbar portal targets (#toolbar-undo-portal,
- * #toolbar-save-portal, optional #toolbar-save-portal-mobile). Single state + one
- * effect for one re-render after mount.
+ * Renders Undo, persist, and optional **Start** into toolbar portal targets
+ * (#toolbar-undo-portal, #toolbar-save-portal, optional #toolbar-save-portal-mobile).
+ * Single state + one effect for one re-render after mount.
  */
 function ToolbarPortalButtonsInner({
     canUndo,
@@ -29,6 +32,7 @@ function ToolbarPortalButtonsInner({
     saveDisabled,
     isSaving,
     persistMode = "save",
+    startHref = null,
 }: IToolbarPortalButtonsProps) {
     const [targets, setTargets] = useState<{
         undo: HTMLElement;
@@ -64,12 +68,15 @@ function ToolbarPortalButtonsInner({
 
     const savePortals = targets.save.map((el) =>
         createPortal(
-            <ToolbarSaveButton
-                onClick={onSave}
-                disabled={saveDisabled}
-                isSaving={isSaving}
-                persistMode={persistMode}
-            />,
+            <div className="flex items-center gap-2">
+                <ToolbarSaveButton
+                    onClick={onSave}
+                    disabled={saveDisabled}
+                    isSaving={isSaving}
+                    persistMode={persistMode}
+                />
+                {startHref != null ? <ToolbarStartButton href={startHref} /> : null}
+            </div>,
             el,
         ),
     );

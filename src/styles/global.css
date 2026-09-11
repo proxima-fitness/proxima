@@ -118,6 +118,20 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
+  @keyframes overview-export-nudge {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    40% {
+      filter: brightness(1.22);
+    }
+  }
+
+  .animate-overview-export-nudge {
+    animation: overview-export-nudge 1.15s ease-out 1;
+  }
+
   @keyframes loading-bar {
     0% {
       transform: translateX(-100%);

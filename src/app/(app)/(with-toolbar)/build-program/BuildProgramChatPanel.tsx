@@ -38,6 +38,8 @@ export interface IProps {
     lastAtomicBuildCommitKeyRef: RefObject<string | null>;
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
     lastHevyShareImportKeyRef: RefObject<string | null>;
+    /** Toolbar **Start** is visible — gate-complete toast says **Start**. */
+    showStart?: boolean;
 
     sidebarPosition: "left" | "right";
     onTogglePosition: () => void;
@@ -72,6 +74,7 @@ function BuildProgramChatPanelInner({
     lastAtomicBuildCommitKeyRef,
     appliedMutateProgramKeysRef,
     lastHevyShareImportKeyRef,
+    showStart = false,
     sidebarPosition,
     onTogglePosition,
     onToggleExpand,
@@ -161,6 +164,7 @@ function BuildProgramChatPanelInner({
             lastAtomicBuildCommitKeyRef={lastAtomicBuildCommitKeyRef}
             appliedMutateProgramKeysRef={appliedMutateProgramKeysRef}
             lastHevyShareImportKeyRef={lastHevyShareImportKeyRef}
+            showStart={showStart}
             sidebarPosition={sidebarPosition}
             onTogglePosition={onTogglePosition}
             onToggleExpand={onToggleExpand}

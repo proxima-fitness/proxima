@@ -68,7 +68,18 @@ import {
 } from "@/lib/builder-draft";
 import { useEditSession } from "@/contexts/EditSessionContext";
 import { isHevyEditArrival, persistModeForBuilder, completedHevyRoutineIdsForWeek } from "@/hooks/edit-persist";
-import { PROGRAM_HEVY_LINKS_QUERY_KEY, useHevySecret, useWorkoutRoutineIds } from "@/api/hooks";
+import {
+    builderStartHref,
+    coerceProgramId,
+    prescriptionProgramIdForStart,
+    shouldShowBuilderStart,
+} from "@/hooks/builder-start";
+import {
+    PROGRAM_HEVY_LINKS_QUERY_KEY,
+    useHevySecret,
+    useProgramHevyWeekLinks,
+    useWorkoutRoutineIds,
+} from "@/api/hooks";
 import { editorReducer, isNewPathDirty, isNewPathSaveDirty, isNewPathToolbarSaveDisabled } from "./editor-reducer";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
@@ -153,6 +164,23 @@ export function BuildProgram() {
     );
 
     const { data: chatIds } = useChatIds(user);
+    const [savedPrescription, setSavedPrescription] = useState<{
+        chatId: string;
+        programId: number;
+    } | null>(null);
+    // New Chat wipes this session's Save id (render reset, not an effect).
+    if (explicitNewChat && savedPrescription != null) {
+        setSavedPrescription(null);
+    }
+    const chatProgramId = coerceProgramId(
+        chatIds?.find((row) => row.id === chatId)?.program_id,
+    );
+    const savedProgramIdForChat =
+        savedPrescription == null
+            ? null
+            : chatId === savedPrescription.chatId || chatId === ""
+                ? savedPrescription.programId
+                : null;
     const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
     const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
 
@@ -356,6 +384,13 @@ export function BuildProgram() {
             return;
         }
 
+        // Edit session lives on the layout provider and survives client
+        // navigation. New path / Edit program must drop it or persist stays Sync.
+        if (editSession) {
+            clearEditSession();
+        }
+        editHydratedRef.current = false;
+
         setProgramFromHydrate([]);
         setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
@@ -384,7 +419,7 @@ export function BuildProgram() {
         if (empty === "true") {
             setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
-    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, hevyEditArrival, editSession]);
+    }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, hevyEditArrival, editSession, clearEditSession]);
 
     const toggleSidebarPosition = useCallback(() => {
         setSidebarPosition((prev) => {
@@ -468,6 +503,9 @@ export function BuildProgram() {
                 chatEntryPlan={chatEntryPlan}
                 isHevyEditArrival={hevyEditArrival}
                 clearEditSession={clearEditSession}
+                chatProgramId={chatProgramId}
+                savedProgramId={savedProgramIdForChat}
+                onPrescriptionSaved={setSavedPrescription}
             />
             <ConfirmDialog
                 open={leaveDialogOpen}
@@ -517,6 +555,9 @@ interface IBuildProgramShellProps {
     chatEntryPlan: IChatEntryPlan;
     isHevyEditArrival: boolean;
     clearEditSession: () => void;
+    chatProgramId: number | null;
+    savedProgramId: number | null;
+    onPrescriptionSaved: (saved: { chatId: string; programId: number }) => void;
 }
 
 function BuildProgramShell({
@@ -553,6 +594,9 @@ function BuildProgramShell({
     chatEntryPlan,
     isHevyEditArrival,
     clearEditSession,
+    chatProgramId,
+    savedProgramId,
+    onPrescriptionSaved,
 }: IBuildProgramShellProps) {
     const { clearChatRef, getPersistChatIdRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -570,9 +614,30 @@ function BuildProgramShell({
         [editSession?.nthWeek, editSession?.initialRoutineIds, workoutRoutineIds],
     );
     const persistMode = persistModeForBuilder({
-        hasEditSession: editSession != null,
         isHevyEditArrival,
     });
+    const prescriptionProgramId = prescriptionProgramIdForStart({
+        persistMode,
+        savedProgramId,
+        chatProgramId,
+    });
+    const { data: programHevyLinks, isSuccess: programHevyLinksSuccess } =
+        useProgramHevyWeekLinks(
+            persistMode === "save" ? prescriptionProgramId ?? undefined : undefined,
+        );
+    const hevyLinkCount =
+        persistMode === "save" && prescriptionProgramId != null && programHevyLinksSuccess
+            ? (programHevyLinks?.length ?? 0)
+            : null;
+    const showStart = shouldShowBuilderStart({
+        persistMode,
+        programId: prescriptionProgramId,
+        hevyLinkCount,
+    });
+    const startHref =
+        showStart && prescriptionProgramId != null
+            ? builderStartHref(prescriptionProgramId)
+            : null;
     const hasProgramContent = programHasExerciseRows(hevyProgram);
     const [isSaving, setIsSaving] = useState(false);
     const [syncDialogOpen, setSyncDialogOpen] = useState(false);
@@ -693,6 +758,11 @@ function BuildProgramShell({
                 programId: String(programId),
                 queryClient,
             });
+            onPrescriptionSaved({
+                chatId: getPersistChatId() || chatId,
+                programId,
+            });
+            queryClient.setQueryData([...PROGRAM_HEVY_LINKS_QUERY_KEY, programId], []);
             clearBuilderDraft();
             clearUndoBaseline();
             toast.success(NEW_PATH_SAVE_SUCCESS_TOAST);
@@ -717,6 +787,8 @@ function BuildProgramShell({
         getPersistChatId,
         clearUndoBaseline,
         persistMode,
+        onPrescriptionSaved,
+        chatId,
     ]);
 
     const handleSync = useCallback(async (afterHref?: string) => {
@@ -919,6 +991,7 @@ function BuildProgramShell({
         appliedMutateProgramKeysRef,
         lastHevyShareImportKeyRef,
         chatHistoryLoading,
+        showStart,
     } as const;
 
     const desktopChatPanel = (
@@ -978,6 +1051,7 @@ function BuildProgramShell({
                 }
                 isSaving={isSaving}
                 persistMode={persistMode}
+                startHref={startHref}
             />
             {isChatHidden && (
                 <TooltipProvider delayDuration={0}>

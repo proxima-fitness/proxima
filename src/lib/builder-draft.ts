@@ -3,6 +3,7 @@
  *
  * New-path local resume draft keys (`hevy-program-in-progress` + related).
  * Write only while unsaved. Cleared on Discard leave, banner Clear, successful Save.
+ * Success toast is `Saved` (ADR 0016 / 01).
  */
 
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
@@ -11,8 +12,7 @@ export const BUILDER_DRAFT_KEY = "hevy-program-in-progress";
 export const BUILDER_REQUEST_KEY = "hevy-request";
 export const BUILDER_PROMPT_KEY = "prompt";
 
-export const NEW_PATH_SAVE_SUCCESS_TOAST =
-    "Program saved. Export week 1 from your profile.";
+export const NEW_PATH_SAVE_SUCCESS_TOAST = "Saved";
 
 /** After Discard/Clear/Save, block debounced re-writes until the next dirty edit. */
 let draftWriteEnabled = true;

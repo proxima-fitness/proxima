@@ -8,6 +8,11 @@ import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const useSubscribedPrograms = vi.fn();
+const useSearchParams = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useSearchParams: () => useSearchParams(),
+}));
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -84,6 +89,8 @@ describe("ProgramOverviewSection", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         useSubscribedPrograms.mockReset();
+        useSearchParams.mockReset();
+        useSearchParams.mockReturnValue(new URLSearchParams());
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -119,6 +126,10 @@ describe("ProgramOverviewSection", () => {
 
         expect(screen.getByText("No active programs yet")).toBeTruthy();
         expect(screen.getByRole("link", { name: /Start a program/i })).toBeTruthy();
+        expect(
+            screen.getByRole("link", { name: /Start a program/i }).dataset.exportHighlight,
+        ).toBeUndefined();
+        expect(screen.queryByRole("group", { name: "Export" })).toBeNull();
         expect(screen.queryByRole("link", { name: "New program" })).toBeNull();
         expect(screen.getByTestId("hevy-mirror-stub")).toBeTruthy();
         expect(screen.queryByText("My Programs")).toBeNull();
@@ -149,6 +160,26 @@ describe("ProgramOverviewSection", () => {
         expect(screen.getByTestId("week-list-22")).toBeTruthy();
         expect(screen.getByRole("heading", { name: "Hyrox Prep" })).toBeTruthy();
         expect(screen.getByText(/6-week · Hyrox/)).toBeTruthy();
+    });
+
+    it("selects program B when Start lands with that programId", () => {
+        useSearchParams.mockReturnValue(new URLSearchParams("programId=22"));
+        useSubscribedPrograms.mockReturnValue({
+            data: [programA, programB],
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ProgramOverviewSection />);
+
+        expect(screen.getByTestId("week-list-22")).toBeTruthy();
+        expect(screen.queryByTestId("week-list-11")).toBeNull();
+        expect(screen.getByRole("tab", { name: "Hyrox Prep" }).getAttribute("aria-selected")).toBe(
+            "true",
+        );
+        expect(
+            screen.getByRole("tab", { name: "Strength Block A" }).getAttribute("aria-selected"),
+        ).toBe("false");
     });
 
     it("hides picker when only one program", () => {

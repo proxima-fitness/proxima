@@ -2,8 +2,8 @@
  * @module edit-persist
  *
  * Persist dispatch for the builder toolbar (ADR 0013 / 04, ADR 0016).
- * Edit session / **Edit current week** / Hevy-only Edit → **Sync**. New path
- * and **Edit program** stay **Save**.
+ * **Edit current week** / Hevy-only (`edit=true&hevy=true`) → **Sync**. New path
+ * and **Edit program** stay **Save**, even if a leftover Edit session is in memory.
  *
  * Depends on: nothing
  * Used by: BuildProgram, ProgramMutation registry, tests
@@ -23,17 +23,18 @@ export function isHevyEditArrival(searchParams: {
 }
 
 /**
- * Toolbar persist mode. Edit session or `edit=true&hevy=true` → Sync.
- * Everything else is Save (New path / Edit program).
+ * Toolbar persist mode. `edit=true&hevy=true` → **Sync**. Everything else
+ * (including **New path** `?empty=true`) is **Save**.
  *
- * @param input.hasEditSession - In-memory Edit session is present
+ * The in-memory Edit session survives client navigation (layout provider).
+ * It must not flip persist to **Sync** after the URL has left Edit current week.
+ *
  * @param input.isHevyEditArrival - `edit=true` and `hevy=true`
  */
 export function persistModeForBuilder(input: {
-    hasEditSession: boolean;
     isHevyEditArrival: boolean;
 }): TPersistMode {
-    if (input.hasEditSession || input.isHevyEditArrival) {
+    if (input.isHevyEditArrival) {
         return "sync";
     }
     return "save";

@@ -61,6 +61,7 @@ import {
     AttachmentInfo,
 } from "@/components/ai-elements/attachments";
 import { AgentGenerationError } from "./AgentGenerationError";
+import { HEVY_EXPORT_GATE_TITLE } from "./HevyExportGate";
 import { parseUserMessageWithSpreadsheets, truncateFilename } from "./helpers";
 
 interface IProps {
@@ -640,13 +641,13 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     <ToolHeader
                                                         type="tool-openHevyExportGate"
                                                         state={toolState}
-                                                        title="Export to Hevy"
+                                                        title={HEVY_EXPORT_GATE_TITLE}
                                                     />
                                                     <ToolContent className="w-full">
                                                         <p className="text-sm text-muted-foreground py-2">
                                                             {isActiveGate
-                                                                ? "Finish export setup below."
-                                                                : "Export setup opened."}
+                                                                ? "Finish setup below."
+                                                                : "Hevy setup opened."}
                                                         </p>
                                                     </ToolContent>
                                                 </Tool>

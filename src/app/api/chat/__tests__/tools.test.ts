@@ -1171,6 +1171,14 @@ describe("chat tools.ts", () => {
             expect(tools).toHaveProperty("openHevyExportGate");
         });
 
+        it("description guides Save then Start and does not name Week Export", () => {
+            const tools = getTools({});
+            const description = tools.openHevyExportGate.description ?? "";
+            expect(description).toContain("Save");
+            expect(description).toContain("Start");
+            expect(description).not.toContain("Week Export");
+        });
+
         it("returns open-gate payload without any secret fields", async () => {
             const tools = getTools({});
             const openGate = asTestTool<
@@ -1197,7 +1205,8 @@ describe("chat tools.ts", () => {
             const modelOut = await openGate.toModelOutput({ output });
             expect(modelOut.value).toContain("Hevy export gate opened");
             expect(modelOut.value).toContain("Save");
-            expect(modelOut.value).toContain("Week Export");
+            expect(modelOut.value).toContain("Start");
+            expect(modelOut.value).not.toContain("Week Export");
             expect(modelOut.value).toMatch(/Never ask for or repeat an API key/i);
             // Ensure no vaulted key-shaped payload leaked
             expect(modelOut.value).not.toMatch(/hevy_api_key_/);

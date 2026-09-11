@@ -99,7 +99,14 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { Chat } from "../Chat";
-import { HevyExportGate } from "../HevyExportGate";
+import {
+    HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED,
+    HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED,
+    HEVY_EXPORT_GATE_PROGRESS_LABEL,
+    HEVY_EXPORT_GATE_TITLE,
+    HevyExportGate,
+    hevyExportGateCompleteToast,
+} from "../HevyExportGate";
 
 function makeQueryClient() {
     return new QueryClient({
@@ -114,6 +121,24 @@ function renderWithTooltip(ui: ReactNode) {
         </QueryClientProvider>,
     );
 }
+
+describe("HevyExportGate copy", () => {
+    it("complete toasts are Save then Start, never Export in the top right", () => {
+        expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED).toBe("Press Save, then Start");
+        expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED).toBe("Press Start");
+        expect(hevyExportGateCompleteToast(false)).toBe("Press Save, then Start");
+        expect(hevyExportGateCompleteToast(true)).toBe("Press Start");
+        expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED).not.toMatch(/export/i);
+        expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED).not.toMatch(/export/i);
+    });
+
+    it("title and progress label are prereq language", () => {
+        expect(HEVY_EXPORT_GATE_TITLE).toBe("Connect Hevy");
+        expect(HEVY_EXPORT_GATE_PROGRESS_LABEL).toBe("Connecting Hevy");
+        expect(HEVY_EXPORT_GATE_TITLE).not.toMatch(/export/i);
+        expect(HEVY_EXPORT_GATE_PROGRESS_LABEL).not.toMatch(/export/i);
+    });
+});
 
 describe("HevyExportGate footer", () => {
     beforeEach(() => {
@@ -140,6 +165,8 @@ describe("HevyExportGate footer", () => {
         );
 
         expect(screen.getByTestId("hevy-export-gate-sign-in-step")).toBeTruthy();
+        expect(screen.getByText("Connect Hevy")).toBeTruthy();
+        expect(screen.queryByText("Export to Hevy")).toBeNull();
         expect(screen.getByTestId("hevy-export-gate-sign-in-link").getAttribute("href")).toBe(
             `/auth/login?next=${encodeURIComponent("/build-program?resume=true")}`,
         );
@@ -161,6 +188,11 @@ describe("HevyExportGate footer", () => {
         expect(screen.getByTestId("hevy-export-gate-key-step")).toBeTruthy();
         expect(screen.getByTestId("hevy-export-gate-key-input")).toBeTruthy();
         expect(screen.getByTestId("hevy-export-gate-step").textContent).toContain("2 of 2");
+        const keyStep = screen.getByTestId("hevy-export-gate-key-step").textContent ?? "";
+        expect(keyStep).toContain("Save");
+        expect(keyStep).toContain("Start");
+        expect(keyStep).not.toContain("Week Export");
+        expect(keyStep).not.toContain("Export");
     });
 
     it("renders nothing when signed in with Hevy key (parent also hides via derived prereqs)", () => {

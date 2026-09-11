@@ -3,11 +3,13 @@
  *
  * Profile Program overview shell (ADR 0010 / 0020): section header, program
  * picker buttons when multiple active programs, then one overview body
- * (shell, week rail + preview, Hevy mirror).
+ * (shell, week rail + preview, Hevy mirror). **Start** lands via `?programId=`
+ * (ADR 0016 / 02).
  *
  * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
- *             useHevyProgramSyncOnDemand (ADR 0011), ProgramOverviewWeekList,
- *             ProgramOverviewHevyMirror, profileSectionShell
+ *             useHevyProgramSyncOnDemand (ADR 0011), overview-start,
+ *             ProgramOverviewWeekList, ProgramOverviewHevyMirror,
+ *             profileSectionShell
  * Used by: ProfileContent
  */
 
@@ -15,10 +17,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Layers, Plus } from "lucide-react";
 import { useHevyPrograms, useHevySecret, useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyProgramSyncOnDemand } from "@/hooks/useHevyProgramSyncOnDemand";
+import {
+    parseOverviewProgramId,
+    resolveOverviewProgramId,
+} from "@/hooks/overview-start";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,7 +79,8 @@ export function ProgramOverviewSection() {
         isLoading: programsLoading,
         isError,
     } = useSubscribedPrograms(user);
-    const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
+    const searchParams = useSearchParams();
+    const [pickedProgramId, setPickedProgramId] = useState<number | null>(null);
 
     // ADR 0011: on-demand hevy-program-sync via React Query (Hevy connected)
     useHevyProgramSyncOnDemand(Boolean(user && hevyApiKey), user?.id);
@@ -80,10 +88,11 @@ export function ProgramOverviewSection() {
     const isLoading = userLoading || (!!user && programsLoading);
 
     const activePrograms = programs ?? [];
-    const resolvedProgramId =
-        selectedProgramId != null && activePrograms.some((p) => p.id === selectedProgramId)
-            ? selectedProgramId
-            : (activePrograms[0]?.id ?? null);
+    const resolvedProgramId = resolveOverviewProgramId({
+        activeProgramIds: activePrograms.map((program) => program.id),
+        pickedProgramId,
+        queryProgramId: parseOverviewProgramId(searchParams),
+    });
     const selectedProgram =
         resolvedProgramId != null
             ? (activePrograms.find((p) => p.id === resolvedProgramId) ?? null)
@@ -189,7 +198,7 @@ export function ProgramOverviewSection() {
                                             type="button"
                                             role="tab"
                                             aria-selected={selected}
-                                            onClick={() => setSelectedProgramId(program.id)}
+                                            onClick={() => setPickedProgramId(program.id)}
                                             className={cn(
                                                 "max-w-full truncate rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
                                                 selected

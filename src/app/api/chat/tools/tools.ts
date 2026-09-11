@@ -490,9 +490,9 @@ export function getTools({
         description:
             'Opens the Hevy export gate in the chat footer to collect missing prerequisites for pushing a program to Hevy (sign in, then Hevy API key). ' +
             'Call when the user clearly asks to export / upload / push / sync / send the program to Hevy, the program grid is non-empty, and at least one prerequisite is missing (not signed in and/or no Hevy API key on file). ' +
-            'Do not call when both prerequisites are already done - guide them in text to toolbar Save then profile Week Export. ' +
+            'Do not call when both prerequisites are already done - guide them in text to toolbar Save then Start. ' +
             'Do not call when the program grid is empty or the Questionnaire gate (getMoreInfoQuestions) is still active. ' +
-            'This tool does not Save or Week Export; it only opens prerequisite UI. Never request or echo API key secrets.',
+            'This tool does not Save or Start; it only opens prerequisite UI. Never request or echo API key secrets.',
         inputSchema: z.object({
             userRequest: z.string().optional().describe('The user\'s Hevy-export request for context'),
         }),
@@ -506,8 +506,8 @@ export function getTools({
         toModelOutput: async () => ({
             type: 'text' as const,
             value:
-                'Hevy export gate opened. Tell the user to finish the gate steps in the footer, then use toolbar Save and profile Week Export. ' +
-                'Do not claim you uploaded or exported to Hevy. Never ask for or repeat an API key.',
+                'Hevy export gate opened. Tell the user to finish the gate steps in the footer, then use toolbar Save then Start. ' +
+                'Do not claim you uploaded the program to Hevy. Never ask for or repeat an API key.',
         }),
     });
 

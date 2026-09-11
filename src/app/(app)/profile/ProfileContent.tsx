@@ -4,8 +4,9 @@
  * @module (app)/profile/ProfileContent
  *
  * Client profile body: single scroll on muted background — hero (when signed
- * in), Program overview first, then calendar/statistics, blind spot, recent
- * workouts (ADR 0010 / 05). Resume-draft banner sits above the stack.
+ * in), Program overview first (Suspense: overview reads `?programId=`), then
+ * calendar/statistics, blind spot, recent workouts (ADR 0010 / 05). Resume-draft
+ * banner sits above the stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
  * ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection,
@@ -13,7 +14,7 @@
  * Used by: (app)/profile/page.tsx.
  */
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import posthog from "posthog-js";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyPrograms, useHevySecret } from "@/api/hooks";
@@ -61,7 +62,9 @@ export function ProfileContent() {
                     </Card>
                 ) : null}
 
-                <ProgramOverviewSection />
+                <Suspense>
+                    <ProgramOverviewSection />
+                </Suspense>
 
                 <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
                     {hevyConnected ? (

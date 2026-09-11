@@ -20,6 +20,7 @@ import {
   KeyRoundIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { HEVY_EXPORT_GATE_PROGRESS_LABEL } from "./HevyExportGate";
 
 interface IStep {
   key: string;
@@ -32,7 +33,7 @@ const TOOL_META: Record<string, { label: string; icon: LucideIcon }> = {
   reasoning: { label: "Thinking", icon: BrainIcon },
   "tool-getExerciseList": { label: "Looking up exercises", icon: SearchIcon },
   "tool-getMoreInfoQuestions": { label: "Gathering info", icon: ListChecksIcon },
-  "tool-openHevyExportGate": { label: "Opening export setup", icon: KeyRoundIcon },
+  "tool-openHevyExportGate": { label: HEVY_EXPORT_GATE_PROGRESS_LABEL, icon: KeyRoundIcon },
   "tool-planProgram": { label: "Planning program structure", icon: ListChecksIcon },
   "tool-buildWeek": { label: "Building training week", icon: HammerIcon },
   "tool-mutateProgram": { label: "Mutating program", icon: WrenchIcon },

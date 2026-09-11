@@ -198,4 +198,30 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(screen.queryByRole("button", { name: /Edit Week/ })).toBeNull();
         expect(screen.getByRole("button", { name: "Export Week 1" })).toBeTruthy();
     });
+
+    it("highlights Export when the program has zero Program-Hevy links", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        expect(screen.getByRole("group", { name: "Export" }).dataset.exportHighlight).toBe(
+            "true",
+        );
+        expect(screen.getByRole("link", { name: "Edit program" }).dataset.exportHighlight).toBe(
+            undefined,
+        );
+    });
+
+    it("does not highlight Export when a Program-Hevy link exists", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByRole("group", { name: "Export" }).dataset.exportHighlight).toBe(
+            undefined,
+        );
+    });
 });

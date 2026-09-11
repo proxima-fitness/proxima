@@ -34,22 +34,12 @@ describe("isHevyEditArrival", () => {
 });
 
 describe("persistModeForBuilder", () => {
-    it("is Sync when an Edit session is present", () => {
-        expect(persistModeForBuilder({ hasEditSession: true, isHevyEditArrival: false })).toBe(
-            "sync",
-        );
+    it("is Save on New path even if a leftover Edit session is still in memory", () => {
+        expect(persistModeForBuilder({ isHevyEditArrival: false })).toBe("save");
     });
 
     it("is Sync on Edit current week / Hevy-only URL even before session hydrates", () => {
-        expect(persistModeForBuilder({ hasEditSession: false, isHevyEditArrival: true })).toBe(
-            "sync",
-        );
-    });
-
-    it("is Save on New path", () => {
-        expect(persistModeForBuilder({ hasEditSession: false, isHevyEditArrival: false })).toBe(
-            "save",
-        );
+        expect(persistModeForBuilder({ isHevyEditArrival: true })).toBe("sync");
     });
 });
 

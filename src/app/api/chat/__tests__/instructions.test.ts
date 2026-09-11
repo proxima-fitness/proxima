@@ -401,7 +401,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("weight_display");
         });
 
-        it("anon + missing key: call openHevyExportGate; Save + Week Export chrome; no builder Export", () => {
+        it("anon + missing key: call openHevyExportGate; Save then Start; no builder Export", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
                 daysPerWeek: 4,
@@ -409,18 +409,19 @@ describe("chat instructions.ts", () => {
                 isAuthenticated: false,
                 hasHevyApiKey: false,
             });
-            expect(prompt).toContain("Upload to Hevy / Week Export");
             expect(prompt).toContain("authenticated = **no**");
             expect(prompt).toContain("Hevy API key on file = **no**");
             expect(prompt).toContain("openHevyExportGate");
             expect(prompt).toContain("toolbar **Save**");
-            expect(prompt).toContain("**Week Export**");
-            expect(prompt).toContain("Never tell them to click **Export** in the builder toolbar");
+            expect(prompt).toContain("**Start**");
+            expect(prompt).not.toContain("**Week Export**");
+            expect(prompt).not.toContain("Never tell them to click **Export**");
+            expect(prompt).not.toContain("profile **Week Export**");
             expect(prompt).not.toContain("**Export** button in the top-right");
             expect(prompt).not.toContain("sign in first");
         });
 
-        it("authenticated + hasHevyApiKey: text-only Save / Week Export; do not call gate", () => {
+        it("authenticated + hasHevyApiKey: text-only Save then Start; do not call gate", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
                 daysPerWeek: 4,
@@ -428,13 +429,15 @@ describe("chat instructions.ts", () => {
                 isAuthenticated: true,
                 hasHevyApiKey: true,
             });
-            expect(prompt).toContain("Upload to Hevy / Week Export");
             expect(prompt).toContain("authenticated = **yes**");
             expect(prompt).toContain("Hevy API key on file = **yes**");
             expect(prompt).toContain("Both prerequisites done");
             expect(prompt).toContain("Do **not** call **openHevyExportGate**");
             expect(prompt).toContain("toolbar **Save**");
-            expect(prompt).toContain("**Week Export**");
+            expect(prompt).toContain("**Start**");
+            expect(prompt).not.toContain("**Week Export**");
+            expect(prompt).not.toContain("Never tell them to click **Export**");
+            expect(prompt).not.toContain("profile **Week Export**");
             expect(prompt).not.toContain("**Export** button in the top-right");
         });
 
@@ -509,7 +512,7 @@ describe("chat instructions.ts", () => {
                 programLength: 8,
             });
             expect(prompt).toContain("Questionnaire gate active");
-            expect(prompt).toContain("dismiss or complete the questionnaire");
+            expect(prompt).toContain("finish or dismiss the questions first");
         });
     });
 });
