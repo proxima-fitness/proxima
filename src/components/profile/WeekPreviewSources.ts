@@ -17,6 +17,13 @@ import { weekPreviewDayKey } from "./ProgramOverviewWeekPreviewModel";
 /** Day card source badge labels (ADR 0013 / SP6). */
 export type TDayCardSource = "Planned" | "In Hevy" | "Completed";
 
+/** Positive one-liners for Day card source badge tooltips. */
+export const DAY_CARD_SOURCE_TOOLTIPS: Record<TDayCardSource, string> = {
+    Planned: "This day's program plan",
+    "In Hevy": "Live copy of this week in Hevy",
+    Completed: "Logged workout for this day",
+};
+
 /** Title for an empty in-progress Hevy folder (C4). */
 export const EMPTY_IN_HEVY_FOLDER_TITLE = "No Routines";
 

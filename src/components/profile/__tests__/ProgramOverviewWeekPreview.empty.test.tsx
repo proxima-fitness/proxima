@@ -28,6 +28,9 @@ describe("WeekPreviewSlot empty Hevy folder", () => {
         );
 
         expect(screen.getByText("In Hevy")).toBeTruthy();
+        expect(
+            screen.getByLabelText("In Hevy: Live copy of this week in Hevy"),
+        ).toBeTruthy();
         expect(screen.getByText(EMPTY_IN_HEVY_FOLDER_TITLE)).toBeTruthy();
         expect(screen.getByText(EMPTY_IN_HEVY_FOLDER_EXPLAINER)).toBeTruthy();
     });

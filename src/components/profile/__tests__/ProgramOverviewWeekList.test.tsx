@@ -205,4 +205,23 @@ describe("ProgramOverviewWeekList mark week complete", () => {
         expect(props.missingFolderWeeks).toEqual([1]);
         expect(props.onEditCurrentWeek).toBeUndefined();
     });
+
+    it("does not repeat week status on the preview header", () => {
+        renderList(
+            <ProgramOverviewWeekList
+                programId={11}
+                programTitle="Strength Block A"
+                programLength={8}
+            />,
+        );
+
+        const panel = document.querySelector("[data-selected-week]");
+        expect(panel).toBeTruthy();
+        if (!panel) {
+            return;
+        }
+        expect(panel.querySelector("h4")?.textContent).toBe("Week 1");
+        expect(panel.textContent).not.toMatch(/Current/);
+        expect(panel.textContent).not.toMatch(/Not exported/);
+    });
 });

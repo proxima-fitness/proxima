@@ -123,6 +123,9 @@ describe("HevyDayCard read-only variant", () => {
         render(<HevyDayCard variant="read-only" day={day} source="Completed" />);
 
         expect(screen.getByText("Completed")).toBeTruthy();
+        expect(
+            screen.getByLabelText("Completed: Logged workout for this day"),
+        ).toBeTruthy();
         expect(screen.queryByText("Planned")).toBeNull();
         expect(screen.queryByText("In Hevy")).toBeNull();
     });

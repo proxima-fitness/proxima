@@ -35,4 +35,72 @@ describe("ProgramOverviewWeekRail", () => {
         fireEvent.click(week3Buttons[0]!);
         expect(onSelectWeek).toHaveBeenCalledWith(3);
     });
+
+    it("omits Not exported from the visible rail and keeps it on the accessible name", () => {
+        render(
+            <ProgramOverviewWeekRail
+                rows={rows}
+                selectedWeek={2}
+                onSelectWeek={() => undefined}
+            />,
+        );
+
+        const week3Buttons = screen.getAllByRole("option", { name: "Week 3, Not exported" });
+        expect(week3Buttons.length).toBeGreaterThan(0);
+        expect(screen.queryAllByText("Not exported")).toHaveLength(0);
+
+        const currentButtons = screen.getAllByRole("option", { name: /Week 2/i });
+        expect(currentButtons.some((button) => button.textContent?.includes("Current"))).toBe(
+            true,
+        );
+    });
+
+    it("puts a status-colored dot only on the selected week", () => {
+        const { rerender } = render(
+            <ProgramOverviewWeekRail
+                rows={[
+                    ...rows,
+                    { week: 4, status: "exported" },
+                ]}
+                selectedWeek={2}
+                onSelectWeek={() => undefined}
+            />,
+        );
+
+        const current = screen.getAllByRole("option", { name: /Week 2/i })[0];
+        const complete = screen.getAllByRole("option", { name: /Week 1/i })[0];
+        const notExported = screen.getAllByRole("option", {
+            name: "Week 3, Not exported",
+        })[0];
+
+        expect(current?.querySelector("[data-week-status-dot='current']")?.className).toContain(
+            "bg-lightSecondary",
+        );
+        expect(complete?.querySelector("[data-week-status-dot]")).toBeNull();
+        expect(notExported?.querySelector("[data-week-status-dot]")).toBeNull();
+
+        rerender(
+            <ProgramOverviewWeekRail
+                rows={[
+                    ...rows,
+                    { week: 4, status: "exported" },
+                ]}
+                selectedWeek={3}
+                onSelectWeek={() => undefined}
+            />,
+        );
+
+        const selectedNotExported = screen.getAllByRole("option", {
+            name: "Week 3, Not exported",
+        })[0];
+        expect(
+            selectedNotExported?.querySelector("[data-week-status-dot='not_exported']")
+                ?.className,
+        ).toContain("bg-foreground/25");
+        expect(
+            screen.getAllByRole("option", { name: /Week 2/i })[0]?.querySelector(
+                "[data-week-status-dot]",
+            ),
+        ).toBeNull();
+    });
 });

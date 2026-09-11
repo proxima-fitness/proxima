@@ -3,11 +3,14 @@
  *
  * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01):
  * title + meta left (owner can rename). **Edit program** is always a quiet
- * title-row control. Header: split Export (Hevy Week Export left, PDF /
+ * title-row control. A **Week complete** percent bar sits under the title.
+ * Header: split Export (Hevy Week Export left, PDF /
  * spreadsheet dropdown right) plus **Edit current week** ("Edit Week N").
  * Edit Week 1 is shown disabled until the first Week Export. Zero-link
  * overview emphasizes **Export** on load (ADR 0016 / 02); **Edit program**
- * is not highlighted. AI week suggest disclosure below (ADR 0012 / 02).
+ * is not highlighted. A week-loop gate (prior week incomplete) restyles the
+ * whole split to outline; an allowed Week Export stays teal. AI week suggest
+ * disclosure below (ADR 0012 / 02).
  *
  * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
  * and refreshes the Week preview read; Export stays a separate, explicit step.
@@ -60,6 +63,7 @@ import {
 } from "./ProgramOverviewExportWeek";
 import { refreshOverviewQueriesAfterWeekExport } from "./refreshOverviewQueriesAfterWeekExport";
 import { PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY } from "./ProgramOverviewWeekPreview";
+import { weekCompletePercent } from "./ProgramOverviewWeekStatus";
 
 type TUploadProgress = {
     uploaded: number;
@@ -133,6 +137,32 @@ function formatProgramMeta(
     return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+function ProgramWeekCompleteBar({
+    completed,
+    total,
+}: {
+    completed: number;
+    total: number;
+}) {
+    if (total < 1) {
+        return null;
+    }
+    const percent = weekCompletePercent(completed, total);
+
+    return (
+        <div className="flex w-full max-w-md items-center gap-3 pt-2">
+            <Progress
+                value={percent}
+                className="h-2.5 flex-1 bg-muted"
+                aria-label={`${percent}% complete`}
+            />
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                {percent}%
+            </span>
+        </div>
+    );
+}
+
 /**
  * Program shell (title + Edit program | split Export / Edit Week N) + AI week suggest.
  */
@@ -179,6 +209,7 @@ export function ProgramOverviewCtas({
     );
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
+    const weekExportGated = !linksLoading && !gate.allowed;
     const meta = formatProgramMeta(programLength, specialization);
     const hasExported = linkedWeeks.length > 0;
     const highlightExport = shouldHighlightOverviewExport({
@@ -387,6 +418,10 @@ export function ProgramOverviewCtas({
                             </Button>
                         ) : null}
                     </div>
+                    <ProgramWeekCompleteBar
+                        completed={completedWeeks.length}
+                        total={programLength ?? 0}
+                    />
                     <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
                         {meta ? (
                             <p className="text-sm text-muted-foreground">{meta}</p>
@@ -407,11 +442,17 @@ export function ProgramOverviewCtas({
                             role="group"
                             aria-label="Export"
                             data-export-highlight={highlightExport ? "true" : undefined}
+                            data-export-gated={weekExportGated ? "true" : undefined}
                         >
                             <Button
                                 type="button"
                                 size="sm"
-                                className={`${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`}
+                                variant={weekExportGated ? "outline" : undefined}
+                                className={
+                                    weekExportGated
+                                        ? "rounded-l-full rounded-r-none border-border/80 border-r-0"
+                                        : `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
+                                }
                                 disabled={hevyDisabled}
                                 title={!gate.allowed ? gate.reason : undefined}
                                 onClick={() => {
@@ -426,7 +467,12 @@ export function ProgramOverviewCtas({
                                     <Button
                                         type="button"
                                         size="sm"
-                                        className={`${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`}
+                                        variant={weekExportGated ? "outline" : undefined}
+                                        className={
+                                            weekExportGated
+                                                ? "w-8 rounded-l-none rounded-r-full border-border/80 px-0"
+                                                : `${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`
+                                        }
                                         disabled={isUploading || fileLoading}
                                         aria-label="Export as PDF or spreadsheet"
                                     >

@@ -45,7 +45,6 @@ import {
     findHevyProgramForWeek,
     missingHevyFolderWeeks,
     resolveSelectedWeek,
-    weekStatusLabel,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
 } from "./ProgramOverviewWeekStatus";
@@ -258,9 +257,6 @@ export function ProgramOverviewWeekList({
                             <h4 className="text-base font-semibold tracking-tight text-foreground">
                                 Week {resolvedSelected}
                             </h4>
-                            <span className="text-xs tracking-wide text-muted-foreground sm:text-sm">
-                                {weekStatusLabel(selectedRow.status)}
-                            </span>
                         </div>
 
                         <ProgramOverviewWeekPreview

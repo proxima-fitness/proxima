@@ -234,6 +234,44 @@ export function weekStatusLabel(status: TProgramOverviewWeekStatus): string {
 }
 
 /**
+ * Rail-visible status. **Not exported** is the unlabeled default.
+ *
+ * @param status - Derived week status
+ */
+export function weekStatusVisibleLabel(
+    status: TProgramOverviewWeekStatus,
+): string | null {
+    return status === "not_exported" ? null : weekStatusLabel(status);
+}
+
+/**
+ * **Week complete** count vs consecutive week total for the overview bar.
+ *
+ * @param rows - Derived week status rows
+ */
+export function countCompleteWeeks(
+    rows: readonly TProgramOverviewWeekRowModel[],
+): { completed: number; total: number } {
+    return {
+        completed: rows.filter((row) => row.status === "complete").length,
+        total: rows.length,
+    };
+}
+
+/**
+ * **Week complete** as a 0–100 integer.
+ *
+ * @param completed - Weeks that are Week complete
+ * @param total - Program length in weeks
+ */
+export function weekCompletePercent(completed: number, total: number): number {
+    if (total < 1) {
+        return 0;
+    }
+    return Math.round((completed / total) * 100);
+}
+
+/**
  * Default **Selected week** for overview rail: **Current week**, else week 1.
  *
  * @param rows - Derived week status rows (consecutive)

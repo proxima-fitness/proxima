@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+    countCompleteWeeks,
     defaultSelectedWeek,
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
@@ -13,6 +14,8 @@ import {
     missingHevyFolderWeeks,
     resolveSelectedWeek,
     weekStatusLabel,
+    weekStatusVisibleLabel,
+    weekCompletePercent,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
 } from "../ProgramOverviewWeekStatus";
@@ -185,6 +188,36 @@ describe("weekStatusLabel", () => {
         expect(weekStatusLabel("current")).toBe("Current");
         expect(weekStatusLabel("complete")).toBe("Complete");
         expect(weekStatusLabel("exported")).toBe("Exported");
+    });
+
+    it("hides Not exported as the rail default", () => {
+        expect(weekStatusVisibleLabel("not_exported")).toBeNull();
+        expect(weekStatusVisibleLabel("current")).toBe("Current");
+        expect(weekStatusVisibleLabel("complete")).toBe("Complete");
+        expect(weekStatusVisibleLabel("exported")).toBe("Exported");
+    });
+});
+
+describe("countCompleteWeeks", () => {
+    it("counts Week complete rows against program length", () => {
+        expect(
+            countCompleteWeeks([
+                { week: 1, status: "complete" },
+                { week: 2, status: "current" },
+                { week: 3, status: "not_exported" },
+            ]),
+        ).toEqual({ completed: 1, total: 3 });
+        expect(countCompleteWeeks([])).toEqual({ completed: 0, total: 0 });
+    });
+});
+
+describe("weekCompletePercent", () => {
+    it("returns a 0–100 integer", () => {
+        expect(weekCompletePercent(0, 8)).toBe(0);
+        expect(weekCompletePercent(1, 8)).toBe(13);
+        expect(weekCompletePercent(2, 8)).toBe(25);
+        expect(weekCompletePercent(8, 8)).toBe(100);
+        expect(weekCompletePercent(1, 0)).toBe(0);
     });
 });
 

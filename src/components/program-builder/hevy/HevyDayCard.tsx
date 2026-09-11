@@ -4,7 +4,7 @@
  * @module HevyDayCard
  * Single day card in the Hevy program builder: draggable card with title, notes indicator, exercise list,
  * add exercise button, superset creation, and dropdown (delete, edit title, add note, duplicate day). Keyboard shortcuts when focused.
- * Depends on: HevyExerciseVisualizer, HevyDuplicateDay, DropIndicator, convertHevyExerciseIntoHevyAddExercise.
+ * Depends on: HevyExerciseVisualizer, HevyDuplicateDay, DropIndicator, convertHevyExerciseIntoHevyAddExercise, DayCardSourceBadge, SessionGoalBadge.
  * Used by: HevyColumn (one per day in that week).
  */
 
@@ -34,6 +34,7 @@ import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
 } from "@/utils/general/helpers";
+import { DayCardSourceBadge } from "@/components/profile/DayCardSourceBadge";
 import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
 
 /** Props for a single day card within a week column. */
@@ -247,14 +248,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                 </div>
                             </div>
                             <div className="flex items-start gap-2 shrink-0">
-                                {source ? (
-                                    <span
-                                        className="rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground"
-                                        data-day-source={source}
-                                    >
-                                        {source}
-                                    </span>
-                                ) : null}
+                                {source ? <DayCardSourceBadge source={source} /> : null}
                                 { day.notes && day.notes.length > 0 &&
                                 <TooltipProvider delayDuration={ 0 }>
                                     <Tooltip>

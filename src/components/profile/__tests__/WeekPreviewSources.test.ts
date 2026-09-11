@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import { backedUpWorkoutFixture } from "@/api/__tests__/manual/backed-up-workout.fixture";
 import {
+    DAY_CARD_SOURCE_TOOLTIPS,
     EMPTY_IN_HEVY_FOLDER_TITLE,
     resolveWeekPreview,
     type TWeekPreviewLink,
@@ -302,5 +303,13 @@ describe("resolveWeekPreview", () => {
         expect(preview.days[1]?.slots[0]?.routine?.title).toBe("2 - Pull");
         expect(preview.days[1]?.slots[1]?.emptyCopy).toBe("Not logged");
         expect(preview.days[2]?.slots[1]?.routine?.title).toBe("Logged Arms");
+    });
+});
+
+describe("DAY_CARD_SOURCE_TOOLTIPS", () => {
+    it("uses positive one-liners for each source badge", () => {
+        expect(DAY_CARD_SOURCE_TOOLTIPS.Planned).toBe("This day's program plan");
+        expect(DAY_CARD_SOURCE_TOOLTIPS["In Hevy"]).toBe("Live copy of this week in Hevy");
+        expect(DAY_CARD_SOURCE_TOOLTIPS.Completed).toBe("Logged workout for this day");
     });
 });

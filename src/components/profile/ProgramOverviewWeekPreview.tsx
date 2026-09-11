@@ -4,8 +4,9 @@
  * Selected-week glance (ADR 0020 / 03, ADR 0013 / SP5–6): one day at a time.
  * Source is Program prescription, Hevy week copy, or Planned vs completed.
  *
- * Depends on: react-query, useHevyExercises, HevyDayCard, ProgramOverviewExportWeek,
- *             ProgramOverviewWeekPreviewModel, WeekPreviewSources, Button, Skeleton
+ * Depends on: react-query, useHevyExercises, HevyDayCard, DayCardSourceBadge,
+ *             ProgramOverviewExportWeek, ProgramOverviewWeekPreviewModel,
+ *             WeekPreviewSources, Button, Skeleton
  * Used by: ProgramOverviewWeekList
  */
 
@@ -21,6 +22,7 @@ import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DayCardSourceBadge } from "./DayCardSourceBadge";
 import { loadPrescriptionHevyRoutines } from "./ProgramOverviewExportWeek";
 import { slicePrescriptionWeekDays } from "./ProgramOverviewWeekPreviewModel";
 import {
@@ -87,8 +89,8 @@ export function WeekPreviewSlot({
                 )}
                 data-day-source={slot.source}
             >
-                <span className="absolute right-3 top-3 rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground">
-                    {slot.source}
+                <span className="absolute right-3 top-3">
+                    <DayCardSourceBadge source={slot.source} />
                 </span>
                 {isEmptyHevyFolder ? (
                     <div className="flex max-w-sm flex-col items-center gap-1.5">

@@ -3,6 +3,9 @@
  *
  * Week status rail for Program overview (ADR 0020 / 02): vertical list on md+,
  * horizontal scroll chips on small screens. Selection drives Selected week.
+ * The status dot is only on the Selected week; its color is that week's state
+ * (not started / exported / complete). Not exported has no text label; Current /
+ * Exported / Complete still do.
  *
  * Depends on: cn, ProgramOverviewWeekStatus
  * Used by: ProgramOverviewWeekList
@@ -11,6 +14,7 @@
 import { cn } from "@/lib/utils";
 import {
     weekStatusLabel,
+    weekStatusVisibleLabel,
     type TProgramOverviewWeekRowModel,
     type TProgramOverviewWeekStatus,
 } from "./ProgramOverviewWeekStatus";
@@ -32,6 +36,28 @@ function statusTone(status: TProgramOverviewWeekStatus): string {
         case "not_exported":
             return "text-muted-foreground/80";
     }
+}
+
+function weekStatusDotClass(status: TProgramOverviewWeekStatus): string {
+    switch (status) {
+        case "not_exported":
+            return "bg-foreground/25";
+        case "complete":
+            return "bg-green-600/55 dark:bg-green-500/55";
+        case "current":
+        case "exported":
+            return "bg-lightSecondary/55";
+    }
+}
+
+function WeekStatusDot({ status }: { status: TProgramOverviewWeekStatus }) {
+    return (
+        <span
+            className={cn("size-1.5 shrink-0 rounded-full", weekStatusDotClass(status))}
+            data-week-status-dot={status}
+            aria-hidden
+        />
+    );
 }
 
 function chipTone(
@@ -70,21 +96,30 @@ export function ProgramOverviewWeekRail({
             >
                 {rows.map((row) => {
                     const selected = row.week === selectedWeek;
+                    const visibleStatus = weekStatusVisibleLabel(row.status);
                     return (
                         <button
                             key={row.week}
                             type="button"
                             role="option"
                             aria-selected={selected}
+                            aria-label={
+                                visibleStatus == null
+                                    ? `Week ${row.week}, ${weekStatusLabel(row.status)}`
+                                    : undefined
+                            }
                             data-week-status={row.status}
                             onClick={() => onSelectWeek(row.week)}
                             className={cn(
-                                "shrink-0 rounded-full border px-3 py-1.5 text-left text-xs font-medium tracking-wide transition-colors",
+                                "grid shrink-0 grid-cols-[auto_0.375rem] items-center gap-x-1.5 rounded-full border px-3 py-1.5 text-left text-xs font-medium tracking-wide transition-colors",
                                 chipTone(row.status, selected),
                             )}
                         >
-                            <span className="block">Week {row.week}</span>
-                            <span className="block opacity-80">{weekStatusLabel(row.status)}</span>
+                            <span>Week {row.week}</span>
+                            {selected ? <WeekStatusDot status={row.status} /> : null}
+                            {visibleStatus != null ? (
+                                <span className="col-start-1 opacity-80">{visibleStatus}</span>
+                            ) : null}
                         </button>
                     );
                 })}
@@ -97,16 +132,22 @@ export function ProgramOverviewWeekRail({
                 <ul className="flex list-none flex-col p-0" role="listbox">
                     {rows.map((row) => {
                         const selected = row.week === selectedWeek;
+                        const visibleStatus = weekStatusVisibleLabel(row.status);
                         return (
                             <li key={row.week} className="list-none">
                                 <button
                                     type="button"
                                     role="option"
                                     aria-selected={selected}
+                                    aria-label={
+                                        visibleStatus == null
+                                            ? `Week ${row.week}, ${weekStatusLabel(row.status)}`
+                                            : undefined
+                                    }
                                     data-week-status={row.status}
                                     onClick={() => onSelectWeek(row.week)}
                                     className={cn(
-                                        "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors",
+                                        "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 rounded-lg px-2.5 py-2 text-left transition-colors",
                                         selected
                                             ? "bg-muted/50"
                                             : "hover:bg-muted",
@@ -114,23 +155,27 @@ export function ProgramOverviewWeekRail({
                                 >
                                     <span
                                         className={cn(
-                                            "text-sm",
+                                            "flex min-w-0 items-center gap-2 text-sm",
                                             selected
                                                 ? "font-semibold text-foreground"
                                                 : "font-medium text-foreground",
                                         )}
                                     >
                                         Week {row.week}
+                                        {visibleStatus != null ? (
+                                            <span
+                                                className={cn(
+                                                    "text-xs font-medium tracking-wide",
+                                                    statusTone(row.status),
+                                                )}
+                                            >
+                                                {visibleStatus}
+                                            </span>
+                                        ) : null}
                                     </span>
-                                    <span
-                                        className={cn(
-                                            "text-xs tracking-wide",
-                                            statusTone(row.status),
-                                            selected && row.status === "current" && "font-medium",
-                                        )}
-                                    >
-                                        {weekStatusLabel(row.status)}
-                                    </span>
+                                    {selected ? (
+                                        <WeekStatusDot status={row.status} />
+                                    ) : null}
                                 </button>
                             </li>
                         );

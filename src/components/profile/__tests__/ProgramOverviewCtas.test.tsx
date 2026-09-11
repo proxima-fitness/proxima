@@ -8,7 +8,6 @@ import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const updateProgramTitle = vi.fn();
-const evaluateWeekExportGate = vi.fn(() => ({ allowed: false, reason: "gated" }));
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -36,7 +35,6 @@ vi.mock("./ProgramOverviewExportWeek", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../ProgramOverviewExportWeek")>();
     return {
         ...actual,
-        evaluateWeekExportGate: () => evaluateWeekExportGate(),
         exportProgramWeekToHevy: vi.fn(),
         loadPrescriptionHevyRoutines: vi.fn(),
     };
@@ -65,7 +63,6 @@ describe("ProgramOverviewCtas rename", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         updateProgramTitle.mockReset();
-        evaluateWeekExportGate.mockClear();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -107,7 +104,6 @@ describe("ProgramOverviewCtas rename", () => {
 describe("ProgramOverviewCtas chrome", () => {
     beforeEach(() => {
         useUserContext.mockReset();
-        evaluateWeekExportGate.mockClear();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -223,5 +219,44 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(screen.getByRole("group", { name: "Export" }).dataset.exportHighlight).toBe(
             undefined,
         );
+    });
+
+    it("keeps Export teal when Week Export is allowed", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        const group = screen.getByRole("group", { name: "Export" });
+        expect(group.dataset.exportGated).toBe(undefined);
+        expect(screen.getByRole("button", { name: "Export Week 1" }).className).toContain(
+            "bg-lightSecondary",
+        );
+    });
+
+    it("outlines the Export split when the week-loop gate blocks Week Export", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={vi.fn()}
+            />,
+        );
+
+        const group = screen.getByRole("group", { name: "Export" });
+        expect(group.dataset.exportGated).toBe("true");
+        expect(screen.getByRole("button", { name: "Export Week 2" }).className).not.toContain(
+            "bg-lightSecondary",
+        );
+        expect(
+            screen.getByText("Mark week 1 complete before exporting week 2."),
+        ).toBeTruthy();
+    });
+
+    it("shows Week complete percent under the title", () => {
+        renderCtas(
+            <ProgramOverviewCtas {...baseProps} completedWeeks={[1]} />,
+        );
+
+        expect(screen.getByText("13%")).toBeTruthy();
+        expect(screen.getByRole("progressbar", { name: "13% complete" })).toBeTruthy();
     });
 });
