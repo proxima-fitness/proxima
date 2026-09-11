@@ -259,4 +259,11 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(screen.getByText("13%")).toBeTruthy();
         expect(screen.getByRole("progressbar", { name: "13% complete" })).toBeTruthy();
     });
+
+    it("hides Week complete percent when progress is 0%", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        expect(screen.queryByText("0%")).toBeNull();
+        expect(screen.queryByRole("progressbar")).toBeNull();
+    });
 });

@@ -145,6 +145,16 @@
     animation: loading-bar 1.5s ease-in-out infinite;
   }
 
+  @keyframes progress-fill {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+
+  .animate-progress-fill {
+    animation: progress-fill 0.7s ease-out;
+  }
+
   .text-gradient {
     background: radial-gradient(
       64.18% 64.18% at 71.16% 35.69%,

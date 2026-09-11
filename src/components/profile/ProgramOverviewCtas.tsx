@@ -3,7 +3,8 @@
  *
  * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01):
  * title + meta left (owner can rename). **Edit program** is always a quiet
- * title-row control. A **Week complete** percent bar sits under the title.
+ * title-row control. A **Week complete** percent bar sits under the title
+ * when progress is above 0%.
  * Header: split Export (Hevy Week Export left, PDF /
  * spreadsheet dropdown right) plus **Edit current week** ("Edit Week N").
  * Edit Week 1 is shown disabled until the first Week Export. Zero-link
@@ -148,11 +149,15 @@ function ProgramWeekCompleteBar({
         return null;
     }
     const percent = weekCompletePercent(completed, total);
+    if (percent < 1) {
+        return null;
+    }
 
     return (
         <div className="flex w-full max-w-md items-center gap-3 pt-2">
             <Progress
                 value={percent}
+                animateFill
                 className="h-2.5 flex-1 bg-muted"
                 aria-label={`${percent}% complete`}
             />
