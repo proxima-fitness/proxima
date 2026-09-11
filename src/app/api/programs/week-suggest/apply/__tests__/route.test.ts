@@ -4,15 +4,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@supabase/supabase-js";
 
-const { mockGetUser, mockGetLinks, mockGetMeta, mockGetCached, mockApply } = vi.hoisted(
-    () => ({
+const { mockGetUser, mockGetLinks, mockGetMeta, mockGetCached, mockApply, mockGetLimits } =
+    vi.hoisted(() => ({
         mockGetUser: vi.fn(),
         mockGetLinks: vi.fn(),
         mockGetMeta: vi.fn(),
         mockGetCached: vi.fn(),
         mockApply: vi.fn(),
-    }),
-);
+        mockGetLimits: vi.fn(),
+    }));
 
 vi.mock("@/utils/supabase/server", () => ({
     createClient: vi.fn(async () => ({ auth: { getUser: mockGetUser } })),
@@ -32,6 +32,19 @@ vi.mock("@/api/program-prescription-write", () => ({
 
 vi.mock("@/api/program-week-suggestions", () => ({
     getProgramWeekSuggestion: mockGetCached,
+}));
+
+vi.mock("@/lib/server-feature-limits", () => ({
+    getServerMyFeatureLimits: mockGetLimits,
+    usageCapResponse: (options?: { feature?: string; resets_on?: string | null }) =>
+        new Response(
+            JSON.stringify({
+                error: "usage_cap",
+                feature: options?.feature ?? "monthly_llm_requests",
+                ...(options?.resets_on ? { resets_on: options.resets_on } : {}),
+            }),
+            { status: 402, headers: { "Content-Type": "application/json" } },
+        ),
 }));
 
 import { POST } from "../route";
@@ -84,6 +97,11 @@ describe("POST /api/programs/week-suggest/apply", () => {
             summary: "Week 3 was clean.",
             changes: [CACHED_CHANGE],
             generatedAt: "2026-07-21T09:00:00.000Z",
+            llmConsumed: true,
+        });
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 15,
+            resets_on: "2026-10-01",
         });
         mockApply.mockResolvedValue({ applied: 1, skipped: 0, exercisesUpdated: 1 });
     });
@@ -285,5 +303,53 @@ describe("POST /api/programs/week-suggest/apply", () => {
         const response = await POST(request());
 
         expect(response.status).toBe(500);
+    });
+
+    it("refuses apply on an unconsumed tease while remaining is 0", async () => {
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 3,
+            targetWeek: 4,
+            summary: "Week 3 was clean.",
+            changes: [CACHED_CHANGE],
+            generatedAt: "2026-07-21T09:00:00.000Z",
+            llmConsumed: false,
+        });
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 0,
+            resets_on: "2026-10-01",
+        });
+
+        const response = await POST(request());
+
+        expect(response.status).toBe(402);
+        await expect(response.json()).resolves.toEqual({
+            error: "usage_cap",
+            feature: "monthly_llm_requests",
+            resets_on: "2026-10-01",
+        });
+        expect(mockApply).not.toHaveBeenCalled();
+    });
+
+    it("applies an unconsumed row once remaining is above 0", async () => {
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 3,
+            targetWeek: 4,
+            summary: "Week 3 was clean.",
+            changes: [CACHED_CHANGE],
+            generatedAt: "2026-07-21T09:00:00.000Z",
+            llmConsumed: false,
+        });
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 5,
+            resets_on: "2026-10-01",
+        });
+
+        const response = await POST(request());
+
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toMatchObject({ status: "applied" });
+        expect(mockApply).toHaveBeenCalled();
     });
 });

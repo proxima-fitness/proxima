@@ -21,8 +21,8 @@ describe("formatUsageResetDate", () => {
 describe("withRenewsOn", () => {
     it("appends Renews on when resets_on is present", () => {
         const formatted = formatUsageResetDate("2026-08-01");
-        expect(withRenewsOn("You're out of monthly exports.", "2026-08-01")).toBe(
-            `You're out of monthly exports. Renews on ${formatted}.`,
+        expect(withRenewsOn("You have run out of credits.", "2026-08-01")).toBe(
+            `You have run out of credits. Renews on ${formatted}.`,
         );
     });
 

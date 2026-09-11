@@ -1,7 +1,8 @@
 /**
  * @module ExportToHevySetup
  * Two-step flow: (1) connect Hevy API key, (2) upload program from localStorage to Hevy with progress and rate-limit handling.
- * Depends on: hevy API, useHevySecret, useMyFeatureLimits, Accordion, Progress. Used by: ExportDialog.
+ * Hevy writes are not metered (ADR 0015). Depends on: hevy API, useHevySecret, useMyFeatureLimits, Accordion, Progress.
+ * Used by: ExportDialog, ExportProgramCTA.
  */
 "use client";
 
@@ -15,8 +16,6 @@ import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevySecret, useMyFeatureLimits } from "@/api/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { tryConsumeMonthlyExport } from "@/api/feature-limits";
-import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import {
     deleteHevyApiKey,
     getSaveProgramToSupabaseFailureDetail,
@@ -30,7 +29,7 @@ import { triggerWorkoutHistorySync } from "@/api/workout-history-sync";
 import { MAIN_DISCOUNT_PERCENT, MAIN_DISCOUNT_CODE, RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import { postNewProgramSubscriber } from "@/api/programs";
 import { toast } from "sonner";
-import { Check, Crown, ExternalLink, Key, Upload } from "lucide-react";
+import { Check, ExternalLink, Key, Upload } from "lucide-react";
 import {
     Accordion,
     AccordionContent,
@@ -73,14 +72,12 @@ interface IExportToHevySetupProps {
     onUploadStateChange?: (uploading: boolean) => void;
     /** When provided, used instead of reading from localStorage. Allows callers (e.g. program slug page) to pass routines directly without touching the build-program localStorage key. */
     hevyRoutines?: THevyRoutine[];
-    /** When true, skips try_consume / export-cap UX (used for free pre-made program exports). */
-    skipUsageTracking?: boolean;
     /** Called after a successful Hevy upload (e.g. to increment program saves). */
     onExportSuccess?: () => void;
 }
 
 /** Step 1: API key connect/edit. Step 2: upload program from localStorage with one-folder vs per-week option. */
-export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, skipUsageTracking = false, onExportSuccess }) => {
+export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadStateChange, hevyRoutines: hevyRoutinesProp, onExportSuccess }) => {
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
     const searchParams = useSearchParams();
@@ -90,9 +87,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
     const { data: featureLimits } = useMyFeatureLimits(user);
 
     const isFree = featureLimits?.has_active_subscription !== true;
-    const atExportLimit = skipUsageTracking
-        ? false
-        : featureLimits != null && (featureLimits.remaining_exports ?? 0) === 0;
 
     const [expandedStep, setExpandedStep] = useState<string>(hevyApiKey ? "step2" : "step1");
     const [inputValue, setInputValue] = useState("");
@@ -274,28 +268,6 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
             console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, errorMessage);
             posthog?.capture?.("export_failed", { user: user?.id ?? "user_id_unknown", destination: "hevy", error: errorMessage });
             return;
-        }
-
-        // Spend one export unit before any Hevy write. Denied → paywall, no upload.
-        if (!skipUsageTracking) {
-            const consume = await tryConsumeMonthlyExport(user);
-            void queryClient.invalidateQueries({ queryKey: ["feature-limits", user.id] });
-            if (!consume.allowed) {
-                const message = withRenewsOn(
-                    isFree
-                        ? "You're out of monthly exports."
-                        : "You've run out of monthly exports.",
-                    featureLimits?.resets_on,
-                );
-                toast.error(message);
-                console.error(`${HEVY_EXPORT_LOG_PREFIX} export_failed`, message, consume.error);
-                posthog?.capture?.("export_failed", {
-                    user: user.id,
-                    destination: "hevy",
-                    error: "usage_cap",
-                });
-                return;
-            }
         }
 
         setShowExportSuccess(false);
@@ -680,36 +652,16 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                                         )}
                                     </div>
                                 )}
-                                {atExportLimit && (
-                                    <p className="text-sm text-muted-foreground">
-                                        {withRenewsOn(
-                                            isFree
-                                                ? "You're out of monthly exports."
-                                                : "You've run out of monthly exports.",
-                                            featureLimits?.resets_on,
-                                        )}
-                                    </p>
-                                )}
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <Button
-                                        variant="default"
-                                        className="w-fit gap-2 rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
-                                        onClick={() =>
-                                            handleUploadProgram(exportToOneFolder)}
-                                        disabled={isUploading || atExportLimit}
-                                    >
-                                        {isUploading ? "Uploading…" : "Upload"}
-                                        {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
-                                    </Button>
-                                    {atExportLimit && isFree && (
-                                        <Button variant="default" className="w-fit gap-2 rounded-full bg-lightGold px-4 text-black hover:bg-lightGold/90" asChild>
-                                            <Link href="/pricing">
-                                                <Crown className="h-4 w-4 shrink-0" />
-                                                Upgrade
-                                            </Link>
-                                        </Button>
-                                    )}
-                                </div>
+                                <Button
+                                    variant="default"
+                                    className="w-fit gap-2 rounded-full bg-lightSecondary px-5 text-white hover:bg-lightSecondary/90"
+                                    onClick={() =>
+                                        handleUploadProgram(exportToOneFolder)}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? "Uploading…" : "Upload"}
+                                    {!isUploading && <Upload className="h-4 w-4 shrink-0" />}
+                                </Button>
                             </div>
                         )}
                     </AccordionContent>
@@ -729,7 +681,7 @@ export const ExportToHevySetup: React.FC<IExportToHevySetupProps> = ({ onUploadS
                     </p>
                     {isFree && (
                         <p className="text-sm text-foreground">
-                            Thanks for exporting! Upgrade for more exports and blind spot analysis. Use code{" "}
+                            Thanks for exporting! Upgrade for Blind Spot analysis. Use code{" "}
                             <strong>{MAIN_DISCOUNT_CODE}</strong> for {MAIN_DISCOUNT_PERCENT}% off your first year on Pro+.
                         </p>
                     )}

@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import {
     MAX_WEEK_SUGGEST_CHANGES,
+    WEEK_SUGGEST_TEASER_SUMMARY_MAX,
     buildWeekSuggestPrompt,
     filterWorkoutsInWindow,
+    isWeekSuggestTeaser,
     normalizeWeekSuggestChanges,
     resolveWeekSuggestTarget,
+    toWeekSuggestTeaser,
+    truncateWeekSuggestSummary,
     weekLogWindow,
     weekSuggestModelOutputSchema,
     type TWeekSuggestChange,
@@ -404,5 +408,49 @@ describe("normalizeWeekSuggestChanges", () => {
 
         expect(changes).toHaveLength(MAX_WEEK_SUGGEST_CHANGES);
         expect(dropped).toBe(3);
+    });
+});
+
+describe("truncateWeekSuggestSummary", () => {
+    it("keeps the first sentence of a multi-sentence summary", () => {
+        expect(
+            truncateWeekSuggestSummary(
+                "Week 2 was solid. Nudge the top sets on bench and squat.",
+            ),
+        ).toBe("Week 2 was solid.");
+    });
+
+    it("caps the teaser summary at 240 characters", () => {
+        const longSentence = `${"A".repeat(300)}.`;
+        expect(truncateWeekSuggestSummary(longSentence)).toBe("A".repeat(240));
+        expect(WEEK_SUGGEST_TEASER_SUMMARY_MAX).toBe(240);
+    });
+
+    it("returns a short one-sentence summary unchanged", () => {
+        expect(truncateWeekSuggestSummary("Hold week 3.")).toBe("Hold week 3.");
+    });
+});
+
+describe("toWeekSuggestTeaser", () => {
+    it("returns status teaser with a truncated summary and no changes", () => {
+        const teaser = toWeekSuggestTeaser({
+            programId: 42,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid. Nudge the top sets on bench.",
+            generatedAt: "2026-07-26T12:00:00.000Z",
+        });
+
+        expect(teaser).toEqual({
+            status: "teaser",
+            programId: 42,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid.",
+            changes: [],
+            generatedAt: "2026-07-26T12:00:00.000Z",
+        });
+        expect(isWeekSuggestTeaser(teaser)).toBe(true);
+        expect(JSON.stringify(teaser)).not.toContain("Nudge the top sets");
     });
 });

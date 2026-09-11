@@ -11,10 +11,15 @@
  * Program–Hevy links per call: once week N+1 is exported it belongs to Edit
  * current week (ADR 0009), and apply refuses it.
  *
+ * A tease row (`llm_consumed=false`) with remaining LLM = 0 is 402
+ * `usage_cap` / `monthly_llm_requests` and does not write (ADR 0015). After
+ * unlock, apply reads the cached full changes.
+ *
  * No Week Export here — pushing week N+1 to Hevy stays explicit.
  *
  * Depends on: @/utils/supabase/server, program-hevy-links, program-prescription,
- *             program-prescription-write, program-week-suggestions, ../input
+ *             program-prescription-write, program-week-suggestions, ../input,
+ *             @/lib/server-feature-limits
  * Used by: AiWeekSuggestApply (Program overview)
  */
 
@@ -28,6 +33,10 @@ import {
     type TPrescriptionWriteOperation,
 } from "@/api/program-prescription-write";
 import { getProgramWeekSuggestion } from "@/api/program-week-suggestions";
+import {
+    getServerMyFeatureLimits,
+    usageCapResponse,
+} from "@/lib/server-feature-limits";
 import { createClient } from "@/utils/supabase/server";
 import {
     resolveWeekSuggestTarget,
@@ -62,7 +71,8 @@ function notReady(
  * (`targetWeek` is the week the open panel showed; a mismatch means the panel
  * is stale. `isInLbs` snaps weights to clean plate steps before write.)
  * 200 `{ status: "applied" | "not_ready", … }`, 400 bad body, 401 signed out,
- * 404 unknown program, 409 stale panel or nothing generated yet.
+ * 404 unknown program, 409 stale panel or nothing generated yet, 402 tease
+ * row while remaining LLM is 0.
  */
 export async function POST(request: Request) {
     try {
@@ -134,6 +144,16 @@ export async function POST(request: Request) {
                 },
                 { status: 409 },
             );
+        }
+
+        if (cached.llmConsumed === false) {
+            const limits = await getServerMyFeatureLimits(supabase, user);
+            if (limits?.remaining_llm_requests === 0) {
+                return usageCapResponse({
+                    feature: "monthly_llm_requests",
+                    resets_on: limits.resets_on,
+                });
+            }
         }
 
         const parsed = cachedChangesSchema.safeParse(cached.changes);

@@ -4,6 +4,7 @@ import type { Database, Json } from "@/hooks/supabase";
 import {
     deleteProgramWeekSuggestion,
     getProgramWeekSuggestion,
+    markProgramWeekSuggestionUnconsumed,
     saveProgramWeekSuggestion,
 } from "../program-week-suggestions";
 
@@ -20,6 +21,7 @@ type TRow = {
     changes: Json;
     generated_at: string;
     created_at: string;
+    llm_consumed: boolean;
 };
 
 type TFilter = { column: string; value: unknown };
@@ -53,6 +55,7 @@ function createMockDb(seed?: TRow[]) {
 
             const filters: TFilter[] = [];
             let pendingInsert: Partial<TRow> | null = null;
+            let pendingUpdate: Partial<TRow> | null = null;
             let pendingDelete = false;
 
             const applyFilters = (): TRow[] => rows.filter((row) => matchFilters(row, filters));
@@ -61,6 +64,7 @@ function createMockDb(seed?: TRow[]) {
                 select: (cols?: string) => typeof builder;
                 eq: (column: string, value: unknown) => typeof builder;
                 insert: (row: Partial<TRow>) => typeof builder;
+                update: (row: Partial<TRow>) => typeof builder;
                 delete: () => typeof builder;
                 maybeSingle: () => Promise<{ data: TRow | null; error: { code?: string } | null }>;
                 then: (
@@ -76,6 +80,10 @@ function createMockDb(seed?: TRow[]) {
                 },
                 insert(row: Partial<TRow>) {
                     pendingInsert = row;
+                    return builder;
+                },
+                update(row: Partial<TRow>) {
+                    pendingUpdate = row;
                     return builder;
                 },
                 delete() {
@@ -105,6 +113,7 @@ function createMockDb(seed?: TRow[]) {
                             generated_at:
                                 pendingInsert.generated_at ?? "2026-07-26T12:00:00.000Z",
                             created_at: "2026-07-26T12:00:00.000Z",
+                            llm_consumed: pendingInsert.llm_consumed ?? true,
                         };
                         rows.push(created);
                         return { data: created, error: null };
@@ -118,6 +127,11 @@ function createMockDb(seed?: TRow[]) {
                         const remaining = rows.filter((row) => !matchFilters(row, filters));
                         rows.length = 0;
                         rows.push(...remaining);
+                    }
+                    if (pendingUpdate) {
+                        for (const row of applyFilters()) {
+                            Object.assign(row, pendingUpdate);
+                        }
                     }
                     resolve({ data: null, error: null });
                     return Promise.resolve();
@@ -148,7 +162,7 @@ describe("program-week-suggestions", () => {
         ).resolves.toBeNull();
     });
 
-    it("reads a cached suggestion", async () => {
+    it("reads a cached suggestion including llmConsumed", async () => {
         client = createMockDb([
             {
                 id: "row-1",
@@ -160,6 +174,7 @@ describe("program-week-suggestions", () => {
                 changes: [VALID_CHANGE],
                 generated_at: "2026-07-20T12:00:00.000Z",
                 created_at: "2026-07-20T12:00:00.000Z",
+                llm_consumed: false,
             },
         ]);
 
@@ -170,10 +185,11 @@ describe("program-week-suggestions", () => {
             summary: "Nudge top sets.",
             changes: [VALID_CHANGE],
             generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: false,
         });
     });
 
-    it("inserts a first-write suggestion", async () => {
+    it("inserts a first-write suggestion as consumed by default", async () => {
         const saved = await saveProgramWeekSuggestion(asDb(client), {
             userId: USER_ID,
             programId: PROGRAM_ID,
@@ -190,8 +206,28 @@ describe("program-week-suggestions", () => {
             targetWeek: 3,
             summary: "Progress bench.",
             changes: [VALID_CHANGE],
+            llmConsumed: true,
+            inserted: true,
         });
         expect(client.rows).toHaveLength(1);
+        expect(client.rows[0]?.llm_consumed).toBe(true);
+    });
+
+    it("inserts an unconsumed tease row when llmConsumed is false", async () => {
+        const saved = await saveProgramWeekSuggestion(asDb(client), {
+            userId: USER_ID,
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Progress bench.",
+            changes: [VALID_CHANGE],
+            generatedAt: "2026-07-26T12:00:00.000Z",
+            llmConsumed: false,
+        });
+
+        expect(saved.llmConsumed).toBe(false);
+        expect(saved.inserted).toBe(true);
+        expect(client.rows[0]?.llm_consumed).toBe(false);
     });
 
     it("returns the existing row on unique conflict (first-write wins)", async () => {
@@ -206,6 +242,7 @@ describe("program-week-suggestions", () => {
                 changes: [VALID_CHANGE],
                 generated_at: "2026-07-20T12:00:00.000Z",
                 created_at: "2026-07-20T12:00:00.000Z",
+                llm_consumed: true,
             },
         ]);
 
@@ -217,10 +254,34 @@ describe("program-week-suggestions", () => {
             summary: "Should not overwrite.",
             changes: [],
             generatedAt: "2026-07-26T12:00:00.000Z",
+            llmConsumed: false,
         });
 
         expect(saved.summary).toBe("Original.");
+        expect(saved.llmConsumed).toBe(true);
+        expect(saved.inserted).toBe(false);
         expect(client.rows).toHaveLength(1);
+    });
+
+    it("marks a consumed row unconsumed after a consume race", async () => {
+        client = createMockDb([
+            {
+                id: "row-1",
+                user_id: USER_ID,
+                program_id: PROGRAM_ID,
+                based_on_week: 2,
+                target_week: 3,
+                summary: "Nudge top sets.",
+                changes: [VALID_CHANGE],
+                generated_at: "2026-07-20T12:00:00.000Z",
+                created_at: "2026-07-20T12:00:00.000Z",
+                llm_consumed: true,
+            },
+        ]);
+
+        await markProgramWeekSuggestionUnconsumed(asDb(client), PROGRAM_ID, 2);
+
+        expect(client.rows[0]?.llm_consumed).toBe(false);
     });
 
     it("deletes a cached suggestion by program + week", async () => {
@@ -235,6 +296,7 @@ describe("program-week-suggestions", () => {
                 changes: [VALID_CHANGE],
                 generated_at: "2026-07-20T12:00:00.000Z",
                 created_at: "2026-07-20T12:00:00.000Z",
+                llm_consumed: true,
             },
         ]);
 

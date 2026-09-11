@@ -22,13 +22,22 @@ describe("parseUsageCapBody", () => {
             parseUsageCapBody(
                 JSON.stringify({
                     error: USAGE_CAP_ERROR,
-                    feature: "monthly_exports_used",
+                    feature: "monthly_llm_requests",
                 }),
             ),
         ).toEqual({
-            feature: "monthly_exports_used",
+            feature: "monthly_llm_requests",
             resets_on: null,
         });
+    });
+
+    it("does not treat leftover monthly_exports_used as a live usage-cap feature", () => {
+        expect(
+            parseUsageCapBody({
+                error: USAGE_CAP_ERROR,
+                feature: "monthly_exports_used",
+            }),
+        ).toBeNull();
     });
 
     it("rejects non-paywall bodies", () => {

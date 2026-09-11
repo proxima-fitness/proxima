@@ -76,6 +76,18 @@ describe("feature-limits test tier helpers", () => {
         expect(result.tier).toBe("Free");
         expect(result.has_active_subscription).toBe(false);
     });
+
+    it("applies Free override as 45 remaining LLM at zero usage", () => {
+        const zeroUsage: TFeatureLimits = {
+            ...baseLimits,
+            monthly_llm_requests_used: 0,
+            remaining_llm_requests: 0,
+        };
+        const result = applyTestTierOverrideToLimits(zeroUsage, "free");
+        expect(result.max_monthly_llm_requests).toBe(45);
+        expect(result.remaining_llm_requests).toBe(45);
+        expect(result.has_active_subscription).toBe(false);
+    });
 });
 
 describe("server-feature-limits", () => {
@@ -113,6 +125,26 @@ describe("server-feature-limits", () => {
         } as Awaited<ReturnType<typeof cookies>>);
 
         const limits = await getServerMyFeatureLimits(supabase, user);
+        expect(limits?.has_active_subscription).toBe(false);
+    });
+
+    it("Free cookie override shows 45 remaining LLM at zero usage", async () => {
+        mockRpc.mockResolvedValue({
+            data: [{
+                ...baseLimits,
+                monthly_llm_requests_used: 0,
+                remaining_llm_requests: 0,
+            }],
+            error: null,
+        });
+        vi.mocked(isTestUser).mockReturnValue(true);
+        vi.mocked(cookies).mockResolvedValue({
+            get: () => ({ value: "free" }),
+        } as Awaited<ReturnType<typeof cookies>>);
+
+        const limits = await getServerMyFeatureLimits(supabase, user);
+        expect(limits?.max_monthly_llm_requests).toBe(45);
+        expect(limits?.remaining_llm_requests).toBe(45);
         expect(limits?.has_active_subscription).toBe(false);
     });
 

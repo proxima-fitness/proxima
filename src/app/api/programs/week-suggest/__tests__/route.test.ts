@@ -10,9 +10,12 @@ const {
     mockGetCached,
     mockSaveCached,
     mockDeleteCached,
+    mockMarkUnconsumed,
     mockGenerate,
     mockSyncEvents,
     mockRpc,
+    mockGetLimits,
+    mockTryConsume,
 } = vi.hoisted(() => ({
     mockGetUser: vi.fn(),
     mockGetLinks: vi.fn(),
@@ -22,9 +25,12 @@ const {
     mockGetCached: vi.fn(),
     mockSaveCached: vi.fn(),
     mockDeleteCached: vi.fn(),
+    mockMarkUnconsumed: vi.fn(),
     mockGenerate: vi.fn(),
     mockSyncEvents: vi.fn(),
     mockRpc: vi.fn(),
+    mockGetLimits: vi.fn(),
+    mockTryConsume: vi.fn(),
 }));
 
 vi.mock("@/utils/supabase/server", () => ({
@@ -47,6 +53,12 @@ vi.mock("@/api/program-week-suggestions", () => ({
     getProgramWeekSuggestion: mockGetCached,
     saveProgramWeekSuggestion: mockSaveCached,
     deleteProgramWeekSuggestion: mockDeleteCached,
+    markProgramWeekSuggestionUnconsumed: mockMarkUnconsumed,
+}));
+
+vi.mock("@/lib/server-feature-limits", () => ({
+    getServerMyFeatureLimits: mockGetLimits,
+    tryConsumeMonthlyLlmRequest: mockTryConsume,
 }));
 
 vi.mock("@/api/workout-history-sync", () => ({
@@ -163,6 +175,15 @@ describe("POST /api/programs/week-suggest", () => {
         mockSyncEvents.mockResolvedValue({ scanned: 3, imported: 1, deleted: 0, complete: true });
         mockGetCached.mockResolvedValue(null);
         mockDeleteCached.mockResolvedValue(undefined);
+        mockMarkUnconsumed.mockResolvedValue(undefined);
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 15,
+            resets_on: "2026-10-01",
+        });
+        mockTryConsume.mockResolvedValue({
+            ok: true,
+            limits: { remaining_llm_requests: 14 },
+        });
         mockSaveCached.mockImplementation(
             async (
                 _client: unknown,
@@ -173,6 +194,7 @@ describe("POST /api/programs/week-suggest", () => {
                     summary: string;
                     changes: unknown[];
                     generatedAt?: string;
+                    llmConsumed?: boolean;
                 },
             ) => ({
                 programId: input.programId,
@@ -181,6 +203,8 @@ describe("POST /api/programs/week-suggest", () => {
                 summary: input.summary,
                 changes: input.changes,
                 generatedAt: input.generatedAt ?? "2026-07-26T12:00:00.000Z",
+                llmConsumed: input.llmConsumed ?? true,
+                inserted: true,
             }),
         );
         mockGenerate.mockResolvedValue({
@@ -221,6 +245,11 @@ describe("POST /api/programs/week-suggest", () => {
         });
         expect(mockGenerate).toHaveBeenCalledTimes(1);
         expect(mockSaveCached).toHaveBeenCalledTimes(1);
+        expect(mockSaveCached).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ llmConsumed: true }),
+        );
+        expect(mockTryConsume).toHaveBeenCalledTimes(1);
     });
 
     it("returns the cached suggestion without calling the model", async () => {
@@ -231,6 +260,7 @@ describe("POST /api/programs/week-suggest", () => {
             summary: "Cached summary.",
             changes: [SUGGESTED_CHANGE],
             generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: true,
         });
 
         const { POST } = await import("../route");
@@ -246,6 +276,7 @@ describe("POST /api/programs/week-suggest", () => {
         expect(mockGenerate).not.toHaveBeenCalled();
         expect(mockSaveCached).not.toHaveBeenCalled();
         expect(mockGetPrescriptionWeek).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
     });
 
     it("regenerates when the cached changes fail schema validation", async () => {
@@ -256,6 +287,7 @@ describe("POST /api/programs/week-suggest", () => {
             summary: "Broken cache.",
             changes: [{ description: "missing operation" }],
             generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: true,
         });
 
         const { POST } = await import("../route");
@@ -404,6 +436,7 @@ describe("POST /api/programs/week-suggest", () => {
         });
         expect(mockGenerate).not.toHaveBeenCalled();
         expect(mockSaveCached).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
     });
 
     it("rejects anonymous callers", async () => {
@@ -441,6 +474,7 @@ describe("POST /api/programs/week-suggest", () => {
 
         expect(res.status).toBe(502);
         expect(mockSaveCached).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
     });
 
     it("drops suggested changes that miss the week N+1 prescription", async () => {
@@ -464,5 +498,152 @@ describe("POST /api/programs/week-suggest", () => {
         const res = await POST(request());
 
         await expect(res.json()).resolves.toMatchObject({ status: "ok", changes: [] });
+    });
+
+    it("consumes one LLM unit only after a paid insert", async () => {
+        const { POST } = await import("../route");
+        await POST(request());
+
+        expect(mockSaveCached.mock.invocationCallOrder[0]).toBeLessThan(
+            mockTryConsume.mock.invocationCallOrder[0],
+        );
+        expect(mockMarkUnconsumed).not.toHaveBeenCalled();
+    });
+
+    it("does not consume when remaining is 0; returns a teaser without changes", async () => {
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 0,
+            resets_on: "2026-10-01",
+        });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        expect(res.status).toBe(200);
+        await expect(res.json()).resolves.toMatchObject({
+            status: "teaser",
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid; nudge the top sets.",
+            changes: [],
+        });
+        expect(mockGenerate).toHaveBeenCalledTimes(1);
+        expect(mockSaveCached).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ llmConsumed: false }),
+        );
+        expect(mockTryConsume).not.toHaveBeenCalled();
+    });
+
+    it("returns teaser from cache at remaining 0 when the row is unconsumed", async () => {
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 0,
+            resets_on: "2026-10-01",
+        });
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid. Nudge the top sets on bench.",
+            changes: [SUGGESTED_CHANGE],
+            generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: false,
+        });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+        const body = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(body).toEqual({
+            status: "teaser",
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid.",
+            changes: [],
+            generatedAt: "2026-07-20T12:00:00.000Z",
+        });
+        expect(JSON.stringify(body)).not.toContain("Bench Press");
+        expect(mockGenerate).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
+    });
+
+    it("returns a consumed cache row in full even at remaining 0", async () => {
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 0,
+            resets_on: "2026-10-01",
+        });
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Cached summary.",
+            changes: [SUGGESTED_CHANGE],
+            generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: true,
+        });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        await expect(res.json()).resolves.toMatchObject({
+            status: "ok",
+            summary: "Cached summary.",
+            changes: [SUGGESTED_CHANGE],
+        });
+        expect(mockGenerate).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
+    });
+
+    it("unlocks an unconsumed cache row in full without regenerating or consuming", async () => {
+        mockGetLimits.mockResolvedValue({
+            remaining_llm_requests: 5,
+            resets_on: "2026-10-01",
+        });
+        mockGetCached.mockResolvedValue({
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid. Nudge the top sets on bench.",
+            changes: [SUGGESTED_CHANGE],
+            generatedAt: "2026-07-20T12:00:00.000Z",
+            llmConsumed: false,
+        });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+
+        await expect(res.json()).resolves.toMatchObject({
+            status: "ok",
+            summary: "Week 2 was solid. Nudge the top sets on bench.",
+            changes: [SUGGESTED_CHANGE],
+        });
+        expect(mockGenerate).not.toHaveBeenCalled();
+        expect(mockTryConsume).not.toHaveBeenCalled();
+        expect(mockDeleteCached).not.toHaveBeenCalled();
+    });
+
+    it("keeps the row as a tease when consume denies after insert", async () => {
+        mockTryConsume.mockResolvedValue({
+            ok: false,
+            reason: "usage_cap",
+            resets_on: "2026-10-01",
+        });
+
+        const { POST } = await import("../route");
+        const res = await POST(request());
+        const body = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(body.status).toBe("teaser");
+        expect(body.changes).toEqual([]);
+        expect(mockSaveCached).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ llmConsumed: true }),
+        );
+        expect(mockMarkUnconsumed).toHaveBeenCalledWith(expect.anything(), PROGRAM_ID, 2);
+        expect(mockGenerate).toHaveBeenCalledTimes(1);
     });
 });

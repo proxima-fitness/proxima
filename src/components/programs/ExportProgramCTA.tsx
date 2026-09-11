@@ -179,7 +179,6 @@ export const ExportProgramCTA: React.FC<IProps> = ({ programId, sortedWorkoutsBy
                             <ExportToHevySetup
                                 onUploadStateChange={setHevyUploading}
                                 hevyRoutines={flatHevyRoutines}
-                                skipUsageTracking
                                 onExportSuccess={() => {
                                     // Trigger function increments `programs.saves` when we subscribe the user.
                                     if (!user) return;

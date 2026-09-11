@@ -1,25 +1,27 @@
 /**
  * @module programs/week-suggest
  *
- * **AI week suggest** generate endpoint (ADR 0012 / 01). Lazy: the overview
- * panel calls it on open, never mark-complete or Export. Reads the latest
- * **Week complete** link, the prescription for weeks N and N+1, and week N's
- * logged sessions, then asks the model for a week N+1 change batch.
+ * **AI week suggest** generate endpoint (ADR 0012 / 01, billing ADR 0015 SP2).
+ * Lazy: the overview panel calls it on open, never mark-complete or Export.
+ * Reads the latest **Week complete** link, the prescription for weeks N and
+ * N+1, and week N's logged sessions, then asks the model for a week N+1
+ * change batch.
  *
  * Week N's sessions come from the workout backup mirror, which lags the sync
  * that drives Week complete, so the route nudges the backup first
  * ({@link ensureWeekLogsFresh}).
  *
- * No monthly LLM meter — company-borne cost (automatic panel open, not a
- * user-initiated chat turn). Results cache in `program_week_suggestions`
- * (one row per program + completed week); re-open / remount returns cache
- * without another model call. A week with no logged sessions is *not* cached:
- * the backup mirror may still be syncing, and a "no data logged" summary would
- * outlive the gap. Prescription writes live in ./apply (Sub-plan 3).
+ * Same `monthly_llm_requests` meter as chat. Cache hit: no model, no consume.
+ * Cache miss with remaining > 0: generate, insert `llm_consumed=true`, then
+ * consume. Cache miss at 0: still generate, persist full with
+ * `llm_consumed=false`, return a truncated tease. Unlock is remaining > 0 on
+ * an unconsumed row: full cache, no regenerate, no consume. `not_ready` and
+ * 502 do not consume. Never 402 here — tease is 200 `{ status: "teaser" }`.
  *
  * Depends on: @/utils/supabase/server, program-hevy-links, program-prescription,
- *             program-week-suggestions, workout-history-read, ./input, ./generate
- * Used by: AiWeekSuggestPanel (Sub-plan 2)
+ *             program-week-suggestions, workout-history-read, ./input, ./generate,
+ *             @/lib/server-feature-limits
+ * Used by: AiWeekSuggestPanel
  */
 
 import { NextResponse } from "next/server";
@@ -33,6 +35,7 @@ import {
 import {
     deleteProgramWeekSuggestion,
     getProgramWeekSuggestion,
+    markProgramWeekSuggestionUnconsumed,
     saveProgramWeekSuggestion,
 } from "@/api/program-week-suggestions";
 import {
@@ -41,6 +44,10 @@ import {
 } from "@/api/workout-history-read";
 import { syncHevyWorkoutEvents } from "@/api/workout-history-sync";
 import type { Json } from "@/hooks/supabase";
+import {
+    getServerMyFeatureLimits,
+    tryConsumeMonthlyLlmRequest,
+} from "@/lib/server-feature-limits";
 import { createClient } from "@/utils/supabase/server";
 import { generateWeekSuggestion } from "./generate";
 import {
@@ -48,6 +55,7 @@ import {
     normalizeWeekSuggestChanges,
     resolveWeekSuggestTarget,
     snapWeekSuggestWeights,
+    toWeekSuggestTeaser,
     weekLogWindow,
     weekSuggestChangeSchema,
     type TWeekSuggestChange,
@@ -145,12 +153,23 @@ function okResponse(cached: {
     return NextResponse.json(body);
 }
 
+function teaserResponse(cached: {
+    programId: number;
+    basedOnWeek: number;
+    targetWeek: number;
+    summary: string;
+    generatedAt: string;
+}): NextResponse {
+    return NextResponse.json(toWeekSuggestTeaser(cached));
+}
+
 /**
  * POST /api/programs/week-suggest — suggest changes for week N+1.
  *
  * Body: `{ programId: number, isInLbs?: boolean }`.
- * 200 `{ status: "ok" | "not_ready", … }`, 400 bad body, 401 signed out,
- * 404 unknown program, 502 unusable model output.
+ * 200 `{ status: "ok" | "not_ready" | "teaser", … }`, 400 bad body, 401 signed out,
+ * 404 unknown program, 502 unusable model output. Never 402 — remaining 0 is
+ * a truncated tease.
  */
 export async function POST(request: Request) {
     try {
@@ -202,14 +221,21 @@ export async function POST(request: Request) {
             );
         }
 
+        const limits = await getServerMyFeatureLimits(supabase, user);
+        const atCap = limits?.remaining_llm_requests === 0;
+
         const cached = await getProgramWeekSuggestion(supabase, programId, basedOnWeek);
         if (cached) {
             const changes = parseCachedChanges(cached.changes);
             if (changes) {
-                return okResponse({
+                const payload = {
                     ...cached,
                     changes: snapWeekSuggestWeights(changes, isInLbs),
-                });
+                };
+                if (cached.llmConsumed || !atCap) {
+                    return okResponse(payload);
+                }
+                return teaserResponse(payload);
             }
             // Corrupt cache → drop row so the new insert is first-write again.
             await deleteProgramWeekSuggestion(supabase, programId, basedOnWeek);
@@ -288,6 +314,7 @@ export async function POST(request: Request) {
         }
 
         const generatedAt = new Date().toISOString();
+        const consumeAfterInsert = !atCap;
         const saved = await saveProgramWeekSuggestion(supabase, {
             userId: user.id,
             programId,
@@ -296,10 +323,33 @@ export async function POST(request: Request) {
             summary: generated.summary,
             changes: JSON.parse(JSON.stringify(changes)) as Json,
             generatedAt,
+            llmConsumed: consumeAfterInsert,
         });
 
+        if (consumeAfterInsert && saved.inserted) {
+            const consume = await tryConsumeMonthlyLlmRequest(supabase, user);
+            if (!consume.ok) {
+                if (consume.reason === "usage_cap") {
+                    await markProgramWeekSuggestionUnconsumed(
+                        supabase,
+                        programId,
+                        basedOnWeek,
+                    );
+                    return teaserResponse(saved);
+                }
+                console.error("week-suggest try_consume failed:", consume.error);
+                return NextResponse.json(
+                    { error: "Internal server error" },
+                    { status: 500 },
+                );
+            }
+        }
+
         const savedChanges = parseCachedChanges(saved.changes) ?? changes;
-        return okResponse({ ...saved, changes: savedChanges });
+        if (saved.llmConsumed || !atCap) {
+            return okResponse({ ...saved, changes: savedChanges });
+        }
+        return teaserResponse(saved);
     } catch (error) {
         console.error("week-suggest route error:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

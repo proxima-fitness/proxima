@@ -8,21 +8,24 @@
  * (or a remount) replays the same suggestion without another model call.
  *
  * Apply is the caller's job (ADR 0012 / 03): pass `onApply` to enable the
- * button, or omit it to render the suggestion read-only.
+ * button, or omit it to render the suggestion read-only. A tease (remaining
+ * LLM 0) hides Apply and shows Upgrade to `/pricing` (ADR 0015).
  *
- * Depends on: react-query, PoundsOrKgContext, Collapsible, Button, Skeleton,
- *             week-suggest response types
+ * Depends on: react-query, next/link, PoundsOrKgContext, Collapsible, Button,
+ *             Skeleton, week-suggest response types
  * Used by: ProgramOverviewCtas (AI week suggest slot)
  */
 
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Sparkles } from "lucide-react";
 import {
     isWeekSuggestNotReady,
     isWeekSuggestOk,
+    isWeekSuggestTeaser,
     type TWeekSuggestChange,
     type TWeekSuggestResponse,
 } from "@/app/api/programs/week-suggest/input";
@@ -172,8 +175,10 @@ export function AiWeekSuggestPanel({
     }
 
     const suggestion = isWeekSuggestOk(data) ? data : null;
+    const teaser = isWeekSuggestTeaser(data) ? data : null;
     const notReady = isWeekSuggestNotReady(data) ? data : null;
-    const generatedAt = suggestion ? formatGeneratedAt(suggestion.generatedAt) : null;
+    const dated = suggestion ?? teaser;
+    const generatedAt = dated ? formatGeneratedAt(dated.generatedAt) : null;
 
     return (
         <Collapsible
@@ -230,6 +235,37 @@ export function AiWeekSuggestPanel({
                     </div>
                 ) : notReady ? (
                     <p className="pt-1 text-sm text-muted-foreground">{notReady.message}</p>
+                ) : teaser ? (
+                    <div className="space-y-3 pt-1">
+                        <p className="text-sm text-foreground">{teaser.summary}</p>
+                        <p className="text-sm text-muted-foreground">
+                            Upgrade to see the full suggestion and apply it to week{" "}
+                            {teaser.targetWeek}.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                size="sm"
+                                className="h-8 rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                                asChild
+                            >
+                                <Link href="/pricing">Upgrade</Link>
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 rounded-full text-muted-foreground"
+                                onClick={() => setOpen(false)}
+                            >
+                                Skip
+                            </Button>
+                        </div>
+                        {generatedAt ? (
+                            <p className="text-[11px] text-muted-foreground">
+                                Generated {generatedAt}
+                            </p>
+                        ) : null}
+                    </div>
                 ) : suggestion ? (
                     <div className="space-y-3 pt-1">
                         <p className="text-sm text-foreground">{suggestion.summary}</p>

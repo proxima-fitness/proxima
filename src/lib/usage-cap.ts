@@ -1,11 +1,13 @@
 /**
  * Shared usage-cap paywall contract (ADR 0019).
  * Safe for client + server - no Next.js server-only imports.
+ * Hevy writes are not a usage-cap feature (ADR 0015). SQL leftover
+ * `monthly_exports_used` is not parsed here.
  */
 
 export const USAGE_CAP_ERROR = "usage_cap" as const;
 
-export type TUsageCapFeature = "monthly_llm_requests" | "monthly_exports_used";
+export type TUsageCapFeature = "monthly_llm_requests";
 
 export type TParsedUsageCap = {
     feature: TUsageCapFeature;
@@ -13,7 +15,7 @@ export type TParsedUsageCap = {
 };
 
 function isUsageCapFeature(value: unknown): value is TUsageCapFeature {
-    return value === "monthly_llm_requests" || value === "monthly_exports_used";
+    return value === "monthly_llm_requests";
 }
 
 /** Parse a JSON body (object or string) into a usage-cap payload when present. */

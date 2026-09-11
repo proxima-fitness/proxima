@@ -219,4 +219,26 @@ describe("AiWeekSuggestPanel", () => {
         expect(await screen.findByText(/No changes suggested/i)).toBeTruthy();
         expect(screen.queryByRole("button", { name: /Apply to week/i })).toBeNull();
     });
+
+    it("shows a truncated tease with Upgrade and hides Apply", async () => {
+        const onApply = vi.fn();
+        mockFetchOnce({
+            status: "teaser",
+            programId: PROGRAM_ID,
+            basedOnWeek: 2,
+            targetWeek: 3,
+            summary: "Week 2 was solid.",
+            changes: [],
+            generatedAt: "2026-07-26T12:00:00.000Z",
+        });
+        renderPanel(panel({ onApply }));
+
+        fireEvent.click(screen.getByRole("button", { name: /Suggest changes for week 3/i }));
+
+        expect(await screen.findByText("Week 2 was solid.")).toBeTruthy();
+        const upgrade = screen.getByRole("link", { name: "Upgrade" });
+        expect(upgrade.getAttribute("href")).toBe("/pricing");
+        expect(screen.queryByRole("button", { name: /Apply to week/i })).toBeNull();
+        expect(screen.queryByText("Bench Press: 60 → 62.5 kg")).toBeNull();
+    });
 });

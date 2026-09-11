@@ -836,6 +836,7 @@ export type Database = {
           created_at: string
           generated_at: string
           id: string
+          llm_consumed: boolean
           program_id: number
           summary: string
           target_week: number
@@ -847,6 +848,7 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          llm_consumed?: boolean
           program_id: number
           summary: string
           target_week: number
@@ -858,6 +860,7 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          llm_consumed?: boolean
           program_id?: number
           summary?: string
           target_week?: number

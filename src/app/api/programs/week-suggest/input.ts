@@ -11,7 +11,7 @@
  * mutation handlers instead of a bespoke patch format.
  *
  * Depends on: zod, program-builder/mutations/schemas, @/lib/weightUtils
- * Used by: ./route.ts, ./generate.ts, AiWeekSuggestPanel (Sub-plan 2)
+ * Used by: ./route.ts, ./generate.ts, ./apply, AiWeekSuggestPanel (ADR 0015 SP2)
  */
 
 import { z } from "zod";
@@ -31,6 +31,9 @@ export const MAX_WEEK_SUGGEST_CHANGES = 12;
 
 /** Max logged sessions fed to the model for the completed week. */
 export const MAX_LOGGED_WORKOUTS_IN_PROMPT = 14;
+
+/** Max characters of summary returned on a tease payload. */
+export const WEEK_SUGGEST_TEASER_SUMMARY_MAX = 240;
 
 /** Ops a week suggestion may propose — progression + coaching notes only. */
 export const weekSuggestOperationSchema = z.discriminatedUnion("op", [
@@ -75,6 +78,19 @@ export type TWeekSuggestOk = {
     generatedAt: string;
 };
 
+/** Truncated cache miss/hit at 0 remaining LLM (ADR 0015). Full row stays on the server. */
+export type TWeekSuggestTeaser = {
+    status: "teaser";
+    programId: number;
+    basedOnWeek: number;
+    targetWeek: number;
+    /** First sentence of the cached summary, capped at {@link WEEK_SUGGEST_TEASER_SUMMARY_MAX}. */
+    summary: string;
+    /** Always empty — never leak cached changes to a tease client. */
+    changes: [];
+    generatedAt: string;
+};
+
 export type TWeekSuggestNotReady = {
     status: "not_ready";
     programId: number;
@@ -84,7 +100,10 @@ export type TWeekSuggestNotReady = {
     targetWeek?: number;
 };
 
-export type TWeekSuggestResponse = TWeekSuggestOk | TWeekSuggestNotReady;
+export type TWeekSuggestResponse =
+    | TWeekSuggestOk
+    | TWeekSuggestTeaser
+    | TWeekSuggestNotReady;
 
 /**
  * Narrows a suggest response to a generated suggestion.
@@ -108,6 +127,58 @@ export function isWeekSuggestNotReady(
     response: TWeekSuggestResponse | undefined | null,
 ): response is TWeekSuggestNotReady {
     return response?.status === "not_ready";
+}
+
+/**
+ * Narrows a suggest response to the truncated tease at 0 remaining LLM.
+ *
+ * @param response - Suggest response, or nothing fetched yet
+ */
+export function isWeekSuggestTeaser(
+    response: TWeekSuggestResponse | undefined | null,
+): response is TWeekSuggestTeaser {
+    return response?.status === "teaser";
+}
+
+/**
+ * First sentence of a suggestion summary, capped for the tease payload.
+ *
+ * @param summary - Full cached / generated summary
+ */
+export function truncateWeekSuggestSummary(summary: string): string {
+    const trimmed = summary.trim();
+    const sentenceEnd = trimmed.search(/[.!?](?:\s|$)/);
+    const firstSentence =
+        sentenceEnd === -1 ? trimmed : trimmed.slice(0, sentenceEnd + 1).trim();
+
+    if (firstSentence.length <= WEEK_SUGGEST_TEASER_SUMMARY_MAX) {
+        return firstSentence;
+    }
+
+    return firstSentence.slice(0, WEEK_SUGGEST_TEASER_SUMMARY_MAX);
+}
+
+/**
+ * Client payload for remaining = 0: truncated summary, no change list.
+ *
+ * @param full - Fields from the cached/generated row (changes stay on the server)
+ */
+export function toWeekSuggestTeaser(full: {
+    programId: number;
+    basedOnWeek: number;
+    targetWeek: number;
+    summary: string;
+    generatedAt: string;
+}): TWeekSuggestTeaser {
+    return {
+        status: "teaser",
+        programId: full.programId,
+        basedOnWeek: full.basedOnWeek,
+        targetWeek: full.targetWeek,
+        summary: truncateWeekSuggestSummary(full.summary),
+        changes: [],
+        generatedAt: full.generatedAt,
+    };
 }
 
 /** Apply outcome for one cached suggestion (ADR 0012 / 03). */
