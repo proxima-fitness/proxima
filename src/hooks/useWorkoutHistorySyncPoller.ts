@@ -9,10 +9,17 @@
  * backoff (60s → 120s → 240s → …) without persisting a terminal sync_error.
  *
  * Depends on: @tanstack/react-query, api/workout-history-sync
- * Used by: WorkoutHistorySyncBanner, ProfileHero
+ * Used by: WorkoutHistorySyncBanner, ProfileHero, BlindSpotAnalysisSection, RecentWorkoutsSection
  */
 import { useCallback, useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+    useIsFetching,
+    useIsMutating,
+    useMutation,
+    useQuery,
+    useQueryClient,
+    type QueryClient,
+} from "@tanstack/react-query";
 import {
     fetchWorkoutHistorySyncProgress,
     isWorkoutHistorySyncInProgress,
@@ -28,6 +35,19 @@ import {
 
 export const WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY = ["workout-history-sync-progress"] as const;
 export const WORKOUT_HISTORY_SYNC_PAUSED_QUERY_KEY = ["workout-history-sync-paused"] as const;
+export const WORKOUT_HISTORY_SYNC_RETRY_MUTATION_KEY = ["workout-history-sync-retry"] as const;
+
+/**
+ * True when a progress fetch or retry mutation is already in flight.
+ *
+ * @param queryClient - React Query client for this tree
+ */
+export function isWorkoutHistorySyncBusy(queryClient: QueryClient): boolean {
+    return (
+        queryClient.isFetching({ queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY }) > 0 ||
+        queryClient.isMutating({ mutationKey: WORKOUT_HISTORY_SYNC_RETRY_MUTATION_KEY }) > 0
+    );
+}
 
 const WORKOUT_SYNC_PAUSED_STORAGE_KEY = "workout-history-sync-paused";
 
@@ -91,6 +111,7 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
     const retryRef = useRef<() => void>(() => {});
 
     const retryMutation = useMutation({
+        mutationKey: WORKOUT_HISTORY_SYNC_RETRY_MUTATION_KEY,
         mutationFn: runWorkoutHistorySyncChunk,
         onMutate: () => {
             const current = queryClient.getQueryData<TWorkoutSyncProgress>(
@@ -121,6 +142,9 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
     });
 
     const retry = useCallback(() => {
+        if (isWorkoutHistorySyncBusy(queryClient)) {
+            return;
+        }
         consecutiveRateLimitsRef.current = 0;
         writeSyncPausedToStorage(false);
         queryClient.setQueryData(WORKOUT_HISTORY_SYNC_PAUSED_QUERY_KEY, false);
@@ -191,7 +215,9 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
         refetchIntervalInBackground: true,
     });
 
-    const isPolling = progressQuery.isFetching || retryMutation.isPending;
+    const progressFetches = useIsFetching({ queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY });
+    const retryMutations = useIsMutating({ mutationKey: WORKOUT_HISTORY_SYNC_RETRY_MUTATION_KEY });
+    const isPolling = progressFetches > 0 || retryMutations > 0;
 
     const pause = useCallback(async () => {
         writeSyncPausedToStorage(true);
@@ -217,6 +243,9 @@ export function useWorkoutHistorySyncPoller(enabled: boolean, options?: TPollerO
     }, [notifyToast, queryClient]);
 
     const play = useCallback(() => {
+        if (isWorkoutHistorySyncBusy(queryClient)) {
+            return;
+        }
         writeSyncPausedToStorage(false);
         queryClient.setQueryData(WORKOUT_HISTORY_SYNC_PAUSED_QUERY_KEY, false);
         consecutiveRateLimitsRef.current = 0;

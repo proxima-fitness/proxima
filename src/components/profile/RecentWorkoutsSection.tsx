@@ -6,16 +6,14 @@
  * Profile horizontal browse feed of backed-up workouts as read-only preview cards.
  * Cursor-paginated via React Query; refetches page 1 when sync backfill adds rows.
  *
- * Depends on: useLoggedWorkoutBrowse, useHevyExercises, useHevySecret, useWorkoutHistorySyncPoller key
+ * Depends on: useLoggedWorkoutBrowse, useHevyExercises, useHevySecret, useWorkoutHistorySyncPoller
  * Used by: ProfileContent
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyExercises, useHevySecret, useLoggedWorkoutBrowse } from "@/api/hooks";
 import {
-    fetchWorkoutHistorySyncProgress,
     getWorkoutHistorySyncStatus,
     isWorkoutHistorySyncInProgress,
 } from "@/api/workout-history-sync";
@@ -23,7 +21,7 @@ import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHistorySyncPoller";
+import { useWorkoutHistorySyncPoller } from "@/hooks/useWorkoutHistorySyncPoller";
 import { ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
 import {
     PROFILE_SECTION_CARD_CLASS,
@@ -42,9 +40,9 @@ function PreviewCardSkeleton() {
 /** Horizontal Recent Workouts feed - Hevy-connected users only. */
 export function RecentWorkoutsSection() {
     const { user } = useUserContext();
-    const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
     const hevyConnected = Boolean(hevyApiKey);
+    const { progress, retry, isPolling } = useWorkoutHistorySyncPoller(hevyConnected);
 
     const { data: hevyExercises } = useHevyExercises(hevyConnected);
     const {
@@ -55,14 +53,6 @@ export function RecentWorkoutsSection() {
         isFetchingNextPage,
         fetchNextPage,
     } = useLoggedWorkoutBrowse(user, hevyConnected);
-
-    const { data: progress } = useQuery({
-        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-        queryFn: fetchWorkoutHistorySyncProgress,
-        enabled: hevyConnected,
-        staleTime: 5_000,
-        refetchOnWindowFocus: false,
-    });
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -166,13 +156,12 @@ export function RecentWorkoutsSection() {
                             size="sm"
                             variant="outline"
                             className="rounded-full"
+                            disabled={isPolling}
                             onClick={() => {
-                                void queryClient.invalidateQueries({
-                                    queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-                                });
+                                retry();
                             }}
                         >
-                            Retry sync
+                            {isPolling ? "Retrying…" : "Retry sync"}
                         </Button>
                     </div>
                 ) : showEmptyCaughtUp ? (

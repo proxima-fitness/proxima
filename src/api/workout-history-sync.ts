@@ -771,27 +771,53 @@ export async function fetchWorkoutHistorySyncProgress(): Promise<TWorkoutSyncPro
 
 
 
+let inflightChunk: Promise<TSyncChunkResult> | null = null;
+
+
+
 /**
 
  * Runs one backup chunk for the authenticated user (browser only).
+
+ * Concurrent callers share one in-flight POST so two pollers cannot import the same page.
 
  */
 
 export async function runWorkoutHistorySyncChunk(): Promise<TSyncChunkResult> {
 
-    const response = await fetch("/api/workout-history/sync", { method: "POST" });
+    if (inflightChunk) {
 
-    if (!response.ok) {
-
-        throw new Error("Failed to run workout history sync chunk");
+        return inflightChunk;
 
     }
 
-    const result = (await response.json()) as TSyncChunkResult;
 
-    logWorkoutHistorySyncChunkResult(result);
 
-    return result;
+    inflightChunk = (async (): Promise<TSyncChunkResult> => {
+
+        const response = await fetch("/api/workout-history/sync", { method: "POST" });
+
+        if (!response.ok) {
+
+            throw new Error("Failed to run workout history sync chunk");
+
+        }
+
+        const result = (await response.json()) as TSyncChunkResult;
+
+        logWorkoutHistorySyncChunkResult(result);
+
+        return result;
+
+    })().finally(() => {
+
+        inflightChunk = null;
+
+    });
+
+
+
+    return inflightChunk;
 
 }
 
@@ -913,9 +939,14 @@ export async function syncHevyWorkoutEvents(
     const maxPages = Math.max(1, params.maxPages ?? WORKOUT_EVENTS_MAX_PAGES);
     const startedAt = new Date().toISOString();
 
+    const { lastWorkoutEventsAt, lastSyncedPage } = await readSyncCursor(db, userId);
+    if (lastSyncedPage !== null) {
+        logSyncEvent(userId, "events_skipped_during_backfill", { lastSyncedPage });
+        return { scanned: 0, imported: 0, deleted: 0, complete: false };
+    }
+
     let since = params.since;
     if (!since) {
-        const { lastWorkoutEventsAt } = await readSyncCursor(db, userId);
         since =
             lastWorkoutEventsAt ??
             new Date(

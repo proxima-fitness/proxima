@@ -197,27 +197,71 @@ async function findExistingWorkout(
     };
 }
 
+type TWorkoutBackupShape = {
+    exercises: number;
+    sets: number;
+};
+
 /**
- * Reports whether a backed-up workout already holds at least one exercise.
+ * Exercise and set counts on a Hevy workout payload.
  *
- * A `workouts` row is not proof the import finished: a failure between the workout insert and its
- * exercises leaves a shell that `findExistingWorkoutId` keeps matching, so the page never completes.
+ * @param workout - Completed workout from the Hevy API
+ */
+function incomingWorkoutShape(workout: THevyWorkout): TWorkoutBackupShape {
+    const exercises = workout.exercises ?? [];
+
+    return {
+        exercises: exercises.length,
+        sets: exercises.reduce((total, exercise) => total + (exercise.sets?.length ?? 0), 0),
+    };
+}
+
+/**
+ * Exercise and set counts already stored for a backup workout.
  *
  * @param db - Supabase client
  * @param workoutId - Backup workout row ID
- * @returns True when the workout has exercises
  */
-async function hasWorkoutExercises(db: TWorkoutHistoryDb, workoutId: string): Promise<boolean> {
-    const { count, error } = await db
+async function backupWorkoutShape(db: TWorkoutHistoryDb, workoutId: string): Promise<TWorkoutBackupShape> {
+    const { data, error } = await db
         .from("workout_exercises")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("workout_id", workoutId);
 
     if (error) {
         throw new Error(error.message);
     }
 
-    return (count ?? 0) > 0;
+    const exerciseIds = (data ?? []).map((row) => row.id);
+    if (exerciseIds.length === 0) {
+        return { exercises: 0, sets: 0 };
+    }
+
+    const { count, error: setError } = await db
+        .from("workout_sets")
+        .select("id", { count: "exact", head: true })
+        .in("workout_exercise_id", exerciseIds);
+
+    if (setError) {
+        throw new Error(setError.message);
+    }
+
+    return { exercises: exerciseIds.length, sets: count ?? 0 };
+}
+
+/**
+ * True when the backup holds every exercise and set from the live Hevy payload.
+ *
+ * A `workouts` row, or even an exercise row, is not proof the import finished: a failure between
+ * an exercise insert and its sets leaves a partial that `findExistingWorkout` keeps matching.
+ *
+ * @param backup - Stored exercise/set counts
+ * @param workout - Live Hevy payload
+ */
+function isBackupCompleteForIncoming(backup: TWorkoutBackupShape, workout: THevyWorkout): boolean {
+    const incoming = incomingWorkoutShape(workout);
+
+    return backup.exercises === incoming.exercises && backup.sets === incoming.sets;
 }
 
 /**
@@ -268,8 +312,8 @@ export async function deleteBackedUpWorkoutByExternalId(
  * Compensating delete for a workout whose import failed after the `workouts` row landed.
  *
  * The Supabase client has no transaction, so this is the rollback and it can itself fail. It never
- * throws: a leaked shell row is recoverable on the next chunk through the zero-exercise re-import
- * path, and masking the original failure would be worse.
+ * throws: a leaked partial (zero exercises, or exercises with missing sets) is recoverable on the
+ * next chunk because completeness compares exercise and set counts to the live Hevy payload.
  *
  * @param db - Supabase client
  * @param workoutId - Workout row to remove
@@ -662,8 +706,9 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
 /**
  * Imports one Hevy workout into canonical backup tables.
  *
- * Idempotent on `(user_id, source, external_id)`, but only a workout that actually holds exercises
- * counts as imported - a shell left by an earlier failure is deleted and re-imported. Any failure
+ * Idempotent on `(user_id, source, external_id)`, but only a workout whose exercise and set counts
+ * match the live Hevy payload counts as imported - a shell or a last exercise with no sets is
+ * deleted and re-imported. Any failure
  * after the `workouts` insert rolls that row back, so a retry is never blocked by its own wreckage.
  *
  * A session Hevy has since changed (edited sets, re-finished, retimed) keeps its Hevy id, so the
@@ -686,7 +731,8 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
     try {
         const existing = await findExistingWorkout(db, userId, workout.id);
         if (existing) {
-            const isComplete = await hasWorkoutExercises(db, existing.id);
+            const backup = await backupWorkoutShape(db, existing.id);
+            const isComplete = isBackupCompleteForIncoming(backup, workout);
             if (isComplete && !isBackedUpWorkoutStale(existing, workout)) {
                 const incomingRoutineId = workout.routine_id ?? null;
                 if (!existing.routine_id && incomingRoutineId) {
@@ -740,11 +786,11 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
                 return { status: "error", message: exerciseError.message };
             }
 
-            for (let setIndex = 0; setIndex < (exercise.sets?.length ?? 0); setIndex++) {
-                const set = exercise.sets[setIndex];
-                const setRow = mapHevySetToInsert(set, workoutExerciseId, setIndex);
-
-                const { error: setError } = await db.from("workout_sets").insert(setRow);
+            const setRows = (exercise.sets ?? []).map((set, setIndex) =>
+                mapHevySetToInsert(set, workoutExerciseId, setIndex),
+            );
+            if (setRows.length > 0) {
+                const { error: setError } = await db.from("workout_sets").insert(setRows);
                 if (setError) {
                     await rollbackPartialImport(db, workoutId);
                     return { status: "error", message: setError.message };

@@ -47,8 +47,14 @@ type TTableName =
 
 type TRow = Record<string, unknown>;
 
-function matchFilters(row: TRow, filters: Array<{ column: string; value: unknown }>): boolean {
-    return filters.every((filter) => row[filter.column] === filter.value);
+function matchFilters(row: TRow, filters: Array<{ column: string; value: unknown; op?: "eq" | "in" }>): boolean {
+    return filters.every((filter) => {
+        if (filter.op === "in") {
+            return Array.isArray(filter.value) && filter.value.includes(row[filter.column]);
+        }
+
+        return row[filter.column] === filter.value;
+    });
 }
 
 /** Removes matching rows in place and returns them, so table references stay stable. */
@@ -76,7 +82,7 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
 
     const db = {
         from(table: TTableName) {
-            const filters: Array<{ column: string; value: unknown }> = [];
+            const filters: Array<{ column: string; value: unknown; op?: "eq" | "in" }> = [];
             let head = false;
             let exactCount = false;
             let deleting = false;
@@ -88,7 +94,11 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
                     return builder;
                 },
                 eq(column: string, value: unknown) {
-                    filters.push({ column, value });
+                    filters.push({ column, value, op: "eq" });
+                    return builder;
+                },
+                in(column: string, values: unknown[]) {
+                    filters.push({ column, value: values, op: "in" });
                     return builder;
                 },
                 delete() {
@@ -122,7 +132,13 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
                     }
                     return builder;
                 },
-                then(resolve: (value: { count: number | null; error: null }) => void) {
+                then(
+                    resolve: (value: {
+                        data?: TRow[] | null;
+                        count: number | null;
+                        error: null;
+                    }) => void,
+                ) {
                     if (deleting) {
                         removeRows(tables[table], (row) => matchFilters(row, filters));
                         resolve({ count: null, error: null });
@@ -131,10 +147,12 @@ function createSyncMockDb(seed?: Partial<Record<TTableName, TRow[]>>) {
 
                     if (head && exactCount) {
                         const count = tables[table].filter((row) => matchFilters(row, filters)).length;
-                        resolve({ count, error: null });
+                        resolve({ data: null, count, error: null });
                         return;
                     }
-                    resolve({ count: null, error: null });
+
+                    const rows = tables[table].filter((row) => matchFilters(row, filters));
+                    resolve({ data: rows, count: rows.length, error: null });
                 },
             };
 
@@ -161,10 +179,15 @@ function seedFinishedWorkout(
         source: HEVY_WORKOUT_SOURCE,
         external_id: params.externalId,
     });
-    mockDb.tables.workout_exercises.push({
-        id: `exercise-${params.id}`,
-        workout_id: params.id,
-    });
+    mockDb.tables.workout_exercises.push(
+        { id: `exercise-0-${params.id}`, workout_id: params.id },
+        { id: `exercise-1-${params.id}`, workout_id: params.id },
+    );
+    mockDb.tables.workout_sets.push(
+        { id: `set-0-${params.id}`, workout_exercise_id: `exercise-0-${params.id}` },
+        { id: `set-1-${params.id}`, workout_exercise_id: `exercise-0-${params.id}` },
+        { id: `set-2-${params.id}`, workout_exercise_id: `exercise-1-${params.id}` },
+    );
 }
 
 describe("computeSyncPage", () => {
@@ -601,5 +624,21 @@ describe("syncHevyWorkoutEvents", () => {
         expect(vi.mocked(defaultFetch).mock.calls[0][0]).toContain(
             `since=${encodeURIComponent("2026-07-26T12:00:00.000Z")}`,
         );
+    });
+
+    it("does not read Hevy events while a page backfill is in progress", async () => {
+        mockDb.tables.hevy_workouts_count.push({
+            id: "cursor-1",
+            user_id: USER_ID,
+            last_synced_page: 2,
+        });
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+        });
+
+        expect(result).toEqual({ scanned: 0, imported: 0, deleted: 0, complete: false });
+        expect(defaultFetch).not.toHaveBeenCalled();
     });
 });

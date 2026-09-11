@@ -13,7 +13,6 @@
  * @property isLoadingHevy Whether Hevy programs are still loading.
  */
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
 import {
@@ -24,11 +23,8 @@ import {
     useSubscribedPrograms,
 } from "@/api/hooks";
 import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
-import {
-    fetchWorkoutHistorySyncProgress,
-    isWorkoutHistorySyncInProgress,
-} from "@/api/workout-history-sync";
-import { WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY } from "@/hooks/useWorkoutHistorySyncPoller";
+import { isWorkoutHistorySyncInProgress } from "@/api/workout-history-sync";
+import { useWorkoutHistorySyncPoller } from "@/hooks/useWorkoutHistorySyncPoller";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -132,19 +128,12 @@ export function BlindSpotAnalysisSection({
     isLoadingHevy = false,
 }: TBlindSpotAnalysisSectionProps) {
     const router = useRouter();
-    const queryClient = useQueryClient();
     const navigateToEditHevyProgram = useNavigateToEditHevyProgram();
     const { user } = useUserContext();
     const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const hevyConnected = Boolean(hevyApiKey);
-    const { data: progress } = useQuery({
-        queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-        queryFn: fetchWorkoutHistorySyncProgress,
-        enabled: hevyConnected,
-        staleTime: 5_000,
-        refetchOnWindowFocus: false,
-    });
+    const { progress, retry, isPolling } = useWorkoutHistorySyncPoller(hevyConnected);
     const isSyncing = progress != null && isWorkoutHistorySyncInProgress(progress);
     const syncError = progress?.syncError ?? null;
     const analysisEnabled = Boolean(user) && hevyConnected && !syncError;
@@ -301,13 +290,12 @@ export function BlindSpotAnalysisSection({
                         variant="outline"
                         size="sm"
                         className="min-w-48 h-9 rounded-full"
+                        disabled={isPolling}
                         onClick={() => {
-                            void queryClient.invalidateQueries({
-                                queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
-                            });
+                            retry();
                         }}
                     >
-                        Retry sync
+                        {isPolling ? "Retrying…" : "Retry sync"}
                     </Button>
                 </div>
             ) : null}

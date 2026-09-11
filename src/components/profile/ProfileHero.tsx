@@ -97,7 +97,7 @@ export function ProfileHero() {
     );
     const { data: hevyApiKey } = useHevySecret(user);
     const hevyConnected = Boolean(hevyApiKey);
-    const { progress, pause, play } = useWorkoutHistorySyncPoller(hevyConnected);
+    const { progress, pause, play, isPolling } = useWorkoutHistorySyncPoller(hevyConnected);
     const { data: statistics, isLoading: isLoadingStatistics } = useProfileStatistics(
         user,
         hevyConnected,
@@ -185,6 +185,7 @@ export function ProfileHero() {
                                     variant="ghost"
                                     size="icon"
                                     className="size-5 shrink-0 text-muted-foreground hover:text-foreground"
+                                    disabled={syncStatus === "paused" && isPolling}
                                     aria-label={
                                         syncStatus === "paused"
                                             ? "Resume workout history sync"

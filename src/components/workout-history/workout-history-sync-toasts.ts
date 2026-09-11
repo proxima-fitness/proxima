@@ -43,6 +43,23 @@ type TToastContext = {
 };
 
 /**
+ * Toast action handler: ignore clicks while a sync request is already in flight.
+ *
+ * @param context - Poller retry callback and in-flight flag
+ * @param event - Optional click event; preventDefault keeps the toast open
+ */
+export function clickWorkoutHistorySyncToastRetry(
+    context: TToastContext,
+    event?: { preventDefault: () => void },
+): void {
+    event?.preventDefault();
+    if (context.isPolling) {
+        return;
+    }
+    context.retry();
+}
+
+/**
  * Updates the persistent sync toast from latest progress (same id → in-place update).
  */
 export function syncWorkoutHistorySyncToast(
@@ -96,11 +113,12 @@ export function syncWorkoutHistorySyncToast(
             closeButton: true,
             action: {
                 label: context.isPolling ? "Retrying…" : "Retry sync",
-                onClick: () => {
-                    if (!context.isPolling) {
-                        context.retry();
-                    }
+                onClick: (event) => {
+                    clickWorkoutHistorySyncToastRetry(context, event);
                 },
+                actionButtonStyle: context.isPolling
+                    ? { opacity: 0.55, pointerEvents: "none" }
+                    : undefined,
             },
             onDismiss,
         });

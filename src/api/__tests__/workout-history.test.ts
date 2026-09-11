@@ -114,8 +114,14 @@ function findUniqueViolation(table: TTableName, existingRows: TRow[], incoming: 
     return null;
 }
 
-function matchFilters(row: TRow, filters: Array<{ column: string; value: unknown }>): boolean {
-    return filters.every((filter) => row[filter.column] === filter.value);
+function matchFilters(row: TRow, filters: Array<{ column: string; value: unknown; op?: "eq" | "in" }>): boolean {
+    return filters.every((filter) => {
+        if (filter.op === "in") {
+            return Array.isArray(filter.value) && filter.value.includes(row[filter.column]);
+        }
+
+        return row[filter.column] === filter.value;
+    });
 }
 
 /** Removes matching rows in place and returns them, so table references stay stable. */
@@ -164,7 +170,7 @@ function createMockDb(
 
     const db = {
         from(table: TTableName) {
-            const filters: Array<{ column: string; value: unknown }> = [];
+            const filters: Array<{ column: string; value: unknown; op?: "eq" | "in" }> = [];
             let head = false;
             let exactCount = false;
             let deleting = false;
@@ -179,7 +185,11 @@ function createMockDb(
                     return builder;
                 },
                 eq(column: string, value: unknown) {
-                    filters.push({ column, value });
+                    filters.push({ column, value, op: "eq" });
+                    return builder;
+                },
+                in(column: string, values: unknown[]) {
+                    filters.push({ column, value: values, op: "in" });
                     return builder;
                 },
                 is(column: string, value: unknown) {
@@ -254,7 +264,13 @@ function createMockDb(
 
                     return { error: null };
                 },
-                then(resolve: (value: { count: number | null; error: null }) => void) {
+                then(
+                    resolve: (value: {
+                        data?: TRow[] | null;
+                        count: number | null;
+                        error: null;
+                    }) => void,
+                ) {
                     if (updating && pendingUpdate) {
                         for (const row of tables[table]) {
                             if (matchFilters(row, filters)) {
@@ -278,11 +294,12 @@ function createMockDb(
                         const count = tables[table].filter((row) =>
                             matchFilters(row, filters),
                         ).length;
-                        resolve({ count, error: null });
+                        resolve({ data: null, count, error: null });
                         return;
                     }
 
-                    resolve({ count: null, error: null });
+                    const rows = tables[table].filter((row) => matchFilters(row, filters));
+                    resolve({ data: rows, count: rows.length, error: null });
                 },
             };
 
@@ -446,6 +463,41 @@ function createImportMockDb(options: Parameters<typeof createMockDb>[1] = {}) {
     );
 }
 
+/** Seed a backup whose exercise/set counts match {@link hevyWorkoutFixture}. */
+function seedCompleteBackup(
+    mockDb: ReturnType<typeof createMockDb>,
+    extras: Record<string, unknown> = {},
+): void {
+    mockDb.tables.workouts.push({
+        id: "existing-workout-id",
+        user_id: USER_ID,
+        source: HEVY_WORKOUT_SOURCE,
+        external_id: hevyWorkoutFixture.id,
+        started_at: hevyWorkoutFixture.start_time,
+        ended_at: hevyWorkoutFixture.end_time,
+        ...extras,
+    });
+    mockDb.tables.workout_exercises.push(
+        {
+            id: "existing-exercise-0",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        },
+        {
+            id: "existing-exercise-1",
+            workout_id: "existing-workout-id",
+            canonical_exercise_id: "canonical-ohp-aaaa-bbbb-cccc-dddddddddddd",
+            sort_order: 1,
+        },
+    );
+    mockDb.tables.workout_sets.push(
+        { id: "existing-set-0", workout_exercise_id: "existing-exercise-0" },
+        { id: "existing-set-1", workout_exercise_id: "existing-exercise-0" },
+        { id: "existing-set-2", workout_exercise_id: "existing-exercise-1" },
+    );
+}
+
 describe("importHevyWorkout", () => {
     let mockDb: ReturnType<typeof createMockDb>;
     const workout = hevyWorkoutFixture;
@@ -476,20 +528,7 @@ describe("importHevyWorkout", () => {
     });
 
     it("skips duplicate external id without creating new rows", async () => {
-        mockDb.tables.workouts.push({
-            id: "existing-workout-id",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: workout.id,
-            started_at: workout.start_time,
-            ended_at: workout.end_time,
-        });
-        mockDb.tables.workout_exercises.push({
-            id: "existing-exercise-id",
-            workout_id: "existing-workout-id",
-            canonical_exercise_id: CANONICAL_KNOWN_ID,
-            sort_order: 0,
-        });
+        seedCompleteBackup(mockDb);
 
         const result = await importHevyWorkout(asDb(mockDb), {
             userId: USER_ID,
@@ -499,26 +538,12 @@ describe("importHevyWorkout", () => {
 
         expect(result).toEqual({ status: "skipped", workoutId: "existing-workout-id" });
         expect(mockDb.tables.workouts).toHaveLength(1);
-        expect(mockDb.tables.workout_exercises).toHaveLength(1);
-        expect(mockDb.tables.workout_sets).toHaveLength(0);
+        expect(mockDb.tables.workout_exercises).toHaveLength(2);
+        expect(mockDb.tables.workout_sets).toHaveLength(3);
     });
 
     it("patches routine_id on a complete non-stale row that is missing it", async () => {
-        mockDb.tables.workouts.push({
-            id: "existing-workout-id",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: workout.id,
-            started_at: workout.start_time,
-            ended_at: workout.end_time,
-            routine_id: null,
-        });
-        mockDb.tables.workout_exercises.push({
-            id: "existing-exercise-id",
-            workout_id: "existing-workout-id",
-            canonical_exercise_id: CANONICAL_KNOWN_ID,
-            sort_order: 0,
-        });
+        seedCompleteBackup(mockDb, { routine_id: null });
 
         const result = await importHevyWorkout(asDb(mockDb), {
             userId: USER_ID,
@@ -529,25 +554,11 @@ describe("importHevyWorkout", () => {
         expect(result).toEqual({ status: "patched", workoutId: "existing-workout-id" });
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workouts[0].routine_id).toBe("hevy-routine-push");
-        expect(mockDb.tables.workout_exercises).toHaveLength(1);
+        expect(mockDb.tables.workout_exercises).toHaveLength(2);
     });
 
     it("skips a complete non-stale row that already has routine_id", async () => {
-        mockDb.tables.workouts.push({
-            id: "existing-workout-id",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: workout.id,
-            started_at: workout.start_time,
-            ended_at: workout.end_time,
-            routine_id: "already-stored",
-        });
-        mockDb.tables.workout_exercises.push({
-            id: "existing-exercise-id",
-            workout_id: "existing-workout-id",
-            canonical_exercise_id: CANONICAL_KNOWN_ID,
-            sort_order: 0,
-        });
+        seedCompleteBackup(mockDb, { routine_id: "already-stored" });
 
         const result = await importHevyWorkout(asDb(mockDb), {
             userId: USER_ID,
@@ -557,24 +568,13 @@ describe("importHevyWorkout", () => {
 
         expect(result).toEqual({ status: "skipped", workoutId: "existing-workout-id" });
         expect(mockDb.tables.workouts[0].routine_id).toBe("already-stored");
-        expect(mockDb.tables.workout_exercises).toHaveLength(1);
+        expect(mockDb.tables.workout_exercises).toHaveLength(2);
     });
 
     it("re-imports a session Hevy has since changed", async () => {
-        // Same Hevy id, later timestamps: the athlete re-finished or edited it.
-        mockDb.tables.workouts.push({
-            id: "existing-workout-id",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: workout.id,
+        seedCompleteBackup(mockDb, {
             started_at: "2024-06-10T08:00:00.000Z",
             ended_at: "2024-06-10T08:30:00.000Z",
-        });
-        mockDb.tables.workout_exercises.push({
-            id: "existing-exercise-id",
-            workout_id: "existing-workout-id",
-            canonical_exercise_id: CANONICAL_KNOWN_ID,
-            sort_order: 0,
         });
 
         const result = await importHevyWorkout(asDb(mockDb), {
@@ -590,21 +590,7 @@ describe("importHevyWorkout", () => {
     });
 
     it("keeps a session Hevy has not touched since the last import", async () => {
-        mockDb.tables.workouts.push({
-            id: "existing-workout-id",
-            user_id: USER_ID,
-            source: HEVY_WORKOUT_SOURCE,
-            external_id: workout.id,
-            started_at: workout.start_time,
-            ended_at: workout.end_time,
-            source_updated_at: "2024-06-11T00:00:00.000Z",
-        });
-        mockDb.tables.workout_exercises.push({
-            id: "existing-exercise-id",
-            workout_id: "existing-workout-id",
-            canonical_exercise_id: CANONICAL_KNOWN_ID,
-            sort_order: 0,
-        });
+        seedCompleteBackup(mockDb, { source_updated_at: "2024-06-11T00:00:00.000Z" });
 
         const result = await importHevyWorkout(asDb(mockDb), {
             userId: USER_ID,
@@ -753,6 +739,37 @@ describe("importHevyWorkout", () => {
         expect(result.workoutId).not.toBe("stranded-workout-id");
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workout_exercises).toHaveLength(2);
+    });
+
+    it("replaces a workout that has exercises but is missing sets", async () => {
+        mockDb.tables.workouts.push({
+            id: "partial-workout-id",
+            user_id: USER_ID,
+            source: HEVY_WORKOUT_SOURCE,
+            external_id: workout.id,
+            started_at: workout.start_time,
+            ended_at: workout.end_time,
+        });
+        mockDb.tables.workout_exercises.push({
+            id: "partial-exercise-id",
+            workout_id: "partial-workout-id",
+            canonical_exercise_id: CANONICAL_KNOWN_ID,
+            sort_order: 0,
+        });
+
+        const result = await importHevyWorkout(asDb(mockDb), {
+            userId: USER_ID,
+            workout,
+            apiKey: API_KEY,
+        });
+
+        expect(result.status).toBe("inserted");
+        if (result.status !== "inserted") return;
+
+        expect(result.workoutId).not.toBe("partial-workout-id");
+        expect(mockDb.tables.workouts).toHaveLength(1);
+        expect(mockDb.tables.workout_exercises).toHaveLength(2);
+        expect(mockDb.tables.workout_sets).toHaveLength(3);
     });
 
     it("imports the same custom title for two users without a constraint failure", async () => {
