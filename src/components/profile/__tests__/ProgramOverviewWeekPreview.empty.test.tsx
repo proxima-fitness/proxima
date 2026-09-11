@@ -49,4 +49,23 @@ describe("WeekPreviewSlot empty Hevy folder", () => {
         expect(screen.getByText("Not logged")).toBeTruthy();
         expect(screen.queryByText(EMPTY_IN_HEVY_FOLDER_TITLE)).toBeNull();
     });
+
+    it("sizes Not logged / Not in the plan slots to fill a pair column", () => {
+        render(
+            <WeekPreviewSlot
+                slot={{
+                    source: "Planned",
+                    routine: null,
+                    emptyCopy: "Not in the plan",
+                }}
+                nthWeek={2}
+                hevyExercises={undefined}
+            />,
+        );
+
+        const root = screen.getByText("Not in the plan").closest("[data-day-source]");
+        expect(root?.className).toContain("flex-1");
+        expect(root?.className).toContain("h-full");
+        expect(root?.className).toContain("min-h-[220px]");
+    });
 });

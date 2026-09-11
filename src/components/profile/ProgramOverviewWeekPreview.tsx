@@ -37,6 +37,10 @@ export const PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY = ["program-prescription-hevy"]
 
 export const WEEK_PREVIEW_WORKOUTS_QUERY_KEY = ["week-preview-workouts"] as const;
 
+/** Same width steps as HevyDayCard so pair empties don't shrink beside a real day. */
+const WEEK_PREVIEW_DAY_WIDTH =
+    "w-full sm:min-w-[360px] sm:max-w-[360px] md:min-w-[385px] md:max-w-[385px] lg:min-w-[450px] lg:max-w-[450px]";
+
 export type TProgramOverviewWeekPreviewProps = {
     programId: number;
     nthWeek: number;
@@ -52,7 +56,7 @@ export type TProgramOverviewWeekPreviewProps = {
 function PreviewSkeleton() {
     return (
         <div className="mt-3 flex flex-col items-center gap-3" aria-hidden>
-            <Skeleton className="h-[280px] w-full max-w-[450px] rounded-xl" />
+            <Skeleton className={cn("h-[280px] max-w-[450px] rounded-xl", WEEK_PREVIEW_DAY_WIDTH)} />
             <div className="flex items-center gap-2">
                 <Skeleton className="size-9 rounded-full" />
                 <Skeleton className="h-4 w-20" />
@@ -76,19 +80,14 @@ export function WeekPreviewSlot({
         return (
             <div
                 className={cn(
-                    "relative flex w-full flex-col rounded-xl border",
+                    "relative my-2 flex w-full flex-col items-center justify-center rounded-xl border px-6 py-10 text-center",
                     isEmptyHevyFolder
-                        ? "min-h-[220px] items-center justify-center border-dashed border-border/60 bg-muted/20 px-6 py-10 text-center"
-                        : "min-h-[140px] border-border/40 bg-muted/10 px-3 py-3",
+                        ? "min-h-[220px] border-dashed border-border/60 bg-muted/20"
+                        : "h-full min-h-[220px] flex-1 border-border/40 bg-muted/10",
                 )}
                 data-day-source={slot.source}
             >
-                <span
-                    className={cn(
-                        "rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground",
-                        isEmptyHevyFolder ? "absolute right-3 top-3" : "self-end",
-                    )}
-                >
+                <span className="absolute right-3 top-3 rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground">
                     {slot.source}
                 </span>
                 {isEmptyHevyFolder ? (
@@ -101,9 +100,7 @@ export function WeekPreviewSlot({
                         </p>
                     </div>
                 ) : slot.emptyCopy ? (
-                    <p className="mt-6 text-center text-sm text-muted-foreground">
-                        {slot.emptyCopy}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{slot.emptyCopy}</p>
                 ) : null}
             </div>
         );
@@ -203,14 +200,18 @@ export function ProgramOverviewWeekPreview({
             <div
                 className={
                     isPair
-                        ? "flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-center"
+                        ? "flex flex-col gap-2 overflow-x-auto lg:flex-row lg:items-stretch lg:justify-center"
                         : "flex justify-center"
                 }
             >
                 {day.slots.map((slot, slotIndex) => (
                     <div
                         key={`${slot.source}-${slotIndex}`}
-                        className={isPair ? "min-w-0" : "w-full max-w-[450px]"}
+                        className={
+                            isPair
+                                ? cn("mx-auto flex min-h-0 flex-col", WEEK_PREVIEW_DAY_WIDTH)
+                                : "w-full max-w-[450px]"
+                        }
                     >
                         <WeekPreviewSlot
                             slot={slot}
