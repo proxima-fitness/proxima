@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import {
     slicePrescriptionWeekDays,
+    summarizeExercisePrescription,
     weekPreviewDayKey,
 } from "../ProgramOverviewWeekPreviewModel";
 
@@ -70,5 +71,49 @@ describe("weekPreviewDayKey", () => {
         expect(weekPreviewDayKey(makeRoutine(0, "Push", [], "1"), 2, 0)).toBe(
             "preview-w2-d1-Push",
         );
+    });
+});
+
+function makeSet(partial: Partial<THevySets> = {}): THevySets {
+    return {
+        type: "normal",
+        weight_kg: null,
+        reps: null,
+        distance_meters: null,
+        duration_seconds: null,
+        custom_metric: null,
+        rpe: null,
+        ...partial,
+    };
+}
+
+describe("summarizeExercisePrescription", () => {
+    it("returns null for empty sets", () => {
+        expect(summarizeExercisePrescription([])).toBeNull();
+        expect(summarizeExercisePrescription(null)).toBeNull();
+    });
+
+    it("formats shared rep range", () => {
+        const sets = [
+            makeSet({ reps: 10, rep_range: { start: 8, end: 12 } }),
+            makeSet({ reps: 10, rep_range: { start: 8, end: 12 } }),
+            makeSet({ reps: 10, rep_range: { start: 8, end: 12 } }),
+            makeSet({ reps: 10, rep_range: { start: 8, end: 12 } }),
+        ];
+        expect(summarizeExercisePrescription(sets)).toBe("4 sets · 8-12 reps");
+    });
+
+    it("formats fixed reps", () => {
+        const sets = [makeSet({ reps: 5 }), makeSet({ reps: 5 }), makeSet({ reps: 5 })];
+        expect(summarizeExercisePrescription(sets)).toBe("3 sets · 5 reps");
+    });
+
+    it("falls back to set count alone when only weights are set", () => {
+        expect(
+            summarizeExercisePrescription([
+                makeSet({ weight_kg: 60 }),
+                makeSet({ weight_kg: 60 }),
+            ]),
+        ).toBe("2 sets");
     });
 });

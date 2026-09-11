@@ -192,7 +192,7 @@ describe("weekStatusLabel", () => {
 
     it("hides Not exported as the rail default", () => {
         expect(weekStatusVisibleLabel("not_exported")).toBeNull();
-        expect(weekStatusVisibleLabel("current")).toBe("Current");
+        expect(weekStatusVisibleLabel("current")).toBeNull();
         expect(weekStatusVisibleLabel("complete")).toBe("Complete");
         expect(weekStatusVisibleLabel("exported")).toBe("Exported");
     });

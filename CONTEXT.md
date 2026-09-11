@@ -161,10 +161,10 @@ _Avoid_: Current week (status), focused week, active week (ambiguous with Curren
 ### Week preview
 
 
-Read-only glance at one week inside a **Program overview**. One day at a time as a read-only **HevyDayCard** (full exercises/sets), with prev/next when the week has multiple days. **Planned vs completed** is still one day: two cards (plan | log). Shown for the **Selected week**. What it renders depends on **Week preview source**. Not the **Hevy mirror**.
+Read-only glance at one week inside a **Program overview**. One day at a time. **Desktop:** read-only **HevyDayCard** (full exercises/sets) with prev/next when the week has multiple days. **Mobile:** day chips under the week chips + compact exercise list (name, sets · reps; no Lbs/RPE columns; first few exercises then "+N more") — not **HevyDayCard**. **Planned vs completed** is still one day: two cards on desktop (plan | log), or two stacked compact lists on mobile. Shown for the **Selected week**. What it renders depends on **Week preview source**. Not the **Hevy mirror**.
 
 
-_Avoid_: Week detail (builder edit), name-only exercise lists, treating preview as editable Sync surface, always reading the prescription, using **Hevy week copy** as a historical record, dumping every day of a complete week onto one screen
+_Avoid_: Week detail (builder edit), treating preview as editable Sync surface, always reading the prescription, using **Hevy week copy** as a historical record, dumping every day of a complete week onto one screen, using **HevyDayCard** as the mobile Week preview body
 
 
 
@@ -193,7 +193,7 @@ _Avoid_: Pairing Hevy copy with Workouts as the record, showing this pair on **C
 ### Day card source badge
 
 
-Corner label on a **HevyDayCard** naming which document the card is showing: `Planned` (**Program prescription**), `In Hevy` (**Hevy week copy**), `Completed` (logged **Workouts**). Ships on **Week preview** (and any other card that can mix sources) so the SoT is visible, including for debugging. **Planned vs completed** shows both `Planned` and `Completed`.
+Corner label on a **HevyDayCard** (desktop Week preview) or on a stacked mobile compact list naming which document is showing: `Planned` (**Program prescription**), `In Hevy` (**Hevy week copy**), `Completed` (logged **Workouts**). Ships on **Week preview** (and any other card that can mix sources) so the SoT is visible, including for debugging. **Planned vs completed** shows both `Planned` and `Completed`.
 
 
 _Avoid_: Omitting the badge, implying the card is editable, using internal names (prescription / Hevy week copy / Workout) as chip text

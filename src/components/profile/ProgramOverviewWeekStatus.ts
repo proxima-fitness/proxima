@@ -234,14 +234,18 @@ export function weekStatusLabel(status: TProgramOverviewWeekStatus): string {
 }
 
 /**
- * Rail-visible status. **Not exported** is the unlabeled default.
+ * Rail-visible status. **Not exported** and **Current** are unlabeled
+ * (Current is still conveyed by the status dot / accessible name).
  *
  * @param status - Derived week status
  */
 export function weekStatusVisibleLabel(
     status: TProgramOverviewWeekStatus,
 ): string | null {
-    return status === "not_exported" ? null : weekStatusLabel(status);
+    if (status === "not_exported" || status === "current") {
+        return null;
+    }
+    return weekStatusLabel(status);
 }
 
 /**

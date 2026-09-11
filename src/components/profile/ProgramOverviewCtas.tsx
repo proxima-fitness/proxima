@@ -1,24 +1,18 @@
 /**
  * @module ProgramOverviewCtas
  *
- * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01):
+ * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01, mobile layout):
  * title + meta left (owner can rename). **Edit program** is always a quiet
- * title-row control. A **Week complete** percent bar sits under the title
- * when progress is above 0%.
- * Header: split Export (Hevy Week Export left, PDF /
- * spreadsheet dropdown right) plus **Edit current week** ("Edit Week N").
- * Edit Week 1 is shown disabled until the first Week Export. Zero-link
- * overview emphasizes **Export** on load (ADR 0016 / 02); **Edit program**
- * is not highlighted. A week-loop gate (prior week incomplete) restyles the
- * whole split to outline; an allowed Week Export stays teal. AI week suggest
- * disclosure below (ADR 0012 / 02).
- *
- * Applying a suggestion (ADR 0012 / 03) writes the prescription for week N+1
- * and refreshes the Week preview read; Export stays a separate, explicit step.
+ * title-row control on desktop. A **Week complete** percent bar sits under
+ * the title (desktop: above 0%; mobile: always when length known).
+ * Desktop header: split Export (Hevy Week Export left, PDF / spreadsheet
+ * dropdown right) plus **Edit current week** ("Edit Week N").
+ * Mobile: overflow ⋯ for occasional actions; full-width Export only while
+ * zero Program–Hevy links (ADR 0016 / 02). AI week suggest mounts in
+ * ProgramOverviewWeekList after the Week preview.
  *
  * Depends on: ExportDialog, ProgramOverviewExportWeek,
- *             refreshOverviewQueriesAfterWeekExport, AiWeekSuggestPanel,
- *             AiWeekSuggestApply, ProgramOverviewWeekPreview, overview-start,
+ *             refreshOverviewQueriesAfterWeekExport, overview-start,
  *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress
  * Used by: ProgramOverviewWeekList
  */
@@ -29,14 +23,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronDown, Pencil, Upload } from "lucide-react";
+import { ChevronDown, EllipsisVertical, FileText, Pencil, Table, Type, Upload } from "lucide-react";
 import { useHevySecret } from "@/api/hooks";
 import {
     MAX_PROGRAM_TITLE_LENGTH,
     updateProgramTitle,
 } from "@/api/programs";
 import { useUserContext } from "@/contexts/UserContext";
-import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -44,6 +37,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { shouldHighlightOverviewExport } from "@/hooks/overview-start";
@@ -51,19 +45,12 @@ import { cn } from "@/lib/utils";
 import { ExportDialog } from "@/components/program-builder/shared/ExportDialog";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import {
-    applyWeekSuggestion,
-    describeApplyResult,
-    WeekSuggestApplyError,
-} from "./AiWeekSuggestApply";
-import { AiWeekSuggestPanel } from "./AiWeekSuggestPanel";
-import {
     evaluateWeekExportGate,
     exportProgramWeekToHevy,
     loadPrescriptionHevyRoutines,
     nextExportableWeek,
 } from "./ProgramOverviewExportWeek";
 import { refreshOverviewQueriesAfterWeekExport } from "./refreshOverviewQueriesAfterWeekExport";
-import { PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY } from "./ProgramOverviewWeekPreview";
 import { weekCompletePercent } from "./ProgramOverviewWeekStatus";
 
 type TUploadProgress = {
@@ -103,7 +90,7 @@ const EXPORT_SPLIT_CLASS =
     "bg-lightSecondary text-white shadow-none hover:bg-lightSecondary/90";
 
 /**
- * Owner **Edit program** entry. Always the quiet title-row control.
+ * Owner **Edit program** entry. Always the quiet title-row control (desktop).
  */
 function EditProgramControl({ programId }: { programId: number }) {
     return (
@@ -138,38 +125,67 @@ function formatProgramMeta(
     return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+function formatMobileProgressMeta(
+    currentWeek: number | null,
+    programLength: number | null,
+    completedWeeks: number,
+): string | null {
+    if (programLength == null || programLength < 1) {
+        return null;
+    }
+    const weekLabel =
+        currentWeek != null && currentWeek >= 1
+            ? `Week ${currentWeek} of ${programLength}`
+            : `${programLength}-week`;
+    const percent = weekCompletePercent(completedWeeks, programLength);
+    return `${weekLabel} · ${percent}% complete`;
+}
+
 function ProgramWeekCompleteBar({
     completed,
     total,
+    showAtZero = false,
+    compact = false,
 }: {
     completed: number;
     total: number;
+    /** Mobile: show a thin bar even at 0%. */
+    showAtZero?: boolean;
+    compact?: boolean;
 }) {
     if (total < 1) {
         return null;
     }
     const percent = weekCompletePercent(completed, total);
-    if (percent < 1) {
+    if (!showAtZero && percent < 1) {
         return null;
     }
 
     return (
-        <div className="flex w-full max-w-md items-center gap-3 pt-2">
+        <div
+            className={cn(
+                "flex w-full items-center gap-3",
+                compact ? "pt-1.5" : "max-w-md pt-2",
+            )}
+        >
             <Progress
                 value={percent}
                 animateFill
-                className="h-2.5 flex-1 bg-muted"
+                className={cn("flex-1 bg-muted", compact ? "h-1.5" : "h-2.5")}
                 aria-label={`${percent}% complete`}
             />
-            <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-                {percent}%
-            </span>
+            {!compact ? (
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                    {percent}%
+                </span>
+            ) : null}
         </div>
     );
 }
 
 /**
- * Program shell (title + Edit program | split Export / Edit Week N) + AI week suggest.
+ * Program shell (title + Edit program | split Export / Edit Week N on desktop;
+ * overflow menu on mobile). AI week suggest lives on WeekList.
  */
 export function ProgramOverviewCtas({
     programId,
@@ -186,7 +202,6 @@ export function ProgramOverviewCtas({
     editCurrentWeekDisabled = false,
 }: TProgramOverviewCtasProps) {
     const { user } = useUserContext();
-    const { isInLbs } = usePoundsOrKgContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const queryClient = useQueryClient();
 
@@ -199,7 +214,6 @@ export function ProgramOverviewCtas({
     const [renameOpen, setRenameOpen] = useState(false);
     const [renameDraft, setRenameDraft] = useState(programTitle);
     const [isRenaming, setIsRenaming] = useState(false);
-    const [isApplyingSuggestion, setIsApplyingSuggestion] = useState(false);
 
     const nthWeek = nextExportableWeek(linkedWeeks, {
         currentWeek,
@@ -216,11 +230,18 @@ export function ProgramOverviewCtas({
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
     const weekExportGated = !linksLoading && !gate.allowed;
     const meta = formatProgramMeta(programLength, specialization);
+    const mobileMeta = formatMobileProgressMeta(
+        currentWeek,
+        programLength,
+        completedWeeks.length,
+    );
     const hasExported = linkedWeeks.length > 0;
     const highlightExport = shouldHighlightOverviewExport({
         hevyLinkCount: linkedWeeks.length,
         linksLoading,
     });
+    /** Loud mobile Export only while zero links (next action to start the loop). */
+    const showMobileLoudExport = highlightExport;
     const showEditCurrentWeek =
         currentWeek != null && currentWeek >= 1 && onEditCurrentWeek != null;
     const liveEditWeek = currentWeek != null && currentWeek >= 1 ? currentWeek : null;
@@ -317,51 +338,6 @@ export function ProgramOverviewCtas({
         }
     };
 
-    /**
-     * Writes the open suggestion into the prescription for week N+1.
-     * The server re-reads its cached changes; `targetWeek` only guards against
-     * a panel left open across a Week complete or Week Export.
-     *
-     * @param suggestion - Target week from the panel (changes stay server-side)
-     */
-    const handleApplySuggestion = async (suggestion: { targetWeek: number }) => {
-        if (isApplyingSuggestion) {
-            return;
-        }
-        if (!user) {
-            toast.error("Sign in to apply suggestions.");
-            return;
-        }
-
-        setIsApplyingSuggestion(true);
-        try {
-            const result = await applyWeekSuggestion(
-                programId,
-                suggestion.targetWeek,
-                isInLbs,
-            );
-
-            if (result.status === "not_ready") {
-                toast.error(describeApplyResult(result));
-                return;
-            }
-
-            // Prescription changed under the Week preview read.
-            void queryClient.invalidateQueries({
-                queryKey: [...PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY, programId],
-            });
-            toast.success(describeApplyResult(result));
-        } catch (error) {
-            toast.error(
-                error instanceof WeekSuggestApplyError
-                    ? error.message
-                    : "Couldn't apply the suggestion. Try again.",
-            );
-        } finally {
-            setIsApplyingSuggestion(false);
-        }
-    };
-
     const openRename = () => {
         setRenameDraft(programTitle);
         setRenameOpen(true);
@@ -402,9 +378,135 @@ export function ProgramOverviewCtas({
         toast.success("Program renamed.");
     };
 
+    const overflowMenu = (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-9 shrink-0 rounded-lg border-border/60"
+                    aria-label="Program actions"
+                >
+                    <EllipsisVertical className="size-4" aria-hidden />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[12rem]">
+                {!showMobileLoudExport ? (
+                    <DropdownMenuItem
+                        disabled={hevyDisabled}
+                        title={!gate.allowed ? gate.reason : undefined}
+                        onSelect={() => {
+                            void handleWeekExport();
+                        }}
+                    >
+                        <Upload className="size-3.5" aria-hidden />
+                        Export Week {nthWeek}
+                    </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuItem
+                    disabled={fileLoading || isUploading}
+                    onSelect={() => {
+                        void openFileExport("pdf");
+                    }}
+                >
+                    <FileText className="size-3.5" aria-hidden />
+                    PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    disabled={fileLoading || isUploading}
+                    onSelect={() => {
+                        void openFileExport("spreadsheet");
+                    }}
+                >
+                    <Table className="size-3.5" aria-hidden />
+                    Spreadsheet
+                </DropdownMenuItem>
+                {editWeekNumber != null ? (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            disabled={editWeekDisabled}
+                            title={
+                                !hasExported
+                                    ? "Export this week to Hevy first"
+                                    : undefined
+                            }
+                            onSelect={() => {
+                                onEditCurrentWeek?.();
+                            }}
+                        >
+                            <Pencil className="size-3.5" aria-hidden />
+                            Edit Week {editWeekNumber}
+                        </DropdownMenuItem>
+                    </>
+                ) : null}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href={`/build-program?shareId=${programId}`}>
+                        <Pencil className="size-3.5" aria-hidden />
+                        Edit program
+                    </Link>
+                </DropdownMenuItem>
+                {canRenameTitle ? (
+                    <DropdownMenuItem onSelect={openRename}>
+                        <Type className="size-3.5" aria-hidden />
+                        Rename program
+                    </DropdownMenuItem>
+                ) : null}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+
     return (
         <div className="flex w-full flex-col gap-3 px-1">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            {/* Mobile title + overflow */}
+            <div className="flex items-start gap-2 md:hidden">
+                <div className="min-w-0 flex-1 space-y-0.5">
+                    <h3 className="min-w-0 text-balance text-xl font-semibold tracking-tight text-foreground">
+                        {programTitle}
+                    </h3>
+                    {mobileMeta ? (
+                        <p className="text-sm text-muted-foreground">{mobileMeta}</p>
+                    ) : null}
+                    <ProgramWeekCompleteBar
+                        completed={completedWeeks.length}
+                        total={programLength ?? 0}
+                        showAtZero
+                        compact
+                    />
+                </div>
+                {overflowMenu}
+            </div>
+
+            {showMobileLoudExport ? (
+                <div
+                    className={cn(
+                        "md:hidden",
+                        highlightExport
+                            ? "rounded-full ring-2 ring-lightSecondary/80 ring-offset-2 ring-offset-background animate-overview-export-nudge"
+                            : null,
+                    )}
+                    data-export-highlight={highlightExport ? "true" : undefined}
+                >
+                    <Button
+                        type="button"
+                        size="default"
+                        className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
+                        disabled={hevyDisabled}
+                        title={!gate.allowed ? gate.reason : undefined}
+                        onClick={() => {
+                            void handleWeekExport();
+                        }}
+                    >
+                        <Upload className="size-4" aria-hidden />
+                        Export Week {nthWeek}
+                    </Button>
+                </div>
+            ) : null}
+
+            {/* Desktop title + split Export / Edit Week N */}
+            <div className="hidden flex-col gap-3 md:flex md:flex-row md:items-start md:justify-between md:gap-4">
                 <div className="min-w-0 space-y-0.5">
                     <div className="flex min-w-0 items-center gap-1.5">
                         <h3 className="min-w-0 text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -491,6 +593,7 @@ export function ProgramOverviewCtas({
                                             void openFileExport("pdf");
                                         }}
                                     >
+                                        <FileText className="size-3.5" aria-hidden />
                                         PDF
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -499,6 +602,7 @@ export function ProgramOverviewCtas({
                                             void openFileExport("spreadsheet");
                                         }}
                                     >
+                                        <Table className="size-3.5" aria-hidden />
                                         Spreadsheet
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -562,17 +666,6 @@ export function ProgramOverviewCtas({
                     ) : null}
                 </div>
             ) : null}
-
-            <AiWeekSuggestPanel
-                programId={programId}
-                linkedWeeks={linkedWeeks}
-                completedWeeks={completedWeeks}
-                programLength={programLength}
-                isApplying={isApplyingSuggestion}
-                onApply={(suggestion) => {
-                    void handleApplySuggestion(suggestion);
-                }}
-            />
 
             <ExportDialog
                 open={fileExportOpen}

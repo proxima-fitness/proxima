@@ -36,7 +36,7 @@ describe("ProgramOverviewWeekRail", () => {
         expect(onSelectWeek).toHaveBeenCalledWith(3);
     });
 
-    it("omits Not exported from the visible rail and keeps it on the accessible name", () => {
+    it("omits Not exported and Current from the visible rail and keeps them on the accessible name", () => {
         render(
             <ProgramOverviewWeekRail
                 rows={rows}
@@ -49,10 +49,9 @@ describe("ProgramOverviewWeekRail", () => {
         expect(week3Buttons.length).toBeGreaterThan(0);
         expect(screen.queryAllByText("Not exported")).toHaveLength(0);
 
-        const currentButtons = screen.getAllByRole("option", { name: /Week 2/i });
-        expect(currentButtons.some((button) => button.textContent?.includes("Current"))).toBe(
-            true,
-        );
+        const currentButtons = screen.getAllByRole("option", { name: "Week 2, Current" });
+        expect(currentButtons.length).toBeGreaterThan(0);
+        expect(screen.queryAllByText("Current")).toHaveLength(0);
     });
 
     it("puts a status-colored dot only on the selected week", () => {
@@ -102,5 +101,25 @@ describe("ProgramOverviewWeekRail", () => {
                 "[data-week-status-dot]",
             ),
         ).toBeNull();
+    });
+
+    it("fades the mobile scroller when there are many weeks", () => {
+        const longRows = Array.from({ length: 12 }, (_, i) => ({
+            week: i + 1,
+            status: (i === 0 ? "current" : "not_exported") as const,
+        }));
+
+        render(
+            <ProgramOverviewWeekRail
+                rows={longRows}
+                selectedWeek={1}
+                onSelectWeek={() => undefined}
+                layout="mobile"
+            />,
+        );
+
+        const scroller = document.querySelector("[data-week-rail-scroll]");
+        expect(scroller?.className).toContain("mask-image");
+        expect(screen.queryByRole("button", { name: /Jump to week/ })).toBeNull();
     });
 });

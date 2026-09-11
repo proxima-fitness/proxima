@@ -2,7 +2,7 @@
  * Program overview chrome: title rename, split Export, Edit Week N / Edit program.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
@@ -117,23 +117,19 @@ describe("ProgramOverviewCtas chrome", () => {
     it("keeps Edit program under the title and disables Edit Week 1 before the first Week Export", () => {
         renderCtas(<ProgramOverviewCtas {...baseProps} />);
 
-        const titleBlock = screen.getByRole("heading", { name: "Strength Block A" })
-            .parentElement?.parentElement;
-        expect(titleBlock).toBeTruthy();
-        if (!titleBlock) {
-            return;
-        }
-        expect(within(titleBlock).getByRole("link", { name: "Edit program" })).toBeTruthy();
+        expect(screen.getAllByRole("heading", { name: "Strength Block A" }).length).toBe(2);
+        expect(screen.getAllByRole("link", { name: "Edit program" }).length).toBeGreaterThan(0);
         expect(screen.getByRole("button", { name: "Edit Week 1" })).toHaveProperty(
             "disabled",
             true,
         );
+        expect(screen.getByRole("button", { name: "Program actions" })).toBeTruthy();
     });
 
     it("splits file export into a dropdown beside Export Week N", () => {
         renderCtas(<ProgramOverviewCtas {...baseProps} />);
 
-        expect(screen.getByRole("button", { name: "Export Week 1" })).toBeTruthy();
+        expect(screen.getAllByRole("button", { name: "Export Week 1" }).length).toBeGreaterThan(0);
         expect(
             screen.getByRole("button", { name: "Export as PDF or spreadsheet" }),
         ).toBeTruthy();
@@ -151,13 +147,7 @@ describe("ProgramOverviewCtas chrome", () => {
             />,
         );
 
-        const titleBlock = screen.getByRole("heading", { name: "Strength Block A" })
-            .parentElement?.parentElement;
-        expect(titleBlock).toBeTruthy();
-        if (!titleBlock) {
-            return;
-        }
-        expect(within(titleBlock).getByRole("link", { name: "Edit program" })).toBeTruthy();
+        expect(screen.getAllByRole("link", { name: "Edit program" }).length).toBeGreaterThan(0);
         expect(screen.getByRole("button", { name: "Export Week 2" })).toBeTruthy();
         expect(screen.getByRole("button", { name: "Edit Week 1" })).toHaveProperty(
             "disabled",
@@ -166,6 +156,24 @@ describe("ProgramOverviewCtas chrome", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Edit Week 1" }));
         expect(onEditCurrentWeek).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps occasional actions behind Program actions after the first Week Export", () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={vi.fn()}
+                canRenameTitle
+            />,
+        );
+
+        expect(screen.getByRole("button", { name: "Program actions" })).toBeTruthy();
+        // Loud mobile Export is only for zero-link; desktop still has Export Week 2
+        expect(screen.getAllByRole("button", { name: "Export Week 2" })).toHaveLength(1);
+        expect(screen.getByRole("button", { name: "Edit Week 1" })).toBeTruthy();
+        expect(screen.getAllByRole("link", { name: "Edit program" }).length).toBeGreaterThan(0);
     });
 
     it("hides Edit Week N when there is no Current week", () => {
@@ -178,7 +186,7 @@ describe("ProgramOverviewCtas chrome", () => {
         );
 
         expect(screen.queryByRole("button", { name: /Edit Week/ })).toBeNull();
-        expect(screen.getByRole("link", { name: "Edit program" })).toBeTruthy();
+        expect(screen.getAllByRole("link", { name: "Edit program" }).length).toBeGreaterThan(0);
     });
 
     it("hides Edit and labels Export Week 1 when the Current week folder is gone", () => {
@@ -201,9 +209,9 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(screen.getByRole("group", { name: "Export" }).dataset.exportHighlight).toBe(
             "true",
         );
-        expect(screen.getByRole("link", { name: "Edit program" }).dataset.exportHighlight).toBe(
-            undefined,
-        );
+        expect(
+            screen.getAllByRole("link", { name: "Edit program" })[0]?.dataset.exportHighlight,
+        ).toBe(undefined);
     });
 
     it("does not highlight Export when a Program-Hevy link exists", () => {
@@ -226,9 +234,9 @@ describe("ProgramOverviewCtas chrome", () => {
 
         const group = screen.getByRole("group", { name: "Export" });
         expect(group.dataset.exportGated).toBe(undefined);
-        expect(screen.getByRole("button", { name: "Export Week 1" }).className).toContain(
-            "bg-lightSecondary",
-        );
+        expect(
+            screen.getAllByRole("button", { name: "Export Week 1" })[0]?.className,
+        ).toContain("bg-lightSecondary");
     });
 
     it("outlines the Export split when the week-loop gate blocks Week Export", () => {
@@ -257,13 +265,16 @@ describe("ProgramOverviewCtas chrome", () => {
         );
 
         expect(screen.getByText("13%")).toBeTruthy();
-        expect(screen.getByRole("progressbar", { name: "13% complete" })).toBeTruthy();
+        expect(screen.getAllByRole("progressbar", { name: "13% complete" }).length).toBeGreaterThan(
+            0,
+        );
     });
 
-    it("hides Week complete percent when progress is 0%", () => {
+    it("shows 0% on mobile meta and hides the desktop percent label at 0%", () => {
         renderCtas(<ProgramOverviewCtas {...baseProps} />);
 
-        expect(screen.queryByText("0%")).toBeNull();
-        expect(screen.queryByRole("progressbar")).toBeNull();
+        expect(screen.getByText(/0% complete/)).toBeTruthy();
+        expect(screen.queryByText("0%", { exact: true })).toBeNull();
+        expect(screen.getAllByRole("progressbar", { name: "0% complete" }).length).toBe(1);
     });
 });

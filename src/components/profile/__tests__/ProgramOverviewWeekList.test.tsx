@@ -220,7 +220,8 @@ describe("ProgramOverviewWeekList mark week complete", () => {
         if (!panel) {
             return;
         }
-        expect(panel.querySelector("h4")?.textContent).toBe("Week 1");
+        // Mobile layout: week selection is the heading (no redundant Week N h4)
+        expect(panel.querySelector("h4")).toBeNull();
         expect(panel.textContent).not.toMatch(/Current/);
         expect(panel.textContent).not.toMatch(/Not exported/);
     });

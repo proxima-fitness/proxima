@@ -2,19 +2,22 @@
  * @module ProgramOverviewWeekList
  *
  * Per-program overview slide body (ADR 0010 / 02–04, ADR 0020 / 01–03,
- * ADR 0011 / 04): shell (title | split Export / Edit Week N), week rail +
- * Selected week preview, Mark week complete, Hevy mirror.
+ * ADR 0011 / 04, mobile layout): shell (title | Export / overflow), week rail +
+ * Selected week preview (mobile: sticky chips + compact list; desktop:
+ * HevyDayCard), Mark week complete, AI week suggest, Hevy mirror.
  *
  * Depends on: useProgramHevyWeekLinks, useWorkoutRoutineIds, useHevyPrograms,
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
  *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
- *             ProgramOverviewCtas, ProgramOverviewHevyMirror, ConfirmDialog
+ *             ProgramOverviewCtas, ProgramOverviewHevyMirror, AiWeekSuggestPanel,
+ *             ConfirmDialog
  * Used by: ProgramOverviewSection (carousel children)
  */
 
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,13 +32,23 @@ import {
     useMarkProgramWeekComplete,
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
+import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgram";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    applyWeekSuggestion,
+    describeApplyResult,
+    WeekSuggestApplyError,
+} from "./AiWeekSuggestApply";
+import { AiWeekSuggestPanel } from "./AiWeekSuggestPanel";
 import { ProgramOverviewCtas } from "./ProgramOverviewCtas";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
-import { ProgramOverviewWeekPreview } from "./ProgramOverviewWeekPreview";
+import {
+    PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY,
+    ProgramOverviewWeekPreview,
+} from "./ProgramOverviewWeekPreview";
 import { ProgramOverviewWeekRail } from "./ProgramOverviewWeekRail";
 import {
     deriveCompletedWeeksFromLinks,
@@ -99,6 +112,8 @@ export function ProgramOverviewWeekList({
     canRenameTitle = false,
 }: TProgramOverviewWeekListProps) {
     const { user } = useUserContext();
+    const { isInLbs } = usePoundsOrKgContext();
+    const queryClient = useQueryClient();
     const { data: hevyApiKey } = useHevySecret(user);
     const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(
         user,
@@ -110,6 +125,7 @@ export function ProgramOverviewWeekList({
     );
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [confirmCompleteWeek, setConfirmCompleteWeek] = useState<number | null>(null);
+    const [isApplyingSuggestion, setIsApplyingSuggestion] = useState(false);
     const markComplete = useMarkProgramWeekComplete(programId);
     const navigateToEdit = useNavigateToEditHevyProgram();
     const [isEnteringEdit, setIsEnteringEdit] = useState(false);
@@ -205,6 +221,49 @@ export function ProgramOverviewWeekList({
         });
     };
 
+    const handleApplySuggestion = async (suggestion: { targetWeek: number }) => {
+        if (isApplyingSuggestion) {
+            return;
+        }
+        if (!user) {
+            toast.error("Sign in to apply suggestions.");
+            return;
+        }
+
+        setIsApplyingSuggestion(true);
+        try {
+            const result = await applyWeekSuggestion(
+                programId,
+                suggestion.targetWeek,
+                isInLbs,
+            );
+
+            if (result.status === "not_ready") {
+                toast.error(describeApplyResult(result));
+                return;
+            }
+
+            void queryClient.invalidateQueries({
+                queryKey: [...PROGRAM_PRESCRIPTION_HEVY_QUERY_KEY, programId],
+            });
+            toast.success(describeApplyResult(result));
+        } catch (error) {
+            toast.error(
+                error instanceof WeekSuggestApplyError
+                    ? error.message
+                    : "Couldn't apply the suggestion. Try again.",
+            );
+        } finally {
+            setIsApplyingSuggestion(false);
+        }
+    };
+
+    const weekRailProps = {
+        rows,
+        selectedWeek: resolvedSelected ?? 1,
+        onSelectWeek: setSelectedWeek,
+    };
+
     return (
         <div className="flex flex-col gap-4">
             <ProgramOverviewCtas
@@ -242,23 +301,13 @@ export function ProgramOverviewWeekList({
                 </p>
             ) : (
                 <div className="flex flex-col gap-3 px-1 md:flex-row md:items-start md:gap-4">
-                    <ProgramOverviewWeekRail
-                        rows={rows}
-                        selectedWeek={resolvedSelected}
-                        onSelectWeek={setSelectedWeek}
-                    />
+                    <ProgramOverviewWeekRail {...weekRailProps} layout="desktop" />
 
                     <div
-                        className="min-w-0 flex-1 rounded-xl border border-border/40 bg-muted/20 px-3 py-3 sm:px-4"
+                        className="min-w-0 flex-1 md:rounded-xl md:border md:border-border/40 md:bg-muted/20 md:px-4 md:py-3"
                         data-selected-week={resolvedSelected}
                         data-week-status={selectedRow.status}
                     >
-                        <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <h4 className="text-base font-semibold tracking-tight text-foreground">
-                                Week {resolvedSelected}
-                            </h4>
-                        </div>
-
                         <ProgramOverviewWeekPreview
                             key={`${programId}-${resolvedSelected}`}
                             programId={programId}
@@ -271,6 +320,9 @@ export function ProgramOverviewWeekList({
                             hevyFolderPending={hevyPending}
                             workoutRoutineIds={workoutRoutineIds}
                             userId={user?.id}
+                            mobileStickyNav={
+                                <ProgramOverviewWeekRail {...weekRailProps} layout="mobile" />
+                            }
                         />
 
                         {selectedIsCurrent && !completedWeeks.includes(resolvedSelected) ? (
@@ -279,7 +331,7 @@ export function ProgramOverviewWeekList({
                                     type="button"
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 rounded-full"
+                                    className="h-8 w-full rounded-full md:w-auto"
                                     disabled={markComplete.isPending}
                                     onClick={() => setConfirmCompleteWeek(resolvedSelected)}
                                 >
@@ -291,6 +343,19 @@ export function ProgramOverviewWeekList({
                     </div>
                 </div>
             )}
+
+            <div className="px-1">
+                <AiWeekSuggestPanel
+                    programId={programId}
+                    linkedWeeks={linkedWeeks}
+                    completedWeeks={completedWeeks}
+                    programLength={programLength}
+                    isApplying={isApplyingSuggestion}
+                    onApply={(suggestion) => {
+                        void handleApplySuggestion(suggestion);
+                    }}
+                />
+            </div>
 
             <ProgramOverviewHevyMirror
                 programId={programId}
