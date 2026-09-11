@@ -137,7 +137,23 @@ function removeRows(rows: TRow[], predicate: (row: TRow) => boolean): TRow[] {
 
 function createMockDb(
     seed?: Partial<Record<TTableName, TRow[]>>,
-    options: { insertErrors?: Partial<Record<TTableName, TInsertError[]>> } = {},
+    options: {
+        insertErrors?: Partial<Record<TTableName, TInsertError[]>>;
+        /**
+         * Called before each insert. May mutate `tables` (e.g. land a concurrent winner)
+         * and return an error to short-circuit the insert.
+         */
+        beforeInsert?: (
+            table: TTableName,
+            incoming: TRow | TRow[],
+            tables: Record<TTableName, TRow[]>,
+        ) => TInsertError | null;
+        /** When true for a matching delete, leave rows in place but report success. */
+        noopDelete?: (
+            table: TTableName,
+            filters: Array<{ column: string; value: unknown; op?: "eq" | "in" }>,
+        ) => boolean;
+    } = {},
 ) {
     const tables: Record<TTableName, TRow[]> = {
         workouts: [],
@@ -210,6 +226,11 @@ function createMockDb(
                     return { data: rows[0] ?? null, error: null };
                 },
                 async insert(row: TRow | TRow[]) {
+                    const beforeError = options.beforeInsert?.(table, row, tables) ?? null;
+                    if (beforeError) {
+                        return { error: beforeError };
+                    }
+
                     const queuedError = insertErrors[table]?.shift();
                     if (queuedError) {
                         return { error: queuedError };
@@ -282,6 +303,10 @@ function createMockDb(
                     }
 
                     if (deleting) {
+                        if (options.noopDelete?.(table, filters)) {
+                            resolve({ count: null, error: null });
+                            return;
+                        }
                         const removed = removeRows(tables[table], (row) =>
                             matchFilters(row, filters),
                         );
@@ -496,6 +521,24 @@ function seedCompleteBackup(
         { id: "existing-set-1", workout_exercise_id: "existing-exercise-0" },
         { id: "existing-set-2", workout_exercise_id: "existing-exercise-1" },
     );
+}
+
+/** Seed a shell/partial backup that is missing sets relative to {@link hevyWorkoutFixture}. */
+function seedPartialBackup(mockDb: ReturnType<typeof createMockDb>): void {
+    mockDb.tables.workouts.push({
+        id: "partial-workout-id",
+        user_id: USER_ID,
+        source: HEVY_WORKOUT_SOURCE,
+        external_id: hevyWorkoutFixture.id,
+        started_at: hevyWorkoutFixture.start_time,
+        ended_at: hevyWorkoutFixture.end_time,
+    });
+    mockDb.tables.workout_exercises.push({
+        id: "partial-exercise-id",
+        workout_id: "partial-workout-id",
+        canonical_exercise_id: CANONICAL_KNOWN_ID,
+        sort_order: 0,
+    });
 }
 
 describe("importHevyWorkout", () => {
@@ -770,6 +813,126 @@ describe("importHevyWorkout", () => {
         expect(mockDb.tables.workouts).toHaveLength(1);
         expect(mockDb.tables.workout_exercises).toHaveLength(2);
         expect(mockDb.tables.workout_sets).toHaveLength(3);
+    });
+
+    it("skips when a concurrent insert already landed a complete copy", async () => {
+        let raced = false;
+        const raceDb = createImportMockDb({
+            beforeInsert: (table, _incoming, tables) => {
+                if (table !== "workouts" || raced) {
+                    return null;
+                }
+                raced = true;
+                tables.workouts.push({
+                    id: "race-winner-id",
+                    user_id: USER_ID,
+                    source: HEVY_WORKOUT_SOURCE,
+                    external_id: workout.id,
+                    started_at: workout.start_time,
+                    ended_at: workout.end_time,
+                });
+                tables.workout_exercises.push(
+                    {
+                        id: "race-exercise-0",
+                        workout_id: "race-winner-id",
+                        canonical_exercise_id: CANONICAL_KNOWN_ID,
+                        sort_order: 0,
+                    },
+                    {
+                        id: "race-exercise-1",
+                        workout_id: "race-winner-id",
+                        canonical_exercise_id: "canonical-ohp-aaaa-bbbb-cccc-dddddddddddd",
+                        sort_order: 1,
+                    },
+                );
+                tables.workout_sets.push(
+                    { id: "race-set-0", workout_exercise_id: "race-exercise-0" },
+                    { id: "race-set-1", workout_exercise_id: "race-exercise-0" },
+                    { id: "race-set-2", workout_exercise_id: "race-exercise-1" },
+                );
+                return {
+                    code: "23505",
+                    message:
+                        'duplicate key value violates unique constraint "workouts_user_source_external_id_key"',
+                };
+            },
+        });
+
+        const result = await importHevyWorkout(asDb(raceDb), {
+            userId: USER_ID,
+            workout,
+            apiKey: API_KEY,
+        });
+
+        expect(result).toEqual({ status: "skipped", workoutId: "race-winner-id" });
+        expect(raceDb.tables.workouts).toHaveLength(1);
+        expect(raceDb.tables.workouts[0].id).toBe("race-winner-id");
+    });
+
+    it("replaces when a concurrent insert landed an incomplete copy", async () => {
+        let raced = false;
+        const raceDb = createImportMockDb({
+            beforeInsert: (table, _incoming, tables) => {
+                if (table !== "workouts" || raced) {
+                    return null;
+                }
+                raced = true;
+                tables.workouts.push({
+                    id: "race-partial-id",
+                    user_id: USER_ID,
+                    source: HEVY_WORKOUT_SOURCE,
+                    external_id: workout.id,
+                    started_at: workout.start_time,
+                    ended_at: workout.end_time,
+                });
+                tables.workout_exercises.push({
+                    id: "race-partial-exercise",
+                    workout_id: "race-partial-id",
+                    canonical_exercise_id: CANONICAL_KNOWN_ID,
+                    sort_order: 0,
+                });
+                return {
+                    code: "23505",
+                    message:
+                        'duplicate key value violates unique constraint "workouts_user_source_external_id_key"',
+                };
+            },
+        });
+
+        const result = await importHevyWorkout(asDb(raceDb), {
+            userId: USER_ID,
+            workout,
+            apiKey: API_KEY,
+        });
+
+        expect(result.status).toBe("inserted");
+        if (result.status !== "inserted") return;
+
+        expect(result.workoutId).not.toBe("race-partial-id");
+        expect(raceDb.tables.workouts).toHaveLength(1);
+        expect(raceDb.tables.workout_exercises).toHaveLength(2);
+        expect(raceDb.tables.workout_sets).toHaveLength(3);
+    });
+
+    it("surfaces a delete confirmation error instead of the unique-constraint string when delete is a no-op", async () => {
+        const stuckDb = createImportMockDb({
+            noopDelete: (table) => table === "workouts",
+        });
+        seedPartialBackup(stuckDb);
+
+        const result = await importHevyWorkout(asDb(stuckDb), {
+            userId: USER_ID,
+            workout,
+            apiKey: API_KEY,
+        });
+
+        expect(result.status).toBe("error");
+        if (result.status !== "error") return;
+
+        expect(result.message).toContain("still present after delete");
+        expect(result.message).not.toContain("workouts_user_source_external_id_key");
+        expect(stuckDb.tables.workouts).toHaveLength(1);
+        expect(stuckDb.tables.workouts[0].id).toBe("partial-workout-id");
     });
 
     it("imports the same custom title for two users without a constraint failure", async () => {

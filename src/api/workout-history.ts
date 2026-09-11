@@ -267,6 +267,10 @@ function isBackupCompleteForIncoming(backup: TWorkoutBackupShape, workout: THevy
 /**
  * Deletes a backup workout along with its exercises and sets, which cascade.
  *
+ * PostgREST returns no error when RLS matches zero rows, so a no-op delete looks
+ * like success. Confirm the row is gone before the caller inserts under the same
+ * `(user_id, source, external_id)`.
+ *
  * @param db - Supabase client
  * @param workoutId - Backup workout row ID
  * @returns Delete error message, or `null` on success
@@ -274,7 +278,25 @@ function isBackupCompleteForIncoming(backup: TWorkoutBackupShape, workout: THevy
 async function deleteWorkout(db: TWorkoutHistoryDb, workoutId: string): Promise<string | null> {
     const { error } = await db.from("workouts").delete().eq("id", workoutId);
 
-    return error?.message ?? null;
+    if (error) {
+        return error.message;
+    }
+
+    const { data, error: checkError } = await db
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .maybeSingle();
+
+    if (checkError) {
+        return checkError.message;
+    }
+
+    if (data?.id) {
+        return `workout ${workoutId} still present after delete`;
+    }
+
+    return null;
 }
 
 /**
@@ -704,12 +726,198 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
 }
 
 /**
+ * Skips, patches `routine_id`, or signals replace for an already-backed-up Hevy session.
+ *
+ * @param db - Supabase client
+ * @param workout - Live Hevy payload
+ * @param existing - Row that already owns `(user_id, source, external_id)`
+ * @returns Terminal import result, or `"replace"` when the row should be deleted and re-imported
+ */
+async function resolveExistingBackup(
+    db: TWorkoutHistoryDb,
+    workout: THevyWorkout,
+    existing: { id: string } & TBackedUpWorkoutFreshness,
+): Promise<TImportHevyWorkoutResult | "replace"> {
+    const backup = await backupWorkoutShape(db, existing.id);
+    const isComplete = isBackupCompleteForIncoming(backup, workout);
+    if (isComplete && !isBackedUpWorkoutStale(existing, workout)) {
+        const incomingRoutineId = workout.routine_id ?? null;
+        if (!existing.routine_id && incomingRoutineId) {
+            const { error: patchError } = await db
+                .from("workouts")
+                .update({ routine_id: incomingRoutineId })
+                .eq("id", existing.id);
+            if (patchError) {
+                return { status: "error", message: patchError.message };
+            }
+            return { status: "patched", workoutId: existing.id };
+        }
+        return { status: "skipped", workoutId: existing.id };
+    }
+
+    return "replace";
+}
+
+/**
+ * Writes exercises and sets under a newly inserted `workouts` row.
+ *
+ * @param db - Supabase client
+ * @param params - Parent workout id, Hevy payload, and ownership context
+ * @returns `null` on success, or an error message after rolling back the parent row
+ */
+async function insertWorkoutChildren(
+    db: TWorkoutHistoryDb,
+    params: { workoutId: string; workout: THevyWorkout; userId: string; apiKey: string },
+): Promise<string | null> {
+    const { workoutId, workout, userId, apiKey } = params;
+
+    for (const exercise of workout.exercises ?? []) {
+        const canonicalExerciseId = await resolveCanonicalExerciseId(db, {
+            templateId: exercise.exercise_template_id,
+            exerciseTitle: exercise.title,
+            userId,
+            apiKey,
+        });
+
+        const workoutExerciseId = uuidv4();
+        const exerciseRow = mapHevyExerciseToInsert(
+            exercise,
+            workoutId,
+            workoutExerciseId,
+            canonicalExerciseId,
+        );
+
+        const { error: exerciseError } = await db.from("workout_exercises").insert(exerciseRow);
+        if (exerciseError) {
+            await rollbackPartialImport(db, workoutId);
+            return exerciseError.message;
+        }
+
+        const setRows = (exercise.sets ?? []).map((set, setIndex) =>
+            mapHevySetToInsert(set, workoutExerciseId, setIndex),
+        );
+        if (setRows.length > 0) {
+            const { error: setError } = await db.from("workout_sets").insert(setRows);
+            if (setError) {
+                await rollbackPartialImport(db, workoutId);
+                return setError.message;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Recovers when a `workouts` insert hits `(user_id, source, external_id)`.
+ *
+ * Same pattern as {@link insertCanonicalExercise}: the unique violation means another copy
+ * already owns the key. One replace attempt only — a second collision after delete means the
+ * row cannot be removed (or a concurrent writer keeps winning).
+ *
+ * @param db - Supabase client
+ * @param params - Import context
+ * @param params.allowReplace - When false, a still-incomplete winner is a hard error
+ */
+async function recoverFromWorkoutUniqueViolation(
+    db: TWorkoutHistoryDb,
+    params: { userId: string; workout: THevyWorkout; apiKey: string; allowReplace: boolean },
+): Promise<TImportHevyWorkoutResult> {
+    const { userId, workout, apiKey, allowReplace } = params;
+    const winner = await findExistingWorkout(db, userId, workout.id);
+
+    if (!winner) {
+        return {
+            status: "error",
+            message: `duplicate key value violates unique constraint "workouts_user_source_external_id_key"`,
+        };
+    }
+
+    const resolved = await resolveExistingBackup(db, workout, winner);
+    if (resolved !== "replace") {
+        return resolved;
+    }
+
+    if (!allowReplace) {
+        return {
+            status: "error",
+            message: `could not replace incomplete workout ${winner.id} after unique conflict`,
+        };
+    }
+
+    const deleteMessage = await deleteWorkout(db, winner.id);
+    if (deleteMessage) {
+        return { status: "error", message: deleteMessage };
+    }
+
+    return insertWorkoutRowAndChildren(db, { userId, workout, apiKey, allowUniqueRecovery: false });
+}
+
+/**
+ * Inserts the `workouts` header then its exercises/sets.
+ *
+ * A unique violation on the header is recovered via {@link recoverFromWorkoutUniqueViolation}
+ * when `allowUniqueRecovery` is true (one replace attempt). A second collision still re-selects
+ * a complete winner as skipped, but will not delete-and-retry again.
+ *
+ * @param db - Supabase client
+ * @param params - Import context plus whether unique-conflict recovery is still allowed
+ */
+async function insertWorkoutRowAndChildren(
+    db: TWorkoutHistoryDb,
+    params: {
+        userId: string;
+        workout: THevyWorkout;
+        apiKey: string;
+        allowUniqueRecovery: boolean;
+    },
+): Promise<TImportHevyWorkoutResult> {
+    const { userId, workout, apiKey, allowUniqueRecovery } = params;
+    const workoutId = uuidv4();
+    const workoutRow = mapHevyWorkoutToInsert(workout, userId, workoutId);
+
+    const { error: workoutError } = await db.from("workouts").insert(workoutRow);
+    if (workoutError) {
+        if (workoutError.code === UNIQUE_VIOLATION) {
+            return recoverFromWorkoutUniqueViolation(db, {
+                userId,
+                workout,
+                apiKey,
+                allowReplace: allowUniqueRecovery,
+            });
+        }
+        return { status: "error", message: workoutError.message };
+    }
+
+    try {
+        const childError = await insertWorkoutChildren(db, {
+            workoutId,
+            workout,
+            userId,
+            apiKey,
+        });
+        if (childError) {
+            return { status: "error", message: childError };
+        }
+
+        return { status: "inserted", workoutId };
+    } catch (error) {
+        await rollbackPartialImport(db, workoutId);
+        throw error;
+    }
+}
+
+/**
  * Imports one Hevy workout into canonical backup tables.
  *
  * Idempotent on `(user_id, source, external_id)`, but only a workout whose exercise and set counts
  * match the live Hevy payload counts as imported - a shell or a last exercise with no sets is
  * deleted and re-imported. Any failure
  * after the `workouts` insert rolls that row back, so a retry is never blocked by its own wreckage.
+ *
+ * A concurrent insert that wins the unique key is treated like {@link insertCanonicalExercise}:
+ * re-select the winner and skip, patch, or replace once — never surface the raw constraint as a
+ * terminal sync error when the other copy is already complete.
  *
  * A session Hevy has since changed (edited sets, re-finished, retimed) keeps its Hevy id, so the
  * count-based sync cursor cannot see it; {@link isBackedUpWorkoutStale} does, and the row is
@@ -726,26 +934,13 @@ export async function resolveCanonicalExerciseId(db: TWorkoutHistoryDb, params: 
  */
 export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
     const { userId, workout, apiKey } = params;
-    let insertedWorkoutId: string | null = null;
 
     try {
         const existing = await findExistingWorkout(db, userId, workout.id);
         if (existing) {
-            const backup = await backupWorkoutShape(db, existing.id);
-            const isComplete = isBackupCompleteForIncoming(backup, workout);
-            if (isComplete && !isBackedUpWorkoutStale(existing, workout)) {
-                const incomingRoutineId = workout.routine_id ?? null;
-                if (!existing.routine_id && incomingRoutineId) {
-                    const { error: patchError } = await db
-                        .from("workouts")
-                        .update({ routine_id: incomingRoutineId })
-                        .eq("id", existing.id);
-                    if (patchError) {
-                        return { status: "error", message: patchError.message };
-                    }
-                    return { status: "patched", workoutId: existing.id };
-                }
-                return { status: "skipped", workoutId: existing.id };
+            const resolved = await resolveExistingBackup(db, workout, existing);
+            if (resolved !== "replace") {
+                return resolved;
             }
 
             const deleteMessage = await deleteWorkout(db, existing.id);
@@ -754,56 +949,13 @@ export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId:
             }
         }
 
-        const workoutId = uuidv4();
-        const workoutRow = mapHevyWorkoutToInsert(workout, userId, workoutId);
-
-        const { error: workoutError } = await db.from("workouts").insert(workoutRow);
-        if (workoutError) {
-            return { status: "error", message: workoutError.message };
-        }
-
-        insertedWorkoutId = workoutId;
-
-        for (const exercise of workout.exercises ?? []) {
-            const canonicalExerciseId = await resolveCanonicalExerciseId(db, {
-                templateId: exercise.exercise_template_id,
-                exerciseTitle: exercise.title,
-                userId,
-                apiKey,
-            });
-
-            const workoutExerciseId = uuidv4();
-            const exerciseRow = mapHevyExerciseToInsert(
-                exercise,
-                workoutId,
-                workoutExerciseId,
-                canonicalExerciseId,
-            );
-
-            const { error: exerciseError } = await db.from("workout_exercises").insert(exerciseRow);
-            if (exerciseError) {
-                await rollbackPartialImport(db, workoutId);
-                return { status: "error", message: exerciseError.message };
-            }
-
-            const setRows = (exercise.sets ?? []).map((set, setIndex) =>
-                mapHevySetToInsert(set, workoutExerciseId, setIndex),
-            );
-            if (setRows.length > 0) {
-                const { error: setError } = await db.from("workout_sets").insert(setRows);
-                if (setError) {
-                    await rollbackPartialImport(db, workoutId);
-                    return { status: "error", message: setError.message };
-                }
-            }
-        }
-
-        return { status: "inserted", workoutId };
+        return insertWorkoutRowAndChildren(db, {
+            userId,
+            workout,
+            apiKey,
+            allowUniqueRecovery: true,
+        });
     } catch (error) {
-        if (insertedWorkoutId) {
-            await rollbackPartialImport(db, insertedWorkoutId);
-        }
-
         if (isHevyRateLimitError(error)) {
             throw error;
         }
