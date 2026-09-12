@@ -124,9 +124,29 @@ function linkHasMatchingWorkouts(
 }
 
 /**
+ * Whether this week's Program–Hevy link has at least one matching Workout.
+ * Manual **Week complete** needs this proof; zero matches is immediately
+ * un-completed (ADR 0013 / SP5).
+ *
+ * @param link - Selected week's link row
+ * @param workoutRoutineIds - Distinct `workouts.routine_id` values
+ */
+export function weekHasCompletionProof(
+    link: TLinkRoutineRow | null | undefined,
+    workoutRoutineIds: readonly string[],
+): boolean {
+    if (link == null) {
+        return false;
+    }
+    const logged = new Set(workoutRoutineIds.filter((id) => id.length > 0));
+    return linkHasMatchingWorkouts(link, logged);
+}
+
+/**
  * Week complete for overview: auto (all live IDs logged) or persisted with
  * at least one matching Workout still present. Persisted `completed_at` with
- * zero matching Workouts is not complete (ADR 0013 / SP5).
+ * zero matching Workouts is not complete (ADR 0013 / SP5), so Mark week
+ * complete is disabled until `weekHasCompletionProof`.
  *
  * @param links - Program–Hevy link rows
  * @param workoutRoutineIds - Distinct `workouts.routine_id` values

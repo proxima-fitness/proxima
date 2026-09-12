@@ -41,6 +41,7 @@ import {
     deriveCompletedWeeksFromLinks,
     deriveCompletedWeeksFromWorkoutRoutineIds,
     deriveEffectiveCompletedWeeks,
+    weekHasCompletionProof,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
 } from "./ProgramOverviewWeekStatus";
@@ -92,11 +93,21 @@ export function ProgramOverviewExportWeekCTA({
         linkedWeeks.length > 0 ? Math.max(...linkedWeeks) : null;
     const nthWeek = nextExportableWeek(linkedWeeks);
     const gate = evaluateWeekExportGate(nthWeek, linkedWeeks, completedWeeks);
+    const currentLink =
+        currentLinkedWeek != null
+            ? (links.find((link) => link.nth_week === currentLinkedWeek) ?? null)
+            : null;
     const canMarkCurrentComplete =
-        currentLinkedWeek != null && !completedWeeks.includes(currentLinkedWeek);
+        currentLinkedWeek != null &&
+        !completedWeeks.includes(currentLinkedWeek) &&
+        weekHasCompletionProof(currentLink, workoutRoutineIds);
 
     const handleMarkComplete = () => {
         if (currentLinkedWeek == null) {
+            return;
+        }
+        if (!weekHasCompletionProof(currentLink, workoutRoutineIds)) {
+            toast.error("Log a workout in Hevy before marking this week complete.");
             return;
         }
         markComplete.mutate(currentLinkedWeek, {
@@ -188,14 +199,24 @@ export function ProgramOverviewExportWeekCTA({
                     ) : null}
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    {canMarkCurrentComplete ? (
+                    {currentLinkedWeek != null &&
+                    !completedWeeks.includes(currentLinkedWeek) ? (
                         <Button
                             type="button"
                             size="sm"
                             variant="outline"
                             className="rounded-full"
-                            disabled={isUploading || markComplete.isPending}
-                            onClick={() => setConfirmCompleteOpen(true)}
+                            disabled={
+                                isUploading ||
+                                markComplete.isPending ||
+                                !canMarkCurrentComplete
+                            }
+                            onClick={() => {
+                                if (!canMarkCurrentComplete) {
+                                    return;
+                                }
+                                setConfirmCompleteOpen(true);
+                            }}
                         >
                             <Check className="mr-1.5 size-3.5" aria-hidden />
                             Mark week {currentLinkedWeek} complete

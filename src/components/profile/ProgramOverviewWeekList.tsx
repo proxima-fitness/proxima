@@ -61,6 +61,7 @@ import {
     findHevyProgramForWeek,
     missingHevyFolderWeeks,
     resolveSelectedWeek,
+    weekHasCompletionProof,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
 } from "./ProgramOverviewWeekStatus";
@@ -180,6 +181,16 @@ export function ProgramOverviewWeekList({
             : null;
     const selectedIsCurrent = selectedRow?.status === "current";
     const currentWeekNumber = rows.find((row) => row.status === "current")?.week ?? null;
+    const selectedLink =
+        resolvedSelected != null
+            ? (links.find((row) => row.nth_week === resolvedSelected) ?? null)
+            : null;
+    const selectedNeedsComplete =
+        selectedIsCurrent &&
+        resolvedSelected != null &&
+        !completedWeeks.includes(resolvedSelected);
+    const canMarkSelectedComplete =
+        selectedNeedsComplete && weekHasCompletionProof(selectedLink, workoutRoutineIds);
 
     /** Still fetching Hevy — distinct from "fetched, folder is gone". */
     const hevyPending = Boolean(hevyApiKey) && isLoadingHevy;
@@ -223,6 +234,11 @@ export function ProgramOverviewWeekList({
     };
 
     const handleMarkComplete = (week: number) => {
+        const weekLink = links.find((row) => row.nth_week === week);
+        if (!weekHasCompletionProof(weekLink, workoutRoutineIds)) {
+            toast.error("Log a workout in Hevy before marking this week complete.");
+            return;
+        }
         markComplete.mutate(week, {
             onSuccess: () => {
                 toast.success(`Marked week ${week} complete.`);
@@ -341,19 +357,37 @@ export function ProgramOverviewWeekList({
                             }
                         />
 
-                        {selectedIsCurrent && !completedWeeks.includes(resolvedSelected) ? (
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {selectedNeedsComplete ? (
+                            <div className="mt-3 flex flex-col items-stretch gap-1.5 md:items-start">
                                 <Button
                                     type="button"
                                     size="sm"
                                     variant="outline"
                                     className="h-8 w-full rounded-full md:w-auto"
-                                    disabled={markComplete.isPending}
-                                    onClick={() => setConfirmCompleteWeek(resolvedSelected)}
+                                    disabled={markComplete.isPending || !canMarkSelectedComplete}
+                                    aria-describedby={
+                                        canMarkSelectedComplete
+                                            ? undefined
+                                            : "mark-week-complete-hint"
+                                    }
+                                    onClick={() => {
+                                        if (resolvedSelected == null || !canMarkSelectedComplete) {
+                                            return;
+                                        }
+                                        setConfirmCompleteWeek(resolvedSelected);
+                                    }}
                                 >
                                     <Check className="size-3.5" aria-hidden />
                                     Mark week complete
                                 </Button>
+                                {canMarkSelectedComplete ? null : (
+                                    <p
+                                        id="mark-week-complete-hint"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        Log a workout in Hevy first.
+                                    </p>
+                                )}
                             </div>
                         ) : null}
                     </div>

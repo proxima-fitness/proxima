@@ -54,7 +54,7 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
                 {
                     nth_week: 1,
                     completed_at: null,
-                    hevy_routine_ids: ["r1"],
+                    hevy_routine_ids: ["r1", "r2"],
                 },
             ],
             isLoading: false,
@@ -71,7 +71,20 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
         cleanup();
     });
 
+    it("does not allow Mark week complete when the week has no matching Workouts", () => {
+        renderCta(
+            <ProgramOverviewExportWeekCTA programId={11} programTitle="Strength Block A" />,
+        );
+
+        const button = screen.getByRole("button", { name: "Mark week 1 complete" });
+        expect(button).toHaveProperty("disabled", true);
+        fireEvent.click(button);
+        expect(screen.queryByRole("heading", { name: "Mark week 1 complete?" })).toBeNull();
+        expect(mutateMarkComplete).not.toHaveBeenCalled();
+    });
+
     it("asks Are you sure before marking Week complete", () => {
+        useWorkoutRoutineIds.mockReturnValue({ data: ["r1"] });
         renderCta(
             <ProgramOverviewExportWeekCTA programId={11} programTitle="Strength Block A" />,
         );
@@ -90,6 +103,7 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
     });
 
     it("marks complete only after confirm", () => {
+        useWorkoutRoutineIds.mockReturnValue({ data: ["r1"] });
         renderCta(
             <ProgramOverviewExportWeekCTA programId={11} programTitle="Strength Block A" />,
         );

@@ -18,6 +18,7 @@ import {
     weekCompletePercent,
     weeksNeedingAutoMark,
     weeksNeedingUncomplete,
+    weekHasCompletionProof,
     deriveProgramDayProgress,
 } from "../ProgramOverviewWeekStatus";
 
@@ -157,8 +158,44 @@ describe("deriveEffectiveCompletedWeeks", () => {
         expect(deriveEffectiveCompletedWeeks(links, [])).toEqual([]);
     });
 
+    it("keeps Current after Mark week complete with zero matching Workouts", () => {
+        const marked = [
+            {
+                nth_week: 1,
+                completed_at: "2026-09-12T00:00:00Z",
+                hevy_routine_ids: ["r1"],
+                exported_hevy_routine_ids: ["r1"],
+            },
+        ];
+        const completed = deriveEffectiveCompletedWeeks(marked, []);
+        expect(completed).toEqual([]);
+        expect(weeksNeedingUncomplete(marked, [])).toEqual([1]);
+        expect(deriveProgramOverviewWeekStatuses(4, [1], completed)[0]).toEqual({
+            week: 1,
+            status: "current",
+        });
+    });
+
     it("includes auto-complete from live routine IDs without completed_at", () => {
         expect(deriveEffectiveCompletedWeeks(links, ["c"])).toEqual([2]);
+    });
+});
+
+describe("weekHasCompletionProof", () => {
+    const link = {
+        nth_week: 1,
+        hevy_routine_ids: ["r1", "r2"],
+        exported_hevy_routine_ids: ["r1", "r2"],
+    };
+
+    it("is false when no matching Workout exists", () => {
+        expect(weekHasCompletionProof(link, [])).toBe(false);
+        expect(weekHasCompletionProof(link, ["other"])).toBe(false);
+        expect(weekHasCompletionProof(null, ["r1"])).toBe(false);
+    });
+
+    it("is true when at least one linked routine has a Workout", () => {
+        expect(weekHasCompletionProof(link, ["r2"])).toBe(true);
     });
 });
 
