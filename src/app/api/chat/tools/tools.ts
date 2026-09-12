@@ -27,7 +27,7 @@
 
 import { z } from 'zod';
 import { getHevyExercises } from '@/components/program-builder/api/hevy';
-import { sampleQuestions } from '@/assets/constants';
+import { selectQuestionnaireGateQuestions } from '@/app/api/chat/questionnaire-gate/select';
 import { scoreProgramForBodybuilding } from '@/components/program-builder/utils/score-program';
 import {
     applyOperations,
@@ -130,6 +130,12 @@ interface IProps {
     workoutHistoryDb?: TWorkoutHistoryDb;
     /** Structured constraint profile; when provided, updateConstraintProfile tool is included. Filters getExerciseList. */
     constraintProfile?: TConstraintProfile;
+    /** DB Constraint profile only (not session gym defaults). Drives Questionnaire gate first-time vs returning. */
+    persistedConstraintProfile?: TConstraintProfile | null;
+    /** Request-body Constraint seed. Gym-default excludes alone are not a real profile. */
+    sessionConstraintProfile?: TConstraintProfile | null;
+    daysPerWeek?: string | number | null;
+    programLength?: string | number | null;
     /** Structured Training profile; when provided, updateTrainingProfile tool mutates/persists it. */
     trainingProfile?: TTrainingProfile;
     /** User's weight display preference (true = lbs). Defaults to true to match UI default. */
@@ -236,6 +242,10 @@ export function getTools({
     userId,
     workoutHistoryDb,
     constraintProfile,
+    persistedConstraintProfile = null,
+    sessionConstraintProfile = null,
+    daysPerWeek,
+    programLength,
     trainingProfile,
     isInLbs = true,
     clientIp,
@@ -446,17 +456,31 @@ export function getTools({
      * @returns { Tool }
      */
     const getMoreInfoQuestionsTool = tool({
-        description: 'Opens a questions component to gather additional information from the user before building a workout program. Use this tool when a user requests to create, build, make, or generate a workout program, training program, or exercise routine. This should be called FIRST before building the program.',
+        description:
+            'Opens the Questionnaire gate with the app-chosen question subset (ADR 0023). ' +
+            'Call on a new-program request, and when the user asks to fill or edit Training profile ' +
+            '("update my profile", "edit my info"). Do not invent extra questions — the tool picks the list. ' +
+            'If it returns no questions, the gate is not needed; continue to planProgram / getExerciseList / buildWeek.',
         inputSchema: z.object({
             userRequest: z.string().optional().describe('The user\'s original request for context'),
         }),
         execute: async ({ userRequest }) => {
             try {
-                // Return the questions data that will be displayed in the UI
-                return {
-                    questions: sampleQuestions,
+                const selected = selectQuestionnaireGateQuestions({
                     userRequest: userRequest || '',
-                    message: 'Questions component opened to gather program preferences.',
+                    persistedConstraintProfile,
+                    sessionConstraintProfile,
+                    daysPerWeek,
+                    programLength,
+                    trainingProfile,
+                });
+                return {
+                    ...selected,
+                    userRequest: userRequest || '',
+                    message:
+                        selected.reason === 'none'
+                            ? 'Questionnaire gate not needed.'
+                            : 'Questions component opened to gather program preferences.',
                 };
             } catch (error) {
                 console.error('Error in getMoreInfoQuestions tool:', error);
@@ -468,15 +492,35 @@ export function getTools({
         },
 
         toModelOutput: async ({ output }) => {
-            if (output.error) {
+            if ("error" in output && output.error) {
                 return {
-                    type: 'text' as const,
-                    value: `Error: ${output.message || 'Failed to load questions'}`,
+                    type: "text" as const,
+                    value: `Error: ${output.message || "Failed to load questions"}`,
+                };
+            }
+            if (!("reason" in output)) {
+                return {
+                    type: "text" as const,
+                    value: output.message || "Failed to load questions",
+                };
+            }
+            if (output.reason === "none") {
+                return {
+                    type: "text" as const,
+                    value: "Questionnaire gate not needed. Proceed now with planProgram, getExerciseList, and buildWeek.",
+                };
+            }
+            if (output.reason === "training-profile") {
+                return {
+                    type: "text" as const,
+                    value:
+                        "Training profile questions are open. Wait for the user to submit. " +
+                        "After they submit, call updateTrainingProfile if there are fields; do not planProgram or buildWeek.",
                 };
             }
             return {
-                type: 'text' as const,
-                value: 'Questions component has been opened. Please wait for the user to complete the questions before proceeding with program generation.',
+                type: "text" as const,
+                value: "Questions component has been opened. Please wait for the user to complete the questions before proceeding with program generation.",
             };
         },
     });

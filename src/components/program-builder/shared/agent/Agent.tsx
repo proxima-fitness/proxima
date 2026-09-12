@@ -146,6 +146,11 @@ export const Agent: React.FC<IProps> = (props) => {
         deloadWeek,
         peakWeek,
         warmupExercises,
+        sex,
+        age,
+        workoutDuration,
+        activityLevel,
+        difficultyLevel,
         handleSex,
         handleAge,
         handleDaysPerWeek,
@@ -212,29 +217,47 @@ export const Agent: React.FC<IProps> = (props) => {
 
     /** When the last message is assistant with getMoreInfoQuestions tool output, show questions in footer instead of input. */
     const activeQuestionsPayload = useMemo(() => {
-        const lastMessage = messages[messages.length - 1]
-        if (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.parts?.length) return null
-        const part = lastMessage.parts.find(
+        const lastAssistant = messages[messages.length - 1]
+        if (!lastAssistant || lastAssistant.role !== "assistant" || !lastAssistant.parts?.length) return null
+        const part = lastAssistant.parts.find(
             (p) =>
                 typeof p === "object" && p !== null && "type" in p && (p as { type: string }).type === "tool-getMoreInfoQuestions",
         )
-        const toolOutput = part && "output" in part ? (part as { output?: { questions?: TQuestion[]; userRequest?: string } }).output : undefined
-        if (!toolOutput?.questions || !Array.isArray(toolOutput.questions)) return null
-        const initialAnswers: Record<string, string | string[]> = {}
-        if (programLength) initialAnswers["program-length"] = programLength
-        if (daysPerWeek) initialAnswers["days-per-week"] = daysPerWeek
-        if (excludeEquipment?.length) initialAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value)
-        if (excludeAreas?.length) initialAnswers["exclude-areas"] = excludeAreas.map((o) => o.value)
-        if (healthIssues?.length) initialAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ")
-        if (splitType) initialAnswers["split-type"] = splitType
-        if (exerciseVariability) initialAnswers["exercise-variability"] = exerciseVariability
-        if (progressionSystem) initialAnswers["progression-system"] = progressionSystem
-        if (deloadWeek) initialAnswers["deload-week"] = deloadWeek
-        if (peakWeek) initialAnswers["peak-week"] = peakWeek
-        if (warmupExercises) initialAnswers["warmup-exercises"] = warmupExercises
+        const toolOutput = part && "output" in part
+            ? (part as {
+                output?: TQuestionsPayload & { questions?: TQuestion[] }
+            }).output
+            : undefined
+        if (!toolOutput?.questions || !Array.isArray(toolOutput.questions) || toolOutput.questions.length === 0) {
+            return null
+        }
+        const sessionAnswers: Record<string, string | string[]> = {}
+        if (programLength) sessionAnswers["program-length"] = programLength
+        if (daysPerWeek) sessionAnswers["days-per-week"] = daysPerWeek
+        if (excludeEquipment?.length) sessionAnswers["exclude-equipment"] = excludeEquipment.map((o) => o.value)
+        if (excludeAreas?.length) sessionAnswers["exclude-areas"] = excludeAreas.map((o) => o.value)
+        if (healthIssues?.length) sessionAnswers["health-issues"] = healthIssues.map((o) => o.label).join(", ")
+        if (splitType) sessionAnswers["split-type"] = splitType
+        if (exerciseVariability) sessionAnswers["exercise-variability"] = exerciseVariability
+        if (progressionSystem) sessionAnswers["progression-system"] = progressionSystem
+        if (deloadWeek) sessionAnswers["deload-week"] = deloadWeek
+        if (peakWeek) sessionAnswers["peak-week"] = peakWeek
+        if (warmupExercises) sessionAnswers["warmup-exercises"] = warmupExercises
+        if (age) sessionAnswers.age = age
+        if (sex) sessionAnswers.sex = sex
+        if (workoutDuration) sessionAnswers["session-duration"] = workoutDuration
+        if (activityLevel) sessionAnswers["activity-level"] = activityLevel
+        if (difficultyLevel[0]?.value) sessionAnswers["experience-level"] = difficultyLevel[0].value
+        const initialAnswers = {
+            ...(toolOutput.initialAnswers ?? {}),
+            ...sessionAnswers,
+        }
         return {
             questions: toolOutput.questions,
             userRequest: toolOutput.userRequest ?? "",
+            reason: toolOutput.reason,
+            allowSkip: toolOutput.allowSkip,
+            completeAction: toolOutput.completeAction,
             initialAnswers: Object.keys(initialAnswers).length > 0 ? initialAnswers : undefined,
         }
     }, [
@@ -250,16 +273,26 @@ export const Agent: React.FC<IProps> = (props) => {
         deloadWeek,
         peakWeek,
         warmupExercises,
+        age,
+        sex,
+        workoutDuration,
+        activityLevel,
+        difficultyLevel,
     ])
 
     const [dismissedForMessageId, setDismissedForMessageId] = useState<string | null>(null)
     const [hevyGateDismissedForMessageId, setHevyGateDismissedForMessageId] = useState<string | null>(null)
+    const [firstTimeGateSuppressed, setFirstTimeGateSuppressed] = useState(false)
+    if (messages.length === 0 && firstTimeGateSuppressed) {
+        setFirstTimeGateSuppressed(false)
+    }
     const lastMessage = messages[messages.length - 1]
     /** Wait for stream end so agent text finishes before questionnaire covers the footer. */
     const showQuestionsPayload =
         activeQuestionsPayload &&
         !isLoading &&
-        dismissedForMessageId !== lastMessage?.id
+        dismissedForMessageId !== lastMessage?.id &&
+        !(activeQuestionsPayload.reason === "first-time" && firstTimeGateSuppressed)
             ? activeQuestionsPayload
             : null
 
@@ -291,7 +324,49 @@ export const Agent: React.FC<IProps> = (props) => {
 
     const handleQuestionsComplete = useCallback(
         (answers: Record<string, string | string[]>) => {
+            const completeAction = activeQuestionsPayload?.completeAction ?? "build"
             const userRequest = (activeQuestionsPayload?.userRequest ?? answers["userRequest"] ?? "") as string
+            const readStr = (key: string) => {
+                const v = answers[key]
+                return typeof v === "string" ? v.trim() : ""
+            }
+            const ageAns = readStr("age")
+            const sexRaw = readStr("sex")
+            const sexAns = sexRaw === TRAINING_PROFILE_UNSET_VALUE ? "" : sexRaw
+            const heightCmAns = readStr("height")
+            const experienceLevelAns = readStr("experience-level")
+            const physiquePhaseAns = readStr("physique-phase")
+            const trainingFocusAns = readStr("training-focus")
+            const activityLevelAns = readStr("activity-level")
+            const sessionDurationAns = readStr("session-duration")
+
+            if (ageAns) handleAge(ageAns)
+            if (sexRaw) handleSex(sexAns)
+            if (experienceLevelAns) {
+                handleDifficultyLevel([{ label: experienceLevelAns, value: experienceLevelAns }])
+            }
+            if (activityLevelAns) handleActivityLevel(activityLevelAns)
+            if (sessionDurationAns) handleWorkoutDuration(sessionDurationAns)
+
+            if (completeAction === "save") {
+                sendMessageWithContext(
+                    { text: "I submitted my training profile." },
+                    {
+                        body: {
+                            age: ageAns || undefined,
+                            sex: sexAns || undefined,
+                            heightCm: heightCmAns ? Number(heightCmAns) : undefined,
+                            experienceLevel: experienceLevelAns || undefined,
+                            physiquePhase: physiquePhaseAns || undefined,
+                            trainingFocus: trainingFocusAns || undefined,
+                            activityLevel: activityLevelAns || undefined,
+                            sessionDurationMin: sessionDurationAns ? Number(sessionDurationAns) : undefined,
+                        },
+                    },
+                )
+                return
+            }
+
             let programLengthValue: "" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" = ""
             let daysPerWeekValue = ""
             let excludeEquipmentValue: TSelectOption[] = []
@@ -322,10 +397,6 @@ export const Agent: React.FC<IProps> = (props) => {
                 programLengthValue = programLength || inferProgramLength(userRequest) || "12"
             }
 
-            const readStr = (key: string) => {
-                const v = answers[key]
-                return typeof v === "string" ? v.trim() : ""
-            }
             const splitTypeAns = readStr("split-type")
             if (splitTypeAns) handleSplitType(splitTypeAns)
             const exerciseVariabilityAns = readStr("exercise-variability")
@@ -338,25 +409,6 @@ export const Agent: React.FC<IProps> = (props) => {
             if (peakWeekAns) handlePeakWeek(peakWeekAns)
             const warmupExercisesAns = readStr("warmup-exercises")
             if (warmupExercisesAns) handleWarmupExercises(warmupExercisesAns)
-
-            // Questionnaire advanced → Training profile session seed (SP4 persists when signed in)
-            const ageAns = readStr("age")
-            const sexRaw = readStr("sex")
-            const sexAns = sexRaw === TRAINING_PROFILE_UNSET_VALUE ? "" : sexRaw
-            const heightCmAns = readStr("height")
-            const experienceLevelAns = readStr("experience-level")
-            const physiquePhaseAns = readStr("physique-phase")
-            const trainingFocusAns = readStr("training-focus")
-            const activityLevelAns = readStr("activity-level")
-            const sessionDurationAns = readStr("session-duration")
-
-            if (ageAns) handleAge(ageAns)
-            if (sexRaw) handleSex(sexAns)
-            if (experienceLevelAns) {
-                handleDifficultyLevel([{ label: experienceLevelAns, value: experienceLevelAns }])
-            }
-            if (activityLevelAns) handleActivityLevel(activityLevelAns)
-            if (sessionDurationAns) handleWorkoutDuration(sessionDurationAns)
 
             sendMessageWithContext(
                 { text: "Build my program" },
@@ -399,6 +451,7 @@ export const Agent: React.FC<IProps> = (props) => {
         },
         [
             activeQuestionsPayload?.userRequest,
+            activeQuestionsPayload?.completeAction,
             sendMessageWithContext,
             handleIsBuilding,
             handleSex,
@@ -432,9 +485,19 @@ export const Agent: React.FC<IProps> = (props) => {
     )
 
     const handleQuestionsSkip = useCallback(() => {
+        if (activeQuestionsPayload?.reason === "first-time") {
+            setFirstTimeGateSuppressed(true)
+        }
         sendMessageWithContext({ text: "Build my program" })
         handleIsBuilding(true)
-    }, [sendMessageWithContext, handleIsBuilding])
+    }, [activeQuestionsPayload?.reason, sendMessageWithContext, handleIsBuilding])
+
+    const handleQuestionsDismiss = useCallback(() => {
+        if (activeQuestionsPayload?.reason === "first-time") {
+            setFirstTimeGateSuppressed(true)
+        }
+        if (lastMessage?.id) setDismissedForMessageId(lastMessage.id)
+    }, [activeQuestionsPayload?.reason, lastMessage])
 
     return (
         <div className="flex flex-col h-full min-h-0">
@@ -512,7 +575,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 questionsPayload={showQuestionsPayload}
                 onQuestionsComplete={handleQuestionsComplete}
                 onQuestionsSkip={handleQuestionsSkip}
-                onQuestionsDismiss={() => lastMessage?.id && setDismissedForMessageId(lastMessage.id)}
+                onQuestionsDismiss={handleQuestionsDismiss}
                 showHevyExportGate={showHevyExportGate}
                 onHevyExportGateDismiss={handleHevyExportGateDismiss}
                 onHevyExportGateComplete={handleHevyExportGateComplete}

@@ -494,6 +494,17 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("separate ask");
         });
 
+        it("teaches Questionnaire gate not needed vs wait, and Training profile asks", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toMatch(/not needed/i);
+            expect(prompt).toContain("update my profile");
+            expect(prompt).toContain("edit my info");
+        });
+
         it("tells the agent the grid is occupied so import refusal is expected", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],

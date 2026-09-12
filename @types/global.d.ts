@@ -387,10 +387,15 @@ type TQuestion = {
     subtitle?: { text: string; link?: string };
 };
 
+type TQuestionnaireGateReason = "first-time" | "program-format" | "training-profile" | "none";
+
 type TQuestionsPayload = {
     questions: TQuestion[];
     userRequest?: string;
     initialAnswers?: Record<string, string | string[]>;
+    reason?: TQuestionnaireGateReason;
+    allowSkip?: boolean;
+    completeAction?: "build" | "save";
 };
 
 type THevyProgramItem = {

@@ -103,4 +103,30 @@ describe("Questions core / advanced UI", () => {
         expect(screen.queryByRole("button", { name: "Select 14" })).toBeNull();
         expect(screen.queryByRole("button", { name: "Select 28" })).toBeNull();
     });
+
+    it("hides Skip when onSkip is omitted", () => {
+        render(<Questions questions={sampleQuestionsCore.slice(0, 2)} />);
+        expect(screen.queryByRole("button", { name: "Skip questionnaire" })).toBeNull();
+    });
+
+    it("shows Training profile questions without the advanced collapse and Save as the primary action", () => {
+        const onComplete = vi.fn();
+        const trainingQuestions = sampleQuestionsAdvanced.filter((q) =>
+            ["age", "sex", "training-focus"].includes(q.id),
+        );
+        render(
+            <Questions
+                questions={trainingQuestions}
+                completeAction="save"
+                onComplete={onComplete}
+            />,
+        );
+
+        expect(screen.queryByTestId("questionnaire-advanced-trigger")).toBeNull();
+        expect(screen.getByText(/Age\?/)).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Save training profile" })).toBeTruthy();
+
+        fireEvent.click(screen.getByRole("button", { name: "Save training profile" }));
+        expect(onComplete).toHaveBeenCalledTimes(1);
+    });
 });

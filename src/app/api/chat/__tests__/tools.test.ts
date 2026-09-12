@@ -1213,4 +1213,66 @@ describe("chat tools.ts", () => {
             expect(modelOut.value).not.toMatch(/sk[-_]/i);
         });
     });
+
+    describe("getMoreInfoQuestions tool execute", () => {
+        it("returns the full first-time catalog when there is no real Constraint profile", async () => {
+            const tools = getTools({
+                sessionConstraintProfile: initializeConstraintProfile({
+                    excludeEquipment: "band, suspension, resistance_band, plate, other",
+                }),
+            });
+            const getMoreInfo = asTestTool<
+                { userRequest?: string },
+                { questions: TQuestion[]; reason: string; allowSkip: boolean }
+            >(tools.getMoreInfoQuestions);
+
+            const output = await getMoreInfo.execute({ userRequest: "build me a program" });
+            expect(output.reason).toBe("first-time");
+            expect(output.allowSkip).toBe(true);
+            expect(output.questions.map((q) => q.id)).toContain("health-issues");
+            expect(output.questions.map((q) => q.id)).toContain("age");
+        });
+
+        it("returns no questions for a returning user who already named length and days", async () => {
+            const tools = getTools({
+                persistedConstraintProfile: initializeConstraintProfile({
+                    healthIssues: "knee",
+                }),
+                programLength: 8,
+                daysPerWeek: 4,
+            });
+            const getMoreInfo = asTestTool<
+                { userRequest?: string },
+                { questions: TQuestion[]; reason: string }
+            >(tools.getMoreInfoQuestions);
+
+            const output = await getMoreInfo.execute({ userRequest: "build another program" });
+            expect(output.reason).toBe("none");
+            expect(output.questions).toEqual([]);
+
+            const modelOut = await getMoreInfo.toModelOutput({ output });
+            expect(modelOut.value).toMatch(/not needed/i);
+            expect(modelOut.value).toMatch(/Proceed now/i);
+        });
+
+        it("opens Training profile questions only on edit-my-info", async () => {
+            const tools = getTools({
+                persistedConstraintProfile: initializeConstraintProfile({
+                    healthIssues: "knee",
+                }),
+                programLength: 8,
+                daysPerWeek: 4,
+            });
+            const getMoreInfo = asTestTool<
+                { userRequest?: string },
+                { questions: TQuestion[]; reason: string; completeAction: string }
+            >(tools.getMoreInfoQuestions);
+
+            const output = await getMoreInfo.execute({ userRequest: "edit my info" });
+            expect(output.reason).toBe("training-profile");
+            expect(output.completeAction).toBe("save");
+            expect(output.questions.some((q) => q.id === "age")).toBe(true);
+            expect(output.questions.some((q) => q.id === "program-length")).toBe(false);
+        });
+    });
 });

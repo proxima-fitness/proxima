@@ -2,6 +2,8 @@
  * Tools always kept when a skill sets `allowedTools` (route prepareCall).
  * Constraint / Training profile writes must survive build-program / mutate-program
  * scopes or Agentic memory never persists mid-chat.
+ * getMoreInfoQuestions must survive so a Training-profile ask still opens the
+ * Questionnaire gate after mutate-program is loaded.
  * openHevyExportGate must survive so Hevy-export intent works post-build.
  * fetchHevyShareFolder must survive so a share link pasted mid-build can be read for context.
  * importHevyShareFolder must survive so a confirmed share load is not blocked by a build/mutate
@@ -13,6 +15,7 @@ export const ALWAYS_AVAILABLE_CHAT_TOOLS = [
     "bash",
     "updateConstraintProfile",
     "updateTrainingProfile",
+    "getMoreInfoQuestions",
     "openHevyExportGate",
     "fetchHevyShareFolder",
     "importHevyShareFolder",

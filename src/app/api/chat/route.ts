@@ -188,19 +188,20 @@ async function handleChatPost(req: Request) {
                     ])
                     : [null, null, null, false];
 
+                const sessionConstraintProfile = initializeConstraintProfile({
+                    healthIssues,
+                    excludeEquipment,
+                    excludeAreas,
+                    splitType,
+                    exerciseVariability,
+                    progressionSystem,
+                    deloadWeek,
+                    peakWeek,
+                    warmupExercises,
+                });
                 const constraintProfile = mergeConstraintProfiles(
                     persistedConstraints,
-                    initializeConstraintProfile({
-                        healthIssues,
-                        excludeEquipment,
-                        excludeAreas,
-                        splitType,
-                        exerciseVariability,
-                        progressionSystem,
-                        deloadWeek,
-                        peakWeek,
-                        warmupExercises,
-                    }),
+                    sessionConstraintProfile,
                 );
 
                 const trainingProfile = mergeTrainingProfiles(
@@ -252,6 +253,10 @@ async function handleChatPost(req: Request) {
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,
                     constraintProfile,
+                    persistedConstraintProfile: persistedConstraints,
+                    sessionConstraintProfile,
+                    daysPerWeek,
+                    programLength,
                     trainingProfile,
                     isInLbs: weightInLbs,
                     clientIp,

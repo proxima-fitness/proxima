@@ -103,6 +103,7 @@ describe("constraint persist skill scope", () => {
         expect(mutate).toBeDefined();
         expect(mutate!.allowedTools).toContain("updateConstraintProfile");
         expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("updateTrainingProfile");
+        expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("getMoreInfoQuestions");
         expect(ALWAYS_AVAILABLE_CHAT_TOOLS).toContain("openHevyExportGate");
 
         const tools = getTools({
@@ -116,6 +117,7 @@ describe("constraint persist skill scope", () => {
 
         expect(visible).toContain("updateConstraintProfile");
         expect(visible).toContain("updateTrainingProfile");
+        expect(visible).toContain("getMoreInfoQuestions");
         expect(visible).toContain("openHevyExportGate");
     });
 

@@ -413,10 +413,11 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
               questions={questionsPayload.questions}
               initialAnswers={questionsPayload.initialAnswers}
               onComplete={onQuestionsComplete}
-              onSkip={onQuestionsSkip}
+              onSkip={questionsPayload.allowSkip === false ? undefined : onQuestionsSkip}
               onDismiss={onQuestionsDismiss}
               isBuilding={isBuilding}
               isLoading={isLoading}
+              completeAction={questionsPayload.completeAction}
             />
           </div>
         ) : showGate ? (

@@ -57,6 +57,8 @@ interface IQuestionsProps {
   isBuilding?: boolean
   isLoading?: boolean
   initialAnswers?: Record<string, string | string[]>
+  /** `save` is Training-profile ask submit (does not build). Default `build`. */
+  completeAction?: "build" | "save"
 }
 
 /** Props for single-select (radio) question renderer. */
@@ -601,6 +603,7 @@ export function Questions({
   isLoading,
   className,
   initialAnswers,
+  completeAction = "build",
 }: IQuestionsProps) {
   const [answers, setAnswers] = React.useState<Record<string, string | string[]>>(initialAnswers ?? {})
   const [otherTexts, setOtherTexts] = React.useState<Record<string, string>>({})
@@ -621,7 +624,9 @@ export function Questions({
     [questions],
   )
   const visibleQuestions = React.useMemo(
-    () => (advancedOpen ? [...coreQuestions, ...advancedQuestions] : coreQuestions),
+    () => (advancedOpen || coreQuestions.length === 0
+      ? [...coreQuestions, ...advancedQuestions]
+      : coreQuestions),
     [advancedOpen, coreQuestions, advancedQuestions],
   )
 
@@ -1009,7 +1014,14 @@ export function Questions({
             questionIndex === coreQuestions.length - 1 && (!advancedOpen || advancedQuestions.length === 0),
           ),
         )}
-        {advancedQuestions.length > 0 && (
+        {coreQuestions.length === 0 && advancedQuestions.map((question, advancedIndex) =>
+          renderQuestion(
+            question,
+            advancedIndex,
+            advancedIndex === advancedQuestions.length - 1,
+          ),
+        )}
+        {coreQuestions.length > 0 && advancedQuestions.length > 0 && (
           <Collapsible
             open={advancedOpen}
             onOpenChange={setAdvancedOpen}
@@ -1056,6 +1068,8 @@ export function Questions({
             Reset
           </Button>
         )}
+        {onSkip ? (
+        <>
         {hasSelections ? (
           <TooltipProvider delayDuration={0}>
             <Tooltip>
@@ -1090,21 +1104,23 @@ export function Questions({
             Skip
           </Button>
         )}
+        </>
+        ) : null}
         <Button
           size="sm"
           onClick={handleContinue}
           disabled={isLoading || isBuilding}
           className="rounded-full bg-lightGold px-4 text-black hover:bg-lightGold/80 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Build program"
+          aria-label={completeAction === "save" ? "Save training profile" : "Build program"}
         >
           {isBuilding ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Building
+              {completeAction === "save" ? "Saving" : "Building"}
             </>
           ) : (
             <>
-              Build
+              {completeAction === "save" ? "Save" : "Build"}
               <span className="flex items-center">
                 <span className="">⌘</span>
                 <CornerDownLeft className="size-4" />

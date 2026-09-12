@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render } from "@testing-library/react";
 
 // Mock dependencies used by ProgramBuilderLayout so we only assert its wrapper classes.
 vi.mock("@/components/program-builder/shared/Breadcrumbs", () => ({ Breadcrumbs: () => null }));
@@ -13,6 +13,10 @@ vi.mock("@/components/CustomSidebarTrigger", () => ({ CustomTrigger: () => null 
 import ProgramBuilderLayout from "@/app/(app)/(with-toolbar)/build-program/layout";
 
 describe("build-program layout.tsx", () => {
+    afterEach(() => {
+        cleanup();
+    });
+
     it("renders sticky toolbar layout with overflow-hidden + mobile viewport height", () => {
         render(<ProgramBuilderLayout>{null}</ProgramBuilderLayout>);
 

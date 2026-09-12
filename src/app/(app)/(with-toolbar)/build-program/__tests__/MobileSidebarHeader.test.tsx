@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/build-program" }));
 vi.mock("@/components/CustomSidebarTrigger", () => ({ CustomTrigger: () => null }));
@@ -7,6 +7,10 @@ vi.mock("@/components/CustomSidebarTrigger", () => ({ CustomTrigger: () => null 
 import { MobileSidebarHeader } from "@/components/header/MobileSidebarHeader";
 
 describe("MobileSidebarHeader.tsx", () => {
+    afterEach(() => {
+        cleanup();
+    });
+
     it("renders a banner header hidden on small viewports (sm:hidden)", () => {
         render(<MobileSidebarHeader />);
 
