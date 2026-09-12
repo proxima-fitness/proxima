@@ -15,6 +15,10 @@ interface IToolbarPortalButtonsProps {
     saveDisabled: boolean;
     isSaving: boolean;
     persistMode?: "save" | "sync";
+    /** Login href when anonymous; persist slot becomes Sign in to save. */
+    signInHref?: string | null;
+    /** Auth still resolving. */
+    isAuthLoading?: boolean;
     /** Overview href when **Start** is visible (ADR 0016 / 01). */
     startHref?: string | null;
 }
@@ -32,6 +36,8 @@ function ToolbarPortalButtonsInner({
     saveDisabled,
     isSaving,
     persistMode = "save",
+    signInHref = null,
+    isAuthLoading = false,
     startHref = null,
 }: IToolbarPortalButtonsProps) {
     const [targets, setTargets] = useState<{
@@ -74,6 +80,8 @@ function ToolbarPortalButtonsInner({
                     disabled={saveDisabled}
                     isSaving={isSaving}
                     persistMode={persistMode}
+                    signInHref={signInHref}
+                    isAuthLoading={isAuthLoading}
                 />
                 {startHref != null ? <ToolbarStartButton href={startHref} /> : null}
             </div>,

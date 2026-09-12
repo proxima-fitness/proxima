@@ -5,24 +5,14 @@
  * @module MobileSidebarHeader
  * Minimal header shown only at max-sm: sidebar trigger and logo. Lets users open
  * the sidebar sheet on small viewports when the persistent sidebar is hidden.
- * On build-program route, shows Save portal + Sign in / Sync (BuildProgramToolbarEnd).
- * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets, BuildProgramToolbarEnd.
+ * On build-program route, shows the Save portal (Sign in to save when anonymous).
+ * Depends on: CustomSidebarTrigger, SidebarProvider (useSidebar), public logo assets.
  * Used by: (app) layout.
  */
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
 import { CustomTrigger } from "@/components/CustomSidebarTrigger";
 import { proxima_logo_black, proxima_logo_white } from "public";
-
-const BuildProgramToolbarEnd = dynamic(
-  () =>
-    import("@/components/program-builder/shared/BuildProgramToolbarEnd").then(m => ({
-      default: m.BuildProgramToolbarEnd,
-    })),
-  { ssr: false, loading: () => <div className="w-10" aria-hidden /> }
-);
 
 export function MobileSidebarHeader() {
   const pathname = usePathname();
@@ -47,12 +37,7 @@ export function MobileSidebarHeader() {
         />
       </Link>
       {isBuildProgram ? (
-        <div className="flex items-center gap-2 min-w-0">
-          <div id="toolbar-save-portal-mobile" className="empty:hidden" />
-          <Suspense fallback={<div className="w-10" aria-hidden />}>
-            <BuildProgramToolbarEnd />
-          </Suspense>
-        </div>
+        <div id="toolbar-save-portal-mobile" className="empty:hidden" />
       ) : (
         <div className="w-10" aria-hidden />
       )}

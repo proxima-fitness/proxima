@@ -2,17 +2,16 @@
  * @module (app)/(with-toolbar)/build-program/layout
  *
  * Layout for the build-program route. Sticky toolbar (sm+): breadcrumbs, program title
- * (portaled from BuildProgram), set-types popover, undo, and Save.
+ * (portaled from BuildProgram), set-types popover, undo, and Save (Sign in to save when anonymous).
  *
- * Depends on: Breadcrumbs, BuildProgramToolbarEnd, BuildProgramFeedbackDialog, BuildProgramSetTypesPopover.
+ * Depends on: Breadcrumbs, BuildProgramFeedbackDialog, BuildProgramSetTypesPopover.
  * Used by: build-program/page and its BuildProgramClient.
  */
 
 import { Breadcrumbs } from "@/components/program-builder/shared/Breadcrumbs";
 import { BuildProgramFeedbackDialog } from "@/components/program-builder/shared/BuildProgramFeedbackDialog";
 import { BuildProgramSetTypesPopover } from "@/components/program-builder/shared/BuildProgramSetTypesPopover";
-import { ReactNode, Suspense } from "react";
-import { BuildProgramToolbarEnd } from "@/components/program-builder/shared/BuildProgramToolbarEnd";
+import { ReactNode } from "react";
 
 /**
  * Program builder toolbar layout; breadcrumbs, title portal, set-types, undo/step area.
@@ -37,9 +36,6 @@ export default function ProgramBuilderLayout({ children }: { children: ReactNode
                         <BuildProgramSetTypesPopover />
                     </div>
                     <div id="toolbar-undo-portal" className="empty:hidden" />
-                    <Suspense fallback={null}>
-                        <BuildProgramToolbarEnd />
-                    </Suspense>
                     <div id="toolbar-save-portal" className="empty:hidden" />
                 </div>
             </div>

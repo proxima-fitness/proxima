@@ -2,7 +2,7 @@
  * @module useHevySuccessConfetti
  * Shared confetti effect for Hevy export/sync success. Returns a fire function,
  * a reset function, and the overlay node to mount in the consuming component.
- * Used by: StepButton.
+ * Used by: Hevy export/sync success flows.
  */
 "use client";
 

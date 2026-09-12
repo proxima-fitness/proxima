@@ -34,6 +34,8 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/contexts/UserContext";
+import { buildAuthLoginHref } from "@/lib/sign-in-return";
+import { BUILD_PROGRAM_PATH } from "@/lib/build-program-url";
 import { ProgramMutationProvider } from "@/contexts/ProgramMutationContext";
 import { useBuildProgramActions } from "@/contexts/BuildProgramActionsContext";
 import {
@@ -133,11 +135,14 @@ function deriveChatTitle(): string {
  * URL params (shareId, resume, empty, search). No props; reads searchParams and context.
  */
 export function BuildProgram() {
-    const { user } = useUserContext();
+    const { user, isLoading: isAuthLoading } = useUserContext();
     const router = useRouter();
     const { getPersistChatIdRef } = useBuildProgramActions();
     logPageView(user?.id);
     const searchParams = useSearchParams();
+    const persistSignInHref = !isAuthLoading && !user
+        ? buildAuthLoginHref(BUILD_PROGRAM_PATH, searchParams)
+        : null;
 
     const arrival = parseBuildProgramArrival(searchParams);
     const { urlChatId, search, shareId, empty, resume } = arrival;
@@ -473,6 +478,8 @@ export function BuildProgram() {
                 chatHistoryLoading={chatHistoryLoading}
                 initialMessages={chatInitialMessages}
                 user={user}
+                isAuthLoading={isAuthLoading}
+                persistSignInHref={persistSignInHref}
                 chatId={chatId}
                 search={search}
                 resume={resume}
@@ -525,6 +532,8 @@ interface IBuildProgramShellProps {
     chatHistoryLoading: boolean;
     initialMessages: TChatMessage[];
     user: User | null;
+    isAuthLoading: boolean;
+    persistSignInHref: string | null;
     chatId: string;
     search: string;
     resume: string;
@@ -564,6 +573,8 @@ function BuildProgramShell({
     chatHistoryLoading,
     initialMessages,
     user,
+    isAuthLoading,
+    persistSignInHref,
     chatId,
     search,
     resume,
@@ -711,7 +722,9 @@ function BuildProgramShell({
         if (persistMode === "sync") return;
         if (isLoading) return;
         if (!user) {
-            toast.error("Sign in to save.");
+            if (persistSignInHref != null) {
+                router.push(persistSignInHref);
+            }
             return;
         }
         if (!hasProgramContent) {
@@ -778,6 +791,8 @@ function BuildProgramShell({
         }
     }, [
         isLoading,
+        persistSignInHref,
+        router,
         user,
         hasProgramContent,
         orderedProgram,
@@ -1051,6 +1066,8 @@ function BuildProgramShell({
                 }
                 isSaving={isSaving}
                 persistMode={persistMode}
+                signInHref={persistSignInHref}
+                isAuthLoading={isAuthLoading}
                 startHref={startHref}
             />
             {isChatHidden && (
