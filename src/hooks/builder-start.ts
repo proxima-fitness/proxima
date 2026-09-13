@@ -2,9 +2,10 @@
  * @module builder-start
  *
  * **Start** visibility and href for the builder toolbar (ADR 0016 / 01).
- * Shown on prescription persist (**New path** / **Edit program** / **Make into
- * a program**) after a `programs.id` exists and that program has zero
- * **Program–Hevy links**. Never on **Edit current week** / Hevy-only.
+ * Occupies the persist slot on prescription persist (**New path** /
+ * **Edit program** / **Make into a program**) after a this-session **Save**,
+ * while the grid is clean, and the program has zero **Program–Hevy links**.
+ * Never on **Edit current week** / Hevy-only. Never beside **Save**.
  *
  * Depends on: edit-persist (TPersistMode)
  * Used by: BuildProgram, ToolbarPortalButtons, tests
@@ -14,6 +15,10 @@ import type { TPersistMode } from "@/hooks/edit-persist";
 
 export interface IShouldShowBuilderStartInput {
     hevyLinkCount: number | null;
+    /** True after a successful **Save** this tab. */
+    hasSaveBaseline: boolean;
+    /** Unsaved content or undo vs last **Save**. */
+    isDirty: boolean;
     persistMode: TPersistMode;
     programId: number | null;
 }
@@ -59,10 +64,13 @@ export function prescriptionProgramIdForStart(input: {
 }
 
 /**
- * **Start** exists iff prescription persist ∧ `programs.id` ∧ zero links.
- * `hevyLinkCount` null means links are unknown — keep **Start** hidden.
+ * **Start** occupies the persist slot iff prescription persist ∧ this-session
+ * **Save** ∧ clean grid ∧ `programs.id` ∧ zero links. `hevyLinkCount` null
+ * means links are unknown — keep **Start** hidden (slot stays **Save**).
  *
  * @param input.hevyLinkCount - Link row count, or null while unknown
+ * @param input.hasSaveBaseline - Successful **Save** in this tab
+ * @param input.isDirty - Grid does not match last **Save**
  * @param input.persistMode - Save vs Sync
  * @param input.programId - Saved Proxima program id
  */
@@ -73,6 +81,12 @@ export function shouldShowBuilderStart(
         return false;
     }
     if (input.programId == null) {
+        return false;
+    }
+    if (!input.hasSaveBaseline) {
+        return false;
+    }
+    if (input.isDirty) {
         return false;
     }
     return input.hevyLinkCount === 0;

@@ -412,7 +412,8 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("authenticated = **no**");
             expect(prompt).toContain("Hevy API key on file = **no**");
             expect(prompt).toContain("openHevyExportGate");
-            expect(prompt).toContain("toolbar **Save**");
+            expect(prompt).toContain("toolbar persist slot");
+            expect(prompt).toContain("**Save**");
             expect(prompt).toContain("**Start**");
             expect(prompt).not.toContain("**Week Export**");
             expect(prompt).not.toContain("Never tell them to click **Export**");
@@ -433,7 +434,8 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Hevy API key on file = **yes**");
             expect(prompt).toContain("Both prerequisites done");
             expect(prompt).toContain("Do **not** call **openHevyExportGate**");
-            expect(prompt).toContain("toolbar **Save**");
+            expect(prompt).toContain("toolbar persist slot");
+            expect(prompt).toContain("**Save**");
             expect(prompt).toContain("**Start**");
             expect(prompt).not.toContain("**Week Export**");
             expect(prompt).not.toContain("Never tell them to click **Export**");

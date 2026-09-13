@@ -65,6 +65,8 @@ interface IProps {
   onQuestionsDismiss?: () => void;
   /** When true, show Hevy export gate footer instead of PromptInput (questionnaire wins if both set). */
   showHevyExportGate?: boolean;
+  /** Persist slot is **Start**; gate body/toast follow that slot. */
+  showStart?: boolean;
   onHevyExportGateDismiss?: () => void;
   onHevyExportGateComplete?: () => void;
   isBuilding?: boolean;
@@ -358,6 +360,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
     onQuestionsSkip,
     onQuestionsDismiss,
     showHevyExportGate = false,
+    showStart = false,
     onHevyExportGateDismiss,
     onHevyExportGateComplete,
     isBuilding = false,
@@ -424,6 +427,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
           <div className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 p-0 rounded-md max-sm:pt-0 shadow-2xs overflow-hidden">
             <HevyExportGate
               className="w-full min-w-full"
+              showStart={showStart}
               onDismiss={() => onHevyExportGateDismiss?.()}
               onComplete={() => onHevyExportGateComplete?.()}
             />

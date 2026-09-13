@@ -640,16 +640,23 @@ function BuildProgramShell({
         persistMode === "save" && prescriptionProgramId != null && programHevyLinksSuccess
             ? (programHevyLinks?.length ?? 0)
             : null;
+    const hasProgramContent = programHasExerciseRows(hevyProgram);
+    const newPathDirty = isNewPathSaveDirty(
+        undoStackLength,
+        hasSaveBaseline,
+        hasProgramContent,
+    );
     const showStart = shouldShowBuilderStart({
         persistMode,
         programId: prescriptionProgramId,
         hevyLinkCount,
+        hasSaveBaseline,
+        isDirty: newPathDirty,
     });
     const startHref =
         showStart && prescriptionProgramId != null
             ? builderStartHref(prescriptionProgramId)
             : null;
-    const hasProgramContent = programHasExerciseRows(hevyProgram);
     const [isSaving, setIsSaving] = useState(false);
     const [syncDialogOpen, setSyncDialogOpen] = useState(false);
     const [syncPhase, setSyncPhase] = useState<TSyncDialogPhase>("uploading");

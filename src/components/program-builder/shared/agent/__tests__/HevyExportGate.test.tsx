@@ -106,6 +106,7 @@ import {
     HEVY_EXPORT_GATE_TITLE,
     HevyExportGate,
     hevyExportGateCompleteToast,
+    hevyExportGateKeyStepNextChrome,
 } from "../HevyExportGate";
 
 function makeQueryClient() {
@@ -128,6 +129,11 @@ describe("HevyExportGate copy", () => {
         expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED).toBe("Press Start");
         expect(hevyExportGateCompleteToast(false)).toBe("Press Save, then Start");
         expect(hevyExportGateCompleteToast(true)).toBe("Press Start");
+        expect(hevyExportGateKeyStepNextChrome(false)).toContain("Save, then Start");
+        expect(hevyExportGateKeyStepNextChrome(true)).toBe(
+            "Connect your Hevy API key to finish setup. Then use toolbar Start.",
+        );
+        expect(hevyExportGateKeyStepNextChrome(true)).not.toMatch(/Save/);
         expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED).not.toMatch(/export/i);
         expect(HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED).not.toMatch(/export/i);
     });
@@ -193,6 +199,23 @@ describe("HevyExportGate footer", () => {
         expect(keyStep).toContain("Start");
         expect(keyStep).not.toContain("Week Export");
         expect(keyStep).not.toContain("Export");
+    });
+
+    it("key-step next chrome is Start when the persist slot is Start", () => {
+        useUserContext.mockReturnValue({
+            user: { id: "user-1" } as User,
+            isLoading: false,
+        });
+        useHevySecret.mockReturnValue({ data: undefined, isLoading: false });
+
+        renderWithTooltip(
+            <HevyExportGate onDismiss={vi.fn()} onComplete={vi.fn()} showStart />,
+        );
+
+        const keyStep = screen.getByTestId("hevy-export-gate-key-step").textContent ?? "";
+        expect(keyStep).toContain("Start");
+        expect(keyStep).not.toContain("Save");
+        expect(keyStep).not.toContain("Week Export");
     });
 
     it("renders nothing when signed in with Hevy key (parent also hides via derived prereqs)", () => {

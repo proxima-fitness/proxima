@@ -57,55 +57,56 @@ describe("prescriptionProgramIdForStart", () => {
     });
 });
 
+const startable = {
+    persistMode: "save" as const,
+    programId: 9,
+    hevyLinkCount: 0,
+    hasSaveBaseline: true,
+    isDirty: false,
+};
+
 describe("shouldShowBuilderStart", () => {
     it("hides Start on an unsaved New path grid", () => {
         expect(
             shouldShowBuilderStart({
-                persistMode: "save",
+                ...startable,
                 programId: null,
-                hevyLinkCount: 0,
+                hasSaveBaseline: false,
             }),
         ).toBe(false);
     });
 
-    it("shows Start after Save when the program has zero Program-Hevy links", () => {
-        expect(
-            shouldShowBuilderStart({
-                persistMode: "save",
-                programId: 9,
-                hevyLinkCount: 0,
-            }),
-        ).toBe(true);
+    it("shows Start after this-session Save when clean with zero Program-Hevy links", () => {
+        expect(shouldShowBuilderStart(startable)).toBe(true);
+    });
+
+    it("hides Start when the grid is dirty after Save", () => {
+        expect(shouldShowBuilderStart({ ...startable, isDirty: true })).toBe(false);
+    });
+
+    it("hides Start until a Save in this tab even if a program id exists", () => {
+        expect(shouldShowBuilderStart({ ...startable, hasSaveBaseline: false })).toBe(
+            false,
+        );
     });
 
     it("hides Start after the first Week Export (a link exists)", () => {
-        expect(
-            shouldShowBuilderStart({
-                persistMode: "save",
-                programId: 9,
-                hevyLinkCount: 1,
-            }),
-        ).toBe(false);
+        expect(shouldShowBuilderStart({ ...startable, hevyLinkCount: 1 })).toBe(false);
     });
 
     it("hides Start on Edit current week", () => {
         expect(
             shouldShowBuilderStart({
+                ...startable,
                 persistMode: "sync",
-                programId: 9,
-                hevyLinkCount: 0,
             }),
         ).toBe(false);
     });
 
     it("hides Start while link count is unknown", () => {
-        expect(
-            shouldShowBuilderStart({
-                persistMode: "save",
-                programId: 9,
-                hevyLinkCount: null,
-            }),
-        ).toBe(false);
+        expect(shouldShowBuilderStart({ ...startable, hevyLinkCount: null })).toBe(
+            false,
+        );
     });
 });
 

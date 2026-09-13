@@ -237,10 +237,10 @@ _Avoid_: New mode (builder UI label), New arrival (entry mechanic only), Export-
 ### Save (New path)
 
 
-Persist the builder's **Program prescription** to Supabase. Toolbar button labeled **Save** on **New path** and **Edit program**. Anonymous users get **Sign in to save** in that same slot (returns to the builder after login) — never a second persist button. Does not push to Hevy. First **New path** Save INSERTs a new **Proxima program**; later **Edit program** Save UPDATEs that same program (owner only). Success toast is `Saved`. Once a program exists and it has no **Program–Hevy link**, **Start** sits beside **Save**. This is not the persist control on **Edit current week**.
+Persist the builder's **Program prescription** to Supabase. Toolbar button labeled **Save** on **New path** and **Edit program**. Anonymous users get **Sign in to save** in that same slot (returns to the builder after login) — never a second persist button. Does not push to Hevy. First **New path** Save INSERTs a new **Proxima program**; later **Edit program** Save UPDATEs that same program (owner only). Success toast is `Saved`. After a this-session Save, while the grid is clean and the program has no **Program–Hevy link**, this same slot becomes **Start**. It becomes **Save** again if they edit. This is not the persist control on **Edit current week**.
 
 
-_Avoid_: A second toolbar persist button, using this operation on **Edit current week**, Update program, Export, treating **Edit program** Save as a fork, auto-navigating to profile, a toast that names Export or **Week Export**
+_Avoid_: A second toolbar persist button, **Start** beside **Save**, using this operation on **Edit current week**, Update program, Export, treating **Edit program** Save as a fork, auto-navigating to profile, a toast that names Export or **Week Export**
 
 
 
@@ -292,10 +292,10 @@ _Avoid_: My Programs vault, a second overview week rail without Join
 ### Start
 
 
-Toolbar control (arrow) beside **Save** on **New path**, **Make into a program**, and **Edit program** after a **Proxima program** exists and that program has no **Program–Hevy link**. Opens that program's **Program overview**. Hidden on an unsaved grid and after the first **Week Export**. Not shown on **Edit current week** or Hevy-only **Edit**. Does not **Week Export**.
+The persist-slot control (arrow) on **New path**, **Make into a program**, and **Edit program** after a this-session **Save**, while the grid matches that Save and that program has no **Program–Hevy link**. Opens that program's **Program overview**. Hidden on an unsaved or dirty grid and after the first **Week Export**. Not shown on **Edit current week** or Hevy-only **Edit**. Does not **Week Export**. Does not sit beside **Save**.
 
 
-_Avoid_: Open profile, builder **Week Export** / Export, auto-navigate on **Save**, a banner, showing it before the program is Saved, keeping it after the first **Week Export**
+_Avoid_: Open profile, builder **Week Export** / Export, auto-navigate on **Save**, a banner, showing it before the program is Saved, showing it while the prescription is dirty, keeping it after the first **Week Export**, **Start** beside **Save**
 
 
 
@@ -462,7 +462,7 @@ _Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export 
 ### Hevy export gate
 
 
-In-chat multi-step UI opened when the user asks to push a program to Hevy but is missing account or Hevy connection prerequisites (sign in, then Hevy API key, skip steps already done). Unblocks those gates only. Does not **Save**, does not **Start**, does not run **Week Export**. Builder-visible copy (including the system prompt) never names Export or **Week Export**; next chrome is **Save** then **Start** (or **Start** if already Saved). Distinct from the **Questionnaire gate**. If that gate is active, do not open this one; tell them to finish or dismiss the questions first.
+In-chat multi-step UI opened when the user asks to push a program to Hevy but is missing account or Hevy connection prerequisites (sign in, then Hevy API key, skip steps already done). Unblocks those gates only. Does not **Save**, does not **Start**, does not run **Week Export**. Builder-visible copy (including the system prompt) never names Export or **Week Export**; next chrome follows the persist slot (**Save** then **Start**, or **Start** when that slot already reads **Start**). Distinct from the **Questionnaire gate**. If that gate is active, do not open this one; tell them to finish or dismiss the questions first.
 
 
 _Avoid_: Chat gate card, action surface, agent export, in-chat Week Export, builder Export, “don’t click Export”, injecting Hevy API key secrets into the agent, replacing an open Questionnaire gate

@@ -19,5 +19,13 @@ describe("ToolbarStartButton", () => {
         expect(link.getAttribute("href")).toBe("/profile?programId=9");
         expect(screen.queryByText(/export/i)).toBeNull();
         expect(screen.queryByRole("button", { name: /week export/i })).toBeNull();
+        expect(screen.queryByRole("button", { name: "Save program" })).toBeNull();
+    });
+
+    it("is a disabled button until Save succeeds with an href", () => {
+        render(<ToolbarStartButton disabled />);
+
+        expect(screen.getByRole("button", { name: "Start" })).toHaveProperty("disabled", true);
+        expect(screen.queryByRole("link", { name: "Start" })).toBeNull();
     });
 });

@@ -2,7 +2,9 @@
  * @module HevyExportGate
  * Multi-step chat footer for Hevy export prerequisites: sign-in, then inline Hevy API key paste.
  * Skips steps already satisfied from auth + useHevySecret. Key save uses the shared vault write.
- * Next-chrome copy is **Save** then **Start** (ADR 0016 / 03); the gate does not Save, Start, or Week Export.
+ * Next-chrome copy follows the persist slot: **Save** then **Start**, or
+ * **Start** when that slot already reads **Start** (ADR 0016 / 03). The gate
+ * does not Save, Start, or Week Export.
  * Depends on: UserContext, useHevySecret, connectHevyKey, Hevy syncs, Button/Input/Label. Used by: Chat.
  */
 "use client";
@@ -29,15 +31,26 @@ export const HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED = "Press Save, then Start";
 export const HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED = "Press Start";
 
 /**
- * Gate-complete toast: **Start** when that button is showing, otherwise
+ * Gate-complete toast: **Start** when that slot is showing, otherwise
  * **Save** then **Start**.
  *
- * @param showStart - Whether toolbar **Start** is visible (Saved, zero links)
+ * @param showStart - Whether the persist slot is **Start**
  */
 export function hevyExportGateCompleteToast(showStart: boolean): string {
     return showStart
         ? HEVY_EXPORT_GATE_COMPLETE_TOAST_SAVED
         : HEVY_EXPORT_GATE_COMPLETE_TOAST_UNSAVED;
+}
+
+/**
+ * Key-step next chrome. Matches the persist slot.
+ *
+ * @param showStart - Whether the persist slot is **Start**
+ */
+export function hevyExportGateKeyStepNextChrome(showStart: boolean): string {
+    return showStart
+        ? "Connect your Hevy API key to finish setup. Then use toolbar Start."
+        : "Connect your Hevy API key to finish setup. Then use toolbar Save, then Start.";
 }
 
 interface IProps {
@@ -48,13 +61,15 @@ interface IProps {
      */
     onComplete: () => void;
     className?: string;
+    /** Persist slot is **Start**. */
+    showStart?: boolean;
 }
 
 /**
  * Footer card: Sign in CTA when anon; inline Hevy key paste when signed in without a key.
  * Parent hides this when both prerequisites are already met; onComplete fires after the vault write.
  */
-export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
+export function HevyExportGate({ onDismiss, onComplete, className, showStart = false }: IProps) {
     const { user, isLoading: isUserLoading } = useUserContext();
     const { data: hevyApiKey, isLoading: isHevyLoading } = useHevySecret(user);
     const queryClient = useQueryClient();
@@ -150,9 +165,7 @@ export function HevyExportGate({ onDismiss, onComplete, className }: IProps) {
                 {showHevyKey ? (
                     <div className="space-y-3" data-testid="hevy-export-gate-key-step">
                         <p className="text-sm text-muted-foreground">
-                            Connect your Hevy API key to finish setup. Then use toolbar{" "}
-                            <span className="font-medium text-foreground">Save</span>, then{" "}
-                            <span className="font-medium text-foreground">Start</span>.
+                            {hevyExportGateKeyStepNextChrome(showStart)}
                         </p>
                         <Button
                             variant="ghost"

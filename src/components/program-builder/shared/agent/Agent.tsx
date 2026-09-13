@@ -118,8 +118,8 @@ interface IProps {
     appliedMutateProgramKeysRef: RefObject<Set<string>>;
     lastHevyShareImportKeyRef: RefObject<string | null>;
     /**
-     * Toolbar **Start** is visible (Saved prescription, zero **Program–Hevy
-     * links**). Gate-complete toast says **Start** only in that case.
+     * Persist slot is **Start** (this-session **Save**, clean, zero
+     * **Program–Hevy links**). Gate copy follows that slot.
      */
     showStart?: boolean;
 }
@@ -577,6 +577,7 @@ export const Agent: React.FC<IProps> = (props) => {
                 onQuestionsSkip={handleQuestionsSkip}
                 onQuestionsDismiss={handleQuestionsDismiss}
                 showHevyExportGate={showHevyExportGate}
+                showStart={showStart}
                 onHevyExportGateDismiss={handleHevyExportGateDismiss}
                 onHevyExportGateComplete={handleHevyExportGateComplete}
                 isBuilding={isBuilding}

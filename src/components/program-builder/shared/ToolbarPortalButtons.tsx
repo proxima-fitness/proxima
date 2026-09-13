@@ -1,3 +1,10 @@
+/**
+ * @module ToolbarPortalButtons
+ * Renders Undo and one persist slot (**Save** or **Start**, never both) into
+ * toolbar portal targets (ADR 0016). Desktop `#toolbar-save-portal`, optional
+ * `#toolbar-save-portal-mobile`.
+ * Depends on: Button, ToolbarSaveButton, ToolbarStartButton. Used by: BuildProgram.
+ */
 "use client";
 
 import { memo, useState, useLayoutEffect } from "react";
@@ -7,24 +14,57 @@ import { Button } from "@/components/ui/button";
 import { ToolbarSaveButton } from "@/components/program-builder/shared/ToolbarSaveButton";
 import { ToolbarStartButton } from "@/components/program-builder/shared/ToolbarStartButton";
 
-interface IToolbarPortalButtonsProps {
-    canUndo: boolean;
-    undoDisabled?: boolean;
-    onUndo: () => void;
+interface IToolbarPersistSlotProps {
     onSave: () => void;
     saveDisabled: boolean;
     isSaving: boolean;
     persistMode?: "save" | "sync";
-    /** Login href when anonymous; persist slot becomes Sign in to save. */
     signInHref?: string | null;
-    /** Auth still resolving. */
     isAuthLoading?: boolean;
-    /** Overview href when **Start** is visible (ADR 0016 / 01). */
     startHref?: string | null;
 }
 
+interface IToolbarPortalButtonsProps extends IToolbarPersistSlotProps {
+    canUndo: boolean;
+    undoDisabled?: boolean;
+    onUndo: () => void;
+}
+
 /**
- * Renders Undo, persist, and optional **Start** into toolbar portal targets
+ * One persist control: **Save** or **Start**, never both (ADR 0016).
+ */
+export function ToolbarPersistSlot({
+    onSave,
+    saveDisabled,
+    isSaving,
+    persistMode = "save",
+    signInHref = null,
+    isAuthLoading = false,
+    startHref = null,
+}: IToolbarPersistSlotProps) {
+    const startPending = persistMode === "save" && isSaving;
+    if (startHref != null || startPending) {
+        return (
+            <ToolbarStartButton
+                href={startHref}
+                disabled={startPending || startHref == null}
+            />
+        );
+    }
+    return (
+        <ToolbarSaveButton
+            onClick={onSave}
+            disabled={saveDisabled}
+            isSaving={isSaving}
+            persistMode={persistMode}
+            signInHref={signInHref}
+            isAuthLoading={isAuthLoading}
+        />
+    );
+}
+
+/**
+ * Renders Undo and the persist slot into toolbar portal targets
  * (#toolbar-undo-portal, #toolbar-save-portal, optional #toolbar-save-portal-mobile).
  * Single state + one effect for one re-render after mount.
  */
@@ -74,17 +114,15 @@ function ToolbarPortalButtonsInner({
 
     const savePortals = targets.save.map((el) =>
         createPortal(
-            <div className="flex items-center gap-2">
-                <ToolbarSaveButton
-                    onClick={onSave}
-                    disabled={saveDisabled}
-                    isSaving={isSaving}
-                    persistMode={persistMode}
-                    signInHref={signInHref}
-                    isAuthLoading={isAuthLoading}
-                />
-                {startHref != null ? <ToolbarStartButton href={startHref} /> : null}
-            </div>,
+            <ToolbarPersistSlot
+                onSave={onSave}
+                saveDisabled={saveDisabled}
+                isSaving={isSaving}
+                persistMode={persistMode}
+                signInHref={signInHref}
+                isAuthLoading={isAuthLoading}
+                startHref={startHref}
+            />,
             el,
         ),
     );
