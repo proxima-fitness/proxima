@@ -107,24 +107,40 @@ export type TProgramOverviewCtasProps = {
 const EXPORT_SPLIT_CLASS =
     "bg-lightSecondary text-white shadow-none hover:bg-lightSecondary/90";
 
+const TOOLTIP_CONTENT_CLASS =
+    "max-w-[240px] bg-lightSecondary text-left leading-snug text-white";
+
+const EDIT_PROGRAM_TOOLTIP = "Edits the entire multi-week plan for weeks not started.";
+const EDIT_CURRENT_WEEK_TOOLTIP = "Edits this week's live copy in Hevy";
+const EDIT_WEEK_EXPORT_FIRST_HINT = "Export this week to Hevy first";
+
 /**
  * Owner **Edit program** entry. Always the quiet title-row control (desktop).
  */
 function EditProgramControl({ programId }: { programId: number }) {
     return (
-        <Button
-            type="button"
-            variant="link"
-            size="sm"
-            className="h-auto px-0 text-xs font-normal text-muted-foreground"
-            asChild
-        >
-            {/* Stub until ADR 0014 Edit program arrival */}
-            <Link href={`/build-program?shareId=${programId}`}>
-                <Pencil className="size-3" aria-hidden />
-                Edit program
-            </Link>
-        </Button>
+        <TooltipProvider delayDuration={0}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="h-auto px-0 text-xs font-normal text-muted-foreground"
+                        asChild
+                    >
+                        {/* Stub until ADR 0014 Edit program arrival */}
+                        <Link href={`/build-program?shareId=${programId}`}>
+                            <Pencil className="size-3" aria-hidden />
+                            Edit program
+                        </Link>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className={TOOLTIP_CONTENT_CLASS}>
+                    {EDIT_PROGRAM_TOOLTIP}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 }
 
@@ -281,6 +297,9 @@ export function ProgramOverviewCtas({
           : 1;
     const editWeekDisabled =
         !hasExported || !showEditCurrentWeek || editCurrentWeekDisabled;
+    const editWeekTooltip = !hasExported
+        ? EDIT_WEEK_EXPORT_FIRST_HINT
+        : EDIT_CURRENT_WEEK_TOOLTIP;
 
     const handleWeekExport = async () => {
         if (!user) {
@@ -456,11 +475,7 @@ export function ProgramOverviewCtas({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             disabled={editWeekDisabled}
-                            title={
-                                !hasExported
-                                    ? "Export this week to Hevy first"
-                                    : undefined
-                            }
+                            title={editWeekTooltip}
                             onSelect={() => {
                                 onEditCurrentWeek?.();
                             }}
@@ -472,7 +487,10 @@ export function ProgramOverviewCtas({
                 ) : null}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <Link href={`/build-program?shareId=${programId}`}>
+                    <Link
+                        href={`/build-program?shareId=${programId}`}
+                        title={EDIT_PROGRAM_TOOLTIP}
+                    >
                         <Pencil className="size-3.5" aria-hidden />
                         Edit program
                     </Link>
@@ -718,22 +736,39 @@ export function ProgramOverviewCtas({
                     </div>
 
                     {editWeekNumber != null ? (
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="rounded-full border-border/80"
-                            disabled={editWeekDisabled}
-                            title={
-                                !hasExported
-                                    ? "Export this week to Hevy first"
-                                    : undefined
-                            }
-                            onClick={onEditCurrentWeek}
-                        >
-                            <Pencil className="size-3.5" aria-hidden />
-                            Edit Week {editWeekNumber}
-                        </Button>
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span
+                                        className="inline-flex"
+                                        tabIndex={editWeekDisabled ? 0 : undefined}
+                                        aria-label={
+                                            editWeekDisabled
+                                                ? `Edit Week ${editWeekNumber}: ${editWeekTooltip}`
+                                                : undefined
+                                        }
+                                    >
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            className="rounded-full border-border/80"
+                                            disabled={editWeekDisabled}
+                                            onClick={onEditCurrentWeek}
+                                        >
+                                            <Pencil className="size-3.5" aria-hidden />
+                                            Edit Week {editWeekNumber}
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side="top"
+                                    className={TOOLTIP_CONTENT_CLASS}
+                                >
+                                    {editWeekTooltip}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     ) : null}
                 </div>
             </div>

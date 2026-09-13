@@ -136,7 +136,36 @@ describe("ProgramOverviewCtas chrome", () => {
             "disabled",
             true,
         );
+        expect(
+            screen.getByLabelText("Edit Week 1: Export this week to Hevy first"),
+        ).toBeTruthy();
         expect(screen.getByRole("button", { name: "Program actions" })).toBeTruthy();
+    });
+
+    it("explains Edit program vs Edit Week N on hover", async () => {
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={vi.fn()}
+            />,
+        );
+
+        fireEvent.focus(screen.getAllByRole("link", { name: "Edit program" })[0]!);
+        expect(
+            await screen.findByRole("tooltip", {
+                name: "Edits the entire multi-week plan for weeks not started.",
+            }),
+        ).toBeTruthy();
+
+        fireEvent.blur(screen.getAllByRole("link", { name: "Edit program" })[0]!);
+        fireEvent.focus(screen.getByRole("button", { name: "Edit Week 1" }));
+        expect(
+            await screen.findByRole("tooltip", {
+                name: "Edits this week's live copy in Hevy",
+            }),
+        ).toBeTruthy();
     });
 
     it("splits file export into a dropdown beside Export Week N", () => {
