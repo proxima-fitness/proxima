@@ -49,6 +49,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { EditProfileContent } from "@/components/account/EditProfileContent";
+import { PROFILE_SECTION_CARD_SURFACE_CLASS } from "@/components/profile/profileSectionShell";
 
 describe("EditProfileContent", () => {
     beforeEach(() => {
@@ -140,5 +141,29 @@ describe("EditProfileContent", () => {
         ).toBeTruthy();
 
         expect(useLeaveGuard).toHaveBeenCalled();
+    });
+
+    it("uses the same card surface as profile sections", () => {
+        useUserContext.mockReturnValue({
+            user: { id: "user-1" },
+            isLoading: false,
+        });
+
+        render(<EditProfileContent />);
+
+        const surfaceTokens = PROFILE_SECTION_CARD_SURFACE_CLASS.split(" ");
+        for (const name of [
+            "Identity",
+            "Constraint Profile",
+            "Training Profile",
+            "Body Measurements",
+        ]) {
+            const heading = screen.getByRole("heading", { name });
+            const card = heading.closest(".rounded-2xl");
+            expect(card, name).toBeTruthy();
+            for (const token of surfaceTokens) {
+                expect(card?.className, `${name} ${token}`).toContain(token);
+            }
+        }
     });
 });

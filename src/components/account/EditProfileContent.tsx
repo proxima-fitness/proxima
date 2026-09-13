@@ -8,7 +8,8 @@
  * constraints, or Training profile is dirty.
  *
  * Depends on: UserContext, EditProfile, ConstraintProfileSection,
- *   TrainingProfileSection, BodyMeasurementsSection, leave guard, ConfirmDialog.
+ *   TrainingProfileSection, BodyMeasurementsSection, leave guard, ConfirmDialog,
+ *   PROFILE_SECTION_CARD_SURFACE_CLASS.
  * Used by: (app)/profile/edit/page.tsx.
  */
 
@@ -22,14 +23,12 @@ import { ConstraintProfileSection } from "@/components/account/ConstraintProfile
 import { TrainingProfileSection } from "@/components/account/TrainingProfileSection";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditProfile } from "@/components/profile/EditProfile";
+import { PROFILE_SECTION_CARD_SURFACE_CLASS } from "@/components/profile/profileSectionShell";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserContext } from "@/contexts/UserContext";
 import { editProfileLeaveGuard } from "@/hooks/create-leave-guard";
 import { buildAuthLoginHref } from "@/lib/sign-in-return";
-
-const EDIT_PROFILE_CARD_CLASS =
-    "rounded-2xl border border-border/60 bg-card shadow-sm";
 
 /** Renders Edit profile page: Agentic memory sections + leave warn. */
 export function EditProfileContent() {
@@ -114,7 +113,7 @@ export function EditProfileContent() {
                 </div>
 
                 <section aria-labelledby="identity-heading">
-                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                    <Card className={PROFILE_SECTION_CARD_SURFACE_CLASS}>
                         <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="identity-heading"
@@ -136,7 +135,7 @@ export function EditProfileContent() {
                 </section>
 
                 <section aria-labelledby="constraint-profile-heading">
-                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                    <Card className={PROFILE_SECTION_CARD_SURFACE_CLASS}>
                         <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="constraint-profile-heading"
@@ -158,7 +157,7 @@ export function EditProfileContent() {
                 </section>
 
                 <section aria-labelledby="training-profile-heading">
-                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                    <Card className={PROFILE_SECTION_CARD_SURFACE_CLASS}>
                         <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="training-profile-heading"
@@ -180,7 +179,7 @@ export function EditProfileContent() {
                 </section>
 
                 <section aria-labelledby="body-measurements-heading">
-                    <Card className={EDIT_PROFILE_CARD_CLASS}>
+                    <Card className={PROFILE_SECTION_CARD_SURFACE_CLASS}>
                         <CardHeader className="p-4 sm:p-6">
                             <h2
                                 id="body-measurements-heading"

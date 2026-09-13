@@ -5,15 +5,20 @@
  * One outer surface per profile section — no nested decorative cards.
  *
  * Used by: ProfileContent, ProgramOverviewSection, ProfileStatisticsSection,
- *          ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection
+ *          ProfileCalendarSection, BlindSpotAnalysisSection, RecentWorkoutsSection,
+ *          EditProfileContent
  */
 
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** Outer profile section Card — white Hevy-style surface, no border or shadow. */
+/** White Hevy-style card surface: no light-mode border or shadow. */
+export const PROFILE_SECTION_CARD_SURFACE_CLASS =
+    "rounded-2xl border-0 bg-card shadow-none dark:border dark:border-white/10";
+
+/** Outer profile section Card — shared surface + section padding. */
 export const PROFILE_SECTION_CARD_CLASS =
-    "rounded-2xl border-0 bg-card px-4 py-5 shadow-none dark:border dark:border-white/10 sm:px-6 sm:py-6";
+    `${PROFILE_SECTION_CARD_SURFACE_CLASS} px-4 py-5 sm:px-6 sm:py-6`;
 
 export type TProfileSectionHeaderProps = {
     id?: string;
