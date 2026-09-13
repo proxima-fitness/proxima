@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const useSubscribedPrograms = vi.fn();
+const useOwnedPrograms = vi.fn();
 const useSearchParams = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +21,7 @@ vi.mock("@/contexts/UserContext", () => ({
 
 vi.mock("@/api/hooks", () => ({
     useSubscribedPrograms: (...args: unknown[]) => useSubscribedPrograms(...args),
+    useOwnedPrograms: (...args: unknown[]) => useOwnedPrograms(...args),
     useHevySecret: () => ({ data: undefined }),
     useHevyPrograms: () => ({ data: [], isLoading: false }),
 }));
@@ -30,6 +32,16 @@ vi.mock("@/hooks/useHevyProgramSyncOnDemand", () => ({
 
 vi.mock("../ProgramOverviewHevyMirror", () => ({
     ProgramOverviewHevyMirror: () => <div data-testid="hevy-mirror-stub" />,
+}));
+
+vi.mock("../CreatedProgramsList", () => ({
+    CreatedProgramsList: ({ programs }: { programs: { id: number; title: string }[] }) => (
+        <div data-testid="created-programs">
+            {programs.map((program) => (
+                <span key={program.id}>{program.title}</span>
+            ))}
+        </div>
+    ),
 }));
 
 vi.mock("../ProgramOverviewWeekList", () => ({
@@ -89,8 +101,14 @@ describe("ProgramOverviewSection", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         useSubscribedPrograms.mockReset();
+        useOwnedPrograms.mockReset();
         useSearchParams.mockReset();
         useSearchParams.mockReturnValue(new URLSearchParams());
+        useOwnedPrograms.mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: false,
+        });
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -194,5 +212,51 @@ describe("ProgramOverviewSection", () => {
         expect(screen.queryByRole("tablist", { name: "Active programs" })).toBeNull();
         expect(screen.getByTestId("week-list-11")).toBeTruthy();
         expect(screen.getByRole("link", { name: "New program" })).toBeTruthy();
+        expect(screen.queryByTestId("created-programs")).toBeNull();
+    });
+
+    it("lists Created programs after the Hevy mirror when overview is empty", () => {
+        useSubscribedPrograms.mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: false,
+        });
+        useOwnedPrograms.mockReturnValue({
+            data: [{ id: 33, title: "Old Hypertrophy", user_id: "user-1", saves: 2 }],
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ProgramOverviewSection />);
+
+        expect(screen.getByText("No active programs yet")).toBeTruthy();
+        expect(screen.getByTestId("hevy-mirror-stub")).toBeTruthy();
+        expect(screen.getByTestId("created-programs")).toBeTruthy();
+        expect(screen.getByText("Old Hypertrophy")).toBeTruthy();
+    });
+
+    it("omits Joined owned programs from Created programs", () => {
+        useSubscribedPrograms.mockReturnValue({
+            data: [programA],
+            isLoading: false,
+            isError: false,
+        });
+        useOwnedPrograms.mockReturnValue({
+            data: [
+                { ...programA, user_id: "user-1" },
+                { id: 33, title: "Old Hypertrophy", user_id: "user-1", saves: 2 },
+            ],
+            isLoading: false,
+            isError: false,
+        });
+
+        renderSection(<ProgramOverviewSection />);
+
+        expect(screen.getByTestId("week-list-11")).toBeTruthy();
+        expect(screen.getByTestId("created-programs")).toBeTruthy();
+        expect(screen.getByText("Old Hypertrophy")).toBeTruthy();
+        expect(screen.queryByTestId("created-programs")?.textContent).not.toContain(
+            "Strength Block A",
+        );
     });
 });

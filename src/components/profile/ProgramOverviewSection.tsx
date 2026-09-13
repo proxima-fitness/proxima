@@ -3,12 +3,12 @@
  *
  * Profile Program overview shell (ADR 0010 / 0020): section header, program
  * picker buttons when multiple active programs, then one overview body
- * (shell, week rail + preview, Hevy mirror). **Start** lands via `?programId=`
+ * (shell, week rail + preview, Hevy mirror, **Created programs**). **Start** lands via `?programId=`
  * (ADR 0016 / 02).
  *
- * Depends on: useSubscribedPrograms, useHevyPrograms, UserContext,
+ * Depends on: useSubscribedPrograms, useOwnedPrograms, useHevyPrograms, UserContext,
  *             useHevyProgramSyncOnDemand (ADR 0011), overview-start,
- *             ProgramOverviewWeekList, ProgramOverviewHevyMirror,
+ *             ProgramOverviewWeekList, ProgramOverviewHevyMirror, CreatedProgramsList,
  *             profileSectionShell
  * Used by: ProfileContent
  */
@@ -19,7 +19,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Layers, Plus } from "lucide-react";
-import { useHevyPrograms, useHevySecret, useSubscribedPrograms } from "@/api/hooks";
+import { useHevyPrograms, useHevySecret, useOwnedPrograms, useSubscribedPrograms } from "@/api/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyProgramSyncOnDemand } from "@/hooks/useHevyProgramSyncOnDemand";
 import {
@@ -31,6 +31,8 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ProgramOverviewDebugReset } from "./ProgramOverviewDebugReset";
+import { CreatedProgramsList } from "./CreatedProgramsList";
+import { selectCreatedPrograms } from "./createdProgramsModel";
 import { ProgramOverviewHevyMirror } from "./ProgramOverviewHevyMirror";
 import { ProgramOverviewWeekList } from "./ProgramOverviewWeekList";
 import {
@@ -79,6 +81,7 @@ export function ProgramOverviewSection() {
         isLoading: programsLoading,
         isError,
     } = useSubscribedPrograms(user);
+    const { data: ownedPrograms } = useOwnedPrograms(user);
     const searchParams = useSearchParams();
     const [pickedProgramId, setPickedProgramId] = useState<number | null>(null);
 
@@ -97,6 +100,10 @@ export function ProgramOverviewSection() {
         resolvedProgramId != null
             ? (activePrograms.find((p) => p.id === resolvedProgramId) ?? null)
             : null;
+    const createdPrograms = selectCreatedPrograms(
+        ownedPrograms ?? [],
+        new Set(activePrograms.map((program) => program.id)),
+    );
 
     return (
         <section
@@ -181,6 +188,9 @@ export function ProgramOverviewSection() {
                             hevyPrograms={hevyPrograms}
                             isLoadingHevy={Boolean(hevyApiKey) && isLoadingHevy}
                         />
+                        {createdPrograms.length > 0 ? (
+                            <CreatedProgramsList programs={createdPrograms} />
+                        ) : null}
                     </div>
                 ) : selectedProgram ? (
                     <div className="space-y-4 pt-4">
@@ -223,6 +233,9 @@ export function ProgramOverviewSection() {
                                 !!user && selectedProgram.user_id === user.id
                             }
                         />
+                        {createdPrograms.length > 0 ? (
+                            <CreatedProgramsList programs={createdPrograms} />
+                        ) : null}
                     </div>
                 ) : null}
             </Card>

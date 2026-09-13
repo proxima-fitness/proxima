@@ -139,7 +139,7 @@ _Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone, a
 ### Program overview
 
 
-Per-**Proxima program** profile panel. Week rail (status for every consecutive week) plus **Week preview** for the **Selected week**. **Week complete** / **Edit current week** when that selection is the **Current week**. Also **AI week suggest**, **Edit program**, and that program's **Hevy mirror**. A percent bar under the title is **Day complete** over planned days in the **Program prescription** (each logged day moves it; **Week complete** counts that week's planned days). **Edit program** sits with **Export** until the first **Week Export**; after that it is a quiet control under the title, not on the Export row. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program **Export** dropdown. The Hevy option is gated **Week Export**. PDF / spreadsheet export the full **Program prescription**. One overview visible at a time. When multiple active programs, picker buttons at the top switch which program's overview is shown. Replaces profile **My Programs** vault browse. Lives at the top of a single profile scroll (no Stats/Programs tabs). Backend / **Hevy program sync** must support more than one active program.
+Per-**Proxima program** profile panel. Week rail (status for every consecutive week) plus **Week preview** for the **Selected week**. **Week complete** / **Edit current week** when that selection is the **Current week**. Also **AI week suggest**, **Edit program**, and that program's **Hevy mirror**. A percent bar under the title is **Day complete** over planned days in the **Program prescription** (each logged day moves it; **Week complete** counts that week's planned days). **Edit program** sits with **Export** until the first **Week Export**; after that it is a quiet control under the title, not on the Export row. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program **Export** dropdown. The Hevy option is gated **Week Export**. PDF / spreadsheet export the full **Program prescription**. One overview visible at a time. When multiple active programs, picker buttons at the top switch which program's overview is shown. After **Hevy mirror**, **Created programs** lists owned programs the owner **Leave**d. Replaces profile **My Programs** vault browse. Lives at the top of a single profile scroll (no Stats/Programs tabs). Backend / **Hevy program sync** must support more than one active program.
 
 
 _Avoid_: Flat full-height week list with no preview, program carousel / swipe between programs, separate My Programs / My Hevy Programs sections, Stats/Programs tabs, vault browse on profile, forcing a single active program in data, builder Export button, **Week complete** / program length as the overview percent
@@ -248,10 +248,43 @@ _Avoid_: A second toolbar persist button, using this operation on **Edit current
 ### Join
 
 
-Signed-in user who does not own a public **Proxima program** subscribes to it. The program then appears on their **Program overview**. Distinct from **Save** (persist the **Program prescription**) and from **Personalize** (fork into a new owned program). Toggle off is **Leave** (confirm; drops the program from overview). The owner does not Join their own program; **Save** already puts it on overview.
+Signed-in user subscribes to a **Proxima program** they do not already have on **Program overview**. The program then appears there. Distinct from **Save** (persist the **Program prescription**) and from **Personalize** (fork into a new owned program). **Save** auto-Joins the owner. After **Leave**, the owner Joins again from **Created programs**.
 
 
 _Avoid_: Save, Bookmark, My Programs, using Export to Hevy as the subscribe trigger
+
+
+
+
+### Leave
+
+
+Signed-in user drops a **Proxima program** from **Program overview** (confirm). Other Joiners keep it. The owner may Leave so they can hide a program they still own without **Delete**.
+
+
+_Avoid_: Unsubscribe, Bookmark, Delete (destroys the program)
+
+
+
+
+### Delete (Proxima program)
+
+
+Owner destroys that **Proxima program**. Confirm warns any lifter training it will lose access. Does not delete Hevy folders/routines or backed-up **Workouts**. Not **Leave**.
+
+
+_Avoid_: Leave, archive, fork-on-delete for remaining Joiners, an `is_coach` exception
+
+
+
+
+### Created programs
+
+
+Owner's **Proxima programs** that are not on **Program overview** because the owner **Leave**d. On the profile after **Hevy mirror**. Hidden when empty. Each row: title, joined count, **View** (slug page), **Join**, **Delete**.
+
+
+_Avoid_: My Programs vault, a second overview week rail without Join
 
 
 

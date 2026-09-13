@@ -9,9 +9,10 @@
  * Responsibilities:
  * - Fetching programs for the explore page, programs page, and detail views
  * - Resolving program thumbnails from Supabase Storage
- * - Managing program subscriptions (save / unsave)
+ * - Managing Join / Leave (`program_subscribers`) and owner **Delete**
  * - Fetching shared programs and converting them to Hevy routine format
  * - Community AI program listing with de-duplication
+ * - Owned-program list for **Created programs**
  *
  * Depends on: ./index (supabase client), uuid, @/components/program-builder/utils
  * Used by: hooks.ts, explore page, program detail page, program-builder
@@ -645,5 +646,87 @@ export const updateProgramTitle = async (
     } catch (error: unknown) {
         console.error("Error updating program title:", error);
         return { success: false, error: "Error updating program title" };
+    }
+};
+
+export type TDeleteOwnedProximaProgramResult =
+    | { success: true }
+    | { success: false; error: string };
+
+/**
+ * Owner **Delete** of a **Proxima program**. PostgREST DELETE scoped by
+ * `user_id`; Join rows for other lifters fall off via ON DELETE CASCADE.
+ *
+ * @param user - Authenticated owner
+ * @param programId - Programs primary key
+ */
+export const deleteOwnedProximaProgram = async (
+    user: User | undefined | null,
+    programId: number,
+): Promise<TDeleteOwnedProximaProgramResult> => {
+    if (!user || !Number.isFinite(programId) || programId <= 0) {
+        return { success: false, error: "Missing required fields" };
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from("programs")
+            .delete()
+            .eq("id", programId)
+            .eq("user_id", user.id)
+            .select("id")
+            .maybeSingle();
+
+        if (error) {
+            console.error("Error deleting Proxima program:", error);
+            return {
+                success: false,
+                error: error.message ?? "Error deleting program",
+            };
+        }
+
+        if (!data) {
+            return {
+                success: false,
+                error: "Program not found or you don't own it",
+            };
+        }
+
+        return { success: true };
+    } catch (error: unknown) {
+        console.error("Error deleting Proxima program:", error);
+        return { success: false, error: "Error deleting program" };
+    }
+};
+
+/**
+ * Programs the user owns. Used to derive **Created programs** (owned but not
+ * on **Program overview**). No thumbnails — overview recovery list only.
+ *
+ * @param user - Authenticated owner
+ */
+export const getOwnedPrograms = async (user: User): Promise<TProgram[]> => {
+    try {
+        if (!user) {
+            return [];
+        }
+
+        const { data, error } = await supabase
+            .from("programs")
+            .select(
+                "id, title, details, program_length, workout_duration, equipment, specialization, difficulty, user_id, saves",
+            )
+            .eq("user_id", user.id)
+            .order("id", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching owned programs:", error);
+            return [];
+        }
+
+        return data ?? [];
+    } catch (error: unknown) {
+        console.error("Unexpected error fetching owned programs:", error);
+        return [];
     }
 };

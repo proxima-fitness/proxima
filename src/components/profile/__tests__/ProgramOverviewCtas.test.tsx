@@ -8,6 +8,8 @@ import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
 const updateProgramTitle = vi.fn();
+const deleteProgramSubscriber = vi.fn();
+const deleteOwnedProximaProgram = vi.fn();
 
 vi.mock("@/contexts/UserContext", () => ({
     useUserContext: () => useUserContext(),
@@ -15,12 +17,19 @@ vi.mock("@/contexts/UserContext", () => ({
 
 vi.mock("@/api/hooks", () => ({
     PROGRAM_HEVY_LINKS_QUERY_KEY: ["program-hevy-links"],
+    OWNED_PROGRAMS_QUERY_KEY: ["owned-programs"],
     useHevySecret: () => ({ data: undefined }),
 }));
 
 vi.mock("@/api/programs", () => ({
     MAX_PROGRAM_TITLE_LENGTH: 200,
     updateProgramTitle: (...args: unknown[]) => updateProgramTitle(...args),
+    deleteProgramSubscriber: (...args: unknown[]) => deleteProgramSubscriber(...args),
+    deleteOwnedProximaProgram: (...args: unknown[]) => deleteOwnedProximaProgram(...args),
+}));
+
+vi.mock("sonner", () => ({
+    toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock("./AiWeekSuggestPanel", () => ({
@@ -104,10 +113,14 @@ describe("ProgramOverviewCtas rename", () => {
 describe("ProgramOverviewCtas chrome", () => {
     beforeEach(() => {
         useUserContext.mockReset();
+        deleteProgramSubscriber.mockReset();
+        deleteOwnedProximaProgram.mockReset();
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
         });
+        deleteProgramSubscriber.mockResolvedValue(undefined);
+        deleteOwnedProximaProgram.mockResolvedValue({ success: true });
     });
 
     afterEach(() => {
@@ -296,5 +309,49 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(screen.getByText(/0% complete/)).toBeTruthy();
         expect(screen.queryByText("0%", { exact: true })).toBeNull();
         expect(screen.getAllByRole("progressbar", { name: "0% complete" }).length).toBe(1);
+    });
+
+    it("shows Leave for any overview program and Delete only for the owner", () => {
+        renderCtas(<ProgramOverviewCtas {...baseProps} canRenameTitle={false} />);
+
+        expect(screen.getByRole("button", { name: "Leave program" })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "Delete program" })).toBeNull();
+
+        cleanup();
+        renderCtas(<ProgramOverviewCtas {...baseProps} canRenameTitle />);
+
+        expect(screen.getByRole("button", { name: "Leave program" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Delete program" })).toBeTruthy();
+    });
+
+    it("Leaves via confirm and calls deleteProgramSubscriber", async () => {
+        deleteProgramSubscriber.mockResolvedValue(undefined);
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        fireEvent.click(screen.getByRole("button", { name: "Leave program" }));
+        expect(screen.getByText("Leave this program?")).toBeTruthy();
+        fireEvent.click(screen.getByRole("button", { name: "Leave" }));
+
+        await waitFor(() => {
+            expect(deleteProgramSubscriber).toHaveBeenCalledWith("user-1", 11);
+        });
+    });
+
+    it("Deletes via confirm and calls deleteOwnedProximaProgram", async () => {
+        deleteOwnedProximaProgram.mockResolvedValue({ success: true });
+        renderCtas(<ProgramOverviewCtas {...baseProps} canRenameTitle />);
+
+        fireEvent.click(screen.getByRole("button", { name: "Delete program" }));
+        expect(screen.getByText("Delete this program?")).toBeTruthy();
+        expect(
+            screen.getByText(
+                "This cannot be undone. Any lifter training this program will lose access.",
+            ),
+        ).toBeTruthy();
+        fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+        await waitFor(() => {
+            expect(deleteOwnedProximaProgram).toHaveBeenCalledWith({ id: "user-1" }, 11);
+        });
     });
 });

@@ -3,7 +3,8 @@
  *
  * Per-slide overview shell + CTAs (ADR 0010 / 03, ADR 0020 / 01, mobile layout):
  * title + meta left (owner can rename). **Edit program** is always a quiet
- * title-row control on desktop. A **Day complete** percent bar sits under
+ * title-row control on desktop. **Leave** / owner **Delete** sit with that
+ * title row (desktop) and the mobile overflow. A **Day complete** percent bar sits under
  * the title (desktop: above 0%; mobile: always when planned-day total known).
  * Desktop header: split Export (Hevy Week Export left, PDF / spreadsheet
  * dropdown right) plus **Edit current week** ("Edit Week N").
@@ -13,7 +14,8 @@
  *
  * Depends on: ExportDialog, ProgramOverviewExportWeek,
  *             refreshOverviewQueriesAfterWeekExport, overview-start,
- *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress
+ *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress,
+ *             ProgramOverviewMembership
  * Used by: ProgramOverviewWeekList
  */
 
@@ -52,6 +54,12 @@ import {
 } from "./ProgramOverviewExportWeek";
 import { refreshOverviewQueriesAfterWeekExport } from "./refreshOverviewQueriesAfterWeekExport";
 import { weekCompletePercent } from "./ProgramOverviewWeekStatus";
+import {
+    ProgramMembershipDialogs,
+    ProgramMembershipMenuItems,
+    ProgramMembershipTitleButtons,
+    useProgramMembership,
+} from "./ProgramOverviewMembership";
 
 type TUploadProgress = {
     uploaded: number;
@@ -221,6 +229,8 @@ export function ProgramOverviewCtas({
     const [renameOpen, setRenameOpen] = useState(false);
     const [renameDraft, setRenameDraft] = useState(programTitle);
     const [isRenaming, setIsRenaming] = useState(false);
+    const membership = useProgramMembership(programId);
+    const canDelete = canRenameTitle;
 
     const nthWeek = nextExportableWeek(linkedWeeks, {
         currentWeek,
@@ -462,6 +472,12 @@ export function ProgramOverviewCtas({
                         Rename program
                     </DropdownMenuItem>
                 ) : null}
+                <DropdownMenuSeparator />
+                <ProgramMembershipMenuItems
+                    canDelete={canDelete}
+                    onLeave={() => membership.setLeaveOpen(true)}
+                    onDelete={() => membership.setDeleteOpen(true)}
+                />
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -542,6 +558,11 @@ export function ProgramOverviewCtas({
                             <p className="text-sm text-muted-foreground">{meta}</p>
                         ) : null}
                         <EditProgramControl programId={programId} />
+                        <ProgramMembershipTitleButtons
+                            canDelete={canDelete}
+                            onLeave={() => membership.setLeaveOpen(true)}
+                            onDelete={() => membership.setDeleteOpen(true)}
+                        />
                     </div>
                 </div>
 
@@ -711,6 +732,18 @@ export function ProgramOverviewCtas({
                 onConfirm={() => {
                     void handleRenameConfirm();
                 }}
+            />
+
+            <ProgramMembershipDialogs
+                leaveOpen={membership.leaveOpen}
+                onLeaveOpenChange={membership.setLeaveOpen}
+                onConfirmLeave={membership.confirmLeave}
+                isLeaving={membership.isLeaving}
+                canDelete={canDelete}
+                deleteOpen={membership.deleteOpen}
+                onDeleteOpenChange={membership.setDeleteOpen}
+                onConfirmDelete={membership.confirmDelete}
+                isDeleting={membership.isDeleting}
             />
         </div>
     );

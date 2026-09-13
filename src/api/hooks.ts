@@ -19,7 +19,7 @@
  */
 import { useQuery, useInfiniteQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { getBlogById, getBlogs } from "./blog";
-import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
+import { getCommunityAiPrograms, getCommunityAiProgramsPaginated, getExplorePageProgramDetails, getExplorePagePrograms, getOwnedPrograms, getProgramByID, getPrograms, getProgramThumbnailByID, getSubscribedPrograms } from "./programs";
 import { ANONYMOUS_USER_METADATA, getOpUserId, getUserFullName, getUserMetaData, getUsersBatch } from "./users";
 import { getExerciseGif, getProfilePicByID } from "./storage";
 import { getHevyApiKey, getHevyCustomExercises, getHevyExercises, getHevyPrograms, getHevyRoutines } from "../components/program-builder/api/hevy";
@@ -168,6 +168,22 @@ export const useSubscribedPrograms = (user: User | undefined | null) => {
     return useQuery({
         queryKey: ['subscribed-programs', user?.id],
         queryFn: () => getSubscribedPrograms(user!),
+        enabled: !!user,
+    });
+};
+
+/** React Query key prefix for programs the user owns (**Created programs**). */
+export const OWNED_PROGRAMS_QUERY_KEY = ["owned-programs"] as const;
+
+/**
+ * Fetches **Proxima programs** the authenticated user owns.
+ *
+ * @param user - The Supabase auth user (query disabled when null)
+ */
+export const useOwnedPrograms = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: [...OWNED_PROGRAMS_QUERY_KEY, user?.id],
+        queryFn: () => getOwnedPrograms(user!),
         enabled: !!user,
     });
 };
