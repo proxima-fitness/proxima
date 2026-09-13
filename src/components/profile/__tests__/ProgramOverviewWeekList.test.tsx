@@ -113,7 +113,10 @@ describe("ProgramOverviewWeekList mark week complete", () => {
 
         const button = screen.getByRole("button", { name: "Mark week complete" });
         expect(button).toHaveProperty("disabled", true);
-        expect(screen.getByText("Log a workout in Hevy first.")).toBeTruthy();
+        expect(
+            screen.getByLabelText("Mark week complete: Log a workout in Hevy first."),
+        ).toBeTruthy();
+        expect(screen.queryByText("Log a workout in Hevy first.")).toBeNull();
         fireEvent.click(button);
         expect(screen.queryByRole("heading", { name: "Mark week 1 complete?" })).toBeNull();
         expect(mutateMarkComplete).not.toHaveBeenCalled();

@@ -268,8 +268,13 @@ describe("ProgramOverviewCtas chrome", () => {
             "bg-lightSecondary",
         );
         expect(
-            screen.getByText("Mark week 1 complete before exporting week 2."),
+            screen.getByLabelText(
+                "Export Week 2: Mark week 1 complete before exporting week 2.",
+            ),
         ).toBeTruthy();
+        expect(
+            screen.queryByText("Mark week 1 complete before exporting week 2."),
+        ).toBeNull();
     });
 
     it("shows Day complete percent under the title", () => {

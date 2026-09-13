@@ -11,7 +11,7 @@
  *             useProgramWeekComplete, UserContext, ProgramOverviewWeekStatus,
  *             ProgramOverviewWeekRail, ProgramOverviewWeekPreview,
  *             ProgramOverviewCtas, ProgramOverviewHevyMirror, AiWeekSuggestPanel,
- *             ConfirmDialog, loadPrescriptionHevyRoutines
+ *             ConfirmDialog, loadPrescriptionHevyRoutines, tooltip
  * Used by: ProgramOverviewSection (carousel children)
  */
 
@@ -38,6 +38,12 @@ import { useNavigateToEditHevyProgram } from "@/hooks/useNavigateToEditHevyProgr
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
     applyWeekSuggestion,
     describeApplyResult,
@@ -358,35 +364,56 @@ export function ProgramOverviewWeekList({
                         />
 
                         {selectedNeedsComplete ? (
-                            <div className="mt-3 flex flex-col items-stretch gap-1.5 md:items-start">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 w-full rounded-full md:w-auto"
-                                    disabled={markComplete.isPending || !canMarkSelectedComplete}
-                                    aria-describedby={
-                                        canMarkSelectedComplete
-                                            ? undefined
-                                            : "mark-week-complete-hint"
-                                    }
-                                    onClick={() => {
-                                        if (resolvedSelected == null || !canMarkSelectedComplete) {
-                                            return;
-                                        }
-                                        setConfirmCompleteWeek(resolvedSelected);
-                                    }}
-                                >
-                                    <Check className="size-3.5" aria-hidden />
-                                    Mark week complete
-                                </Button>
-                                {canMarkSelectedComplete ? null : (
-                                    <p
-                                        id="mark-week-complete-hint"
-                                        className="text-xs text-muted-foreground"
+                            <div className="mt-3 flex flex-col items-stretch md:items-start">
+                                {canMarkSelectedComplete ? (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-8 w-full rounded-full md:w-auto"
+                                        disabled={markComplete.isPending}
+                                        onClick={() => {
+                                            if (resolvedSelected == null) {
+                                                return;
+                                            }
+                                            setConfirmCompleteWeek(resolvedSelected);
+                                        }}
                                     >
-                                        Log a workout in Hevy first.
-                                    </p>
+                                        <Check className="size-3.5" aria-hidden />
+                                        Mark week complete
+                                    </Button>
+                                ) : (
+                                    <TooltipProvider delayDuration={0}>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span
+                                                    className="inline-flex w-full md:w-auto"
+                                                    tabIndex={0}
+                                                    aria-label="Mark week complete: Log a workout in Hevy first."
+                                                >
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 w-full rounded-full md:w-auto"
+                                                        disabled
+                                                    >
+                                                        <Check
+                                                            className="size-3.5"
+                                                            aria-hidden
+                                                        />
+                                                        Mark week complete
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent
+                                                side="top"
+                                                className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
+                                            >
+                                                Log a workout in Hevy first.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 )}
                             </div>
                         ) : null}

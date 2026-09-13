@@ -4,9 +4,9 @@
  * Thin overview Week Export CTA + progress fragment (ADR 0009, ADR 0011 / 04).
  * Gates Export via Program–Hevy links + Week complete (`completed_at` on link).
  *
- * Depends on: ProgramOverviewExportWeek, refreshOverviewQueriesAfterWeekExport,
- *             useProgramHevyWeekLinks, useHevySecret, useProgramWeekComplete,
- *             UserContext, ConfirmDialog
+ * Depends on: ProgramOverviewExportWeek, tooltip,
+ *             refreshOverviewQueriesAfterWeekExport, useProgramHevyWeekLinks,
+ *             useHevySecret, useProgramWeekComplete, UserContext, ConfirmDialog
  * Used by: thin Week Export entry points (overview CTAs own primary Export)
  */
 
@@ -30,6 +30,12 @@ import { useUserContext } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import {
     evaluateWeekExportGate,
@@ -182,6 +188,11 @@ export function ProgramOverviewExportWeekCTA({
 
     const exportDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed;
+    const exportGateHint = !gate.allowed && !linksLoading ? gate.reason : undefined;
+    const exportGateLabel =
+        exportGateHint != null
+            ? `Export week ${nthWeek}: ${exportGateHint}`
+            : `Export week ${nthWeek}`;
 
     return (
         <div className="flex w-full flex-col gap-2 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
@@ -194,9 +205,6 @@ export function ProgramOverviewExportWeekCTA({
                             ? ` · current linked ${currentLinkedWeek}`
                             : ""}
                     </p>
-                    {!gate.allowed ? (
-                        <p className="mt-1 text-xs text-muted-foreground">{gate.reason}</p>
-                    ) : null}
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
                     {currentLinkedWeek != null &&
@@ -222,18 +230,53 @@ export function ProgramOverviewExportWeekCTA({
                             Mark week {currentLinkedWeek} complete
                         </Button>
                     ) : null}
-                    <Button
-                        type="button"
-                        size="sm"
-                        className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
-                        disabled={exportDisabled}
-                        onClick={() => {
-                            void handleExport();
-                        }}
-                    >
-                        <Upload className="mr-1.5 size-3.5" aria-hidden />
-                        {isUploading ? "Exporting…" : `Export week ${nthWeek}`}
-                    </Button>
+                    {exportGateHint ? (
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span
+                                        className="inline-flex"
+                                        tabIndex={0}
+                                        aria-label={exportGateLabel}
+                                    >
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                                            disabled={exportDisabled}
+                                            onClick={() => {
+                                                void handleExport();
+                                            }}
+                                        >
+                                            <Upload className="mr-1.5 size-3.5" aria-hidden />
+                                            {isUploading
+                                                ? "Exporting…"
+                                                : `Export week ${nthWeek}`}
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side="top"
+                                    className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
+                                >
+                                    {exportGateHint}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ) : (
+                        <Button
+                            type="button"
+                            size="sm"
+                            className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                            disabled={exportDisabled}
+                            onClick={() => {
+                                void handleExport();
+                            }}
+                        >
+                            <Upload className="mr-1.5 size-3.5" aria-hidden />
+                            {isUploading ? "Exporting…" : `Export week ${nthWeek}`}
+                        </Button>
+                    )}
                 </div>
             </div>
             {isUploading && uploadProgress ? (

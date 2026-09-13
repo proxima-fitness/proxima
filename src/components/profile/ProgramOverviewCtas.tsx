@@ -12,7 +12,7 @@
  * zero Program–Hevy links (ADR 0016 / 02). AI week suggest mounts in
  * ProgramOverviewWeekList after the Week preview.
  *
- * Depends on: ExportDialog, ProgramOverviewExportWeek,
+ * Depends on: ExportDialog, ProgramOverviewExportWeek, tooltip,
  *             refreshOverviewQueriesAfterWeekExport, overview-start,
  *             updateProgramTitle, ConfirmDialog, Button, DropdownMenu, Progress,
  *             ProgramOverviewMembership
@@ -35,6 +35,12 @@ import { useUserContext } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -246,6 +252,11 @@ export function ProgramOverviewCtas({
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
     const weekExportGated = !linksLoading && !gate.allowed;
+    const exportGateHint = !gate.allowed && !linksLoading ? gate.reason : undefined;
+    const exportGateLabel =
+        exportGateHint != null
+            ? `Export Week ${nthWeek}: ${exportGateHint}`
+            : `Export Week ${nthWeek}`;
     const meta = formatProgramMeta(programLength, specialization);
     const mobileMeta = formatMobileProgressMeta(
         currentWeek,
@@ -413,7 +424,7 @@ export function ProgramOverviewCtas({
                 {!showMobileLoudExport ? (
                     <DropdownMenuItem
                         disabled={hevyDisabled}
-                        title={!gate.allowed ? gate.reason : undefined}
+                        title={exportGateHint}
                         onSelect={() => {
                             void handleWeekExport();
                         }}
@@ -513,19 +524,51 @@ export function ProgramOverviewCtas({
                     )}
                     data-export-highlight={highlightExport ? "true" : undefined}
                 >
-                    <Button
-                        type="button"
-                        size="default"
-                        className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
-                        disabled={hevyDisabled}
-                        title={!gate.allowed ? gate.reason : undefined}
-                        onClick={() => {
-                            void handleWeekExport();
-                        }}
-                    >
-                        <Upload className="size-4" aria-hidden />
-                        Export Week {nthWeek}
-                    </Button>
+                    {exportGateHint ? (
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span
+                                        className="inline-flex w-full"
+                                        tabIndex={0}
+                                        aria-label={exportGateLabel}
+                                    >
+                                        <Button
+                                            type="button"
+                                            size="default"
+                                            className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
+                                            disabled={hevyDisabled}
+                                            onClick={() => {
+                                                void handleWeekExport();
+                                            }}
+                                        >
+                                            <Upload className="size-4" aria-hidden />
+                                            Export Week {nthWeek}
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side="top"
+                                    className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
+                                >
+                                    {exportGateHint}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ) : (
+                        <Button
+                            type="button"
+                            size="default"
+                            className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
+                            disabled={hevyDisabled}
+                            onClick={() => {
+                                void handleWeekExport();
+                            }}
+                        >
+                            <Upload className="size-4" aria-hidden />
+                            Export Week {nthWeek}
+                        </Button>
+                    )}
                 </div>
             ) : null}
 
@@ -566,20 +609,56 @@ export function ProgramOverviewCtas({
                     </div>
                 </div>
 
-                <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
-                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                        <div
-                            className={cn(
-                                "inline-flex rounded-full shadow-sm",
-                                highlightExport
-                                    ? "ring-2 ring-lightSecondary/80 ring-offset-2 ring-offset-background animate-overview-export-nudge"
-                                    : null,
-                            )}
-                            role="group"
-                            aria-label="Export"
-                            data-export-highlight={highlightExport ? "true" : undefined}
-                            data-export-gated={weekExportGated ? "true" : undefined}
-                        >
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                    <div
+                        className={cn(
+                            "inline-flex rounded-full shadow-sm",
+                            highlightExport
+                                ? "ring-2 ring-lightSecondary/80 ring-offset-2 ring-offset-background animate-overview-export-nudge"
+                                : null,
+                        )}
+                        role="group"
+                        aria-label="Export"
+                        data-export-highlight={highlightExport ? "true" : undefined}
+                        data-export-gated={weekExportGated ? "true" : undefined}
+                    >
+                        {exportGateHint ? (
+                            <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span
+                                            className="inline-flex"
+                                            tabIndex={0}
+                                            aria-label={exportGateLabel}
+                                        >
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant={weekExportGated ? "outline" : undefined}
+                                                className={
+                                                    weekExportGated
+                                                        ? "rounded-l-full rounded-r-none border-border/80 border-r-0"
+                                                        : `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
+                                                }
+                                                disabled={hevyDisabled}
+                                                onClick={() => {
+                                                    void handleWeekExport();
+                                                }}
+                                            >
+                                                <Upload className="size-3.5" aria-hidden />
+                                                Export Week {nthWeek}
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="top"
+                                        className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
+                                    >
+                                        {exportGateHint}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ) : (
                             <Button
                                 type="button"
                                 size="sm"
@@ -590,7 +669,6 @@ export function ProgramOverviewCtas({
                                         : `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
                                 }
                                 disabled={hevyDisabled}
-                                title={!gate.allowed ? gate.reason : undefined}
                                 onClick={() => {
                                     void handleWeekExport();
                                 }}
@@ -598,70 +676,64 @@ export function ProgramOverviewCtas({
                                 <Upload className="size-3.5" aria-hidden />
                                 Export Week {nthWeek}
                             </Button>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant={weekExportGated ? "outline" : undefined}
-                                        className={
-                                            weekExportGated
-                                                ? "w-8 rounded-l-none rounded-r-full border-border/80 px-0"
-                                                : `${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`
-                                        }
-                                        disabled={isUploading || fileLoading}
-                                        aria-label="Export as PDF or spreadsheet"
-                                    >
-                                        <ChevronDown className="size-3.5" aria-hidden />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="min-w-[10rem]">
-                                    <DropdownMenuItem
-                                        disabled={fileLoading || isUploading}
-                                        onSelect={() => {
-                                            void openFileExport("pdf");
-                                        }}
-                                    >
-                                        <FileText className="size-3.5" aria-hidden />
-                                        PDF
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        disabled={fileLoading || isUploading}
-                                        onSelect={() => {
-                                            void openFileExport("spreadsheet");
-                                        }}
-                                    >
-                                        <Table className="size-3.5" aria-hidden />
-                                        Spreadsheet
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        {editWeekNumber != null ? (
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                className="rounded-full border-border/80"
-                                disabled={editWeekDisabled}
-                                title={
-                                    !hasExported
-                                        ? "Export this week to Hevy first"
-                                        : undefined
-                                }
-                                onClick={onEditCurrentWeek}
-                            >
-                                <Pencil className="size-3.5" aria-hidden />
-                                Edit Week {editWeekNumber}
-                            </Button>
-                        ) : null}
+                        )}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={weekExportGated ? "outline" : undefined}
+                                    className={
+                                        weekExportGated
+                                            ? "w-8 rounded-l-none rounded-r-full border-border/80 px-0"
+                                            : `${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`
+                                    }
+                                    disabled={isUploading || fileLoading}
+                                    aria-label="Export as PDF or spreadsheet"
+                                >
+                                    <ChevronDown className="size-3.5" aria-hidden />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-[10rem]">
+                                <DropdownMenuItem
+                                    disabled={fileLoading || isUploading}
+                                    onSelect={() => {
+                                        void openFileExport("pdf");
+                                    }}
+                                >
+                                    <FileText className="size-3.5" aria-hidden />
+                                    PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    disabled={fileLoading || isUploading}
+                                    onSelect={() => {
+                                        void openFileExport("spreadsheet");
+                                    }}
+                                >
+                                    <Table className="size-3.5" aria-hidden />
+                                    Spreadsheet
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
 
-                    {!gate.allowed && !linksLoading ? (
-                        <p className="text-xs text-muted-foreground sm:text-right">
-                            {gate.reason}
-                        </p>
+                    {editWeekNumber != null ? (
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full border-border/80"
+                            disabled={editWeekDisabled}
+                            title={
+                                !hasExported
+                                    ? "Export this week to Hevy first"
+                                    : undefined
+                            }
+                            onClick={onEditCurrentWeek}
+                        >
+                            <Pencil className="size-3.5" aria-hidden />
+                            Edit Week {editWeekNumber}
+                        </Button>
                     ) : null}
                 </div>
             </div>
