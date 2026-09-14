@@ -84,6 +84,7 @@ export function applyBuildProgramMintUrlUpdate(
 export function resolveBuildProgramReturnHref(returnQs: string): string {
     const params = new URLSearchParams(returnQs);
     params.set("resume", "true");
+    params.delete("empty");
     const qs = params.toString();
     return qs ? `${BUILD_PROGRAM_PATH}?${qs}` : `${BUILD_PROGRAM_PATH}?resume=true`;
 }

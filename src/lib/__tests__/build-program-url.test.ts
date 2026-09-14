@@ -6,6 +6,7 @@ import {
     resolveWorkoutDetailBackLink,
     setBuildProgramChatSearchParam,
     stripSearchFromBuildProgramUrl,
+    resolveBuildProgramReturnHref,
 } from "../build-program-url";
 
 const CHAT_ID = "11111111-1111-4111-8111-111111111111";
@@ -142,6 +143,23 @@ describe("applyBuildProgramMintUrlUpdate", () => {
         expect(replace).toHaveBeenCalledWith(
             "/build-program?resume=true&empty=true&chat=11111111-1111-4111-8111-111111111111",
             { scroll: false },
+        );
+    });
+});
+
+describe("resolveBuildProgramReturnHref", () => {
+    it("adds resume and drops Empty program template empty param", () => {
+        expect(resolveBuildProgramReturnHref("empty=true")).toBe(
+            "/build-program?resume=true",
+        );
+        expect(resolveBuildProgramReturnHref("empty=true&search=hi")).toBe(
+            "/build-program?search=hi&resume=true",
+        );
+    });
+
+    it("keeps chat and still drops empty", () => {
+        expect(resolveBuildProgramReturnHref(`empty=true&chat=${CHAT_ID}`)).toBe(
+            `/build-program?chat=${CHAT_ID}&resume=true`,
         );
     });
 });

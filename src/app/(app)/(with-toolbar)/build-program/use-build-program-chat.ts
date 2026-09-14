@@ -46,7 +46,7 @@ import {
     resolveInitialPromptText,
 } from "./initial-prompt";
 import type { IChatEntryPlan } from "./resolve-chat-entry";
-import { resolvePersistChatId, shouldRunAutoSend } from "./resolve-chat-entry";
+import { resolvePersistChatId, shouldRunAutoSend, isExplicitNewChatArrival } from "./resolve-chat-entry";
 import type { useProgramRequestState } from "./use-program-request-state";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 
@@ -492,8 +492,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
     const tryRunSignInMigration = useCallback(async () => {
         if (!user || chatId || migrationAttemptedRef.current) return;
 
-        const isExplicitNewChat =
-            searchParams.get("empty") === "true" && !searchParams.get("chat");
+        const isExplicitNewChat = isExplicitNewChatArrival({
+            empty: searchParams.get("empty") ?? "",
+            urlChatId: searchParams.get("chat") ?? "",
+            resume: searchParams.get("resume") ?? "",
+        });
         if (isExplicitNewChat) return;
 
         const thread =

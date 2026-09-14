@@ -7,6 +7,8 @@ import {
     resetChatNavigationLatchForArrival,
     isBareBuildProgramArrival,
     isChatNavigationArrivalAtMount,
+    isExplicitNewChatArrival,
+    shouldApplyEmptyProgramTemplate,
     shouldRedirectBareBuildProgramToEmpty,
     parseBuildProgramArrival,
     resolveChatEntryPlan,
@@ -32,6 +34,30 @@ describe("parseBuildProgramArrival", () => {
             empty: "true",
             resume: "true",
         });
+    });
+});
+
+describe("isExplicitNewChatArrival", () => {
+    it("is New Chat on empty without chat or resume", () => {
+        expect(isExplicitNewChatArrival({ empty: "true", urlChatId: "" })).toBe(true);
+    });
+
+    it("is not New Chat on Sign-in return even with leftover empty", () => {
+        expect(
+            isExplicitNewChatArrival({ empty: "true", urlChatId: "", resume: "true" }),
+        ).toBe(false);
+    });
+});
+
+describe("shouldApplyEmptyProgramTemplate", () => {
+    it("applies the Empty program template on New Chat", () => {
+        expect(shouldApplyEmptyProgramTemplate({ empty: "true", resume: "" })).toBe(true);
+    });
+
+    it("does not apply the template on Sign-in return", () => {
+        expect(shouldApplyEmptyProgramTemplate({ empty: "true", resume: "true" })).toBe(
+            false,
+        );
     });
 });
 
@@ -271,6 +297,24 @@ describe("resolveChatEntryPlan - arrival matrix", () => {
         expect(plan.historyBootstrap).toBe("sign-in-migration-local");
         expect(plan.sessionOnFirstSend).toBe("mint-and-insert");
         expect(plan.shellStability).toBe("send-path-stable");
+    });
+
+    it("A11: leftover empty on Sign-in return is not New Chat (migration still runs)", () => {
+        expect(
+            isExplicitNewChatArrival({
+                empty: "true",
+                urlChatId: "",
+                resume: "true",
+            }),
+        ).toBe(false);
+        const plan = resolveChatEntryPlan(
+            baseInput({
+                user: loggedInUser,
+                anonLocalMessageCount: 2,
+                explicitNewChat: false,
+            }),
+        );
+        expect(plan.historyBootstrap).toBe("sign-in-migration-local");
     });
 
     it("A11: logged-in without anon snapshot - empty bootstrap", () => {

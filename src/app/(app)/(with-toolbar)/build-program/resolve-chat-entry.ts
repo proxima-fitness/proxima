@@ -75,14 +75,26 @@ export function createChatNavigationLatch(urlChatIdAtMount: string): IChatNaviga
     };
 }
 
-/** True on sidebar New Chat (`?empty=true` without `?chat=`). */
-export function isExplicitNewChatArrival(params: { empty: string; urlChatId: string }): boolean {
-    return params.empty === "true" && !params.urlChatId;
+/** True on sidebar New Chat (`?empty=true` without `?chat=`). Sign-in return (`resume=true`) is not New Chat. */
+export function isExplicitNewChatArrival(params: {
+    empty: string;
+    urlChatId: string;
+    resume?: string;
+}): boolean {
+    return params.empty === "true" && !params.urlChatId && params.resume !== "true";
+}
+
+/** Empty program template only when New Chat / bare empty, never on Sign-in return. */
+export function shouldApplyEmptyProgramTemplate(params: {
+    empty: string;
+    resume: string;
+}): boolean {
+    return params.empty === "true" && params.resume !== "true";
 }
 
 /** Clear stale sidebar latch so session mint does not remount the shell. */
 export function resetChatNavigationLatchForArrival(
-    params: { empty: string; urlChatId: string },
+    params: { empty: string; urlChatId: string; resume?: string },
     latch: IChatNavigationLatch,
 ): IChatNavigationLatch {
     if (isExplicitNewChatArrival(params)) {

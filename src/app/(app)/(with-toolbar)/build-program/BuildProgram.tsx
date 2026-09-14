@@ -95,6 +95,7 @@ import {
     isBareBuildProgramArrival,
     isExplicitNewChatArrival,
     parseBuildProgramArrival,
+    shouldApplyEmptyProgramTemplate,
     shouldRedirectBareBuildProgramToEmpty,
     resolveChatEntryPlan,
     resolveInitialMessages,
@@ -157,7 +158,7 @@ export function BuildProgram() {
     const getPersistChatIdFromUrl = useCallback(() => chatId, [chatId]);
     getPersistChatIdRef.current = getPersistChatIdFromUrl;
     const isBareArrival = isBareBuildProgramArrival({ urlChatId, search, shareId, empty, resume });
-    const explicitNewChat = isExplicitNewChatArrival({ empty, urlChatId });
+    const explicitNewChat = isExplicitNewChatArrival({ empty, urlChatId, resume });
 
     const sawNonBareArrivalRef = useRef(!isBareArrival);
     if (!isBareArrival) {
@@ -191,7 +192,7 @@ export function BuildProgram() {
 
     const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
     chatNavLatchRef.current = resetChatNavigationLatchForArrival(
-        { empty, urlChatId },
+        { empty, urlChatId, resume },
         chatNavLatchRef.current,
     );
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
@@ -421,7 +422,7 @@ export function BuildProgram() {
             fetchSharedProgram();
         }
 
-        if (empty === "true") {
+        if (shouldApplyEmptyProgramTemplate({ empty, resume })) {
             setProgramFromHydrate(appendOrderToHevyRoutines(emptyHevyProgram));
         }
     }, [shouldBareRedirectToEmpty, resume, shareId, empty, programHydrateChatId, router, setProgramFromHydrate, hevyEditArrival, editSession, clearEditSession]);

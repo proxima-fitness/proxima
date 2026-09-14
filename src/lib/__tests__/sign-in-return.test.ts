@@ -62,6 +62,9 @@ describe("resolveSignInReturnFromLocation", () => {
             "/build-program?resume=true",
         );
         expect(
+            resolveSignInReturnFromLocation("/build-program", "empty=true"),
+        ).toBe("/build-program?resume=true");
+        expect(
             resolveSignInReturnFromLocation(
                 "/build-program",
                 "?resume=true&edit=true",
