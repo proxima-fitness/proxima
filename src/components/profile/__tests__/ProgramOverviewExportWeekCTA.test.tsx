@@ -36,6 +36,14 @@ vi.mock("../ProgramOverviewExportWeek", () => ({
     nextExportableWeek: () => 2,
 }));
 
+vi.mock("@/components/header/ConnectHevyDialog", () => ({
+    ConnectHevyDialog: ({
+        openConnectHevyDialog,
+    }: {
+        openConnectHevyDialog: boolean;
+    }) => (openConnectHevyDialog ? <div>Connect Hevy dialog</div> : null),
+}));
+
 import { ProgramOverviewExportWeekCTA } from "../ProgramOverviewExportWeekCTA";
 
 function renderCta(ui: ReactNode) {
@@ -113,5 +121,17 @@ describe("ProgramOverviewExportWeekCTA mark week complete", () => {
 
         expect(mutateMarkComplete).toHaveBeenCalledTimes(1);
         expect(mutateMarkComplete.mock.calls[0]?.[0]).toBe(1);
+    });
+
+    it("shows Connect Hevy instead of Export when there is no Hevy key", () => {
+        renderCta(
+            <ProgramOverviewExportWeekCTA programId={11} programTitle="Strength Block A" />,
+        );
+
+        expect(screen.getByRole("button", { name: "Connect Hevy" })).toHaveProperty(
+            "disabled",
+            false,
+        );
+        expect(screen.queryByRole("button", { name: /Export week/i })).toBeNull();
     });
 });

@@ -3,6 +3,7 @@
  *
  * Thin overview Week Export CTA + progress fragment (ADR 0009, ADR 0011 / 04).
  * Gates Export via Program–Hevy links + Week complete (`completed_at` on link).
+ * No Hevy key: Connect Hevy, not a disabled Export.
  *
  * Depends on: ProgramOverviewExportWeek, tooltip,
  *             refreshOverviewQueriesAfterWeekExport, useProgramHevyWeekLinks,
@@ -15,7 +16,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Upload } from "lucide-react";
+import { Check, KeyRound, Upload } from "lucide-react";
 import {
     useHevySecret,
     useProgramHevyWeekLinks,
@@ -28,6 +29,7 @@ import {
 } from "@/hooks/useProgramWeekComplete";
 import { useUserContext } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -79,6 +81,7 @@ export function ProgramOverviewExportWeekCTA({
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<TUploadProgress | null>(null);
     const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
+    const [connectHevyOpen, setConnectHevyOpen] = useState(false);
     const markComplete = useMarkProgramWeekComplete(programId);
 
     const linkedWeeks = links.map((link) => link.nth_week);
@@ -188,6 +191,7 @@ export function ProgramOverviewExportWeekCTA({
 
     const exportDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed;
+    const needsHevyConnect = Boolean(user) && !hevyApiKey;
     const exportGateHint = !gate.allowed && !linksLoading ? gate.reason : undefined;
     const exportGateLabel =
         exportGateHint != null
@@ -230,7 +234,19 @@ export function ProgramOverviewExportWeekCTA({
                             Mark week {currentLinkedWeek} complete
                         </Button>
                     ) : null}
-                    {exportGateHint ? (
+                    {needsHevyConnect ? (
+                        <Button
+                            type="button"
+                            size="sm"
+                            className="rounded-full bg-lightSecondary text-white hover:bg-lightSecondary/90"
+                            disabled={!user}
+                            onClick={() => setConnectHevyOpen(true)}
+                            aria-label="Connect Hevy"
+                        >
+                            <KeyRound className="mr-1.5 size-3.5" aria-hidden />
+                            Connect Hevy
+                        </Button>
+                    ) : exportGateHint ? (
                         <TooltipProvider delayDuration={0}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -308,6 +324,10 @@ export function ProgramOverviewExportWeekCTA({
                     ) : null}
                 </div>
             ) : null}
+            <ConnectHevyDialog
+                openConnectHevyDialog={connectHevyOpen}
+                handleOpenConnectHevyDialog={setConnectHevyOpen}
+            />
             <ConfirmDialog
                 open={confirmCompleteOpen && currentLinkedWeek != null}
                 onOpenChange={setConfirmCompleteOpen}

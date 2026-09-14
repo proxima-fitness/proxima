@@ -6,7 +6,7 @@
  * title-row control on desktop. **Leave** / owner **Delete** sit with that
  * title row (desktop) and the mobile overflow. A **Day complete** percent bar sits under
  * the title (desktop: above 0%; mobile: always when planned-day total known).
- * Desktop header: split Export (Hevy Week Export left, PDF / spreadsheet
+ * Desktop header: split Export (Hevy Week Export or Connect Hevy left, PDF / spreadsheet
  * dropdown right) plus **Edit current week** ("Edit Week N").
  * Mobile: overflow ⋯ for occasional actions; full-width Export only while
  * zero Program–Hevy links (ADR 0016 / 02). AI week suggest mounts in
@@ -25,7 +25,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronDown, EllipsisVertical, FileText, Pencil, Table, Type, Upload } from "lucide-react";
+import { ChevronDown, EllipsisVertical, FileText, KeyRound, Pencil, Table, Type, Upload } from "lucide-react";
 import { useHevySecret } from "@/api/hooks";
 import {
     MAX_PROGRAM_TITLE_LENGTH,
@@ -51,6 +51,7 @@ import {
 import { shouldHighlightOverviewExport } from "@/hooks/overview-start";
 import { cn } from "@/lib/utils";
 import { ExportDialog } from "@/components/program-builder/shared/ExportDialog";
+import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { RATE_LIMIT_EXHAUSTED_MESSAGE } from "@/assets/constants/ui-constants";
 import {
     evaluateWeekExportGate,
@@ -113,6 +114,93 @@ const TOOLTIP_CONTENT_CLASS =
 const EDIT_PROGRAM_TOOLTIP = "Edits the entire multi-week plan for weeks not started.";
 const EDIT_CURRENT_WEEK_TOOLTIP = "Edits this week's live copy in Hevy";
 const EDIT_WEEK_EXPORT_FIRST_HINT = "Export this week to Hevy first";
+const CONNECT_HEVY_LABEL = "Connect Hevy";
+
+interface IOverviewHevyWeekButtonProps {
+    needsHevyConnect: boolean;
+    userPresent: boolean;
+    exportGateHint?: string;
+    exportGateLabel: string;
+    weekExportGated: boolean;
+    hevyDisabled: boolean;
+    nthWeek: number;
+    className: string;
+    size?: "default" | "sm";
+    onConnect: () => void;
+    onExport: () => void;
+}
+
+/** Hevy-week control: Connect Hevy until keyed, then Export Week N. */
+function OverviewHevyWeekButton({
+    needsHevyConnect,
+    userPresent,
+    exportGateHint,
+    exportGateLabel,
+    weekExportGated,
+    hevyDisabled,
+    nthWeek,
+    className,
+    size = "sm",
+    onConnect,
+    onExport,
+}: IOverviewHevyWeekButtonProps) {
+    if (needsHevyConnect) {
+        return (
+            <Button
+                type="button"
+                size={size}
+                className={className}
+                disabled={!userPresent}
+                onClick={onConnect}
+                aria-label={CONNECT_HEVY_LABEL}
+            >
+                <KeyRound className="size-3.5" aria-hidden />
+                {CONNECT_HEVY_LABEL}
+            </Button>
+        );
+    }
+
+    if (exportGateHint) {
+        return (
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="inline-flex w-full" tabIndex={0} aria-label={exportGateLabel}>
+                            <Button
+                                type="button"
+                                size={size}
+                                variant={weekExportGated ? "outline" : undefined}
+                                className={className}
+                                disabled={hevyDisabled}
+                                onClick={onExport}
+                            >
+                                <Upload className="size-3.5" aria-hidden />
+                                Export Week {nthWeek}
+                            </Button>
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className={TOOLTIP_CONTENT_CLASS}>
+                        {exportGateHint}
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return (
+        <Button
+            type="button"
+            size={size}
+            variant={weekExportGated ? "outline" : undefined}
+            className={className}
+            disabled={hevyDisabled}
+            onClick={onExport}
+        >
+            <Upload className="size-3.5" aria-hidden />
+            Export Week {nthWeek}
+        </Button>
+    );
+}
 
 /**
  * Owner **Edit program** entry. Always the quiet title-row control (desktop).
@@ -251,6 +339,7 @@ export function ProgramOverviewCtas({
     const [renameOpen, setRenameOpen] = useState(false);
     const [renameDraft, setRenameDraft] = useState(programTitle);
     const [isRenaming, setIsRenaming] = useState(false);
+    const [connectHevyOpen, setConnectHevyOpen] = useState(false);
     const membership = useProgramMembership(programId);
     const canDelete = canRenameTitle;
 
@@ -267,6 +356,7 @@ export function ProgramOverviewCtas({
     );
     const hevyDisabled =
         isUploading || !user || !hevyApiKey || linksLoading || !gate.allowed || fileLoading;
+    const needsHevyConnect = Boolean(user) && !hevyApiKey;
     const weekExportGated = !linksLoading && !gate.allowed;
     const exportGateHint = !gate.allowed && !linksLoading ? gate.reason : undefined;
     const exportGateLabel =
@@ -442,14 +532,22 @@ export function ProgramOverviewCtas({
             <DropdownMenuContent align="end" className="min-w-[12rem]">
                 {!showMobileLoudExport ? (
                     <DropdownMenuItem
-                        disabled={hevyDisabled}
-                        title={exportGateHint}
+                        disabled={needsHevyConnect ? !user : hevyDisabled}
+                        title={needsHevyConnect ? undefined : exportGateHint}
                         onSelect={() => {
+                            if (needsHevyConnect) {
+                                setConnectHevyOpen(true);
+                                return;
+                            }
                             void handleWeekExport();
                         }}
                     >
-                        <Upload className="size-3.5" aria-hidden />
-                        Export Week {nthWeek}
+                        {needsHevyConnect ? (
+                            <KeyRound className="size-3.5" aria-hidden />
+                        ) : (
+                            <Upload className="size-3.5" aria-hidden />
+                        )}
+                        {needsHevyConnect ? CONNECT_HEVY_LABEL : `Export Week ${nthWeek}`}
                     </DropdownMenuItem>
                 ) : null}
                 <DropdownMenuItem
@@ -542,51 +640,21 @@ export function ProgramOverviewCtas({
                     )}
                     data-export-highlight={highlightExport ? "true" : undefined}
                 >
-                    {exportGateHint ? (
-                        <TooltipProvider delayDuration={0}>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span
-                                        className="inline-flex w-full"
-                                        tabIndex={0}
-                                        aria-label={exportGateLabel}
-                                    >
-                                        <Button
-                                            type="button"
-                                            size="default"
-                                            className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
-                                            disabled={hevyDisabled}
-                                            onClick={() => {
-                                                void handleWeekExport();
-                                            }}
-                                        >
-                                            <Upload className="size-4" aria-hidden />
-                                            Export Week {nthWeek}
-                                        </Button>
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent
-                                    side="top"
-                                    className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
-                                >
-                                    {exportGateHint}
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    ) : (
-                        <Button
-                            type="button"
-                            size="default"
-                            className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
-                            disabled={hevyDisabled}
-                            onClick={() => {
-                                void handleWeekExport();
-                            }}
-                        >
-                            <Upload className="size-4" aria-hidden />
-                            Export Week {nthWeek}
-                        </Button>
-                    )}
+                    <OverviewHevyWeekButton
+                        needsHevyConnect={needsHevyConnect}
+                        userPresent={Boolean(user)}
+                        exportGateHint={exportGateHint}
+                        exportGateLabel={exportGateLabel}
+                        weekExportGated={weekExportGated}
+                        hevyDisabled={hevyDisabled}
+                        nthWeek={nthWeek}
+                        size="default"
+                        className={`${EXPORT_SPLIT_CLASS} h-11 w-full rounded-full`}
+                        onConnect={() => setConnectHevyOpen(true)}
+                        onExport={() => {
+                            void handleWeekExport();
+                        }}
+                    />
                 </div>
             ) : null}
 
@@ -638,71 +706,40 @@ export function ProgramOverviewCtas({
                         role="group"
                         aria-label="Export"
                         data-export-highlight={highlightExport ? "true" : undefined}
-                        data-export-gated={weekExportGated ? "true" : undefined}
+                        data-export-gated={
+                            weekExportGated && !needsHevyConnect ? "true" : undefined
+                        }
                     >
-                        {exportGateHint ? (
-                            <TooltipProvider delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span
-                                            className="inline-flex"
-                                            tabIndex={0}
-                                            aria-label={exportGateLabel}
-                                        >
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant={weekExportGated ? "outline" : undefined}
-                                                className={
-                                                    weekExportGated
-                                                        ? "rounded-l-full rounded-r-none border-border/80 border-r-0"
-                                                        : `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
-                                                }
-                                                disabled={hevyDisabled}
-                                                onClick={() => {
-                                                    void handleWeekExport();
-                                                }}
-                                            >
-                                                <Upload className="size-3.5" aria-hidden />
-                                                Export Week {nthWeek}
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                        side="top"
-                                        className="max-w-[240px] bg-lightSecondary text-left leading-snug text-white"
-                                    >
-                                        {exportGateHint}
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        ) : (
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant={weekExportGated ? "outline" : undefined}
-                                className={
-                                    weekExportGated
-                                        ? "rounded-l-full rounded-r-none border-border/80 border-r-0"
-                                        : `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
-                                }
-                                disabled={hevyDisabled}
-                                onClick={() => {
-                                    void handleWeekExport();
-                                }}
-                            >
-                                <Upload className="size-3.5" aria-hidden />
-                                Export Week {nthWeek}
-                            </Button>
-                        )}
+                        <OverviewHevyWeekButton
+                            needsHevyConnect={needsHevyConnect}
+                            userPresent={Boolean(user)}
+                            exportGateHint={exportGateHint}
+                            exportGateLabel={exportGateLabel}
+                            weekExportGated={weekExportGated}
+                            hevyDisabled={hevyDisabled}
+                            nthWeek={nthWeek}
+                            className={
+                                needsHevyConnect || !weekExportGated
+                                    ? `${EXPORT_SPLIT_CLASS} rounded-l-full rounded-r-none`
+                                    : "rounded-l-full rounded-r-none border-border/80 border-r-0"
+                            }
+                            onConnect={() => setConnectHevyOpen(true)}
+                            onExport={() => {
+                                void handleWeekExport();
+                            }}
+                        />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     type="button"
                                     size="sm"
-                                    variant={weekExportGated ? "outline" : undefined}
+                                    variant={
+                                        weekExportGated && !needsHevyConnect
+                                            ? "outline"
+                                            : undefined
+                                    }
                                     className={
-                                        weekExportGated
+                                        weekExportGated && !needsHevyConnect
                                             ? "w-8 rounded-l-none rounded-r-full border-border/80 px-0"
                                             : `${EXPORT_SPLIT_CLASS} w-8 rounded-l-none rounded-r-full border-l border-white/25 px-0`
                                     }
@@ -815,6 +852,11 @@ export function ProgramOverviewCtas({
                 programId={programId}
                 initialExportId={fileExportId}
                 hevyRoutines={fileRoutines}
+            />
+
+            <ConnectHevyDialog
+                openConnectHevyDialog={connectHevyOpen}
+                handleOpenConnectHevyDialog={setConnectHevyOpen}
             />
 
             <ConfirmDialog

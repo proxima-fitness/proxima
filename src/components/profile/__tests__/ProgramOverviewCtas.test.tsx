@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 const useUserContext = vi.fn();
+const useHevySecret = vi.fn();
 const updateProgramTitle = vi.fn();
 const deleteProgramSubscriber = vi.fn();
 const deleteOwnedProximaProgram = vi.fn();
@@ -18,7 +19,7 @@ vi.mock("@/contexts/UserContext", () => ({
 vi.mock("@/api/hooks", () => ({
     PROGRAM_HEVY_LINKS_QUERY_KEY: ["program-hevy-links"],
     OWNED_PROGRAMS_QUERY_KEY: ["owned-programs"],
-    useHevySecret: () => ({ data: undefined }),
+    useHevySecret: () => useHevySecret(),
 }));
 
 vi.mock("@/api/programs", () => ({
@@ -38,6 +39,14 @@ vi.mock("./AiWeekSuggestPanel", () => ({
 
 vi.mock("@/components/program-builder/shared/ExportDialog", () => ({
     ExportDialog: () => null,
+}));
+
+vi.mock("@/components/header/ConnectHevyDialog", () => ({
+    ConnectHevyDialog: ({
+        openConnectHevyDialog,
+    }: {
+        openConnectHevyDialog: boolean;
+    }) => (openConnectHevyDialog ? <div>Connect Hevy dialog</div> : null),
 }));
 
 vi.mock("./ProgramOverviewExportWeek", async (importOriginal) => {
@@ -72,6 +81,7 @@ describe("ProgramOverviewCtas rename", () => {
     beforeEach(() => {
         useUserContext.mockReset();
         updateProgramTitle.mockReset();
+        useHevySecret.mockReturnValue({ data: "hevy-key" });
         useUserContext.mockReturnValue({
             user: { id: "user-1" },
             isLoading: false,
@@ -119,6 +129,7 @@ describe("ProgramOverviewCtas chrome", () => {
             user: { id: "user-1" },
             isLoading: false,
         });
+        useHevySecret.mockReturnValue({ data: "hevy-key" });
         deleteProgramSubscriber.mockResolvedValue(undefined);
         deleteOwnedProximaProgram.mockResolvedValue({ success: true });
     });
@@ -304,6 +315,41 @@ describe("ProgramOverviewCtas chrome", () => {
         expect(
             screen.queryByText("Mark week 1 complete before exporting week 2."),
         ).toBeNull();
+    });
+
+    it("shows Connect Hevy instead of disabled Export when there is no Hevy key", () => {
+        useHevySecret.mockReturnValue({ data: undefined });
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        const connect = screen.getAllByRole("button", { name: "Connect Hevy" });
+        expect(connect.length).toBeGreaterThan(0);
+        expect(connect[0]).toHaveProperty("disabled", false);
+        expect(screen.queryByRole("button", { name: "Export Week 1" })).toBeNull();
+    });
+
+    it("opens Connect Hevy from the highlighted Export slot", () => {
+        useHevySecret.mockReturnValue({ data: undefined });
+        renderCtas(<ProgramOverviewCtas {...baseProps} />);
+
+        fireEvent.click(screen.getAllByRole("button", { name: "Connect Hevy" })[0]!);
+        expect(screen.getByText("Connect Hevy dialog")).toBeTruthy();
+    });
+
+    it("shows Connect Hevy after the first Week Export if the key is missing", () => {
+        useHevySecret.mockReturnValue({ data: undefined });
+        renderCtas(
+            <ProgramOverviewCtas
+                {...baseProps}
+                linkedWeeks={[1]}
+                currentWeek={1}
+                onEditCurrentWeek={vi.fn()}
+            />,
+        );
+
+        expect(screen.getAllByRole("button", { name: "Connect Hevy" }).length).toBeGreaterThan(
+            0,
+        );
+        expect(screen.queryByRole("button", { name: "Export Week 2" })).toBeNull();
     });
 
     it("shows Day complete percent under the title", () => {
