@@ -102,6 +102,48 @@ describe("createLeaveGuard", () => {
         document.body.removeChild(anchor);
     });
 
+    it("does not intercept Sign-in return auth links while dirty", () => {
+        const { result } = renderHook(() => guard.useLeaveGuard());
+
+        act(() => {
+            result.current.setDirty(true);
+        });
+
+        const anchor = document.createElement("a");
+        anchor.setAttribute(
+            "href",
+            "/auth/login?next=%2Fbuild-program%3Fempty%3Dtrue%26resume%3Dtrue",
+        );
+        document.body.appendChild(anchor);
+
+        const event = new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+        });
+        act(() => {
+            anchor.dispatchEvent(event);
+        });
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(result.current.leaveDialogOpen).toBe(false);
+        expect(result.current.pendingHref).toBeNull();
+
+        document.body.removeChild(anchor);
+    });
+
+    it("requestLeave does not block auth navigation", () => {
+        const { result } = renderHook(() => guard.useLeaveGuard());
+
+        act(() => {
+            result.current.setDirty(true);
+        });
+
+        expect(guard.requestLeave("/auth/sign-up?next=%2Fbuild-program")).toBe(false);
+        expect(result.current.leaveDialogOpen).toBe(false);
+        expect(result.current.pendingHref).toBeNull();
+    });
+
     it("does not intercept link clicks when clean", () => {
         renderHook(() => guard.useLeaveGuard());
 
@@ -174,6 +216,32 @@ describe("createLeaveGuard", () => {
         });
 
         expect(localStorage.getItem(BUILDER_DRAFT_KEY)).toBeNull();
+
+        document.body.removeChild(anchor);
+    });
+
+    it("newPath Sign-in return click does not Discard the Builder draft", () => {
+        localStorage.setItem(BUILDER_DRAFT_KEY, JSON.stringify([{ title: "A" }]));
+        const { result } = renderHook(() => newPathLeaveGuard.useLeaveGuard());
+
+        act(() => {
+            result.current.setDirty(true);
+        });
+
+        const anchor = document.createElement("a");
+        anchor.setAttribute("href", "/auth/login?next=%2Fbuild-program%3Fresume%3Dtrue");
+        document.body.appendChild(anchor);
+
+        act(() => {
+            anchor.dispatchEvent(
+                new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }),
+            );
+        });
+
+        expect(result.current.leaveDialogOpen).toBe(false);
+        expect(localStorage.getItem(BUILDER_DRAFT_KEY)).toBe(
+            JSON.stringify([{ title: "A" }]),
+        );
 
         document.body.removeChild(anchor);
     });

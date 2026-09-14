@@ -95,10 +95,10 @@ _Avoid_: URL update, chat creation (implementation)
 ### Empty program template
 
 
-The pre-seeded `emptyHevyProgram` grid shown when the user explicitly starts a blank program. Allowed only for New Chat (`?empty=true`) and bare `/build-program` redirect, not for home prompt (`?search=`) or other dispatch arrivals.
+The pre-seeded `emptyHevyProgram` grid shown when the user explicitly starts a blank program. Allowed only for New Chat (`?empty=true`) and bare `/build-program` redirect. Not for **Sign-in return** (`resume=true`), home prompt (`?search=`), or other dispatch arrivals.
 
 
-_Avoid_: Empty grid (ambiguous, an empty grid may be correct without the template)
+_Avoid_: Empty grid (ambiguous, an empty grid may be correct without the template), applying the template because `empty` survived on a **Sign-in return** URL
 
 
 
@@ -106,10 +106,10 @@ _Avoid_: Empty grid (ambiguous, an empty grid may be correct without the templat
 ### Sign-in migration
 
 
-Post-arrival auth orchestration (derived bootstrap + `useMutation`, no new effects) that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Behaves like session mint for shell/hydrate, not chat navigation.
+Post-arrival auth orchestration (derived bootstrap + `useMutation`, no new effects) that persists an anonymous thread from `CHAT_MESSAGES_KEY` (or in-memory messages) to Supabase, assigns `?chat=`, and clears anon localStorage. Runs on **Sign-in return**; leftover `empty` does not skip it. Behaves like session mint for shell/hydrate, not chat navigation.
 
 
-_Avoid_: Auth transition (too broad), login flow
+_Avoid_: Auth transition (too broad), login flow, treating **Sign-in return** as New Chat
 
 
 
@@ -303,10 +303,10 @@ _Avoid_: Open profile, builder **Week Export** / Export, auto-navigate on **Save
 ### New-path leave guard
 
 
-When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (wipe **Builder draft** / `hevy-program-in-progress` + related keys, then navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty. Does not trap browser back.
+When the builder has unsaved **New path** prescription changes (dirty / undo stack) and the user tries to leave, block in-app navigation with **Discard** (wipe **Builder draft** / `hevy-program-in-progress` + related keys, then navigate) and **Cancel** (close dialog, stay on builder so they can press toolbar **Save**). No Save action inside the dialog. Tab close/refresh may use `beforeunload` when dirty. Does not trap browser back. Going to login or sign-up to complete **Save** (**Sign in to save**, header Log in) is **Sign-in return**, not leave: no dialog, no Discard.
 
 
-_Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave
+_Avoid_: Edit navigation guard (Sync-oriented), Save and Continue, autosave on leave, treating **Sign-in return** as leave, Discard on auth CTAs
 
 
 
@@ -448,13 +448,10 @@ _Avoid_: Calling a Workout a routine, implying the planned routine was deleted, 
 ### Week Export
 
 
-Push one week of a **Proxima program** to Hevy as a new folder + **Hevy routines**, and write that week's **Program–Hevy link**. Week N+1 requires week N **Week complete**. **Re-Export** is allowed when the week is linked and not **Week complete**, and either is not **Current week**, or is **Current week** whose linked folder is gone. That missing-folder **Re-Export** is a reset: new folder, new routine IDs on the same week row, old **Workouts** unrelated. While the **Current week** folder exists, **Edit current week** Sync is the writer, never a second Export. A **Week complete** week cannot be Exported again. Deleting its Hevy folder is cleanup; **Workouts** still prove the week.
+Push one week of a **Proxima program** to Hevy as a new folder + **Hevy routines**, and write that week's **Program–Hevy link**. Week N+1 requires week N **Week complete**. **Re-Export** is allowed when the week is linked and not **Week complete**, and either is not **Current week**, or is **Current week** whose linked folder is gone. That missing-folder **Re-Export** is a reset: new folder, new routine IDs on the same week row, old **Workouts** unrelated. While the **Current week** folder exists, **Edit current week** Sync is the writer, never a second Export. A **Week complete** week cannot be Exported again. Deleting its Hevy folder is cleanup; **Workouts** still prove the week. On **Program overview**, if Hevy is not connected, the Hevy-week control is **Connect Hevy** (same connection dialog as the account menu), not a disabled Export. After a key exists, it is **Export Week N**. Missing key is not a week-loop gate reason.
 
 
-_Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export of a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
-
-
-_Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export of a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder
+_Avoid_: Re-Export of **Current week** while its folder still exists, Re-Export of a complete week, Export N+1 while an earlier linked week is incomplete, treating a missing Hevy folder as "not exported" when the week is already complete, naming **Week Export** or Export in the builder, a disabled Export with no hint when Hevy is disconnected, folding missing key into the week-loop gate
 
 
 
@@ -1441,10 +1438,10 @@ _Avoid_: Sign-up (ambiguous with legal acceptance step), verified user, new user
 ### Sign-in return
 
 
-Where the user lands after a successful sign-in (email/password or OAuth). Default is the page they left to sign in (path + query). From the program builder, return always includes `resume=true` so the in-progress draft rehydrates alongside other arrival params. No current product CTA overrides to a different destination than that page. When no return is known (direct `/auth/login`, missing param), or the candidate is not a safe in-app page path (external URL, protocol-relative, or an auth route), fall back to `/`. Logout should carry the page the user left so re-sign-in can return there. Sign-up ↔ login links preserve an existing return. Applies to sign-in only, not email sign-up success or confirmation. Distinct from **Sign-in migration** (builder anon-thread persistence after auth).
+Where the user lands after a successful sign-in (email/password or OAuth). Default is the page they left to sign in (path + query). From the program builder, return includes `resume=true` so **Builder draft** rehydrates. This is not New Chat and does not apply **Empty program template**, even if `empty` is still in the URL; **Sign-in migration** still runs. No current product CTA overrides to a different destination than that page. When no return is known (direct `/auth/login`, missing param), or the candidate is not a safe in-app page path (external URL, protocol-relative, or an auth route), fall back to `/`. Logout should carry the page the user left so re-sign-in can return there. Sign-up ↔ login links preserve an existing return. Applies to sign-in only, not email sign-up success or confirmation. Distinct from **Sign-in migration**.
 
 
-_Avoid_: next param (implementation), redirect URL, post-auth destination (too broad, includes sign-up), bare `/build-program?resume=true` as the only builder return (drops chat/search context), treating `/` as the default when a previous page exists, using the browser referrer as the return source
+_Avoid_: next param (implementation), redirect URL, post-auth destination (too broad, includes sign-up), bare `/build-program?resume=true` as the only builder return (drops chat/search context), treating `/` as the default when a previous page exists, using the browser referrer as the return source, applying **Empty program template** on a builder return
 
 
 

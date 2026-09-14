@@ -2,8 +2,9 @@
  * @module hooks/create-leave-guard
  *
  * Dirty leave warn: `beforeunload`, same-origin link capture, optional
- * `requestLeave()` for programmatic exits. Discard navigates via Next.js
- * `Link` (`pendingHref` → ConfirmDialog `confirmHref`).
+ * `requestLeave()` for programmatic exits. `/auth/` is Sign-in return, not
+ * leave. Discard navigates via Next.js `Link` (`pendingHref` → ConfirmDialog
+ * `confirmHref`).
  *
  * Pattern (vercel-react-best-practices):
  * - `setDirty` is a silent mirror of caller SoT (boolean only — no emit / no React state)
@@ -35,6 +36,16 @@ type TSnapshot = {
     open: boolean;
     href: string | null;
 };
+
+/**
+ * True when this in-app href is login/sign-up/oauth — Sign-in return, not leave.
+ *
+ * @param href - Path + search + hash from resolveHref or requestLeave
+ */
+export function isAuthNavigationHref(href: string): boolean {
+    const pathOnly = href.split(/[?#]/, 1)[0] ?? href;
+    return pathOnly === "/auth" || pathOnly.startsWith("/auth/");
+}
 
 /**
  * Isolated leave-guard store + hook. Dialog copy attached for ConfirmDialog.
@@ -107,7 +118,7 @@ export function createLeaveGuard(copy: TLeaveGuardCopy) {
         const anchor = target.closest("a[href]");
         if (!(anchor instanceof HTMLAnchorElement)) return;
         const href = resolveHref(anchor);
-        if (!href) return;
+        if (!href || isAuthNavigationHref(href)) return;
         event.preventDefault();
         event.stopPropagation();
         open({ href });
@@ -144,7 +155,7 @@ export function createLeaveGuard(copy: TLeaveGuardCopy) {
 
     /** @returns true if blocked (caller must not navigate). */
     function requestLeave(href: string, beforeNavigate?: () => void): boolean {
-        if (!dirty || bypass) return false;
+        if (!dirty || bypass || isAuthNavigationHref(href)) return false;
         open({ href, beforeNavigate });
         return true;
     }
