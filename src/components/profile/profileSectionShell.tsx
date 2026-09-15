@@ -12,9 +12,9 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** White Hevy-style card surface: no light-mode border or shadow. */
+/** Card surface with no border or shadow in either theme. */
 export const PROFILE_SECTION_CARD_SURFACE_CLASS =
-    "rounded-2xl border-0 bg-card shadow-none dark:border dark:border-white/10";
+    "rounded-2xl border-0 bg-card shadow-none";
 
 /** Outer profile section Card — shared surface + section padding. */
 export const PROFILE_SECTION_CARD_CLASS =
