@@ -538,6 +538,7 @@ describe("syncHevyWorkoutEvents", () => {
         const result = await syncHevyWorkoutEvents(asDb(mockDb), {
             userId: USER_ID,
             apiKey: API_KEY,
+            hevyCount: 1,
         });
 
         expect(result).toMatchObject({ deleted: 1, imported: 0, complete: true });
@@ -556,6 +557,7 @@ describe("syncHevyWorkoutEvents", () => {
         const result = await syncHevyWorkoutEvents(asDb(mockDb), {
             userId: USER_ID,
             apiKey: API_KEY,
+            hevyCount: 0,
         });
 
         expect(result.deleted).toBe(0);
@@ -571,6 +573,7 @@ describe("syncHevyWorkoutEvents", () => {
         const result = await syncHevyWorkoutEvents(asDb(mockDb), {
             userId: USER_ID,
             apiKey: API_KEY,
+            hevyCount: 0,
         });
 
         expect(result.imported).toBe(1);
@@ -585,7 +588,11 @@ describe("syncHevyWorkoutEvents", () => {
             events: [{ type: "updated", workout: hevyWorkoutFixture }],
         });
 
-        await syncHevyWorkoutEvents(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+        await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+            hevyCount: 0,
+        });
 
         expect(mockDb.tables.hevy_workouts_count[0].last_workout_events_at).toEqual(
             expect.any(String),
@@ -602,6 +609,7 @@ describe("syncHevyWorkoutEvents", () => {
         const result = await syncHevyWorkoutEvents(asDb(mockDb), {
             userId: USER_ID,
             apiKey: API_KEY,
+            hevyCount: 0,
             maxPages: 1,
         });
 
@@ -619,7 +627,11 @@ describe("syncHevyWorkoutEvents", () => {
 
         vi.mocked(defaultFetch).mockResolvedValueOnce({ page: 1, page_count: 1, events: [] });
 
-        await syncHevyWorkoutEvents(asDb(mockDb), { userId: USER_ID, apiKey: API_KEY });
+        await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+            hevyCount: 0,
+        });
 
         expect(vi.mocked(defaultFetch).mock.calls[0][0]).toContain(
             `since=${encodeURIComponent("2026-07-26T12:00:00.000Z")}`,
@@ -636,6 +648,20 @@ describe("syncHevyWorkoutEvents", () => {
         const result = await syncHevyWorkoutEvents(asDb(mockDb), {
             userId: USER_ID,
             apiKey: API_KEY,
+            hevyCount: 99,
+        });
+
+        expect(result).toEqual({ scanned: 0, imported: 0, deleted: 0, complete: false });
+        expect(defaultFetch).not.toHaveBeenCalled();
+    });
+
+    it("does not read Hevy events while count-based backup is behind", async () => {
+        seedBackedUpWorkout("already-backed-up");
+
+        const result = await syncHevyWorkoutEvents(asDb(mockDb), {
+            userId: USER_ID,
+            apiKey: API_KEY,
+            hevyCount: 5,
         });
 
         expect(result).toEqual({ scanned: 0, imported: 0, deleted: 0, complete: false });

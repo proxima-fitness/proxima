@@ -932,7 +932,10 @@ async function insertWorkoutRowAndChildren(
  *   missing `routine_id` on an otherwise current row), or `error`
  * @throws {HevyRateLimitError} When Hevy rate-limits a template lookup, so the caller backs off
  */
-export async function importHevyWorkout(db: TWorkoutHistoryDb, params: { userId: string; workout: THevyWorkout; apiKey: string }): Promise<TImportHevyWorkoutResult> {
+export async function importHevyWorkout(
+    db: TWorkoutHistoryDb,
+    params: { userId: string; workout: THevyWorkout; apiKey: string },
+): Promise<TImportHevyWorkoutResult> {
     const { userId, workout, apiKey } = params;
 
     try {

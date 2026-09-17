@@ -933,7 +933,14 @@ async function fetchHevyWorkoutEventsPage(
  */
 export async function syncHevyWorkoutEvents(
     db: TWorkoutHistoryDb,
-    params: { userId: string; apiKey: string; since?: string; maxPages?: number },
+    params: {
+        userId: string;
+        apiKey: string;
+        since?: string;
+        maxPages?: number;
+        /** When known (e.g. hevy-program-sync already fetched it), skip a second count call. */
+        hevyCount?: number;
+    },
 ): Promise<TWorkoutEventsSyncResult> {
     const { userId, apiKey } = params;
     const maxPages = Math.max(1, params.maxPages ?? WORKOUT_EVENTS_MAX_PAGES);
@@ -942,6 +949,20 @@ export async function syncHevyWorkoutEvents(
     const { lastWorkoutEventsAt, lastSyncedPage } = await readSyncCursor(db, userId);
     if (lastSyncedPage !== null) {
         logSyncEvent(userId, "events_skipped_during_backfill", { lastSyncedPage });
+        return { scanned: 0, imported: 0, deleted: 0, complete: false };
+    }
+
+    // Profile opens count-chunk sync and hevy-program-sync together. Both call
+    // importHevyWorkout; overlapping imports of the same Hevy id delete each
+    // other's incomplete shells and the loser's workout_exercises INSERT fails RLS.
+    // Events are for edits/deletes while the count is stable — wait until caught up.
+    const backedUpCount = await countBackedUpWorkouts(db, userId);
+    const hevyCount = params.hevyCount ?? (await fetchHevyWorkoutCount(apiKey));
+    if (backedUpCount < hevyCount) {
+        logSyncEvent(userId, "events_skipped_during_count_backfill", {
+            backedUpCount,
+            hevyCount,
+        });
         return { scanned: 0, imported: 0, deleted: 0, complete: false };
     }
 

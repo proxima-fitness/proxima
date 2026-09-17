@@ -65,6 +65,7 @@ export async function POST() {
             const events = await syncHevyWorkoutEvents(supabase, {
                 userId: user.id,
                 apiKey,
+                hevyCount: workoutsCount,
             });
             if (events.imported > 0 || events.deleted > 0) {
                 console.info("hevy workout mirror reconciled:", events);
