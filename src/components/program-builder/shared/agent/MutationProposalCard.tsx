@@ -17,6 +17,7 @@ import type {
     TMutationProposalRecipe,
     TMutationProposalSetRow,
 } from "@/components/program-builder/utils/mutation-proposal-copy";
+import { shouldSkipChatInputAutofocus } from "@/components/program-builder/utils/chat-keyboard";
 import {
     parseProposalAction,
     splitProposalHeading,
@@ -43,6 +44,7 @@ interface IProposalExerciseStepProps {
  * Focus the visible program-builder chat textarea (Reject, C4).
  */
 export function focusProgramBuilderChatInput(): void {
+    if (shouldSkipChatInputAutofocus()) return;
     const nodes = document.querySelectorAll<HTMLTextAreaElement>("[data-proxima-chat-input]");
     for (const node of nodes) {
         if (node.offsetParent !== null) {

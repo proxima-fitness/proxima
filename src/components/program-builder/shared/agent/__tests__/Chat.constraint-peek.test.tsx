@@ -127,4 +127,20 @@ describe("Chat agentic memory peek", () => {
 
         expect(screen.queryByTestId("agentic-memory-peek")).toBeNull();
     });
+
+    it("marks the composer and keyboard-hide chrome for the phone tab shell", () => {
+        useUserContext.mockReturnValue({ user: null });
+
+        const { container } = renderChat(
+            <Chat
+                isLoading={false}
+                handleSubmit={vi.fn()}
+                handleStop={vi.fn()}
+                showSuggestions
+            />,
+        );
+
+        expect(container.querySelector("[data-proxima-chat-composer]")).toBeTruthy();
+        expect(container.querySelector("[data-proxima-chat-keyboard-hide]")).toBeTruthy();
+    });
 });

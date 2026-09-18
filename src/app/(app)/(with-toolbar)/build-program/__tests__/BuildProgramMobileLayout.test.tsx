@@ -33,6 +33,9 @@ describe("build-program BuildProgramMobileLayout.tsx", () => {
         const scrollableClass = scrollable?.className ?? "";
         expect(scrollableClass).toContain("min-h-0");
         expect(scrollableClass).toContain("overflow-hidden");
+        expect(container.querySelector("[data-proxima-mobile-shell]")).toBeTruthy();
+        expect(container.querySelector("[data-proxima-chat-tab]")).toBeTruthy();
+        expect(container.querySelector("[data-proxima-mobile-tab-bar]")).toBeTruthy();
     });
 
     it("updates controlled tab state when switching Chat and Program (no forceMount; Radix may defer unmount until exit animation)", () => {

@@ -17,6 +17,7 @@ describe("MobileSidebarHeader.tsx", () => {
         const header = screen.getByRole("banner");
         expect(header).toBeTruthy();
         expect(header.className).toContain("sm:hidden");
+        expect(header.getAttribute("data-proxima-mobile-header")).toBe("");
     });
 
     it("keeps a single Save portal on build-program (no separate Sign in button)", () => {

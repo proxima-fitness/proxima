@@ -20,6 +20,7 @@ export function MobileSidebarHeader() {
 
   return (
     <header
+      data-proxima-mobile-header=""
       className="sm:hidden w-full flex py-2 justify-between items-center bg-white dark:bg-darkGray sticky top-0 z-50 px-2"
       role="banner"
     >

@@ -640,6 +640,17 @@ _Avoid_: id (when meaning Hevy), routine id (ambiguous), UUID dnd key, leaving t
 
 
 
+### Builder exercise key
+
+
+Client-only instance identifier on an exercise row in builder state, assigned sequentially for every create, load, and copy, parallel to **Builder routine key**. Never sent to Hevy or written to the **Program prescription**. A copy (duplicate day/week, insert of a new row) gets a new key. `exercise.index` is position only; this key is the row’s identity. **Proposal marks** are the keys captured at Accept.
+
+
+_Avoid_: exercise.index as identity, exercise_template_id as instance id, remapping marks by slot, persisting this key to Hevy or Supabase
+
+
+
+
 ### Sync (Edit mode)
 
 
@@ -786,7 +797,7 @@ _Avoid_: Draft (ambiguous with New-path localStorage draft), edit state
 ### Builder draft
 
 
-Local resume copy in `hevy-program-in-progress` for **unsaved** New-path work only (crash recovery, anon). Cleared on successful **Save**. After Save, Supabase **Proxima program** is SoT. Edit path does not read or write this key.
+Local resume copy in `hevy-program-in-progress` for **unsaved** New-path work only (crash recovery, anon, **Sign-in return**). Holds the program. Cleared on successful **Save** or Discard. After Save, Supabase **Proxima program** is SoT. Edit path does not read or write this key. Does not hold **Proposal marks** — resume has no undo stack, so those marks are not restored.
 
 
 _Avoid_: Dual-write forever after Save, Edit session payload, treating draft as Program overview source
@@ -900,6 +911,28 @@ A **Program mutation batch** the coach wants to apply to an existing program, sh
 
 
 _Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** button), patch preview, auto-apply on ready
+
+
+
+
+### Proposal mark
+
+
+Dot locator on a still-present builder exercise row whose **Builder exercise key** was captured at the last accepted **Mutation proposal**. Shown only while that Accept is still undoable, so the user can see what it changed and decide whether to undo. Follows the row when its index moves. Lives on **New path**, **Edit program**, and **Edit current week**. Not restored with the **Builder draft**. Absent on first build, a pending proposal, manual-only edits, **AI week suggest**, and on deletes or day/week ops that leave no exercise row.
+
+
+_Avoid_: Last pass, dirty indicator, line diff, ghost row, unread badge, week-header hint, row tint, restoring marks without Undo, **Changed routine (Sync)**
+
+
+
+
+### Proposal jump
+
+
+Tapping a current-review **Mutation proposal** recipe line that names a still-present exercise scrolls that builder row into view, including switching the visible week on mobile. Current-review means the pending proposal, or the last accepted one while **Proposal marks** are live. Not tappable after persist, on older cards once a newer Accept has replaced marks, or when the line has no still-present row.
+
+
+_Avoid_: Jump after Save/Sync, jump on historical cards, jump with no row, jump on first build, line diff
 
 
 

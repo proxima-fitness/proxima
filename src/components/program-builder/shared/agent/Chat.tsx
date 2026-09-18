@@ -48,6 +48,7 @@ import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
 import { AgenticMemoryPeekHost } from "@/components/program-builder/shared/agent/AgenticMemoryPeekHost";
 import { HevyExportGate } from "@/components/program-builder/shared/agent/HevyExportGate";
+import { blurChatTabField } from "@/components/program-builder/utils/chat-keyboard";
 import type { User } from "@supabase/supabase-js";
 
 /** Props for the chat input container. */
@@ -311,7 +312,7 @@ const ChatInputBody = ({
         <PromptInputTextarea
           placeholder="Ask anything…"
           data-proxima-chat-input=""
-          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:py-1.5 placeholder:text-sm"
+          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:max-h-[calc(var(--proxima-vv-height,100dvh)*0.4)] max-sm:overflow-y-auto max-sm:py-1.5 placeholder:text-sm"
           onChange={(e) => checkMultiline(e.currentTarget)}
         />
         <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
@@ -380,36 +381,50 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
   /** Questionnaire footer wins if both somehow present. */
   const showGate = showHevyExportGate && !showQuestions;
 
+  const submitAndDismissKeyboard = useCallback(
+    (text: string, files?: FileUIPart[]) => {
+      blurChatTabField();
+      handleSubmit(text, files);
+    },
+    [handleSubmit],
+  );
+
   return (
-    <div ref={ref} className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2">
-      {showSuggestions && !showQuestions && !showGate && (
-        <Suggestions className="mb-3">
-          {suggestionChips.map((label) => (
-            <Suggestion
-              key={label}
-              suggestion={label}
-              onClick={handleSubmit}
-              className="dark:border-none"
-            />
-          ))}
-        </Suggestions>
-      )}
-      {showUpgradeBanner && (
-        <UpgradeBanner
-          remainingRequests={featureLimits.remaining_llm_requests}
-          totalRequests={featureLimits.max_monthly_llm_requests}
-          user={user}
-          upgradeButtonLabel={
-            isProOnlyTier && outOfCredits ? "Upgrade to Pro+" : undefined
-          }
-          exhaustedMessage={
-            outOfCredits
-              ? withRenewsOn("You have run out of credits.", featureLimits.resets_on)
-              : undefined
-          }
-          enableMobileCollapse
-        />
-      )}
+    <div
+      ref={ref}
+      data-proxima-chat-composer=""
+      className="inset-x-0 bottom-0 mx-auto w-full max-w-3xl shrink-0 px-3 pb-3 md:px-5 md:pb-5 max-sm:fixed max-sm:bottom-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] max-sm:left-0 max-sm:right-0 max-sm:px-4 max-sm:bg-background max-sm:dark:bg-extraDarkGray pt-4 max-sm:pt-2"
+    >
+      <div data-proxima-chat-keyboard-hide="">
+        {showSuggestions && !showQuestions && !showGate ? (
+          <Suggestions className="mb-3">
+            {suggestionChips.map((label) => (
+              <Suggestion
+                key={label}
+                suggestion={label}
+                onClick={submitAndDismissKeyboard}
+                className="dark:border-none"
+              />
+            ))}
+          </Suggestions>
+        ) : null}
+        {showUpgradeBanner ? (
+          <UpgradeBanner
+            remainingRequests={featureLimits.remaining_llm_requests}
+            totalRequests={featureLimits.max_monthly_llm_requests}
+            user={user}
+            upgradeButtonLabel={
+              isProOnlyTier && outOfCredits ? "Upgrade to Pro+" : undefined
+            }
+            exhaustedMessage={
+              outOfCredits
+                ? withRenewsOn("You have run out of credits.", featureLimits.resets_on)
+                : undefined
+            }
+            enableMobileCollapse
+          />
+        ) : null}
+      </div>
       <div className="flex w-full">
         {showQuestions ? (
           <div className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 p-0 rounded-md max-sm:pt-0 shadow-2xs overflow-hidden">
@@ -437,7 +452,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
         ) : (
           <PromptInputProvider>
             <PromptInput
-              onSubmit={({ text, files }) => handleSubmit(text, files)}
+              onSubmit={({ text, files }) => submitAndDismissKeyboard(text, files)}
               className="min-w-0 flex-1 sm:bg-white bg-extraLightGray dark:bg-darkGray relative z-10 rounded-3xl p-0 pt-1 max-sm:pt-0 shadow-2xs"
             >
               <ChatInputBody

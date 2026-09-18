@@ -28,6 +28,11 @@ import { inferDaysPerWeek, inferProgramLength } from "@/components/program-build
 import { toast } from "sonner"
 import { useUserContext } from "@/contexts/UserContext"
 import { useHevySecret } from "@/api/hooks"
+import {
+    onChatThreadPointerCancel,
+    onChatThreadPointerDown,
+    onChatThreadPointerUp,
+} from "@/components/program-builder/utils/chat-keyboard"
 import { Chat } from "./Chat"
 import { Navbar } from "./Navbar"
 import { MessageBubbles } from "./MessageBubbles"
@@ -509,8 +514,15 @@ export const Agent: React.FC<IProps> = (props) => {
                 isExpanded={isExpanded}
                 sidebarPosition={sidebarPosition}
             />
+            <div
+                className="flex min-h-0 flex-1 flex-col max-sm:h-full"
+                onPointerCancel={onChatThreadPointerCancel}
+                onPointerDown={onChatThreadPointerDown}
+                onPointerUp={onChatThreadPointerUp}
+            >
             <Conversation className="flex-1 min-h-0 max-sm:h-full sm:overflow-hidden">
                 <ConversationContent
+                    data-proxima-conversation-pad=""
                     className="min-h-full max-sm:pb-55"
                     style={{ paddingBottom: footerPad }}
                 >
@@ -559,9 +571,12 @@ export const Agent: React.FC<IProps> = (props) => {
                             className="mx-auto w-full max-w-3xl px-4 pt-2 md:px-6"
                         />
                     </>
-                <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
+                <div data-proxima-chat-keyboard-hide="">
+                    <ConversationScrollButton className="absolute bottom-4 right-5 z-50 shadow-xs" />
+                </div>
                 </ConversationContent>
             </Conversation>
+            </div>
             { /* The chat input is here */ }
             <Chat
                 ref={chatFooterRef}

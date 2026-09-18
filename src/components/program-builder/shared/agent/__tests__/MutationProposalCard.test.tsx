@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { TMutationProposalRecipe } from "@/components/program-builder/utils/mutation-proposal-copy";
-import { MutationProposalCard } from "@/components/program-builder/shared/agent/MutationProposalCard";
+import {
+    focusProgramBuilderChatInput,
+    MutationProposalCard,
+} from "@/components/program-builder/shared/agent/MutationProposalCard";
 
 const week2Recipe: TMutationProposalRecipe = {
     days: [
@@ -119,5 +122,40 @@ describe("MutationProposalCard", () => {
         expect(screen.getByText("Proposed changes")).toBeTruthy();
         expect(screen.queryByText("Replace")).toBeNull();
         expect(screen.queryByText("Incline Bench Press (Dumbbell)")).toBeNull();
+    });
+
+    it("skips composer autofocus on the phone tab shell and focuses on larger viewports", () => {
+        document.body.innerHTML = `<textarea data-proxima-chat-input=""></textarea>`;
+        const field = document.querySelector<HTMLTextAreaElement>("[data-proxima-chat-input]");
+        const matchMedia = vi.spyOn(window, "matchMedia");
+
+        matchMedia.mockImplementation((query: string) => ({
+            matches: query === "(max-width: 639px)",
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }));
+        focusProgramBuilderChatInput();
+        expect(document.activeElement).not.toBe(field);
+
+        matchMedia.mockImplementation((query: string) => ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }));
+        Object.defineProperty(field!, "offsetParent", { configurable: true, value: document.body });
+        focusProgramBuilderChatInput();
+        expect(document.activeElement).toBe(field);
+
+        matchMedia.mockRestore();
     });
 });

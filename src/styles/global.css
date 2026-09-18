@@ -786,3 +786,36 @@
       filter: blur(0px);
     }
   }
+
+  /* Phone tab shell: composer sits on the software keyboard. */
+  html[data-proxima-chat-keyboard="open"] [data-proxima-mobile-header] {
+    display: none;
+  }
+
+  html[data-proxima-chat-keyboard="open"] [data-proxima-mobile-tab-bar] {
+    display: none;
+  }
+
+  html[data-proxima-chat-keyboard="open"] [data-proxima-chat-keyboard-hide] {
+    display: none;
+  }
+
+  html[data-proxima-chat-keyboard="open"] [data-proxima-mobile-shell] {
+    position: fixed;
+    top: var(--proxima-vv-offset-top, 0px);
+    left: 0;
+    right: 0;
+    height: var(--proxima-vv-height, 100dvh);
+    z-index: 40;
+  }
+
+  html[data-proxima-chat-keyboard="open"] [data-proxima-chat-composer] {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+  }
+
+  html[data-proxima-chat-keyboard="open"] [data-proxima-conversation-pad] {
+    padding-bottom: 0 !important;
+  }

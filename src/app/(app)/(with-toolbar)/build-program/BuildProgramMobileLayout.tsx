@@ -2,6 +2,7 @@
 
 import { memo, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useChatKeyboardChrome } from "@/components/program-builder/shared/agent/useChatKeyboardChrome";
 import { cn } from "@/lib/utils";
 import { Calendar, MessageSquare } from "lucide-react";
 
@@ -34,11 +35,17 @@ function BuildProgramMobileLayoutInner({
         [hasProgramContent, onMobileTabChange]
     );
 
+    useChatKeyboardChrome();
+
     return (
-        <div className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative">
+        <div
+            data-proxima-mobile-shell=""
+            className="max-sm:block sm:hidden h-[calc(100vh-4rem)] flex flex-col relative"
+        >
             <Tabs value={mobileTab} onValueChange={handleValueChange} className="flex flex-col h-full">
                 <TabsContent
                     value="chat"
+                    data-proxima-chat-tab=""
                     className="flex-1 flex flex-col min-h-0 overflow-hidden m-0 mt-0"
                 >
                     {chatPanel}
@@ -48,7 +55,10 @@ function BuildProgramMobileLayoutInner({
                         {routineContent}
                     </div>
                 </TabsContent>
-                <TabsList className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] h-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] z-50">
+                <TabsList
+                    data-proxima-mobile-tab-bar=""
+                    className="fixed bottom-0 left-0 right-0 w-full justify-around rounded-none border-t bg-background shadow-lg px-4 py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] h-[calc(70px+max(0.5rem,env(safe-area-inset-bottom)))] z-50"
+                >
                     <TabsTrigger value="chat" className={CHAT_TRIGGER_CLASS}>
                         <MessageSquare className="h-5 w-5" />
                         <span>Chat</span>
