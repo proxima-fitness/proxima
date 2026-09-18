@@ -818,6 +818,41 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).not.toMatch(/will be applied/i);
         });
 
+        it("rewrites insert titles to the catalog title", async () => {
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "insert_exercise",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 1,
+                    exercise: {
+                        exercise_template_id: "ex-1",
+                        title: "Totally Wrong Name",
+                        rest_seconds: "90",
+                        sets: [{
+                            type: "normal",
+                            reps: 8,
+                            weight_kg: null,
+                            rpe: 8,
+                            distance_meters: null,
+                            duration_seconds: null,
+                            custom_metric: null,
+                            rep_range: null,
+                        }],
+                    },
+                }],
+            })) as {
+                error?: string;
+                operations?: Array<{ exercise?: { title?: string } }>;
+            };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations?.[0]?.exercise?.title).toBe("Bench Press (Barbell)");
+        });
+
         it("returns indexed failures when preflight fails", async () => {
             const sevenDayProgram = Array.from({ length: 7 }, (_, index) => ({
                 id: String(index + 1),

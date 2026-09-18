@@ -26,6 +26,10 @@ vi.mock("posthog-js", () => ({
     default: { capture: vi.fn() },
 }));
 
+vi.mock("@/api/hooks", () => ({
+    useHevyExercises: () => ({ data: [] }),
+}));
+
 import { MessageBubbles } from "../MessageBubbles";
 
 function renderBubbles(ui: ReactNode) {

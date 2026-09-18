@@ -29,6 +29,7 @@ import { applyOperations } from "@/components/program-builder/mutations/apply";
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
 import { normalizeRestSeconds } from "@/components/program-builder/mutations/normalizeHevyApiRoutine";
 import { isApplyBatchFailure, type TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
+import type { TMutationProposalRecipe } from "@/components/program-builder/utils/mutation-proposal-copy";
 import {
     isHevyShareImportSuccess,
     type TImportHevyShareFolderToolOutput,
@@ -1041,6 +1042,25 @@ function readStoredMutationProposalDecision(message: UIMessage): TMutationPropos
 }
 
 /**
+ * Recipe frozen at Accept / Reject. After the grid changes, the card must
+ * still show this tree; it must not recompute from the live program.
+ *
+ * @param message - Assistant message that may hold a stored recipe
+ */
+export function readStoredMutationProposalRecipe(
+    message: UIMessage,
+): TMutationProposalRecipe | null {
+    if (!isMetadataRecord(message.metadata)) return null;
+    const stored = message.metadata.mutationProposalRecipe;
+    if (stored == null || typeof stored !== "object" || Array.isArray(stored)) {
+        return null;
+    }
+    const days = (stored as { days?: unknown }).days;
+    if (!Array.isArray(days)) return null;
+    return stored as TMutationProposalRecipe;
+}
+
+/**
  * Decision for a **Mutation proposal** card: stored metadata wins; a later user
  * message is implicit Reject (C5). Absence of both is pending.
  *
@@ -1060,16 +1080,19 @@ export function resolveMutationProposalDecision(
 
 /**
  * Writes accepted / rejected onto message metadata so hydrate does not re-open
- * or auto-apply the batch (C7, C8).
+ * or auto-apply the batch (C7, C8). Pass the recipe built against the
+ * pre-decision grid so the card stays frozen after Accept.
  *
  * @param messages - Current thread
  * @param messageIds - Assistant message ids that held the pending batch
  * @param decision - Explicit Accept or Reject
+ * @param recipe - Frozen recipe shown on the card; omit only when none exists
  */
 export function withMutationProposalDecision(
     messages: TChatMessage[],
     messageIds: readonly string[],
     decision: Exclude<TMutationProposalDecision, "pending">,
+    recipe?: TMutationProposalRecipe,
 ): TChatMessage[] {
     const idSet = new Set(messageIds);
     return messages.map((message) => {
@@ -1077,7 +1100,11 @@ export function withMutationProposalDecision(
         const previous = isMetadataRecord(message.metadata) ? message.metadata : {};
         return {
             ...message,
-            metadata: { ...previous, mutationProposal: decision },
+            metadata: {
+                ...previous,
+                mutationProposal: decision,
+                ...(recipe ? { mutationProposalRecipe: recipe } : {}),
+            },
         };
     });
 }

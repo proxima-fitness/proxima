@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, FileText } from "lucide-react"
 import { type ChatStatus, FileUIPart } from "ai";
 import { upsertChatHistoryTurn } from "@/api/chat-history";
+import { useHevyExercises } from "@/api/hooks";
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
 import {
     acceptMutationProposal,
@@ -26,12 +27,17 @@ import {
     getMutateProgramObjectives,
     isMutateProgramPartAfterBuildWeek,
     mutationProposalApplies,
+    readStoredMutationProposalRecipe,
     resolveMutationProposalDecision,
     tryApplyHevyShareImport,
     tryCommitAtomicBuildWeekAndMutations,
     withMutationProposalDecision,
+    type IMutationProposal,
 } from "@/components/program-builder/utils/helpers";
-import { buildMutationProposalRecipe } from "@/components/program-builder/utils/mutation-proposal-copy";
+import {
+    buildMutationProposalRecipe,
+    type TMutationProposalRecipe,
+} from "@/components/program-builder/utils/mutation-proposal-copy";
 import {
     Reasoning,
     ReasoningContent,
@@ -122,12 +128,86 @@ function describeHevyShareRead(share: THevyShareToolSuccess): string {
     return `${share.dayCount} day${share.dayCount === 1 ? "" : "s"} · ${exercises}`;
 }
 
+interface IStandaloneProposalCard {
+    recipe: TMutationProposalRecipe;
+    showActions: boolean;
+}
+
+/**
+ * Recipe + Accept/Reject for a standalone **Mutation proposal** once the turn
+ * is ready. Returns null while streaming (progress stays in-flow) and when
+ * this message has no standalone mutateProgram.
+ */
+function resolveStandaloneProposalCard(input: {
+    catalog?: ReadonlyMap<string, string>;
+    hevyProgram: THevyRoutine[];
+    message: TChatMessage;
+    messageIndex: number;
+    messages: TChatMessage[];
+    pendingProposal: IMutationProposal | null;
+    pendingProposalIsOpen: boolean;
+    status: ChatStatus | undefined;
+}): IStandaloneProposalCard | null {
+    const isLastMessage = input.messageIndex === input.messages.length - 1;
+    if (isLastMessage && input.status === "streaming") {
+        return null;
+    }
+
+    const storedRecipe = readStoredMutationProposalRecipe(input.message);
+    const standaloneOperations: TAgentProgramOperation[] = [];
+    input.message.parts.forEach((candidate, candidateIndex) => {
+        if (candidate.type !== "tool-mutateProgram") {
+            return;
+        }
+        if (isMutateProgramPartAfterBuildWeek(
+            input.messages,
+            input.message.id ?? "",
+            candidateIndex,
+        )) {
+            return;
+        }
+        const output = (candidate as { output?: { operations?: TAgentProgramOperation[]; error?: string } }).output;
+        if (!output?.operations?.length || output.error) {
+            return;
+        }
+        standaloneOperations.push(...output.operations);
+    });
+    if (!storedRecipe && standaloneOperations.length === 0) {
+        return null;
+    }
+
+    const laterMessages = input.messages.slice(input.messageIndex + 1);
+    const decision = resolveMutationProposalDecision(input.message, laterMessages);
+    return {
+        recipe: storedRecipe ?? buildMutationProposalRecipe(
+            standaloneOperations,
+            input.hevyProgram,
+            input.catalog,
+        ),
+        showActions:
+            input.pendingProposalIsOpen &&
+            (input.pendingProposal?.messageIds.includes(input.message.id) ?? false) &&
+            decision !== "accepted" &&
+            decision !== "rejected",
+    };
+}
+
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
 export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
     const { debugMode } = useAgentDebugMode();
+    const { data: hevyExercises } = useHevyExercises();
+    const exerciseCatalog = useMemo(() => {
+        const catalog = new Map<string, string>();
+        for (const exercise of hevyExercises ?? []) {
+            if (exercise?.id && exercise.title?.trim()) {
+                catalog.set(exercise.id, exercise.title.trim());
+            }
+        }
+        return catalog;
+    }, [hevyExercises]);
     const searchParams = useSearchParams();
     const buildProgramReturnQs = searchParams.toString();
     const resolvePersistChatId = () => getPersistChatIdRef.current?.() ?? "";
@@ -286,6 +366,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             appliedMutateProgramKeysRef,
         );
         if (!proposal) return;
+        const recipe = buildMutationProposalRecipe(
+            proposal.operations,
+            hevyProgram,
+            exerciseCatalog,
+        );
         const committed = acceptMutationProposal(
             hevyProgram,
             proposal,
@@ -297,19 +382,26 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 messages,
                 proposal.messageIds,
                 "rejected",
+                recipe,
             );
             setMessages(expired);
             persistProposalMessages(expired);
             focusProgramBuilderChatInput();
             return;
         }
-        const next = withMutationProposalDecision(messages, proposal.messageIds, "accepted");
+        const next = withMutationProposalDecision(
+            messages,
+            proposal.messageIds,
+            "accepted",
+            recipe,
+        );
         setMessages(next);
         persistProposalMessages(next);
         posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
     }, [
         appliedMutateProgramKeysRef,
         commitWithUndo,
+        exerciseCatalog,
         hevyProgram,
         messages,
         persistProposalMessages,
@@ -326,12 +418,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             appliedMutateProgramKeysRef,
         );
         const messageIds = proposal?.messageIds?.length ? proposal.messageIds : [messageId];
-        const next = withMutationProposalDecision(messages, messageIds, "rejected");
+        const recipe = proposal
+            ? buildMutationProposalRecipe(proposal.operations, hevyProgram, exerciseCatalog)
+            : undefined;
+        const next = withMutationProposalDecision(messages, messageIds, "rejected", recipe);
         setMessages(next);
         persistProposalMessages(next);
         focusProgramBuilderChatInput();
     }, [
         appliedMutateProgramKeysRef,
+        exerciseCatalog,
         hevyProgram,
         messages,
         persistProposalMessages,
@@ -393,6 +489,16 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                 isAssistant &&
                                 message.parts.length > 0 &&
                                 message.parts.every((p) => p.type === "reasoning");
+                            const standaloneProposal = resolveStandaloneProposalCard({
+                                catalog: exerciseCatalog,
+                                hevyProgram,
+                                message,
+                                messageIndex,
+                                messages,
+                                pendingProposal,
+                                pendingProposalIsOpen,
+                                status,
+                            });
                             return (
                             <div key={message.id} className="whitespace-pre-wrap">
                                 {isAssistant && reasoningParts.length > 0 && !hideReasoningDuringTextStream && (
@@ -870,47 +976,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 );
                                             }
 
-                                            const firstStandaloneMutateIndex = message.parts.findIndex((candidate, candidateIndex) => {
-                                                if (candidate.type !== "tool-mutateProgram") return false;
-                                                return !isMutateProgramPartAfterBuildWeek(
-                                                    messages,
-                                                    message.id ?? "",
-                                                    candidateIndex,
-                                                );
-                                            });
-                                            if (index !== firstStandaloneMutateIndex) {
-                                                return null;
-                                            }
-
-                                            const standaloneOperations: TAgentProgramOperation[] = [];
-                                            message.parts.forEach((candidate, candidateIndex) => {
-                                                if (candidate.type !== "tool-mutateProgram") return;
-                                                if (isMutateProgramPartAfterBuildWeek(messages, message.id ?? "", candidateIndex)) {
-                                                    return;
-                                                }
-                                                const output = (candidate as { output?: { operations?: TAgentProgramOperation[]; error?: string } }).output;
-                                                if (!output?.operations?.length || output.error) return;
-                                                standaloneOperations.push(...output.operations);
-                                            });
-                                            const recipe = buildMutationProposalRecipe(standaloneOperations, hevyProgram);
-                                            const laterMessages = messages.slice(messageIndex + 1);
-                                            const decision = resolveMutationProposalDecision(message, laterMessages);
-                                            const showActions =
-                                                pendingProposalIsOpen &&
-                                                (pendingProposal?.messageIds.includes(message.id) ?? false) &&
-                                                decision !== "accepted" &&
-                                                decision !== "rejected";
-
-                                            return (
-                                                <div key={`${message.id}-${index}-mutate-proposal`} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <MutationProposalCard
-                                                        recipe={recipe}
-                                                        showActions={showActions}
-                                                        onAccept={handleAcceptProposal}
-                                                        onReject={() => handleRejectProposal(message.id)}
-                                                    />
-                                                </div>
-                                            );
+                                            return null;
                                         }
                                         case "tool-getWorkoutHistory": {
                                             const historyPart = part as {
@@ -1202,6 +1268,19 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         }
                                     }
                                 })}
+                                { standaloneProposal ? (
+                                    <div
+                                        key={ `${message.id}-mutate-proposal` }
+                                        className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2"
+                                    >
+                                        <MutationProposalCard
+                                            recipe={ standaloneProposal.recipe }
+                                            showActions={ standaloneProposal.showActions }
+                                            onAccept={ handleAcceptProposal }
+                                            onReject={ () => handleRejectProposal(message.id) }
+                                        />
+                                    </div>
+                                ) : null }
                             </div>
                             );
                         })}

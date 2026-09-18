@@ -70,10 +70,12 @@ type TDraftDay = {
  *
  * @param operations - Agent ops; streaming-partial entries must not throw
  * @param hevyProgram - Current (frozen) grid
+ * @param catalog - Hevy template id → listed title; outgoing names come from here
  */
 export function buildMutationProposalRecipe(
     operations: readonly TAgentProgramOperation[] | undefined,
     hevyProgram: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): TMutationProposalRecipe {
     if (!operations?.length) {
         return { days: [] };
@@ -86,7 +88,7 @@ export function buildMutationProposalRecipe(
         if (operation == null || typeof operation !== "object") {
             continue;
         }
-        addOperationToBuckets(buckets, operation, operations, program);
+        addOperationToBuckets(buckets, operation, operations, program, catalog);
     }
 
     return { days: mergeBuckets(Array.from(buckets.values()), program) };
@@ -97,22 +99,23 @@ function addOperationToBuckets(
     operation: TAgentProgramOperation,
     operations: readonly TAgentProgramOperation[],
     program: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     switch (operation.op) {
         case "swap_exercise_template":
-            addSwap(buckets, operation, program);
+            addSwap(buckets, operation, program, catalog);
             return;
         case "insert_exercise":
-            addNamedExerciseAction(buckets, operation, program, (title) => `Add ${title}`);
+            addNamedExerciseAction(buckets, operation, program, (title) => `Add ${title}`, catalog);
             return;
         case "delete_exercise":
-            addIndexedExerciseAction(buckets, operation, program, (title) => `Remove ${title}`);
+            addIndexedExerciseAction(buckets, operation, program, (title) => `Remove ${title}`, catalog);
             return;
         case "edit_exercise":
-            addReplaceExercise(buckets, operation, program);
+            addReplaceExercise(buckets, operation, program, catalog);
             return;
         case "update_set":
-            addUpdateSet(buckets, operation, operations, program);
+            addUpdateSet(buckets, operation, operations, program, catalog);
             return;
         case "edit_day_title":
             addDayScopedAction(buckets, operation, program, (day) => {
@@ -138,10 +141,10 @@ function addOperationToBuckets(
             });
             return;
         case "add_exercise_notes":
-            addIndexedExerciseAction(buckets, operation, program, (title) => `Set notes on ${title}`);
+            addIndexedExerciseAction(buckets, operation, program, (title) => `Set notes on ${title}`, catalog);
             return;
         case "create_superset":
-            addCreateSuperset(buckets, operation, program);
+            addCreateSuperset(buckets, operation, program, catalog);
             return;
         case "remove_from_superset":
             addIndexedExerciseAction(
@@ -149,6 +152,7 @@ function addOperationToBuckets(
                 operation,
                 program,
                 (title) => `Remove ${title} from superset`,
+                catalog,
             );
             return;
         default: {
@@ -162,9 +166,14 @@ function addSwap(
     buckets: Map<string, TDayBucket>,
     operation: TAgentProgramOperation & { op: "swap_exercise_template" },
     program: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     const fromId = readString(operation, "from_exercise_template_id");
-    const toTitle = readToTitle(operation) || MISSING_NAME;
+    const toId = readToTemplateId(operation);
+    if (fromId && toId && fromId === toId) {
+        return;
+    }
+    const toTitle = resolveListedTitle(toId, readToTitle(operation), catalog);
     const folderIds = optionalFolderIds(operation);
     const dayOrder = optionalDayOrder(operation);
     const days = program.filter((day) => {
@@ -174,12 +183,16 @@ function addSwap(
         return day.exercises.some((exercise) => exercise.exercise_template_id === fromId);
     });
     const targets = days.length > 0 ? days : fallbackTargetDays(program, folderIds, dayOrder);
-    const textForDay = (day: THevyRoutine) => {
-        const fromTitle = findFromTitleOnDay(day, fromId) || fromId || MISSING_NAME;
-        return `Swap ${fromTitle} for ${toTitle}`;
-    };
     for (const day of targets) {
-        addAction(buckets, day, textForDay(day));
+        const fromTitle = resolveListedTitle(
+            fromId,
+            findFromTitleOnDay(day, fromId) || fromId,
+            catalog,
+        );
+        if (fromTitle === toTitle) {
+            continue;
+        }
+        addAction(buckets, day, `Swap ${fromTitle} for ${toTitle}`);
     }
 }
 
@@ -188,8 +201,13 @@ function addNamedExerciseAction(
     operation: TAgentProgramOperation,
     program: THevyRoutine[],
     writeText: (title: string) => string,
+    catalog?: ReadonlyMap<string, string>,
 ): void {
-    const title = readInsertedTitle(operation) || MISSING_NAME;
+    const title = resolveListedTitle(
+        readInsertedTemplateId(operation),
+        readInsertedTitle(operation),
+        catalog,
+    );
     for (const day of targetDays(program, operation)) {
         addAction(buckets, day, writeText(title));
     }
@@ -200,12 +218,18 @@ function addIndexedExerciseAction(
     operation: TAgentProgramOperation,
     program: THevyRoutine[],
     writeText: (title: string) => string,
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     const exerciseIndex = optionalIndex(operation, "exerciseIndex");
     for (const day of targetDays(program, operation)) {
         const exercise =
             exerciseIndex == null ? undefined : day.exercises[exerciseIndex];
-        addAction(buckets, day, writeText(displayExerciseTitle(exercise)));
+        const title = resolveListedTitle(
+            exercise?.exercise_template_id ?? "",
+            displayExerciseTitle(exercise),
+            catalog,
+        );
+        addAction(buckets, day, writeText(title));
     }
 }
 
@@ -213,13 +237,25 @@ function addReplaceExercise(
     buckets: Map<string, TDayBucket>,
     operation: TAgentProgramOperation,
     program: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     const exerciseIndex = optionalIndex(operation, "exerciseIndex");
-    const toTitle = readInsertedTitle(operation) || MISSING_NAME;
+    const toTitle = resolveListedTitle(
+        readInsertedTemplateId(operation),
+        readInsertedTitle(operation),
+        catalog,
+    );
     for (const day of targetDays(program, operation)) {
         const exercise =
             exerciseIndex == null ? undefined : day.exercises[exerciseIndex];
-        const fromTitle = displayExerciseTitle(exercise);
+        const fromTitle = resolveListedTitle(
+            exercise?.exercise_template_id ?? "",
+            displayExerciseTitle(exercise),
+            catalog,
+        );
+        if (fromTitle === toTitle) {
+            continue;
+        }
         addAction(buckets, day, `Replace ${fromTitle} with ${toTitle}`);
     }
 }
@@ -229,6 +265,7 @@ function addUpdateSet(
     operation: TAgentProgramOperation & { op: "update_set" },
     operations: readonly TAgentProgramOperation[],
     program: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     const exerciseIndex = optionalIndex(operation, "exerciseIndex");
     const setIndex = optionalIndex(operation, "setIndex");
@@ -259,7 +296,7 @@ function addUpdateSet(
         const bucket = getBucket(buckets, day);
         bucket.setChanges.push({
             exerciseIndex,
-            exerciseTitle: resolveProposedExerciseTitle(exercise, day, operations),
+            exerciseTitle: resolveProposedExerciseTitle(exercise, day, operations, catalog),
             from,
             setIndex,
             to,
@@ -332,11 +369,19 @@ function addCreateSuperset(
     buckets: Map<string, TDayBucket>,
     operation: TAgentProgramOperation,
     program: THevyRoutine[],
+    catalog?: ReadonlyMap<string, string>,
 ): void {
     const indexes = readNumberArray(operation, "exerciseIndexes");
     for (const day of targetDays(program, operation)) {
         const names =
-            indexes?.map((index) => displayExerciseTitle(day.exercises[index])) ?? [MISSING_NAME];
+            indexes?.map((index) => {
+                const exercise = day.exercises[index];
+                return resolveListedTitle(
+                    exercise?.exercise_template_id ?? "",
+                    displayExerciseTitle(exercise),
+                    catalog,
+                );
+            }) ?? [MISSING_NAME];
         addAction(buckets, day, `Create superset (${names.join(", ")})`);
     }
 }
@@ -665,8 +710,13 @@ function resolveProposedExerciseTitle(
     exercise: THevyExercise | undefined,
     day: THevyRoutine,
     operations: readonly TAgentProgramOperation[],
+    catalog?: ReadonlyMap<string, string>,
 ): string {
-    const frozen = displayExerciseTitle(exercise);
+    const frozen = resolveListedTitle(
+        exercise?.exercise_template_id ?? "",
+        displayExerciseTitle(exercise),
+        catalog,
+    );
     if (exercise == null) {
         return frozen;
     }
@@ -681,9 +731,29 @@ function resolveProposedExerciseTitle(
         if (!dayInScope(day, optionalFolderIds(operation), optionalDayOrder(operation))) {
             continue;
         }
-        return readToTitle(operation) || frozen;
+        return resolveListedTitle(readToTemplateId(operation), readToTitle(operation), catalog);
     }
     return frozen;
+}
+
+/**
+ * Listed Hevy title for a template id. When the catalog is loaded, never use a
+ * model-supplied name that is not on the list.
+ */
+function resolveListedTitle(
+    templateId: string,
+    payloadTitle: string,
+    catalog?: ReadonlyMap<string, string>,
+): string {
+    const id = templateId.trim();
+    if (id && catalog && catalog.size > 0) {
+        const listed = catalog.get(id)?.trim();
+        if (listed) {
+            return listed;
+        }
+        return id;
+    }
+    return payloadTitle.trim() || id || MISSING_NAME;
 }
 
 function readToTitle(operation: TAgentProgramOperation): string {
@@ -698,6 +768,24 @@ function readToTitle(operation: TAgentProgramOperation): string {
         return to.exercise_template_id.trim();
     }
     return "";
+}
+
+function readToTemplateId(operation: TAgentProgramOperation): string {
+    if (!("to" in operation) || operation.to == null || typeof operation.to !== "object") {
+        return "";
+    }
+    const to = operation.to as { exercise_template_id?: unknown };
+    return typeof to.exercise_template_id === "string" ? to.exercise_template_id.trim() : "";
+}
+
+function readInsertedTemplateId(operation: TAgentProgramOperation): string {
+    if (!("exercise" in operation) || operation.exercise == null || typeof operation.exercise !== "object") {
+        return "";
+    }
+    const exercise = operation.exercise as { exercise_template_id?: unknown };
+    return typeof exercise.exercise_template_id === "string"
+        ? exercise.exercise_template_id.trim()
+        : "";
 }
 
 function readInsertedTitle(operation: TAgentProgramOperation): string {

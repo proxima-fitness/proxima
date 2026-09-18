@@ -40,6 +40,90 @@ const makeDay = (overrides: Partial<THevyRoutine> = {}): THevyRoutine => ({
 });
 
 describe("buildMutationProposalRecipe", () => {
+    it("uses catalog titles instead of payload titles", () => {
+        const catalog = new Map([
+            ["RDL", "Romanian Deadlift"],
+            ["SLC", "Seated Leg Curl"],
+        ]);
+        const recipe = buildMutationProposalRecipe(
+            [
+                {
+                    op: "swap_exercise_template",
+                    from_exercise_template_id: "RDL",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    to: { exercise_template_id: "SLC", title: "Totally Fake Curl" },
+                },
+            ],
+            [makeDay()],
+            catalog,
+        );
+
+        expect(recipe.days[0]?.steps).toEqual([
+            { kind: "action", text: "Swap Romanian Deadlift for Seated Leg Curl" },
+        ]);
+    });
+
+    it("does not show a payload title when the template is missing from the catalog", () => {
+        const catalog = new Map([["OTHER", "Other Movement"]]);
+        const recipe = buildMutationProposalRecipe(
+            [
+                {
+                    op: "insert_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 1,
+                    exercise: {
+                        exercise_template_id: "FAKE",
+                        title: "Hallucinated Press",
+                        sets: [makeSet({ index: 0 })],
+                    },
+                },
+            ],
+            [makeDay()],
+            catalog,
+        );
+
+        expect(recipe.days[0]?.steps).toEqual([
+            { kind: "action", text: "Add FAKE" },
+        ]);
+        expect(JSON.stringify(recipe)).not.toContain("Hallucinated Press");
+    });
+
+    it("omits a swap or replace onto the same exercise title", () => {
+        const swapSame = buildMutationProposalRecipe(
+            [
+                {
+                    op: "swap_exercise_template",
+                    from_exercise_template_id: "RDL",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    to: { exercise_template_id: "RDL", title: "Romanian Deadlift" },
+                },
+            ],
+            [makeDay()],
+        );
+        const replaceSame = buildMutationProposalRecipe(
+            [
+                {
+                    op: "edit_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    exercise: {
+                        exercise_template_id: "RDL",
+                        title: "Romanian Deadlift",
+                        sets: [makeSet({ index: 0 })],
+                    },
+                },
+            ],
+            [makeDay()],
+        );
+
+        expect(swapSame).toEqual({ days: [] });
+        expect(replaceSame).toEqual({ days: [] });
+    });
+
     it("names a swap from the frozen grid, not template ids", () => {
         const recipe = buildMutationProposalRecipe(
             [

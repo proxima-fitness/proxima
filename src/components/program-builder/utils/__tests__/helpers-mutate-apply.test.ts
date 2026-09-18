@@ -16,6 +16,7 @@ import {
     collectMutationProposal,
     isAgentMutationLockActive,
     mutationProposalApplies,
+    readStoredMutationProposalRecipe,
     resolveMutationProposalDecision,
     withMutationProposalDecision,
     type IMutationProposal,
@@ -514,12 +515,23 @@ describe("withMutationProposalDecision", () => {
             },
         ];
 
-        const accepted = withMutationProposalDecision(messages, ["a1"], "accepted");
-        expect(accepted[1].metadata).toEqual({ mutationProposal: "accepted" });
+        const recipe = {
+            days: [{ heading: "Week 1, Push", steps: [{ kind: "action" as const, text: "Rename Push to Upper Push" }] }],
+        };
+        const accepted = withMutationProposalDecision(messages, ["a1"], "accepted", recipe);
+        expect(accepted[1].metadata).toEqual({
+            mutationProposal: "accepted",
+            mutationProposalRecipe: recipe,
+        });
         expect(resolveMutationProposalDecision(accepted[1], [])).toBe("accepted");
 
-        const rejected = withMutationProposalDecision(messages, ["a1"], "rejected");
-        expect(rejected[1].metadata).toEqual({ mutationProposal: "rejected" });
+        const rejected = withMutationProposalDecision(messages, ["a1"], "rejected", recipe);
+        expect(rejected[1].metadata).toEqual({
+            mutationProposal: "rejected",
+            mutationProposalRecipe: recipe,
+        });
         expect(resolveMutationProposalDecision(rejected[1], [])).toBe("rejected");
+        expect(readStoredMutationProposalRecipe(accepted[1])).toEqual(recipe);
+        expect(readStoredMutationProposalRecipe(messages[1])).toBeNull();
     });
 });

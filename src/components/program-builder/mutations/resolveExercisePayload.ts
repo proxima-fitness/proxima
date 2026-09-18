@@ -6,7 +6,7 @@ export type TResolveSwapTemplateToResult =
     | { ok: true; payload: TSwapExerciseTemplateMinimalTo & { title: string } }
     | { ok: false; reason: string };
 
-/** Resolve optional title for swap `to` when preserve_sets is true. */
+/** Catalog title for swap `to` when preserve_sets is true. Ignores a model-supplied name. */
 export function resolveSwapTemplateTo(
     to: TSwapExerciseTemplateMinimalTo,
     idToTitle: Map<string, string>,
@@ -24,15 +24,14 @@ export function resolveSwapTemplateTo(
         };
     }
 
-    const title = to.title?.trim() ? to.title : canonicalTitle;
-    return { ok: true, payload: { ...to, title } };
+    return { ok: true, payload: { ...to, title: canonicalTitle } };
 }
 
 export type TResolveExercisePayloadResult =
     | { ok: true; payload: TInsertExercisePayload }
     | { ok: false; reason: string };
 
-/** Resolve optional title from template catalog; fail when template id is unknown. */
+/** Catalog title from template id; fail when the id is unknown. Ignores a model-supplied name. */
 export function resolveExercisePayload(
     payload: TInsertExercisePayload,
     idToTitle: Map<string, string>,
@@ -50,6 +49,5 @@ export function resolveExercisePayload(
         };
     }
 
-    const title = payload.title?.trim() ? payload.title : canonicalTitle;
-    return { ok: true, payload: { ...payload, title } };
+    return { ok: true, payload: { ...payload, title: canonicalTitle } };
 }

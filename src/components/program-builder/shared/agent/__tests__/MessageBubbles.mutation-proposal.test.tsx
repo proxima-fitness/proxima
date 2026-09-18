@@ -30,6 +30,10 @@ vi.mock("@/api/chat-history", () => ({
     upsertChatHistoryTurn: vi.fn(),
 }));
 
+vi.mock("@/api/hooks", () => ({
+    useHevyExercises: () => ({ data: [] }),
+}));
+
 import { MessageBubbles } from "../MessageBubbles";
 import * as helpers from "@/components/program-builder/utils/helpers";
 
@@ -146,6 +150,42 @@ describe("MessageBubbles mutation proposal", () => {
         expect(screen.queryByText("Program modified")).toBeNull();
     });
 
+    it("renders the proposal card after the assistant summary", () => {
+        const messages: TChatMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Hypertrophy bench" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                parts: [
+                    {
+                        type: "tool-mutateProgram",
+                        toolCallId: "m1",
+                        state: "output-available",
+                        input: {},
+                        output: {
+                            operations: [
+                                { op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Upper Push" },
+                            ],
+                        },
+                    } as TChatMessage["parts"][number],
+                    {
+                        type: "text",
+                        text: "I want to set bench to 8-12 on your Push days.",
+                    },
+                ],
+            },
+        ];
+
+        renderBubbles(<MessageBubbles { ...baseProps(messages) } />);
+
+        const summary = screen.getByText("I want to set bench to 8-12 on your Push days.");
+        const card = screen.getByText("Proposed changes");
+        expect(
+            summary.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Accept" })).toBeTruthy();
+    });
+
     it("keeps proposal progress during the stream, without Accept", () => {
         const messages: TChatMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Rename day" }] },
@@ -253,10 +293,78 @@ describe("MessageBubbles mutation proposal", () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: "a1",
-                    metadata: { mutationProposal: "accepted" },
+                    metadata: expect.objectContaining({
+                        mutationProposal: "accepted",
+                        mutationProposalRecipe: expect.objectContaining({
+                            days: expect.arrayContaining([
+                                expect.objectContaining({
+                                    steps: [
+                                        { kind: "action", text: "Rename Push to Upper Push" },
+                                    ],
+                                }),
+                            ]),
+                        }),
+                    }),
                 }),
             ]),
         );
+    });
+
+    it("keeps the frozen recipe after Accept when the grid already has the new values", () => {
+        const acceptedRecipe = {
+            days: [
+                {
+                    heading: "Week 1, Push",
+                    steps: [
+                        { kind: "action" as const, text: "Replace Bench Press with Incline Bench Press (Dumbbell)" },
+                    ],
+                },
+            ],
+        };
+        const messages: TChatMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Swap bench" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                metadata: {
+                    mutationProposal: "accepted",
+                    mutationProposalRecipe: acceptedRecipe,
+                },
+                parts: [
+                    {
+                        type: "tool-mutateProgram",
+                        toolCallId: "m1",
+                        state: "output-available",
+                        input: {},
+                        output: {
+                            operations: [
+                                {
+                                    op: "edit_exercise",
+                                    folderIds: [0],
+                                    dayOrder: 1,
+                                    exerciseIndex: 0,
+                                    exercise: {
+                                        exercise_template_id: "ex-1",
+                                        title: "Incline Bench Press (Dumbbell)",
+                                        sets: [],
+                                    },
+                                },
+                            ],
+                        },
+                    } as TChatMessage["parts"][number],
+                ],
+            },
+        ];
+        const appliedDay = makeDay();
+        appliedDay.exercises[0].title = "Incline Bench Press (Dumbbell)";
+
+        renderBubbles(<MessageBubbles { ...baseProps(messages, [appliedDay]) } />);
+
+        expect(screen.getByText("Proposed changes")).toBeTruthy();
+        expect(screen.getByText("Bench Press")).toBeTruthy();
+        expect(screen.getByText("Incline Bench Press (Dumbbell)")).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
     });
 
     it("Reject leaves the grid unchanged and removes the buttons", () => {
@@ -290,7 +398,12 @@ describe("MessageBubbles mutation proposal", () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: "a1",
-                    metadata: { mutationProposal: "rejected" },
+                    metadata: expect.objectContaining({
+                        mutationProposal: "rejected",
+                        mutationProposalRecipe: expect.objectContaining({
+                            days: expect.any(Array),
+                        }),
+                    }),
                 }),
             ]),
         );
@@ -329,7 +442,12 @@ describe("MessageBubbles mutation proposal", () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     id: "a1",
-                    metadata: { mutationProposal: "rejected" },
+                    metadata: expect.objectContaining({
+                        mutationProposal: "rejected",
+                        mutationProposalRecipe: expect.objectContaining({
+                            days: expect.any(Array),
+                        }),
+                    }),
                 }),
             ]),
         );

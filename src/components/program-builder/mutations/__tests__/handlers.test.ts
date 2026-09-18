@@ -286,6 +286,22 @@ describe("updateSet", () => {
 });
 
 describe("resolveExercisePayload", () => {
+    it("overwrites a payload title with the catalog title", () => {
+        const catalog = new Map([["ohp-1", "Overhead Press"]]);
+        const result = resolveExercisePayload(
+            {
+                exercise_template_id: "ohp-1",
+                title: "Totally Wrong Name",
+                sets: [makeSet({ index: 0 })],
+            },
+            catalog,
+        );
+
+        expect(result.ok).toBe(true);
+        if (result.ok === false) return;
+        expect(result.payload.title).toBe("Overhead Press");
+    });
+
     it("resolves omitted title from template catalog", () => {
         const catalog = new Map([["ohp-1", "Overhead Press"]]);
         const result = resolveExercisePayload(

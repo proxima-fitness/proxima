@@ -154,6 +154,9 @@ function ProposalActionStep({ action, dayTitle }: IProposalActionStepProps) {
     }
 
     const hideFrom = view.verb === "Notes" && view.from === dayTitle;
+    if (view.from && view.to && view.from === view.to) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col gap-0.5">

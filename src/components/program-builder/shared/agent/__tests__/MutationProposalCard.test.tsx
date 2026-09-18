@@ -95,4 +95,29 @@ describe("MutationProposalCard", () => {
         expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
         expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
     });
+
+    it("does not render a replace onto the same exercise name", () => {
+        render(
+            <MutationProposalCard
+                recipe={ {
+                    days: [
+                        {
+                            heading: "Weeks 1-4, 4 - Push Day 2",
+                            steps: [
+                                {
+                                    kind: "action",
+                                    text: "Replace Incline Bench Press (Dumbbell) with Incline Bench Press (Dumbbell)",
+                                },
+                            ],
+                        },
+                    ],
+                } }
+                showActions={ false }
+            />,
+        );
+
+        expect(screen.getByText("Proposed changes")).toBeTruthy();
+        expect(screen.queryByText("Replace")).toBeNull();
+        expect(screen.queryByText("Incline Bench Press (Dumbbell)")).toBeNull();
+    });
 });
