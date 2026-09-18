@@ -819,3 +819,37 @@
   html[data-proxima-chat-keyboard="open"] [data-proxima-conversation-pad] {
     padding-bottom: 0 !important;
   }
+
+  /* Phone tab shell: grow the composer like Claude, then scroll at 40% vv.
+     Mirror sizes the grid from the current value so this works without
+     field-sizing (iOS) and without the max-sm:h-10 lock on PromptInputTextarea. */
+  @media (max-width: 639px) {
+    [data-proxima-chat-composer-grow] {
+      display: grid;
+      width: 100%;
+    }
+
+    [data-proxima-chat-composer-grow] > [data-proxima-composer-mirror] {
+      display: block;
+      grid-area: 1 / 1;
+      min-height: 2.5rem;
+      max-height: calc(var(--proxima-vv-height, 100dvh) * 0.4);
+      overflow: hidden;
+      overflow-wrap: break-word;
+      padding: 0.75rem 0.75rem 0.75rem 1rem;
+      font-size: 1rem;
+      line-height: 1.3;
+      white-space: pre-wrap;
+      visibility: hidden;
+    }
+
+    [data-proxima-chat-composer] [data-proxima-chat-input] {
+      grid-area: 1 / 1;
+      height: 100%;
+      min-height: 2.5rem;
+      max-height: calc(var(--proxima-vv-height, 100dvh) * 0.4);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      field-sizing: fixed;
+    }
+  }

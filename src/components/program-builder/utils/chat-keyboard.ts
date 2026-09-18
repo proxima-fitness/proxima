@@ -16,6 +16,8 @@ export const CHAT_KEYBOARD_OPEN = "open";
 export const CHAT_KEYBOARD_INSET_VAR = "--proxima-keyboard-inset";
 export const CHAT_VV_HEIGHT_VAR = "--proxima-vv-height";
 export const CHAT_VV_OFFSET_TOP_VAR = "--proxima-vv-offset-top";
+/** Grow-then-scroll cap as a fraction of visual viewport. Keep in sync with
+ * `calc(var(--proxima-vv-height) * 0.4)` in `src/styles/global.css`. */
 export const CHAT_COMPOSER_CAP_RATIO = 0.4;
 export const CHAT_KEYBOARD_TAP_SLOP_PX = 10;
 export const CHAT_KEYBOARD_INSET_THRESHOLD_PX = 80;

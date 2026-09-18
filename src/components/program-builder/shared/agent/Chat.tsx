@@ -1,7 +1,9 @@
 /**
  * @module Chat
  * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments
- * and submit/stop, plus signed-in Agentic memory peek near the prompt. Used inside Agent.
+ * and submit/stop, plus signed-in Agentic memory peek near the prompt. The field is always
+ * above the buttons; on the phone tab shell it grows to 40% of the visual viewport, then
+ * scrolls. Used inside Agent.
  * Upgrade banner: shown for Free users always; for subscribed Pro only when LLM credits are 0 (CTA to Pro+); hidden for Pro+.
  * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, AgenticMemoryPeekHost, useMyFeatureLimits. Used by: Agent.
  */
@@ -43,7 +45,7 @@ import { withRenewsOn } from "@/lib/format-usage-reset-date";
 import { useUserContext } from "@/contexts/UserContext";
 import { quickTriggerSuggestionChips } from "@/assets/constants/suggestions";
 import type { FileUIPart } from "ai";
-import { memo, useCallback, useState, forwardRef, useMemo } from "react";
+import { memo, useCallback, forwardRef, useMemo } from "react";
 import { useMicTranscription } from "@/hooks/use-mic-transcription";
 import { Questions } from "@/components/ui/questions";
 import { AgenticMemoryPeekHost } from "@/components/program-builder/shared/agent/AgenticMemoryPeekHost";
@@ -140,7 +142,8 @@ interface IChatInputBodyProps {
   user: User | null | undefined;
 }
 
-/** Inner input + attachments + submit/stop; desktop stacked, mobile inline row. */
+/** Inner input + attachments + submit/stop. Field is always above the
+ * buttons so icons never steal horizontal space from the text. */
 const ChatInputBody = ({
   isLoading,
   outOfCredits,
@@ -149,7 +152,7 @@ const ChatInputBody = ({
 }: IChatInputBodyProps) => {
   const attachments = usePromptInputAttachments();
   const controller = usePromptInputController();
-  const [isMultiline, setIsMultiline] = useState(false);
+  const composerMirrorText = `${controller.textInput.value || "\u00a0"}\n`;
 
   const onTranscript = useCallback(
     (text: string) => {
@@ -187,27 +190,6 @@ const ChatInputBody = ({
     attachments.openFileDialog();
   };
 
-  const checkMultiline = useCallback((ta: HTMLTextAreaElement) => {
-    const lineHeight = parseFloat(getComputedStyle(ta).lineHeight) || 20;
-    const paddingY = parseFloat(getComputedStyle(ta).paddingTop) + parseFloat(getComputedStyle(ta).paddingBottom) || 24;
-    const singleLineHeight = lineHeight + paddingY;
-    setIsMultiline(ta.scrollHeight > singleLineHeight);
-  }, []);
-
-  const setRowRef = useCallback(
-    (el: HTMLDivElement | null) => {
-      if (el) {
-        queueMicrotask(() => {
-          const ta = el.querySelector("textarea");
-          if (ta) checkMultiline(ta);
-        });
-      }
-    },
-    [checkMultiline]
-  );
-
-  const alignClass = isMultiline ? "items-end" : "items-center";
-
   return (
     <>
       {attachments.files.length > 0 && (
@@ -223,14 +205,22 @@ const ChatInputBody = ({
           </Attachments>
         </div>
       )}
-      {/* Desktop: original stacked layout (textarea above footer) */}
-      <div data-align="block-end" className="hidden md:block w-full">
-        <PromptInputTextarea
-          placeholder="Ask anything…"
-          data-proxima-chat-input=""
-          className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-        />
-        <PromptInputFooter className="mt-5 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3">
+      <div data-align="block-end" className="w-full">
+        <div data-proxima-chat-composer-grow="">
+          <div
+            data-proxima-composer-mirror=""
+            aria-hidden
+            className="invisible hidden max-sm:block"
+          >
+            {composerMirrorText}
+          </div>
+          <PromptInputTextarea
+            placeholder="Ask anything…"
+            data-proxima-chat-input=""
+            className="dark:text-white pl-4 text-base leading-[1.3] sm:text-base md:text-base"
+          />
+        </div>
+        <PromptInputFooter className="mt-2 flex w-full shrink-0 items-end justify-between gap-2 px-3 pb-3 max-sm:mt-1 md:mt-5">
           <div className="flex shrink-0 items-end gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -281,71 +271,6 @@ const ChatInputBody = ({
             />
           </div>
         </PromptInputFooter>
-      </div>
-      {/* Mobile: inline row (paperclip | textarea | mic+submit) */}
-      <div
-        ref={setRowRef}
-        data-align="block-end"
-        className={cn(
-          "flex w-full shrink-0 gap-2 px-3 py-2 max-sm:px-2 order-last md:hidden",
-          alignClass
-        )}
-      >
-        <div className={cn("flex shrink-0 flex-row gap-1", alignClass)}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={handlePaperclipClick}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-black text-black dark:text-white hover:bg-lightSecondary/90"
-                aria-label="Attach files"
-              >
-                <Paperclip className="size-4 text-black dark:text-white" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-lightSecondary text-white">
-              Attach files
-            </TooltipContent>
-          </Tooltip>
-          {user ? <AgenticMemoryPeekHost user={user} /> : null}
-        </div>
-        <PromptInputTextarea
-          placeholder="Ask anything…"
-          data-proxima-chat-input=""
-          className="dark:text-white min-h-9 flex-1 min-w-0 py-2 text-base leading-[1.3] max-sm:min-h-8 max-sm:h-auto max-sm:max-h-[calc(var(--proxima-vv-height,100dvh)*0.4)] max-sm:overflow-y-auto max-sm:py-1.5 placeholder:text-sm"
-          onChange={(e) => checkMultiline(e.currentTarget)}
-        />
-        <div className={cn("flex shrink-0 flex-row gap-2", alignClass)}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-9 rounded-full bg-white text-black dark:bg-black dark:text-white hover:bg-white/90 hover:text-white [&_svg]:text-black dark:[&_svg]:text-white disabled:opacity-50",
-                    micStatus === "recording" && "bg-red-500 dark:bg-red-500 [&_svg]:text-white dark:[&_svg]:text-white hover:bg-red-600",
-                  )}
-                  disabled={micDisabled}
-                  onClick={toggleMic}
-                  aria-label={micTooltip}
-                  aria-pressed={micStatus === "recording"}
-                >
-                  <MicIconEl size={18} className={cn(micStatus === "transcribing" && "animate-spin")} />
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent className="bg-lightSecondary text-white">
-              {micTooltip}
-            </TooltipContent>
-          </Tooltip>
-          <PromptInputSubmit
-            status={isLoading ? "streaming" : "ready"}
-            onStop={handleStop}
-            disabled={outOfCredits}
-            className="size-9 rounded-full bg-lightSecondary [&_svg]:text-white"
-          />
-        </div>
       </div>
     </>
   );

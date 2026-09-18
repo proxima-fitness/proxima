@@ -29,6 +29,8 @@ vi.mock("@/hooks/use-mic-transcription", () => ({
     }),
 }));
 
+const textInputValue = { current: "" };
+
 vi.mock("@/components/ai-elements/prompt-input", () => ({
     PromptInputProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     PromptInput: ({ children }: { children: React.ReactNode }) => (
@@ -45,7 +47,7 @@ vi.mock("@/components/ai-elements/prompt-input", () => ({
         openFileDialog: vi.fn(),
     }),
     usePromptInputController: () => ({
-        textInput: { value: "", setInput: vi.fn() },
+        textInput: { value: textInputValue.current, setInput: vi.fn() },
     }),
 }));
 
@@ -88,6 +90,7 @@ describe("Chat agentic memory peek", () => {
         useUserContext.mockReset();
         useMyFeatureLimits.mockReset();
         useMyFeatureLimits.mockReturnValue({ data: null });
+        textInputValue.current = "";
     });
 
     afterEach(() => {
@@ -109,7 +112,7 @@ describe("Chat agentic memory peek", () => {
         );
 
         const peeks = screen.getAllByTestId("agentic-memory-peek");
-        expect(peeks.length).toBeGreaterThan(0);
+        expect(peeks).toHaveLength(1);
         expect(peeks[0].textContent).toContain("peek:user-1");
     });
 
@@ -142,5 +145,25 @@ describe("Chat agentic memory peek", () => {
 
         expect(container.querySelector("[data-proxima-chat-composer]")).toBeTruthy();
         expect(container.querySelector("[data-proxima-chat-keyboard-hide]")).toBeTruthy();
+    });
+
+    it("sizes the phone composer from a grow mirror so the field can cap and scroll", () => {
+        textInputValue.current = "line one\nline two\nline three";
+        useUserContext.mockReturnValue({ user: null });
+
+        const { container } = renderChat(
+            <Chat
+                isLoading={false}
+                handleSubmit={vi.fn()}
+                handleStop={vi.fn()}
+                showSuggestions={false}
+            />,
+        );
+
+        const grow = container.querySelector("[data-proxima-chat-composer-grow]");
+        const mirror = container.querySelector("[data-proxima-composer-mirror]");
+        expect(grow).toBeTruthy();
+        expect(mirror?.textContent).toContain("line one");
+        expect(mirror?.textContent).toContain("line three");
     });
 });
