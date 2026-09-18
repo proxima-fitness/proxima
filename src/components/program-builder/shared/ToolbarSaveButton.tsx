@@ -79,7 +79,7 @@ export const ToolbarSaveButton: React.FC<IToolbarSaveButtonProps> = ({
             ) : (
                 <Save className="h-4 w-4" />
             )}
-            <span className={isSync ? undefined : "hidden sm:inline"}>{label}</span>
+            <span>{label}</span>
         </Button>
     );
 };
