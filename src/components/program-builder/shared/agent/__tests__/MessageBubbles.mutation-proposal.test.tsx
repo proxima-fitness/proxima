@@ -145,7 +145,7 @@ describe("MessageBubbles mutation proposal", () => {
         expect(screen.queryByText("Program modified")).toBeNull();
     });
 
-    it("keeps Applying progress during the stream, without Accept", () => {
+    it("keeps proposal progress during the stream, without Accept", () => {
         const messages: TChatMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Rename day" }] },
             {
@@ -169,7 +169,8 @@ describe("MessageBubbles mutation proposal", () => {
 
         renderBubbles(<MessageBubbles { ...baseProps(messages) } status="streaming" />);
 
-        expect(screen.getByText("Applying program changes…")).toBeTruthy();
+        expect(screen.getByText("Preparing proposed changes…")).toBeTruthy();
+        expect(screen.queryByText("Applying program changes…")).toBeNull();
         expect(screen.queryByText("Proposed changes")).toBeNull();
         expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
     });

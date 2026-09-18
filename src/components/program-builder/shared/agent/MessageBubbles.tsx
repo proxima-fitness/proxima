@@ -847,17 +847,22 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             const showStreamProgress = mutateInFlight || thisTurnStreaming;
 
                                             if (showStreamProgress || afterBuildWeek) {
+                                                const progressMode = afterBuildWeek ? "apply" : "proposal";
+                                                const operationCount = operations?.length ?? 0;
                                                 return (
                                                     <Tool key={`${message.id}-${index}-mutate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
                                                         <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
                                                         <ToolContent>
-                                                            {mutateInFlight && operations?.length ? (
+                                                            { mutateInFlight && operationCount > 0 ? (
                                                                 <p className="text-sm text-muted-foreground px-3 pb-1">
-                                                                    Applying {operations.length} operation{operations.length === 1 ? "" : "s"}…
+                                                                    { afterBuildWeek
+                                                                        ? `Applying ${operationCount} operation${operationCount === 1 ? "" : "s"}…`
+                                                                        : `Preparing ${operationCount} operation${operationCount === 1 ? "" : "s"}…` }
                                                                 </p>
-                                                            ) : null}
+                                                            ) : null }
                                                             <ModifyProgramProgress
                                                                 objectivesByRoutine={objectivesByRoutine}
+                                                                mode={progressMode}
                                                                 status={isComplete && !thisTurnStreaming ? "complete" : "processing"}
                                                             />
                                                         </ToolContent>

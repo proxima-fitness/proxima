@@ -1,6 +1,8 @@
 /**
  * @module ModifyProgramProgress
- * Compact progress list for mutateProgram tool: objectives with expand/collapse.
+ * Compact progress list for mutateProgram: objectives with expand/collapse.
+ * Standalone batches use proposal copy (ADR 0024); same-turn after buildWeek
+ * still applies and keeps apply copy.
  * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (mutateProgram tool UI).
  */
 "use client";
@@ -10,18 +12,38 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TModifyProgramRoutineObjective } from "@/components/program-builder/utils/helpers";
 
+/** Standalone mutateProgram is a proposal; trailing periodization still applies. */
+export type TModifyProgramProgressMode = "proposal" | "apply";
+
 /** Props for the mutate-program progress list. */
 export interface IProps {
     /** Per-routine objectives (label + details) from mutateProgram tool. */
     objectivesByRoutine: TModifyProgramRoutineObjective[];
-    /** Whether modification is still processing or complete. */
+    /** Whether the batch is still streaming or the apply path finished. */
     status: "processing" | "complete";
+    /** Proposal voice vs auto-apply after buildWeek. */
+    mode: TModifyProgramProgressMode;
+}
+
+function headingFor(mode: TModifyProgramProgressMode, isComplete: boolean): string {
+    if (mode === "proposal") {
+        return isComplete ? "Proposed changes" : "Preparing proposed changes…";
+    }
+    return isComplete ? "Program modified" : "Applying program changes…";
+}
+
+function emptyStatusFor(mode: TModifyProgramProgressMode, isComplete: boolean): string {
+    if (mode === "proposal") {
+        return isComplete ? "Changes ready" : "Preparing changes…";
+    }
+    return isComplete ? "Changes applied" : "Applying changes…";
 }
 
 /** Expandable list of routine objectives with status indicator and week dividers. */
 export const ModifyProgramProgress: React.FC<IProps> = ({
     objectivesByRoutine,
     status,
+    mode,
 }) => {
     const [expandedIndices, setExpandedIndices] = useState<Set<number>>(new Set());
     const isComplete = status === "complete";
@@ -40,7 +62,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
         <div className="w-full pb-4">
             <div className="flex flex-col p-4 gap-2 bg-muted/50 rounded-2xl border border-border">
                 <p className="font-medium text-sm text-foreground">
-                    {isComplete ? "Program modified" : "Applying program changes…"}
+                    { headingFor(mode, isComplete) }
                 </p>
                 <div className="flex flex-col gap-1.5">
                     {hasRoutines ? (
@@ -93,7 +115,7 @@ export const ModifyProgramProgress: React.FC<IProps> = ({
                                 )}
                             />
                             <span className="text-sm text-muted-foreground">
-                                {isComplete ? "Changes applied" : "Applying changes…"}
+                                { emptyStatusFor(mode, isComplete) }
                             </span>
                         </div>
                     )}
