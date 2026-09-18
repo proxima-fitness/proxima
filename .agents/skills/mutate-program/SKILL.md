@@ -57,7 +57,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 
 ## Live grid vs post-build periodization
 
-- **Live-grid edit:** Call **readProgram** when you need the current program. Then call **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. In visible replies, describe the proposed change. Do **not** say the grid already changed.
+- **Live-grid edit:** Call **readProgram** when you need the current program. Then call **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
 - **Periodization right after buildWeek:** Do **not** rely on **readProgram** (snapshot can still be empty). Use builder context, **planProgram**, **buildWeek** output, and the **build-program** skill. Use **one** **mutateProgram** batch via **folderIds**. Same-turn **buildWeek** + **mutateProgram** lands immediately.
 
 ## Targeting (mutateProgram)

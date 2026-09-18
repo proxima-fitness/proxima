@@ -63,6 +63,9 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Before mutateProgram (mandatory)");
             expect(prompt).toContain("Honor the Active Constraint Profile");
             expect(prompt).toContain("Exercise objection");
+            expect(prompt).toContain("Mutation proposal");
+            expect(prompt).toContain("I've updated");
+            expect(prompt).toContain("Your program is now");
             expect(prompt).toContain("Constraint Profile");
             expect(prompt).toContain("Constraint profile persistence");
             expect(prompt).toContain("updateConstraintProfile");

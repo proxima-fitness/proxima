@@ -13,7 +13,7 @@
  *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
  *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
- *  - mutateProgram - applies typed registry operation batches to the program
+ *  - mutateProgram - stages typed registry operation batches; standalone is a Mutation proposal until Accept
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
  *  - getBodyMeasurements - Pro-only backed-up body measurements from Supabase (no live Hevy)
@@ -1097,9 +1097,16 @@ export function getTools({
                 };
             }
             const o = output as { operations?: unknown[] };
+            const count = o.operations?.length ?? 0;
             return {
                 type: 'text' as const,
-                value: `Mutation batch validated (${o.operations?.length ?? 0} operations) will be applied on the client.`,
+                value:
+                    `Mutation proposal ready (${count} operation${count === 1 ? '' : 's'}). ` +
+                    'The grid is unchanged until the user Accepts. ' +
+                    'In your visible reply, describe what you want to change. ' +
+                    'Do not say the program was updated, modified, applied, or is now different. ' +
+                    'Do not write "I\'ve updated" or "Your program is now". ' +
+                    'Same-turn after buildWeek still lands immediately.',
             };
         },
     });

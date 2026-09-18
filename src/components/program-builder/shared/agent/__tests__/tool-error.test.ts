@@ -70,6 +70,9 @@ describe("getMutateProgramFailureSeverity", () => {
             ' Error message: [{"expected":"number","code":"invalid_type","path":["operations",0,"exerciseIndex"],"message":"Invalid input: expected number, received undefined"}]';
 
         expect(getMutateProgramFailureSeverity({ errorText: sdkError })).toBe("warning");
+        expect(
+            getMutateProgramFailureSeverity({ errorText: "validation_error" }),
+        ).toBe("warning");
     });
 
     it("treats unexpected batch validation errors as errors", () => {
@@ -183,6 +186,16 @@ describe("summarizeToolError", () => {
         expect(summary).toBe(
             "We couldn't apply that change: set must be a nested object in tool args, not a JSON string",
         );
+    });
+
+    it("summarizes the stream class code when Zod details never reached the client", () => {
+        const summary = summarizeToolError("mutateProgram", {
+            errorText: "validation_error",
+            output: null,
+        });
+
+        expect(summary).toBe("We couldn't apply that change: The request format wasn't valid.");
+        expect(summary).not.toContain("validation_error");
     });
 
     it("falls back to tool-specific default", () => {

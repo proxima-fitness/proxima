@@ -811,6 +811,11 @@ describe("chat tools.ts", () => {
             expect(output.error).toBeUndefined();
             expect(output.operations).toEqual(operations);
             expect(output.failures).toBeUndefined();
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("Mutation proposal ready");
+            expect(modelOutput.value).toContain("unchanged until the user Accepts");
+            expect(modelOutput.value).not.toMatch(/will be applied/i);
         });
 
         it("returns indexed failures when preflight fails", async () => {

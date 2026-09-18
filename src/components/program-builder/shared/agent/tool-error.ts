@@ -154,6 +154,12 @@ function extractSdkValidationSummary(errorText: string): string | null {
         return "The request couldn't be processed.";
     }
 
+    // Stream onError returns the class code only (ADR 03). SDK input
+    // rejects still land on the tool part as errorText with no output.
+    if (errorText === "validation_error") {
+        return "The request format wasn't valid.";
+    }
+
     return null;
 }
 
