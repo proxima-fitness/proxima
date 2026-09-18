@@ -31,14 +31,6 @@ vi.mock("@/api/index", () => ({
     },
 }));
 
-vi.mock("@/components/program-builder/utils/helpers", () => ({
-    getMessageText: (message: unknown) => {
-        if (message == null || typeof message !== "object") return "";
-        const m = message as { parts?: { text?: string }[] };
-        return m.parts?.[0]?.text?.trim() ?? "";
-    },
-}));
-
 const mockApplyBuildProgramMintUrlUpdate = vi.fn();
 
 vi.mock("@/lib/build-program-url", () => ({
@@ -163,7 +155,11 @@ describe("ensureChatSessionOnSend", () => {
             firstUserText: "Build me a program",
         });
 
-        expect(first).toEqual({ chatId: expect.any(String), confirmed: true });
+        expect(first).toEqual({
+            chatId: expect.any(String),
+            confirmed: true,
+            inserted: true,
+        });
         expect(mockInsert).toHaveBeenCalledTimes(1);
 
         mockMaybeSingle.mockResolvedValueOnce({ data: { id: first.chatId }, error: null });
@@ -173,7 +169,11 @@ describe("ensureChatSessionOnSend", () => {
             firstUserText: "Second message",
         });
 
-        expect(second.confirmed).toBe(true);
+        expect(second).toEqual({
+            chatId: first.chatId,
+            confirmed: true,
+            inserted: false,
+        });
         expect(mockInsert).toHaveBeenCalledTimes(1);
     });
 });

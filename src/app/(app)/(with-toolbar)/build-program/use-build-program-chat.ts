@@ -18,6 +18,7 @@ import {
     persistChatHistoryAfterTurn,
     resolveChatSessionId,
 } from "@/api/chat-history";
+import { requestGeneratedChatTitle } from "@/api/chat-title-request";
 import {
     applyBuildProgramMintUrlUpdate,
     stripSearchFromBuildProgramUrl,
@@ -275,6 +276,11 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         onSuccess: (result) => {
             if (result.confirmed && user) {
                 void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                requestGeneratedChatTitle({
+                    chatId: result.chatId,
+                    userId: user.id,
+                    queryClient,
+                });
             } else if (!result.confirmed && !migrationFailToastShownRef.current) {
                 migrationFailToastShownRef.current = true;
                 toast.warning("Couldn't save your chat yet. Messages are still here.");
@@ -455,6 +461,13 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 }).then((session) => {
                     if (session.confirmed) {
                         void queryClient.invalidateQueries({ queryKey: ["chat-ids", user.id] });
+                        if (session.inserted) {
+                            requestGeneratedChatTitle({
+                                chatId: session.chatId,
+                                userId: user.id,
+                                queryClient,
+                            });
+                        }
                     } else if (!insertFailToastShownForChatIds.current.has(session.chatId)) {
                         insertFailToastShownForChatIds.current.add(session.chatId);
                         toast.warning("Couldn't save this chat yet. Your message will still send.");

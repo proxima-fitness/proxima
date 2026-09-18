@@ -69,6 +69,16 @@ _Avoid_: Entry point, route change (too broad)
 
 
 
+### Chat title
+
+
+The name of a chat, shown on sidebar recent and pinned rows. Distinct from a **Proxima program** name.
+
+
+_Avoid_: Chat history title, thread name, conversation name, using the program name as the chat label
+
+
+
 
 ### Arrival intent
 
@@ -853,10 +863,10 @@ _Avoid_: Mode toggle, program picker
 ### Edit agent
 
 
-The chat agent has the same program-building tools in Edit mode as in New mode. Agent mutations update working builder state and set edit dirty state. The user Syncs to push changes to Hevy.
+The chat agent has the same program-building tools in Edit mode as in New mode. Standalone agent edits are a **Mutation proposal**; Accept updates working builder state and sets edit dirty. Same-turn first build still lands immediately. The user Syncs to push changes to Hevy.
 
 
-_Avoid_: Read-only chat, constrained edit tools
+_Avoid_: Read-only chat, constrained edit tools, auto-apply live-grid edits without a **Mutation proposal**
 
 
 
@@ -875,10 +885,21 @@ _Avoid_: Exercise edit (ambiguous, may mean one slot or program-wide), variation
 ### Program mutation batch
 
 
-One ordered set of program changes the agent applies atomically in a single turn for one logical edit. Fail-all: if any change is invalid, none apply.
+One ordered set of program changes the agent sends in a single turn for one logical edit. Fail-all: if any change is invalid, none apply. On an existing program the batch is a **Mutation proposal** until Accept.
 
 
 _Avoid_: Patch, JSON edit
+
+
+
+
+### Mutation proposal
+
+
+A **Program mutation batch** the coach wants to apply to an existing program, shown in chat until the user Accepts or discards it. Accept commits it to the in-memory builder. Reject, a new user message, or a stale fail-all discards it. Distinct from first build (a new week plus same-turn periodization), which still lands immediately. Distinct from **AI week suggest**, whose Apply writes the **Program prescription** on Program overview.
+
+
+_Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** button), patch preview, auto-apply on ready
 
 
 

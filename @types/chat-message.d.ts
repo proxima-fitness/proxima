@@ -76,6 +76,8 @@ declare global {
     interface IEnsureChatSessionOnSendResult {
         chatId: string;
         confirmed: boolean;
+        /** True only on a successful insert this call (not an existing row). */
+        inserted: boolean;
     }
 
     interface IMigrateAnonymousThreadToChatInput {

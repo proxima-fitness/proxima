@@ -2,11 +2,14 @@ import type { User, SupabaseClient } from "@supabase/supabase-js";
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from ".";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
-import { getMessageText } from "@/components/program-builder/utils/helpers";
+import {
+    deriveChatTitleFromMessages,
+    MAX_CHAT_TITLE_LENGTH,
+} from "@/api/chat-title";
 import { v4 as uuidv4 } from "uuid";
 import { applyBuildProgramMintUrlUpdate } from "@/lib/build-program-url";
 
-const MAX_CHAT_TITLE_LENGTH = 200;
+export { deriveChatTitleFromMessages };
 
 /** Tracks send-time inserts for the current browser session (insert-once per chatId). */
 const sessionInsertedChatIds = new Set<string>();
@@ -19,23 +22,6 @@ export function resetChatHistorySessionForTests() {
 /** Send-path insert confirmed this browser session (fetch gate input for resolver). */
 export function isChatSessionInsertConfirmed(chatId: string): boolean {
     return chatId !== "" && sessionInsertedChatIds.has(chatId);
-}
-
-/**
- * First user message text, trimmed, capped at 200 chars.
- */
-export function deriveChatTitleFromMessages(messages: TChatMessage[]): string {
-    const firstUser = messages.find((message) => message.role === "user");
-    if (!firstUser) {
-        return "Untitled";
-    }
-
-    const text = getMessageText(firstUser);
-    if (!text) {
-        return "Untitled";
-    }
-
-    return text.slice(0, MAX_CHAT_TITLE_LENGTH);
 }
 
 async function chatHistoryRowExists(user: User, chatId: string): Promise<boolean> {
@@ -471,8 +457,8 @@ export function resolveChatSessionId(existingChatId: string): string {
 }
 
 /**
- * Mint client chat id + URL on first send, insert-once with first user text + frozen title.
- * Safe to fire after `sendMessage` - does not need to complete before the stream starts.
+ * Mint client chat id + URL on first send, insert-once with first user text
+ * and a derived Chat title placeholder. Safe to fire after `sendMessage`.
  */
 export const ensureChatSessionOnSend = async ({
     user,
@@ -480,22 +466,22 @@ export const ensureChatSessionOnSend = async ({
     firstUserText,
 }: IEnsureChatSessionOnSendInput): Promise<IEnsureChatSessionOnSendResult> => {
     if (!user) {
-        return { chatId: existingChatId, confirmed: false };
+        return { chatId: existingChatId, confirmed: false, inserted: false };
     }
 
     const chatId = resolveChatSessionId(existingChatId);
 
     if (sessionInsertedChatIds.has(chatId)) {
-        return { chatId, confirmed: true };
+        return { chatId, confirmed: true, inserted: false };
     }
 
     if (await chatHistoryRowExists(user, chatId)) {
         sessionInsertedChatIds.add(chatId);
-        return { chatId, confirmed: true };
+        return { chatId, confirmed: true, inserted: false };
     }
 
     if (!firstUserText.trim()) {
-        return { chatId, confirmed: false };
+        return { chatId, confirmed: false, inserted: false };
     }
 
     const userMessage = userMessageFromText(firstUserText);
@@ -504,10 +490,10 @@ export const ensureChatSessionOnSend = async ({
 
     if ("success" in result && result.success) {
         sessionInsertedChatIds.add(chatId);
-        return { chatId, confirmed: true };
+        return { chatId, confirmed: true, inserted: true };
     }
 
-    return { chatId, confirmed: false };
+    return { chatId, confirmed: false, inserted: false };
 };
 
 /**
