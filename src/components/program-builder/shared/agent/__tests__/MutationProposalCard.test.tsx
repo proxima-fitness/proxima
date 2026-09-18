@@ -45,17 +45,22 @@ describe("MutationProposalCard", () => {
 
         expect(screen.getByText("Proposed changes")).toBeTruthy();
         expect(screen.queryByText("Program modified")).toBeNull();
-        expect(screen.getByText("Week 2, Upper Pull")).toBeTruthy();
-        expect(screen.getByText("Swap Romanian Deadlift for Seated Leg Curl")).toBeTruthy();
-        expect(screen.getByText("Romanian Deadlift")).toBeTruthy();
+        expect(screen.getByText("Week 2")).toBeTruthy();
+        expect(screen.getByText("Upper Pull")).toBeTruthy();
+        expect(screen.getByText("Swap")).toBeTruthy();
+        expect(screen.getByText("Seated Leg Curl")).toBeTruthy();
+        expect(screen.getAllByText("Romanian Deadlift").length).toBeGreaterThan(0);
         expect(screen.getByText("Sets 1-3")).toBeTruthy();
         expect(screen.getByText("8 reps @ RPE 7")).toBeTruthy();
         expect(screen.getByText("6 reps @ RPE 8")).toBeTruthy();
         expect(screen.queryByLabelText(/expand/i)).toBeNull();
         expect(screen.queryByLabelText(/collapse/i)).toBeNull();
+        expect(screen.queryByText("+1")).toBeNull();
+        expect(screen.queryByText("−1")).toBeNull();
+        expect(screen.queryByText("+15")).toBeNull();
     });
 
-    it("shows Accept and Reject only while the proposal is open", () => {
+    it("shows Reject on the left and Accept on the right only while open", () => {
         const onAccept = vi.fn();
         const onReject = vi.fn();
 
@@ -68,8 +73,13 @@ describe("MutationProposalCard", () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole("button", { name: "Accept" }));
-        fireEvent.click(screen.getByRole("button", { name: "Reject" }));
+        const reject = screen.getByRole("button", { name: "Reject" });
+        const accept = screen.getByRole("button", { name: "Accept" });
+        expect(reject.compareDocumentPosition(accept) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(reject.parentElement?.className).toContain("justify-between");
+
+        fireEvent.click(accept);
+        fireEvent.click(reject);
         expect(onAccept).toHaveBeenCalledOnce();
         expect(onReject).toHaveBeenCalledOnce();
 
@@ -81,7 +91,7 @@ describe("MutationProposalCard", () => {
         );
 
         expect(screen.getByText("Proposed changes")).toBeTruthy();
-        expect(screen.getByText("Swap Romanian Deadlift for Seated Leg Curl")).toBeTruthy();
+        expect(screen.getByText("Seated Leg Curl")).toBeTruthy();
         expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
         expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
     });

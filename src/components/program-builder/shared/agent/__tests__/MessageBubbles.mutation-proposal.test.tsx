@@ -139,7 +139,8 @@ describe("MessageBubbles mutation proposal", () => {
         renderBubbles(<MessageBubbles { ...baseProps(messages) } />);
 
         expect(screen.getByText("Proposed changes")).toBeTruthy();
-        expect(screen.getByText("Rename Push to Upper Push")).toBeTruthy();
+        expect(screen.getByText("Title")).toBeTruthy();
+        expect(screen.getByText("Upper Push")).toBeTruthy();
         expect(screen.getByRole("button", { name: "Accept" })).toBeTruthy();
         expect(screen.getByRole("button", { name: "Reject" })).toBeTruthy();
         expect(screen.queryByText("Program modified")).toBeNull();
