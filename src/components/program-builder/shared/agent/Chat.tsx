@@ -5,6 +5,7 @@
  * above the buttons; on the phone tab shell it grows to 40% of the visual viewport, then
  * scrolls. Used inside Agent.
  * Upgrade banner: shown for Free users always; for subscribed Pro only when LLM credits are 0 (CTA to Pro+); hidden for Pro+.
+ * Mobile dismiss hides the banner until remaining credits hit 0.
  * Depends on: prompt-input, attachments, suggestion, UpgradeBanner, AgenticMemoryPeekHost, useMyFeatureLimits. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -346,7 +347,7 @@ export const Chat = forwardRef<HTMLDivElement, IProps>((props, ref) => {
                 ? withRenewsOn("You have run out of credits.", featureLimits.resets_on)
                 : undefined
             }
-            enableMobileCollapse
+            enableMobileDismiss
           />
         ) : null}
       </div>
