@@ -67,7 +67,7 @@ export const MutationProposalCard: React.FC<IMutationProposalCardProps> = ({
 }) => {
     return (
         <div className="w-full pb-4">
-            <div className="overflow-hidden rounded-2xl border border-border bg-muted/50">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="px-4 py-3">
                     <p className="text-[13px] font-medium text-foreground">
                         Proposed changes
