@@ -51,6 +51,8 @@ export type TApplyBatchResult = TApplyBatchSuccess | TApplyBatchFailure;
 
 export type TCommitWithUndoOptions = {
     recordUndo?: boolean;
+    /** Accept-only. Replaces live **Proposal marks**; omit on manual commits. */
+    proposalMarkKeys?: number[];
 };
 
 export type TProgramMutationRunContext = {

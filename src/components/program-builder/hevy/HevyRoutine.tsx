@@ -20,6 +20,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import { useBuilderWeek } from "@/contexts/ProgramMutationContext";
 
 /** sessionStorage key — hide signed-out step guide for rest of tab session. */
 const STEPPER_DISMISSED_KEY = "build-program-stepper-dismissed";
@@ -141,12 +142,14 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
     const { data: customExercises } = useHevyCustomExercises(user, hevyApiKey ?? "");
     const { data: hevyExercises } = useHevyExercises();
 
-    const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+    const { setWeekIndex, weekIndex } = useBuilderWeek();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
     // Lazy init OK: HevyRoutine mounts client-side after program load.
     const [stepperDismissed, setStepperDismissed] = useState(readStepperDismissed);
+    const maxWeekIndex = Math.max(0, numberOfWeeks - 1);
+    const activeWeekIndex = Math.min(weekIndex, maxWeekIndex);
 
     // Update scroll button visibility based on scroll position
     useEffect(() => {
@@ -169,15 +172,12 @@ export const HevyRoutine: React.FC<IProps> = (props) => {
         };
     }, [isMobile, numberOfWeeks]);
 
-    const maxWeekIndex = Math.max(0, numberOfWeeks - 1);
-    const activeWeekIndex = Math.min(currentWeekIndex, maxWeekIndex);
-
     const handlePreviousWeek = () => {
-        setCurrentWeekIndex((prev) => Math.max(0, prev - 1));
+        setWeekIndex((prev) => Math.max(0, prev - 1));
     };
 
     const handleNextWeek = () => {
-        setCurrentWeekIndex((prev) => Math.min(maxWeekIndex, prev + 1));
+        setWeekIndex((prev) => Math.min(maxWeekIndex, prev + 1));
     };
 
     const handleScrollLeft = () => {

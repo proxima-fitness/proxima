@@ -34,6 +34,8 @@ import {
     isHevyShareImportSuccess,
     type TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
+import { assignBuilderExerciseKeys } from "@/components/program-builder/utils/builder-exercise-key";
+import { collectProposalMarkKeys } from "@/components/program-builder/utils/proposal-marks";
 
 
 
@@ -778,7 +780,7 @@ export const normalizeProgramForGrid = (routines: THevyRoutine[]): THevyRoutine[
 
 /** Grid shape normalization then rep_range coercion for commit/hydrate paths. */
 export const normalizeProgramState = (routines: THevyRoutine[]): THevyRoutine[] =>
-    normalizeRepRanges(normalizeProgramForGrid(routines));
+    assignBuilderExerciseKeys(normalizeRepRanges(normalizeProgramForGrid(routines)));
 
 /**
  * Coerces degenerate rep_range objects (start === end) to null across an entire
@@ -1255,7 +1257,14 @@ export function acceptMutationProposal(
         return false;
     }
 
-    commitWithUndo(result.program, { recordUndo: hevyProgram.length > 0 });
+    const recordUndo = hevyProgram.length > 0;
+    const proposalMarkKeys = recordUndo
+        ? collectProposalMarkKeys(hevyProgram, result.program, proposal.operations)
+        : undefined;
+    commitWithUndo(result.program, {
+        recordUndo,
+        ...(proposalMarkKeys !== undefined ? { proposalMarkKeys } : {}),
+    });
     proposal.keys.forEach((key) => appliedKeysRef.current?.add(key));
     return true;
 }

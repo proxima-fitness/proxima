@@ -23,6 +23,7 @@ vi.mock("@/contexts/ProgramMutationContext", () => ({
     useIsDayLocked: (hevyRoutineId?: string) =>
         Boolean(hevyRoutineId && completedHevyRoutineIds.includes(hevyRoutineId)),
     useCompletedHevyRoutineIds: () => completedHevyRoutineIds,
+    useProposalMarkKeys: () => new Set<number>(),
 }));
 
 vi.mock("@/hooks/use-media-query", () => ({

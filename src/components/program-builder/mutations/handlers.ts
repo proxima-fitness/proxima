@@ -638,6 +638,9 @@ export function editExercise(
                               sets,
                               rest_seconds: payload.rest_seconds ?? null,
                               ...(payload.reason !== undefined ? { reason: payload.reason } : {}),
+                              ...(existingExercise.builder_exercise_key !== undefined
+                                  ? { builder_exercise_key: existingExercise.builder_exercise_key }
+                                  : {}),
                           }
                         : existingExercise,
                 ),
@@ -751,6 +754,9 @@ export function swapExerciseTemplate(
                     sets: fullTo.sets.map((set, setIndex) => toHevySet(set, setIndex)),
                     rest_seconds: fullTo.rest_seconds ?? null,
                     ...(fullTo.reason !== undefined ? { reason: fullTo.reason } : {}),
+                    ...(exercise.builder_exercise_key !== undefined
+                        ? { builder_exercise_key: exercise.builder_exercise_key }
+                        : {}),
                 };
             }),
         };

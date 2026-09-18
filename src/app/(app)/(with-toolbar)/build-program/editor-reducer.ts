@@ -2,16 +2,20 @@
  * @module editor-reducer
  * Builder program + undo stack. New-path Save/leave dirty is exercise content
  * vs last Save, not chat messages (CONTEXT: Save does not require chat).
- * Depends on: nothing. Used by: BuildProgram, tests.
+ * **Proposal marks** live on this state while that Accept is undoable (ADR 0024 / 04).
+ * Depends on: proposal-marks. Used by: BuildProgram, tests.
  */
+
+import type { TProposalMarks } from "@/components/program-builder/utils/proposal-marks";
 
 /** Max undo snapshots retained; oldest dropped on overflow. */
 export const UNDO_STACK_CAP = 100;
 
-/** Editor state: program + snapshot undo stack. */
+/** Editor state: program + snapshot undo stack + live Proposal marks. */
 export type TEditorState = {
     hevyProgram: THevyRoutine[];
     undoStack: THevyRoutine[][];
+    proposalMarks: TProposalMarks | null;
 };
 
 export type TEditorAction =
@@ -20,6 +24,8 @@ export type TEditorAction =
           program?: THevyRoutine[];
           updater?: (prev: THevyRoutine[]) => THevyRoutine[];
           recordUndo?: boolean;
+          /** Accept-only. Replaces the live mark set; omit to keep current marks. */
+          proposalMarkKeys?: number[];
       }
     | { type: "UNDO" }
     | { type: "REPLACE_PROGRAM"; program: THevyRoutine[] }
@@ -117,9 +123,18 @@ export function editorReducer(state: TEditorState, action: TEditorAction): TEdit
                 return { ...state, hevyProgram: nextProgram };
             }
 
+            const undoStack = pushUndoSnapshot(state.undoStack, state.hevyProgram);
+            const proposalMarks =
+                action.proposalMarkKeys === undefined
+                    ? state.proposalMarks
+                    : action.proposalMarkKeys.length > 0
+                        ? { keys: action.proposalMarkKeys, undoFloor: undoStack.length }
+                        : null;
+
             return {
                 hevyProgram: nextProgram,
-                undoStack: pushUndoSnapshot(state.undoStack, state.hevyProgram),
+                undoStack,
+                proposalMarks,
             };
         }
         case "UNDO": {
@@ -127,18 +142,24 @@ export function editorReducer(state: TEditorState, action: TEditorAction): TEdit
                 return state;
             }
             const snapshot = state.undoStack[state.undoStack.length - 1];
+            const undoStack = state.undoStack.slice(0, -1);
+            const proposalMarks =
+                state.proposalMarks != null && undoStack.length >= state.proposalMarks.undoFloor
+                    ? state.proposalMarks
+                    : null;
             return {
                 hevyProgram: structuredClone(snapshot),
-                undoStack: state.undoStack.slice(0, -1),
+                undoStack,
+                proposalMarks,
             };
         }
         case "REPLACE_PROGRAM":
-            return { hevyProgram: action.program, undoStack: [] };
+            return { hevyProgram: action.program, undoStack: [], proposalMarks: null };
         case "CLEAR_UNDO_BASELINE":
-            if (state.undoStack.length === 0) {
+            if (state.undoStack.length === 0 && state.proposalMarks == null) {
                 return state;
             }
-            return { ...state, undoStack: [] };
+            return { ...state, undoStack: [], proposalMarks: null };
         default:
             return state;
     }

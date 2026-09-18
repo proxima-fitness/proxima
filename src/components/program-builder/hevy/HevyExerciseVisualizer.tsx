@@ -21,7 +21,8 @@ import { HevyExerciseGif } from "./HevyExerciseGif";
 import { HevyExerciseDetailsDialog } from "./HevyExerciseDetailsDialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useState } from "react";
-import { useIsDayLocked } from "@/contexts/ProgramMutationContext";
+import { useIsDayLocked, useProposalMarkKeys } from "@/contexts/ProgramMutationContext";
+import { isProposalMarkedRow } from "@/components/program-builder/utils/proposal-marks";
 
 /** Props for the exercise list within a day card. */
 interface IProps {
@@ -98,6 +99,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     const { isInLbs } = usePoundsOrKgContext();
     const isSm = useMediaQuery("(min-width: 640px)");
     const mutationsLocked = useIsDayLocked(day.hevyRoutineId);
+    const proposalMarkKeys = useProposalMarkKeys();
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLElement>, folder_id: number, i: number, exercise: THevyExercise) => {
@@ -140,10 +142,12 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                         ? 'bg-white dark:bg-darkGray'
                         : 'bg-extraLightGray dark:bg-midDarkGray';
 
+                const showProposalMark = isProposalMarkedRow(exercise, proposalMarkKeys, readOnly);
                 const rowProps = {
                     onClick: readOnly || mutationsLocked ? undefined : (e: React.MouseEvent<HTMLElement>) => editHandler(e, Number(folder_id), i, exercise),
                     className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${readOnly || mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
                     style: supersetColor && !isSelected ? borderStyle : {},
+                    "data-builder-exercise-key": exercise.builder_exercise_key,
                 };
 
                 const rowContent = (
@@ -222,7 +226,13 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                         </div>
                                         <HevyExerciseGif thumbnailOrImage={"thmb"} name={exerciseTitle} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
-                                        <div className="flex flex-row items-center justify-between">
+                                        <div className="flex flex-row items-center justify-between gap-1.5">
+                                            {showProposalMark ? (
+                                                <span
+                                                    aria-label="Proposal mark"
+                                                    className="size-1.5 shrink-0 rounded-full bg-lightSecondary"
+                                                />
+                                            ) : null}
                                             <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
                                                 {exerciseTitle}
                                             </div>

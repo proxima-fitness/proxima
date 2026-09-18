@@ -83,6 +83,7 @@ import {
     useWorkoutRoutineIds,
 } from "@/api/hooks";
 import { editorReducer, isNewPathDirty, isNewPathSaveDirty, isNewPathToolbarSaveDisabled } from "./editor-reducer";
+import { isProposalMarksLive } from "@/components/program-builder/utils/proposal-marks";
 import type { TCommitWithUndoOptions } from "@/components/program-builder/mutations/types";
 import { useProgramRequestState } from "./use-program-request-state";
 import { readAnonymousChatMessages, useBuildProgramChat } from "./use-build-program-chat";
@@ -228,10 +229,14 @@ export function BuildProgram() {
         () => !isValidShareId(shareId),
     );
 
-    const [{ hevyProgram, undoStack }, dispatchEditor] = useReducer(editorReducer, {
+    const [{ hevyProgram, undoStack, proposalMarks }, dispatchEditor] = useReducer(editorReducer, {
         hevyProgram: [],
         undoStack: [],
+        proposalMarks: null,
     });
+    const liveProposalMarkKeys = isProposalMarksLive(proposalMarks, undoStack.length)
+        ? proposalMarks?.keys ?? []
+        : [];
     /** True after a successful New-path Save this session (undo baseline established). */
     const [hasSaveBaseline, setHasSaveBaseline] = useState(false);
     const editMode = searchParams.get("edit") === "true";
@@ -254,6 +259,7 @@ export function BuildProgram() {
             type: "COMMIT_PROGRAM",
             program: normalizeProgramState(next),
             recordUndo: options?.recordUndo ?? true,
+            proposalMarkKeys: options?.proposalMarkKeys,
         });
     }, [dispatchEditor]);
 
@@ -527,6 +533,7 @@ export function BuildProgram() {
                 chatProgramId={chatProgramId}
                 savedProgramId={savedProgramIdForChat}
                 onPrescriptionSaved={setSavedPrescription}
+                proposalMarkKeys={liveProposalMarkKeys}
             />
             <ConfirmDialog
                 open={leaveDialogOpen}
@@ -581,6 +588,7 @@ interface IBuildProgramShellProps {
     chatProgramId: number | null;
     savedProgramId: number | null;
     onPrescriptionSaved: (saved: { chatId: string; programId: number }) => void;
+    proposalMarkKeys: readonly number[];
 }
 
 function BuildProgramShell({
@@ -622,6 +630,7 @@ function BuildProgramShell({
     chatProgramId,
     savedProgramId,
     onPrescriptionSaved,
+    proposalMarkKeys,
 }: IBuildProgramShellProps) {
     const { clearChatRef, getPersistChatIdRef } = useBuildProgramActions();
     const queryClient = useQueryClient();
@@ -1073,6 +1082,7 @@ function BuildProgramShell({
             setProgramFromHydrate={setProgramFromHydrate}
             isAgentStreaming={agentMutationLock}
             completedHevyRoutineIds={completedHevyRoutineIds}
+            proposalMarkKeys={proposalMarkKeys}
         >
             <BuildProgramToolbarTitle
                 value={programRequest.programTitle}

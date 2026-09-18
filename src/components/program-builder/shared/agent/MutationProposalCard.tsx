@@ -16,16 +16,20 @@ import type {
     TMutationProposalExercise,
     TMutationProposalRecipe,
     TMutationProposalSetRow,
+    TProposalStepLocator,
 } from "@/components/program-builder/utils/mutation-proposal-copy";
 import { shouldSkipChatInputAutofocus } from "@/components/program-builder/utils/chat-keyboard";
 import {
     parseProposalAction,
     splitProposalHeading,
 } from "@/components/program-builder/utils/mutation-proposal-view";
+import { useProposalJump } from "@/contexts/ProgramMutationContext";
 
 /** Props for the **Mutation proposal** recipe card. */
 export interface IMutationProposalCardProps {
+    jumpEnabled?: boolean;
     onAccept?: () => void;
+    onJump?: (locator: TProposalStepLocator) => void;
     onReject?: () => void;
     recipe: TMutationProposalRecipe;
     showActions: boolean;
@@ -34,9 +38,13 @@ export interface IMutationProposalCardProps {
 interface IProposalActionStepProps {
     action: TMutationProposalAction;
     dayTitle: string;
+    jumpEnabled: boolean;
+    onJump?: (locator: TProposalStepLocator) => void;
 }
 
 interface IProposalExerciseStepProps {
+    jumpEnabled: boolean;
+    onJump?: (locator: TProposalStepLocator) => void;
     step: TMutationProposalExercise;
 }
 
@@ -62,11 +70,15 @@ const VALUE_TO_CLASS =
 
 /** Recipe card: Proposed changes, day files, Accept / Reject while open. */
 export const MutationProposalCard: React.FC<IMutationProposalCardProps> = ({
+    jumpEnabled = false,
     onAccept,
+    onJump,
     onReject,
     recipe,
     showActions,
 }) => {
+    const { requestProposalJump } = useProposalJump();
+    const jump = onJump ?? requestProposalJump;
     return (
         <div className="w-full pb-4">
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -107,10 +119,14 @@ export const MutationProposalCard: React.FC<IMutationProposalCardProps> = ({
                                             key={ `${day.heading}-action-${stepIndex}` }
                                             action={ step }
                                             dayTitle={ heading.dayTitle }
+                                            jumpEnabled={ jumpEnabled }
+                                            onJump={ jump }
                                         />
                                     ) : (
                                         <ProposalExerciseStep
                                             key={ `${day.heading}-exercise-${step.title}-${stepIndex}` }
+                                            jumpEnabled={ jumpEnabled }
+                                            onJump={ jump }
                                             step={ step }
                                         />
                                     )
@@ -145,13 +161,15 @@ export const MutationProposalCard: React.FC<IMutationProposalCardProps> = ({
     );
 };
 
-function ProposalActionStep({ action, dayTitle }: IProposalActionStepProps) {
+function ProposalActionStep({ action, dayTitle, jumpEnabled, onJump }: IProposalActionStepProps) {
     const view = parseProposalAction(action.text);
     if (view.kind === "plain") {
         return (
-            <p className="text-[13px] text-foreground">
-                { view.text }
-            </p>
+            <JumpableStep locator={ action.locator } jumpEnabled={ jumpEnabled } onJump={ onJump }>
+                <p className="text-[13px] text-foreground">
+                    { view.text }
+                </p>
+            </JumpableStep>
         );
     }
 
@@ -161,32 +179,62 @@ function ProposalActionStep({ action, dayTitle }: IProposalActionStepProps) {
     }
 
     return (
-        <div className="flex flex-col gap-0.5">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                { view.verb }
-            </p>
-            { view.from && !hideFrom ? (
-                <p className={ `text-[13px] ${VALUE_FROM_CLASS}` }>
-                    { view.from }
+        <JumpableStep locator={ action.locator } jumpEnabled={ jumpEnabled } onJump={ onJump }>
+            <div className="flex flex-col gap-0.5">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    { view.verb }
                 </p>
-            ) : null }
-            { view.to ? (
-                <p className={ `text-[13px] ${VALUE_TO_CLASS}` }>
-                    { view.to }
-                </p>
-            ) : null }
-        </div>
+                { view.from && !hideFrom ? (
+                    <p className={ `text-[13px] ${VALUE_FROM_CLASS}` }>
+                        { view.from }
+                    </p>
+                ) : null }
+                { view.to ? (
+                    <p className={ `text-[13px] ${VALUE_TO_CLASS}` }>
+                        { view.to }
+                    </p>
+                ) : null }
+            </div>
+        </JumpableStep>
     );
 }
 
-function ProposalExerciseStep({ step }: IProposalExerciseStepProps) {
+function ProposalExerciseStep({ step, jumpEnabled, onJump }: IProposalExerciseStepProps) {
     return (
-        <div className="flex flex-col gap-1">
-            <p className="text-[13px] font-semibold text-foreground">
-                { step.title }
-            </p>
-            <ProposalSetTable rows={ step.setRows } />
-        </div>
+        <JumpableStep locator={ step.locator } jumpEnabled={ jumpEnabled } onJump={ onJump }>
+            <div className="flex flex-col gap-1">
+                <p className="text-[13px] font-semibold text-foreground">
+                    { step.title }
+                </p>
+                <ProposalSetTable rows={ step.setRows } />
+            </div>
+        </JumpableStep>
+    );
+}
+
+function JumpableStep({
+    children,
+    jumpEnabled,
+    locator,
+    onJump,
+}: {
+    children: React.ReactNode;
+    jumpEnabled: boolean;
+    locator?: TProposalStepLocator;
+    onJump?: (locator: TProposalStepLocator) => void;
+}) {
+    if (!jumpEnabled || !locator || !onJump) {
+        return children;
+    }
+
+    return (
+        <button
+            type="button"
+            className="w-full rounded-md text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lightSecondary"
+            onClick={ () => onJump(locator) }
+        >
+            { children }
+        </button>
     );
 }
 

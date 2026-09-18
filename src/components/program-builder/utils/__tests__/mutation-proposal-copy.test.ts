@@ -4,7 +4,27 @@
 import { describe, expect, it } from "vitest";
 
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
-import { buildMutationProposalRecipe } from "@/components/program-builder/utils/mutation-proposal-copy";
+import {
+    buildMutationProposalRecipe,
+    type TMutationProposalRecipe,
+    type TMutationProposalStep,
+} from "@/components/program-builder/utils/mutation-proposal-copy";
+
+function withoutLocators(recipe: TMutationProposalRecipe): TMutationProposalRecipe {
+    return {
+        days: recipe.days.map((day) => ({
+            ...day,
+            steps: day.steps.map((step) => stripLocator(step)),
+        })),
+    };
+}
+
+function stripLocator(step: TMutationProposalStep): TMutationProposalStep {
+    if (step.kind === "action") {
+        return { kind: "action", text: step.text };
+    }
+    return { kind: "exercise", setRows: step.setRows, title: step.title };
+}
 
 const makeSet = (overrides: Partial<THevySets> & Pick<THevySets, "index">): THevySets => ({
     type: "normal",
@@ -59,7 +79,7 @@ describe("buildMutationProposalRecipe", () => {
             catalog,
         );
 
-        expect(recipe.days[0]?.steps).toEqual([
+        expect(withoutLocators(recipe).days[0]?.steps).toEqual([
             { kind: "action", text: "Swap Romanian Deadlift for Seated Leg Curl" },
         ]);
     });
@@ -84,7 +104,7 @@ describe("buildMutationProposalRecipe", () => {
             catalog,
         );
 
-        expect(recipe.days[0]?.steps).toEqual([
+        expect(withoutLocators(recipe).days[0]?.steps).toEqual([
             { kind: "action", text: "Add FAKE" },
         ]);
         expect(JSON.stringify(recipe)).not.toContain("Hallucinated Press");
@@ -138,7 +158,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -171,7 +191,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -194,7 +214,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -219,7 +239,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -254,7 +274,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe.days[0]?.steps).toEqual([
+        expect(withoutLocators(recipe).days[0]?.steps).toEqual([
             {
                 kind: "exercise",
                 title: "Romanian Deadlift",
@@ -282,7 +302,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -304,7 +324,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -320,7 +340,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2",
@@ -343,7 +363,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay({ title: "" })],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Day 1",
@@ -366,7 +386,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay({ exercises: [makeExercise({ title: "" })] })],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -387,7 +407,7 @@ describe("buildMutationProposalRecipe", () => {
         ] as TAgentProgramOperation[];
 
         expect(() => buildMutationProposalRecipe(operations, [makeDay()])).not.toThrow();
-        expect(buildMutationProposalRecipe(operations, [makeDay()])).toEqual({
+        expect(withoutLocators(buildMutationProposalRecipe(operations, [makeDay()]))).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -458,7 +478,7 @@ describe("buildMutationProposalRecipe", () => {
             [makeDay()],
         );
 
-        expect(recipe.days[0]?.steps).toEqual([
+        expect(withoutLocators(recipe).days[0]?.steps).toEqual([
             {
                 kind: "exercise",
                 title: "Romanian Deadlift",
@@ -490,7 +510,7 @@ describe("buildMutationProposalRecipe", () => {
             program,
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "All weeks, Upper Pull",
@@ -568,7 +588,7 @@ describe("buildMutationProposalRecipe", () => {
             [week2, week3],
         );
 
-        expect(recipe).toEqual({
+        expect(withoutLocators(recipe)).toEqual({
             days: [
                 {
                     heading: "Week 2, Upper Pull",
@@ -608,5 +628,94 @@ describe("buildMutationProposalRecipe", () => {
                 },
             ],
         });
+    });
+
+    it("puts a frozen locator on still-present swap, set-change, and remove steps", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    makeExercise({ builder_exercise_key: 4 }),
+                    makeExercise({
+                        index: 1,
+                        title: "Face Pull",
+                        exercise_template_id: "FP",
+                        builder_exercise_key: 5,
+                    }),
+                ],
+            }),
+        ];
+
+        const swap = buildMutationProposalRecipe(
+            [
+                {
+                    op: "swap_exercise_template",
+                    from_exercise_template_id: "RDL",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    to: { exercise_template_id: "SLC", title: "Seated Leg Curl" },
+                },
+            ],
+            program,
+        );
+        expect(swap.days[0]?.steps[0]).toMatchObject({
+            kind: "action",
+            locator: { folderId: 1, dayOrder: 1, exerciseIndex: 0, builderExerciseKey: 4 },
+        });
+
+        const sets = buildMutationProposalRecipe(
+            [
+                {
+                    op: "update_set",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { reps: 6 },
+                },
+            ],
+            program,
+        );
+        expect(sets.days[0]?.steps[0]).toMatchObject({
+            kind: "exercise",
+            locator: { folderId: 1, dayOrder: 1, exerciseIndex: 0, builderExerciseKey: 4 },
+        });
+
+        const remove = buildMutationProposalRecipe(
+            [
+                {
+                    op: "delete_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 1,
+                },
+            ],
+            program,
+        );
+        expect(remove.days[0]?.steps[0]).toMatchObject({
+            kind: "action",
+            locator: { folderId: 1, dayOrder: 1, exerciseIndex: 1, builderExerciseKey: 5 },
+        });
+    });
+
+    it("does not put a locator on a pending Add line", () => {
+        const recipe = buildMutationProposalRecipe(
+            [
+                {
+                    op: "insert_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 1,
+                    exercise: {
+                        exercise_template_id: "FAKE",
+                        title: "Face Pull",
+                        sets: [makeSet({ index: 0 })],
+                    },
+                },
+            ],
+            [makeDay()],
+        );
+
+        expect(recipe.days[0]?.steps[0]).toEqual({ kind: "action", text: "Add Face Pull" });
+        expect(recipe.days[0]?.steps[0] && "locator" in recipe.days[0].steps[0]).toBe(false);
     });
 });

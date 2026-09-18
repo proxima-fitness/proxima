@@ -272,7 +272,10 @@ describe("acceptMutationProposal", () => {
         expect(commitWithUndo).toHaveBeenCalledOnce();
         expect(commitWithUndo.mock.calls[0][0][0].title).toBe("Step 1");
         expect(commitWithUndo.mock.calls[0][0][0].notes).toBe("Focus");
-        expect(commitWithUndo.mock.calls[0][1]).toEqual({ recordUndo: true });
+        expect(commitWithUndo.mock.calls[0][1]).toEqual({
+            recordUndo: true,
+            proposalMarkKeys: [],
+        });
         expect(keysRef.current?.has("a1-0")).toBe(true);
         expect(keysRef.current?.has("a1-1")).toBe(true);
         expect(program[0].title).toBe("Push");
@@ -368,6 +371,47 @@ describe("acceptMutationProposal", () => {
         expect(next.every((day) => day.exercises[0].reason === "Dumbbell-only.")).toBe(true);
         expect(next.every((day) => day.exercises[0].notes === "Pause each rep")).toBe(true);
         expect(next.every((day) => day.exercises[0].sets[0].reps === 5)).toBe(true);
+        expect(commitWithUndo.mock.calls[0][1]).toEqual({
+            recordUndo: true,
+            proposalMarkKeys: [1, 2, 3, 4, 5, 6, 7, 8],
+        });
+    });
+
+    it("Accept of a set change stores that row's Builder exercise key", () => {
+        const program = [makeDay()];
+        const commitWithUndo = vi.fn();
+        const proposal: IMutationProposal = {
+            keys: ["a1-0"],
+            messageIds: ["a1"],
+            operations: [
+                {
+                    op: "update_set",
+                    folderIds: [0],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { reps: 10 },
+                },
+            ],
+        };
+
+        expect(acceptMutationProposal(program, proposal, appliedKeysRef(), commitWithUndo)).toBe(true);
+        expect(commitWithUndo.mock.calls[0][1]).toEqual({
+            recordUndo: true,
+            proposalMarkKeys: [1],
+        });
+    });
+
+    it("empty-grid Accept stores no Proposal marks", () => {
+        const commitWithUndo = vi.fn();
+        const proposal: IMutationProposal = {
+            keys: ["a1-0"],
+            messageIds: ["a1"],
+            operations: [{ op: "add_day", folderIds: [0] }],
+        };
+
+        expect(acceptMutationProposal([], proposal, appliedKeysRef(), commitWithUndo)).toBe(true);
+        expect(commitWithUndo.mock.calls[0][1]).toEqual({ recordUndo: false });
     });
 });
 

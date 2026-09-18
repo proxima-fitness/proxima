@@ -38,6 +38,8 @@ import {
     buildMutationProposalRecipe,
     type TMutationProposalRecipe,
 } from "@/components/program-builder/utils/mutation-proposal-copy";
+import { attachAcceptedInsertLocators } from "@/components/program-builder/utils/proposal-marks";
+import { useProposalMarkKeys } from "@/contexts/ProgramMutationContext";
 import {
     Reasoning,
     ReasoningContent,
@@ -129,6 +131,7 @@ function describeHevyShareRead(share: THevyShareToolSuccess): string {
 }
 
 interface IStandaloneProposalCard {
+    jumpEnabled: boolean;
     recipe: TMutationProposalRecipe;
     showActions: boolean;
 }
@@ -146,6 +149,7 @@ function resolveStandaloneProposalCard(input: {
     messages: TChatMessage[];
     pendingProposal: IMutationProposal | null;
     pendingProposalIsOpen: boolean;
+    proposalMarksLive: boolean;
     status: ChatStatus | undefined;
 }): IStandaloneProposalCard | null {
     const isLastMessage = input.messageIndex === input.messages.length - 1;
@@ -178,18 +182,37 @@ function resolveStandaloneProposalCard(input: {
 
     const laterMessages = input.messages.slice(input.messageIndex + 1);
     const decision = resolveMutationProposalDecision(input.message, laterMessages);
+    const showActions =
+            input.pendingProposalIsOpen &&
+            (input.pendingProposal?.messageIds.includes(input.message.id) ?? false) &&
+            decision !== "accepted" &&
+            decision !== "rejected";
     return {
+        jumpEnabled:
+            showActions
+            || (
+                decision === "accepted"
+                && input.proposalMarksLive
+                && isLatestAcceptedProposal(input.message, input.messages)
+            ),
         recipe: storedRecipe ?? buildMutationProposalRecipe(
             standaloneOperations,
             input.hevyProgram,
             input.catalog,
         ),
-        showActions:
-            input.pendingProposalIsOpen &&
-            (input.pendingProposal?.messageIds.includes(input.message.id) ?? false) &&
-            decision !== "accepted" &&
-            decision !== "rejected",
+        showActions,
     };
+}
+
+function isLatestAcceptedProposal(message: TChatMessage, messages: TChatMessage[]): boolean {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+        const candidate = messages[index];
+        const later = messages.slice(index + 1);
+        if (resolveMutationProposalDecision(candidate, later) === "accepted") {
+            return candidate.id === message.id;
+        }
+    }
+    return false;
 }
 
 /** Renders message list, build/modify progress, applies tool results to hevyProgram, and handles timeout/retry. */
@@ -199,6 +222,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const { getPersistChatIdRef } = useBuildProgramActions();
     const { debugMode } = useAgentDebugMode();
     const { data: hevyExercises } = useHevyExercises();
+    const proposalMarksLive = useProposalMarkKeys().size > 0;
     const exerciseCatalog = useMemo(() => {
         const catalog = new Map<string, string>();
         for (const exercise of hevyExercises ?? []) {
@@ -393,7 +417,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
             messages,
             proposal.messageIds,
             "accepted",
-            recipe,
+            attachAcceptedInsertLocators(recipe, hevyProgram, proposal.operations),
         );
         setMessages(next);
         persistProposalMessages(next);
@@ -497,6 +521,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                 messages,
                                 pendingProposal,
                                 pendingProposalIsOpen,
+                                proposalMarksLive,
                                 status,
                             });
                             return (
@@ -1276,6 +1301,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                         <MutationProposalCard
                                             recipe={ standaloneProposal.recipe }
                                             showActions={ standaloneProposal.showActions }
+                                            jumpEnabled={ standaloneProposal.jumpEnabled }
                                             onAccept={ handleAcceptProposal }
                                             onReject={ () => handleRejectProposal(message.id) }
                                         />

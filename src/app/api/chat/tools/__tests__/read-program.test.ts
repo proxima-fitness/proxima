@@ -128,4 +128,21 @@ describe("formatReadProgramForModel", () => {
     it("returns empty message when program has no routines", () => {
         expect(formatReadProgramForModel([])).toContain("empty");
     });
+
+    it("omits Builder exercise keys from the model JSON", () => {
+        const withKeys: THevyRoutine[] = [
+            {
+                ...sampleProgram()[1],
+                exercises: [
+                    {
+                        ...sampleProgram()[1].exercises[0],
+                        builder_exercise_key: 9,
+                    },
+                ],
+            },
+        ];
+
+        expect(formatReadProgramForModel(withKeys)).not.toContain("builder_exercise_key");
+        expect(readProgramSnapshot(withKeys)[0].exercises[0].builder_exercise_key).toBeUndefined();
+    });
 });

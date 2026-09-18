@@ -21,6 +21,7 @@ const makeDay = (id: string, title: string): THevyRoutine => ({
 const initialState = (program: THevyRoutine[] = []): TEditorState => ({
     hevyProgram: program,
     undoStack: [],
+    proposalMarks: null,
 });
 
 describe("editorReducer", () => {
@@ -195,6 +196,87 @@ describe("editorReducer", () => {
             hasSaveBaseline: true,
             undoStackLength: 1,
         })).toBe(false);
+    });
+
+    it("stores Proposal marks on Accept and keeps them across a later edit", () => {
+        const before = [makeDay("1", "Push")];
+        const accepted = [makeDay("1", "Pull")];
+        const edited = [makeDay("1", "Legs")];
+
+        const afterAccept = editorReducer(initialState(before), {
+            type: "COMMIT_PROGRAM",
+            program: accepted,
+            proposalMarkKeys: [7, 8],
+        });
+
+        expect(afterAccept.proposalMarks).toEqual({ keys: [7, 8], undoFloor: 1 });
+
+        const afterEdit = editorReducer(afterAccept, {
+            type: "COMMIT_PROGRAM",
+            program: edited,
+        });
+        expect(afterEdit.proposalMarks).toEqual({ keys: [7, 8], undoFloor: 1 });
+        expect(afterEdit.undoStack).toHaveLength(2);
+
+        const undoEdit = editorReducer(afterEdit, { type: "UNDO" });
+        expect(undoEdit.proposalMarks).toEqual({ keys: [7, 8], undoFloor: 1 });
+        expect(undoEdit.hevyProgram).toEqual(accepted);
+
+        const undoAccept = editorReducer(undoEdit, { type: "UNDO" });
+        expect(undoAccept.proposalMarks).toBeNull();
+        expect(undoAccept.hevyProgram).toEqual(before);
+    });
+
+    it("CLEAR_UNDO_BASELINE and REPLACE_PROGRAM clear Proposal marks", () => {
+        const committed = editorReducer(initialState([makeDay("1", "Push")]), {
+            type: "COMMIT_PROGRAM",
+            program: [makeDay("1", "Pull")],
+            proposalMarkKeys: [3],
+        });
+        expect(committed.proposalMarks).not.toBeNull();
+
+        const saved = editorReducer(committed, { type: "CLEAR_UNDO_BASELINE" });
+        expect(saved.proposalMarks).toBeNull();
+        expect(saved.hevyProgram).toEqual(committed.hevyProgram);
+
+        const withMarks = editorReducer(initialState([makeDay("1", "Push")]), {
+            type: "COMMIT_PROGRAM",
+            program: [makeDay("1", "Pull")],
+            proposalMarkKeys: [3],
+        });
+        const replaced = editorReducer(withMarks, {
+            type: "REPLACE_PROGRAM",
+            program: [makeDay("2", "Legs")],
+        });
+        expect(replaced.proposalMarks).toBeNull();
+        expect(replaced.undoStack).toHaveLength(0);
+    });
+
+    it("recordUndo false Accept stores no Proposal marks", () => {
+        const state = editorReducer(initialState([]), {
+            type: "COMMIT_PROGRAM",
+            program: [makeDay("1", "Push")],
+            recordUndo: false,
+            proposalMarkKeys: [1],
+        });
+
+        expect(state.proposalMarks).toBeNull();
+        expect(state.undoStack).toHaveLength(0);
+    });
+
+    it("empty proposalMarkKeys on Accept replace prior marks", () => {
+        const marked = editorReducer(initialState([makeDay("1", "Push")]), {
+            type: "COMMIT_PROGRAM",
+            program: [makeDay("1", "Pull")],
+            proposalMarkKeys: [4],
+        });
+        const renamed = editorReducer(marked, {
+            type: "COMMIT_PROGRAM",
+            program: [makeDay("1", "Upper")],
+            proposalMarkKeys: [],
+        });
+
+        expect(renamed.proposalMarks).toBeNull();
     });
 
     it(`drops oldest snapshot when stack exceeds cap ${UNDO_STACK_CAP}`, () => {

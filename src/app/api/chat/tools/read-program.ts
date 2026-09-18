@@ -19,7 +19,7 @@ export function sortProgramRoutines(program: THevyRoutine[]): THevyRoutine[] {
 export function readProgramSnapshot(program: THevyRoutine[] | undefined): THevyRoutine[] {
     return sortProgramRoutines(program ?? []).map((routine) => ({
         ...routine,
-        exercises: (routine.exercises ?? []).map((exercise) => ({ ...exercise })),
+        exercises: (routine.exercises ?? []).map(({ builder_exercise_key: _key, ...exercise }) => exercise),
     }));
 }
 
@@ -28,7 +28,7 @@ type TSetForModel = Omit<THevySets, "index"> & {
     weight_display: string | null;
 };
 
-type THevyExerciseForModel = Omit<THevyExercise, "index" | "sets"> & {
+type THevyExerciseForModel = Omit<THevyExercise, "index" | "sets" | "builder_exercise_key"> & {
     sets: TSetForModel[];
 };
 
@@ -43,7 +43,12 @@ function setForModel(set: THevySets, isInLbs: boolean): TSetForModel {
 }
 
 function exerciseForModel(exercise: THevyExercise, isInLbs: boolean): THevyExerciseForModel {
-    const { index: _exerciseIndex, sets, ...exerciseRest } = exercise;
+    const {
+        index: _exerciseIndex,
+        sets,
+        builder_exercise_key: _builderExerciseKey,
+        ...exerciseRest
+    } = exercise;
     return {
         ...exerciseRest,
         sets: sets.map((set) => setForModel(set, isInLbs)),

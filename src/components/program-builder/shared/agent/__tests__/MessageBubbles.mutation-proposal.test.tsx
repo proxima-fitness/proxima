@@ -36,6 +36,7 @@ vi.mock("@/api/hooks", () => ({
 
 import { MessageBubbles } from "../MessageBubbles";
 import * as helpers from "@/components/program-builder/utils/helpers";
+import { ProgramMutationProvider } from "@/contexts/ProgramMutationContext";
 
 function renderBubbles(ui: ReactNode) {
     return render(<TooltipProvider>{ui}</TooltipProvider>);
@@ -484,5 +485,136 @@ describe("MessageBubbles mutation proposal", () => {
         expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
         expect(props.commitWithUndo).not.toHaveBeenCalled();
         expect(props.setMessages).not.toHaveBeenCalled();
+    });
+
+    it("lets a pending set-change jump and ignores a pending Add", () => {
+        const props = baseProps([
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Edit" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                parts: [
+                    {
+                        type: "tool-mutateProgram",
+                        toolCallId: "m1",
+                        state: "output-available",
+                        input: {},
+                        output: {
+                            operations: [
+                                {
+                                    op: "update_set",
+                                    folderIds: [0],
+                                    dayOrder: 1,
+                                    exerciseIndex: 0,
+                                    setIndex: 0,
+                                    set: { reps: 10 },
+                                },
+                                {
+                                    op: "insert_exercise",
+                                    folderIds: [0],
+                                    dayOrder: 1,
+                                    exerciseIndex: 1,
+                                    exercise: {
+                                        exercise_template_id: "ex-2",
+                                        title: "Face Pull",
+                                        sets: [
+                                            {
+                                                type: "normal",
+                                                weight_kg: null,
+                                                reps: 12,
+                                                distance_meters: null,
+                                                duration_seconds: null,
+                                                rpe: null,
+                                                custom_metric: null,
+                                                rep_range: null,
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    } as TChatMessage["parts"][number],
+                ],
+            },
+        ]);
+
+        renderBubbles(<MessageBubbles { ...props } />);
+
+        expect(screen.getByRole("button", { name: /Bench Press/ })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: /Face Pull/ })).toBeNull();
+    });
+
+    it("jumps only the latest accepted card while marks are live", () => {
+        const acceptedRecipe = {
+            days: [
+                {
+                    heading: "Week 1, Push",
+                    steps: [
+                        {
+                            kind: "exercise" as const,
+                            title: "Bench Press",
+                            locator: {
+                                folderId: 0,
+                                dayOrder: 1,
+                                exerciseIndex: 0,
+                                builderExerciseKey: 1,
+                            },
+                            setRows: [{ setLabel: "Set 1", from: "8 reps", to: "10 reps" }],
+                        },
+                    ],
+                },
+            ],
+        };
+        const mutatePart = {
+            type: "tool-mutateProgram",
+            toolCallId: "m1",
+            state: "output-available",
+            input: {},
+            output: {
+                operations: [
+                    {
+                        op: "update_set",
+                        folderIds: [0],
+                        dayOrder: 1,
+                        exerciseIndex: 0,
+                        setIndex: 0,
+                        set: { reps: 10 },
+                    },
+                ],
+            },
+        } as TChatMessage["parts"][number];
+
+        const messages: TChatMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "First" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                metadata: { mutationProposal: "accepted", mutationProposalRecipe: acceptedRecipe },
+                parts: [mutatePart],
+            },
+            { id: "u2", role: "user", parts: [{ type: "text", text: "Again" }] },
+            {
+                id: "a2",
+                role: "assistant",
+                metadata: { mutationProposal: "accepted", mutationProposalRecipe: acceptedRecipe },
+                parts: [mutatePart],
+            },
+        ];
+
+        render(
+            <TooltipProvider>
+                <ProgramMutationProvider
+                    program={ [makeDay()] }
+                    commitWithUndo={ vi.fn() }
+                    setProgramFromHydrate={ vi.fn() }
+                    proposalMarkKeys={ [1] }
+                >
+                    <MessageBubbles { ...baseProps(messages) } />
+                </ProgramMutationProvider>
+            </TooltipProvider>,
+        );
+
+        const jumpButtons = screen.getAllByRole("button", { name: /Bench Press/ });
+        expect(jumpButtons).toHaveLength(1);
     });
 });

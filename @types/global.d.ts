@@ -518,6 +518,11 @@ type THevyExercise = {
     /** UI-only: short explanation why this exercise was selected. Must not be sent to Hevy or other external systems. */
     reason?: string;
     /**
+     * Client-only **Builder exercise key**. Assigned on hydrate/commit.
+     * Never sent to Hevy or written to the **Program prescription**.
+     */
+    builder_exercise_key?: number;
+    /**
      * Set only by the **Hevy share import** adapter, and only when `exercise_template_id` looks like
      * the sharer's own **Hevy-native custom**. Week Export mints it as a **Custom movement** for the
      * signed-in user and creates it on their Hevy account; without it an unknown template ID is

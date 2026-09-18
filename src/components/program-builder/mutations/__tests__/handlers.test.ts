@@ -99,6 +99,13 @@ describe("editExercise", () => {
 
         expect(next[0].exercises[0].reason).toBeUndefined();
     });
+
+    it("keeps the Builder exercise key across a full replace", () => {
+        const program = [makeDay({ exercises: [makeExercise({ builder_exercise_key: 11 })] })];
+        const next = editExercise(program, [0], 1, 0, gridPayload);
+
+        expect(next[0].exercises[0].builder_exercise_key).toBe(11);
+    });
 });
 
 describe("editExerciseFromDialog", () => {
@@ -204,6 +211,23 @@ describe("swapExerciseTemplate", () => {
         expect(next[0].exercises[0].sets[0].reps).toBe(12);
         expect(next[0].exercises[0].rest_seconds).toBe("60");
         expect(next[0].exercises[0].notes).toBe("Keep elbows tucked");
+    });
+
+    it("keeps the Builder exercise key on a full replace", () => {
+        const program = [makeDay({ exercises: [makeExercise({ builder_exercise_key: 14 })] })];
+        const { program: next } = swapExerciseTemplate(
+            program,
+            "bench-1",
+            {
+                exercise_template_id: "3601968B",
+                title: "DB Bench",
+                rest_seconds: "60",
+                sets: [makeSet({ index: 0, reps: 12 })],
+            },
+            { preserveSets: false },
+        );
+
+        expect(next[0].exercises[0].builder_exercise_key).toBe(14);
     });
 
     it("keeps existing reason when to.reason omitted", () => {

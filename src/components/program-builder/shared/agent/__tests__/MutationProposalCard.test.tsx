@@ -158,4 +158,86 @@ describe("MutationProposalCard", () => {
 
         matchMedia.mockRestore();
     });
+
+    it("Proposal jumps a current-review set-change and ignores a pending Add", () => {
+        const onJump = vi.fn();
+        const locator = { folderId: 1, dayOrder: 1, exerciseIndex: 0, builderExerciseKey: 4 };
+
+        render(
+            <MutationProposalCard
+                recipe={ {
+                    days: [
+                        {
+                            heading: "Week 2, Upper Pull",
+                            steps: [
+                                {
+                                    kind: "action",
+                                    text: "Add Face Pull",
+                                },
+                                {
+                                    kind: "exercise",
+                                    title: "Romanian Deadlift",
+                                    locator,
+                                    setRows: [
+                                        {
+                                            setLabel: "Set 1",
+                                            from: "8 reps",
+                                            to: "6 reps",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                } }
+                showActions
+                jumpEnabled
+                onJump={ onJump }
+                onAccept={ vi.fn() }
+                onReject={ vi.fn() }
+            />,
+        );
+
+        fireEvent.click(screen.getByText("Face Pull"));
+        expect(onJump).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByText("Romanian Deadlift"));
+        expect(onJump).toHaveBeenCalledWith(locator);
+    });
+
+    it("does not jump after Save when jumpEnabled is false", () => {
+        const onJump = vi.fn();
+
+        render(
+            <MutationProposalCard
+                recipe={ {
+                    days: [
+                        {
+                            heading: "Week 2, Upper Pull",
+                            steps: [
+                                {
+                                    kind: "exercise",
+                                    title: "Romanian Deadlift",
+                                    locator: { folderId: 1, dayOrder: 1, exerciseIndex: 0 },
+                                    setRows: [
+                                        {
+                                            setLabel: "Set 1",
+                                            from: "8 reps",
+                                            to: "6 reps",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                } }
+                showActions={ false }
+                jumpEnabled={ false }
+                onJump={ onJump }
+            />,
+        );
+
+        fireEvent.click(screen.getByText("Romanian Deadlift"));
+        expect(onJump).not.toHaveBeenCalled();
+    });
 });

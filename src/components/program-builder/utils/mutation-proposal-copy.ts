@@ -20,13 +20,23 @@ export type TMutationProposalSetRow = {
     to: string;
 };
 
+/** Frozen-grid row a recipe step can **Proposal jump** to. */
+export type TProposalStepLocator = {
+    builderExerciseKey?: number;
+    dayOrder: number;
+    exerciseIndex: number;
+    folderId: number;
+};
+
 export type TMutationProposalAction = {
     kind: "action";
+    locator?: TProposalStepLocator;
     text: string;
 };
 
 export type TMutationProposalExercise = {
     kind: "exercise";
+    locator?: TProposalStepLocator;
     setRows: TMutationProposalSetRow[];
     title: string;
 };
@@ -43,6 +53,7 @@ export type TMutationProposalRecipe = {
 };
 
 type TSetChange = {
+    builderExerciseKey?: number;
     exerciseIndex: number;
     exerciseTitle: string;
     from: string;
@@ -192,7 +203,15 @@ function addSwap(
         if (fromTitle === toTitle) {
             continue;
         }
-        addAction(buckets, day, `Swap ${fromTitle} for ${toTitle}`);
+        const fromIndex = day.exercises.findIndex(
+            (exercise) => exercise.exercise_template_id === fromId,
+        );
+        addAction(
+            buckets,
+            day,
+            `Swap ${fromTitle} for ${toTitle}`,
+            fromIndex >= 0 ? rowLocator(day, fromIndex) : undefined,
+        );
     }
 }
 
@@ -229,7 +248,7 @@ function addIndexedExerciseAction(
             displayExerciseTitle(exercise),
             catalog,
         );
-        addAction(buckets, day, writeText(title));
+        addAction(buckets, day, writeText(title), rowLocator(day, exerciseIndex));
     }
 }
 
@@ -256,7 +275,7 @@ function addReplaceExercise(
         if (fromTitle === toTitle) {
             continue;
         }
-        addAction(buckets, day, `Replace ${fromTitle} with ${toTitle}`);
+        addAction(buckets, day, `Replace ${fromTitle} with ${toTitle}`, rowLocator(day, exerciseIndex));
     }
 }
 
@@ -295,6 +314,9 @@ function addUpdateSet(
         }
         const bucket = getBucket(buckets, day);
         bucket.setChanges.push({
+            ...(isPositiveKey(exercise.builder_exercise_key)
+                ? { builderExerciseKey: exercise.builder_exercise_key }
+                : {}),
             exerciseIndex,
             exerciseTitle: resolveProposedExerciseTitle(exercise, day, operations, catalog),
             from,
@@ -382,12 +404,24 @@ function addCreateSuperset(
                     catalog,
                 );
             }) ?? [MISSING_NAME];
-        addAction(buckets, day, `Create superset (${names.join(", ")})`);
+        addAction(
+            buckets,
+            day,
+            `Create superset (${names.join(", ")})`,
+            indexes?.[0] != null ? rowLocator(day, indexes[0]) : undefined,
+        );
     }
 }
 
-function addAction(buckets: Map<string, TDayBucket>, day: THevyRoutine, text: string): void {
-    getBucket(buckets, day).actions.push({ kind: "action", text });
+function addAction(
+    buckets: Map<string, TDayBucket>,
+    day: THevyRoutine,
+    text: string,
+    locator?: TProposalStepLocator,
+): void {
+    getBucket(buckets, day).actions.push(
+        locator ? { kind: "action", locator, text } : { kind: "action", text },
+    );
 }
 
 function getBucket(buckets: Map<string, TDayBucket>, day: THevyRoutine): TDayBucket {
@@ -474,11 +508,19 @@ function stepsForBucket(bucket: TDayBucket): TMutationProposalStep[] {
 
     const exerciseSteps: TMutationProposalExercise[] = Array.from(exercises.entries())
         .sort(([a], [b]) => a - b)
-        .map(([, exercise]) => ({
-            kind: "exercise" as const,
-            setRows: collapseSetRows(exercise.changes),
-            title: exercise.title,
-        }))
+        .map(([exerciseIndex, exercise]) => {
+            const locator = rowLocatorFromBucket(
+                bucket,
+                exerciseIndex,
+                exercise.changes[0]?.builderExerciseKey,
+            );
+            return {
+                kind: "exercise" as const,
+                ...(locator ? { locator } : {}),
+                setRows: collapseSetRows(exercise.changes),
+                title: exercise.title,
+            };
+        })
         .filter((step) => step.setRows.length > 0);
 
     return [...bucket.actions, ...exerciseSteps];
@@ -515,7 +557,57 @@ function collapseSetRows(changes: TSetChange[]): TMutationProposalSetRow[] {
 }
 
 function stepsEqual(a: TMutationProposalStep[], b: TMutationProposalStep[]): boolean {
-    return JSON.stringify(a) === JSON.stringify(b);
+    return JSON.stringify(a.map(stepWithoutLocator)) === JSON.stringify(b.map(stepWithoutLocator));
+}
+
+function stepWithoutLocator(step: TMutationProposalStep): TMutationProposalStep {
+    if (step.kind === "action") {
+        return { kind: "action", text: step.text };
+    }
+    return { kind: "exercise", setRows: step.setRows, title: step.title };
+}
+
+function rowLocator(day: THevyRoutine, exerciseIndex: number | undefined): TProposalStepLocator | undefined {
+    if (exerciseIndex == null) {
+        return undefined;
+    }
+    const exercise = day.exercises[exerciseIndex];
+    if (exercise == null) {
+        return undefined;
+    }
+    const folderId = parseFolderId(day.folder_id);
+    const dayOrder = parseDayOrder(day.order);
+    if (folderId == null || dayOrder == null) {
+        return undefined;
+    }
+    return {
+        ...(isPositiveKey(exercise.builder_exercise_key)
+            ? { builderExerciseKey: exercise.builder_exercise_key }
+            : {}),
+        dayOrder,
+        exerciseIndex,
+        folderId,
+    };
+}
+
+function rowLocatorFromBucket(
+    bucket: TDayBucket,
+    exerciseIndex: number,
+    builderExerciseKey?: number,
+): TProposalStepLocator | undefined {
+    if (bucket.folderId == null || bucket.dayOrder == null) {
+        return undefined;
+    }
+    return {
+        ...(isPositiveKey(builderExerciseKey) ? { builderExerciseKey } : {}),
+        dayOrder: bucket.dayOrder,
+        exerciseIndex,
+        folderId: bucket.folderId,
+    };
+}
+
+function isPositiveKey(key: number | undefined): key is number {
+    return typeof key === "number" && Number.isInteger(key) && key > 0;
 }
 
 function formatHeading(
