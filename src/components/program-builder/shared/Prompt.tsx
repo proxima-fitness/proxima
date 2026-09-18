@@ -97,9 +97,6 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         >
                             <ResumeDraftBanner />
                             <PromptTemplate />
-                            <p className="text-center font-tertiary text-[0.618rem] text-muted-foreground max-sm:px-2 text-xs sm:text-sm">
-                                Start free · Pro from $9.99/mo · Cancel anytime
-                            </p>
                         </motion.div>
                     </div>
                 </div>
