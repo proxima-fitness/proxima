@@ -3,8 +3,8 @@
 /**
  * @module HevyExerciseVisualizer
  * Renders the list of exercises for one day: each row shows thumbnail, title, sets/reps/intensity, superset styling,
- * and tooltip/actions (reason, notes, rest, details, add note, delete). Supports edit mode for superset selection (checkboxes).
- * Depends on: HevyExerciseGif, HevyExerciseDetailsDialog, formatWeight, Tooltip.
+ * tooltip/actions, and a reserved leading **Proposal mark** gutter after Accept (ADR 0024 / 05).
+ * Depends on: HevyExerciseGif, HevyExerciseDetailsDialog, formatWeight, Tooltip, proposal-marks.
  * Used by: HevyDayCard.
  */
 
@@ -74,6 +74,28 @@ const getSupersetColor = (supersetId: number | null | undefined): string | null 
     return SUPERSET_COLORS[supersetId % SUPERSET_COLORS.length];
 };
 
+/**
+ * Reserved 4px leading rail. Hashed only on a live **Proposal mark** row.
+ *
+ * @param hashed - True when this row's builder exercise key is in the live set
+ */
+function ProposalMarkGutter({ hashed }: { hashed: boolean }) {
+    return (
+        <div
+            data-testid="proposal-mark-gutter"
+            className="flex w-1 shrink-0 items-center justify-center self-stretch"
+            aria-hidden={!hashed}
+        >
+            {hashed ? (
+                <span
+                    aria-label="Proposal mark"
+                    className="h-3 w-[3px] rounded-sm bg-lightSecondary"
+                />
+            ) : null}
+        </div>
+    );
+}
+
 /** Normalizes CRLF and literal "\\n" sequences (e.g. from serialized AI copy) for multiline display. */
 const normalizeMultilineExerciseText = (s: string): string =>
     s.replace(/\r\n/g, "\n").replace(/\\n/g, "\n");
@@ -100,6 +122,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
     const isSm = useMediaQuery("(min-width: 640px)");
     const mutationsLocked = useIsDayLocked(day.hevyRoutineId);
     const proposalMarkKeys = useProposalMarkKeys();
+    const reserveGutter = !readOnly && proposalMarkKeys.size > 0;
     const [detailsExercise, setDetailsExercise] = useState<THevyExerciseTemplate | undefined>(undefined);
 
     const editHandler = (e: React.MouseEvent<HTMLElement>, folder_id: number, i: number, exercise: THevyExercise) => {
@@ -145,7 +168,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                 const showProposalMark = isProposalMarkedRow(exercise, proposalMarkKeys, readOnly);
                 const rowProps = {
                     onClick: readOnly || mutationsLocked ? undefined : (e: React.MouseEvent<HTMLElement>) => editHandler(e, Number(folder_id), i, exercise),
-                    className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${readOnly || mutationsLocked ? "cursor-default" : "cursor-pointer"} ${rowBackgroundClass} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
+                    className: `w-full min-h-14 border-gray-200 appearance-none p-0 m-0 text-left font-inherit focus:outline-hidden focus-visible:ring-2 focus-visible:ring-lightSecondary focus-visible:ring-inset ${readOnly || mutationsLocked ? "cursor-default" : "cursor-pointer"} ${supersetColor && !isSelected ? 'border-r-4' : ''}`,
                     style: supersetColor && !isSelected ? borderStyle : {},
                     "data-builder-exercise-key": exercise.builder_exercise_key,
                 };
@@ -169,7 +192,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                     >
                                         {exercise.supersets_id !== null && exercise.supersets_id !== undefined && !editMode && (
                                             readOnly ? (
-                                                <span className="flex flex-row justify-end items-center w-full pt-2">
+                                                <span className={`flex flex-row justify-end items-center w-full pt-2 ${rowBackgroundClass}`}>
                                                     <span className="text-xs flex flex-row items-center gap-2 pr-2 dark:text-offWhite">
                                                         <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}
                                                     </span>
@@ -182,7 +205,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                     removeFromSuperset(i);
                                                 }}
                                                 disabled={mutationsLocked}
-                                                className="text-black w-full pt-2 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className={`text-black w-full pt-2 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed ${rowBackgroundClass}`}
                                                 title="Remove from superset"
                                                 aria-label="Remove from superset"
                                             >
@@ -194,11 +217,13 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )
                                         )}
                                         { exercise.supersets_id !== null && exercise.supersets_id !== undefined && editMode && (
-                                                <span className="flex flex-row justify-end items-center w-full pt-2">
+                                                <span className={`flex flex-row justify-end items-center w-full pt-2 ${rowBackgroundClass}`}>
                                                 <span className={`text-xs flex flex-row items-center gap-2 pr-2 ${isSelected ? 'text-white' : ''}`}> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                             </span>
                                         ) }
-                                <div className={`flex flex-row justify-between items-center text-xs ${isLastRow ? '' : 'border-b'} ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
+                                <div className="flex w-full">
+                                    {reserveGutter ? <ProposalMarkGutter hashed={showProposalMark} /> : null}
+                                    <div className={`flex min-w-0 flex-1 flex-row items-center justify-between text-xs ${rowBackgroundClass} ${isLastRow ? '' : 'border-b'} ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
                                     <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
                                         <div className="text-lightSecondary dark:text-white pr-1 pl-2">
                                             {editMode ? (
@@ -226,16 +251,8 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                             )}
                                         </div>
                                         <HevyExerciseGif thumbnailOrImage={"thmb"} name={exerciseTitle} gif_id={hevyExercises?.find((hevyExercise: THevyExerciseTemplate) => hevyExercise.id === exercise.exercise_template_id)?.gif_id} resolution={"180"} file_type={'jpg'} />
-                                        <div className="flex flex-row items-center justify-between gap-1.5">
-                                            {showProposalMark ? (
-                                                <span
-                                                    aria-label="Proposal mark"
-                                                    className="size-1.5 shrink-0 rounded-full bg-lightSecondary"
-                                                />
-                                            ) : null}
-                                            <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
-                                                {exerciseTitle}
-                                            </div>
+                                        <div className={isSelected ? 'text-white' : 'dark:text-offWhite'}>
+                                            {exerciseTitle}
                                         </div>
                                     </div>
                                     <div className={`text-center flex flex-row items-center justify-end max-w-[50%] w-[50%] ${isSelected ? 'text-white' : 'dark:text-offWhite'}`}>
@@ -253,6 +270,7 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                         </div>
                                     </div>
                                     </div>
+                                </div>
                                 </div>
                 );
 

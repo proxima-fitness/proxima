@@ -195,7 +195,7 @@ export function collectProposalMarkKeys(
 }
 
 /**
- * True when this live row should show a **Proposal mark** dot.
+ * True when this live row should show a **Proposal mark** hash.
  *
  * @param exercise - Builder row
  * @param markKeys - Live mark keys

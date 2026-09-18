@@ -16,6 +16,7 @@ vi.mock("@/contexts/PoundsOrKgContext", () => ({
 }));
 
 const completedHevyRoutineIds: string[] = [];
+const proposalMarkKeys = new Set<number>();
 
 vi.mock("@/contexts/ProgramMutationContext", () => ({
     useProgramMutation: () => ({ isAgentStreaming: false }),
@@ -23,7 +24,7 @@ vi.mock("@/contexts/ProgramMutationContext", () => ({
     useIsDayLocked: (hevyRoutineId?: string) =>
         Boolean(hevyRoutineId && completedHevyRoutineIds.includes(hevyRoutineId)),
     useCompletedHevyRoutineIds: () => completedHevyRoutineIds,
-    useProposalMarkKeys: () => new Set<number>(),
+    useProposalMarkKeys: () => proposalMarkKeys,
 }));
 
 vi.mock("@/hooks/use-media-query", () => ({
@@ -45,6 +46,7 @@ vi.mock("../HevyExerciseGif", () => ({
 describe("HevyDayCard read-only variant", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        proposalMarkKeys.clear();
     });
 
     afterEach(() => {
@@ -142,9 +144,58 @@ describe("HevyDayCard read-only variant", () => {
     });
 });
 
+describe("HevyDayCard Proposal mark gutter", () => {
+    beforeEach(() => {
+        proposalMarkKeys.clear();
+        completedHevyRoutineIds.length = 0;
+    });
+
+    afterEach(() => {
+        cleanup();
+        proposalMarkKeys.clear();
+    });
+
+    const dayWithExercise: THevyRoutine = {
+        id: "1",
+        folder_id: 0,
+        order: "1",
+        title: "Push",
+        notes: "",
+        exercises: [{
+            index: 0,
+            title: "Overhead Press (Barbell)",
+            notes: "",
+            rest_seconds: "90",
+            exercise_template_id: "ex-1",
+            supersets_id: null,
+            builder_exercise_key: 3,
+            sets: [],
+        }],
+    };
+
+    it("reserves a leading gutter on the column header when Proposal marks are live", () => {
+        proposalMarkKeys.add(3);
+        render(<HevyDayCard day={dayWithExercise} />);
+
+        expect(screen.getByTestId("proposal-mark-header-gutter")).toBeTruthy();
+        expect(screen.getByLabelText("Proposal mark")).toBeTruthy();
+    });
+
+    it("does not reserve a header gutter on logged cards", () => {
+        proposalMarkKeys.add(3);
+        const day = mapBackedUpWorkoutToHevyRoutine(backedUpWorkoutFixture);
+
+        render(<HevyDayCard variant="read-only" day={day} />);
+
+        expect(screen.queryByTestId("proposal-mark-header-gutter")).toBeNull();
+        expect(screen.queryByLabelText("Proposal mark")).toBeNull();
+    });
+});
+
 describe("HevyDayCard Day complete", () => {
     beforeEach(() => {
         completedHevyRoutineIds.length = 0;
+        proposalMarkKeys.clear();
     });
 
     afterEach(() => {

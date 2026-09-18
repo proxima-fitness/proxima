@@ -29,7 +29,7 @@ import { HevyDuplicateDay } from "./HevyDuplicateDay";
 import { convertHevyExerciseIntoHevyAddExercise } from "../utils";
 import { useTheme } from "next-themes";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
-import { useIsDayLocked, useCompletedHevyRoutineIds } from "@/contexts/ProgramMutationContext";
+import { useIsDayLocked, useCompletedHevyRoutineIds, useProposalMarkKeys } from "@/contexts/ProgramMutationContext";
 import {
     convertSupabaseDateToReadable,
     formatWorkoutWallDuration,
@@ -133,6 +133,8 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
     const { isInLbs } = usePoundsOrKgContext();
     const mutationsLocked = useIsDayLocked(day.hevyRoutineId);
     const completedHevyRoutineIds = useCompletedHevyRoutineIds();
+    const proposalMarkKeys = useProposalMarkKeys();
+    const reserveProposalGutter = !isReadOnly && proposalMarkKeys.size > 0;
     const isDayComplete =
         day.hevyRoutineId != null && completedHevyRoutineIds.includes(day.hevyRoutineId);
     const [duplicateDayOpen, setDuplicateDayOpen] = useState(false);
@@ -376,6 +378,13 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
 
                     <div className="text-xs mt-2 flex flex-row justify-between pl-2 pr-2 gap-2 sm:gap-4 border-t border-b py-2 border-gray-200 dark:text-offWhite dark:border-darkGray bg-[#e8e8e8] dark:bg-extraDarkGray">
                         <div className="flex flex-row gap-2 sm:gap-4 shrink min-w-0">
+                            {reserveProposalGutter ? (
+                                <div
+                                    data-testid="proposal-mark-header-gutter"
+                                    className="w-1 shrink-0"
+                                    aria-hidden
+                                />
+                            ) : null}
                             <div className="shrink-0">
                                 #
                             </div>

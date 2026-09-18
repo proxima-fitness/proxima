@@ -918,10 +918,10 @@ _Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** but
 ### Proposal mark
 
 
-Dot locator on a still-present builder exercise row whose **Builder exercise key** was captured at the last accepted **Mutation proposal**. Shown only while that Accept is still undoable, so the user can see what it changed and decide whether to undo. Follows the row when its index moves. Lives on **New path**, **Edit program**, and **Edit current week**. Not restored with the **Builder draft**. Absent on first build, a pending proposal, manual-only edits, **AI week suggest**, and on deletes or day/week ops that leave no exercise row.
+Leading-gutter hash on a still-present builder exercise row whose **Builder exercise key** was captured at the last accepted **Mutation proposal**. A reserved 4px rail sits left of `#` / trash on every builder row while that Accept is still undoable, so unmarked rows do not shift. The hash is one accent (teal), opposite the superset right border, and is not a title-cluster bullet. Follows the row when its index moves. Lives on **New path**, **Edit program**, and **Edit current week**. Not restored with the **Builder draft**. Absent on first build, a pending proposal, manual-only edits, **AI week suggest**, and on deletes or day/week ops that leave no exercise row.
 
 
-_Avoid_: Last pass, dirty indicator, line diff, ghost row, unread badge, week-header hint, row tint, restoring marks without Undo, **Changed routine (Sync)**
+_Avoid_: Last pass, dirty indicator, line diff, ghost row, unread badge, week-header hint, row tint, title-adjacent bullet, restoring marks without Undo, **Changed routine (Sync)**
 
 
 
