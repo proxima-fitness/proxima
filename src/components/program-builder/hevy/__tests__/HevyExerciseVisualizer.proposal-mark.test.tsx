@@ -87,7 +87,10 @@ describe("HevyExerciseVisualizer Proposal mark gutter", () => {
         const gutters = screen.getAllByTestId("proposal-mark-gutter");
         expect(gutters).toHaveLength(2);
         const mark = screen.getByLabelText("Proposal mark");
-        expect(mark.closest("[data-testid='proposal-mark-gutter']")).toBeTruthy();
+        const markedGutter = mark.closest("[data-testid='proposal-mark-gutter']");
+        expect(markedGutter).toBeTruthy();
+        expect(markedGutter?.parentElement?.textContent).toContain("Overhead Press (Barbell)");
+        expect(markedGutter?.parentElement?.className).toMatch(/bg-(white|extraLightGray)/);
         expect(screen.getByText("Overhead Press (Barbell)").previousElementSibling?.getAttribute("aria-label")).not.toBe(
             "Proposal mark",
         );

@@ -75,7 +75,7 @@ const getSupersetColor = (supersetId: number | null | undefined): string | null 
 };
 
 /**
- * Reserved 4px leading rail. Hashed only on a live **Proposal mark** row.
+ * Reserved 4px leading rail inside the exercise row. Hashed only on a live **Proposal mark** row.
  *
  * @param hashed - True when this row's builder exercise key is in the live set
  */
@@ -221,10 +221,10 @@ export const HevyExerciseVisualizer: React.FC<IProps> = (props) => {
                                                 <span className={`text-xs flex flex-row items-center gap-2 pr-2 ${isSelected ? 'text-white' : ''}`}> <LinkIcon className="w-4 h-4" /> Superset {exercise.supersets_id + 1}</span>
                                             </span>
                                         ) }
-                                <div className="flex w-full">
+                                <div className={`flex w-full min-w-0 flex-row items-stretch text-xs ${rowBackgroundClass} ${isLastRow ? '' : 'border-b'} ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'} relative`}>
                                     {reserveGutter ? <ProposalMarkGutter hashed={showProposalMark} /> : null}
-                                    <div className={`flex min-w-0 flex-1 flex-row items-center justify-between text-xs ${rowBackgroundClass} ${isLastRow ? '' : 'border-b'} ${exercise.supersets_id && !editMode ? 'pb-2' : 'py-2'}  relative`}>
-                                    <div className="flex flex-row gap-2 items-center justify-start max-w-[50%]">
+                                    <div className="flex min-w-0 flex-1 flex-row items-center justify-between">
+                                    <div className="flex flex-row gap-2 items-center justify-start max-w-[50%] min-w-0">
                                         <div className="text-lightSecondary dark:text-white pr-1 pl-2">
                                             {editMode ? (
                                                 <div className="" onClick={(e) => e.stopPropagation()}>
