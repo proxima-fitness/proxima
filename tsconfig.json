@@ -58,7 +58,8 @@
         ".next",
         "dist",
         "coverage",
-        "supabase/functions"
+        "supabase/functions",
+        "optimized-black-hole"
     ],
   "references": [
     {

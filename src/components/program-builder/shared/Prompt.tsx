@@ -4,9 +4,10 @@
  * @module Prompt
  * Landing hero: title, subtitle, prompt input, product preview, and gradient backdrop.
  * Syncs SSR user into UserContext.
- * Depends on: PromptTemplate, ResumeDraftBanner, UserContext. Used by: build-program/landing.
+ * Depends on: PromptTemplate, ResumeDraftBanner, UserContext, ProximaStarCanvasDynamic. Used by: build-program/landing.
  */
 import { useEffect } from "react";
+import { ProximaStarCanvasDynamic } from "@/components/landing/proxima-star/ProximaStarCanvasDynamic";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import {
@@ -54,8 +55,11 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                     </div>
                     <div className="absolute inset-0 hidden dark:block">
                         <div className="absolute left-1/2 top-[42%] z-0 h-[65%] w-[65%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-full hero__atmosphere_dark" />
+                        <div className="absolute inset-0 hidden md:block">
+                            <ProximaStarCanvasDynamic />
+                        </div>
                     </div>
-                    <div className="absolute inset-0 bg-linear-to-b from-white/40 via-transparent to-[#dce5ee] dark:from-background/40 dark:via-transparent dark:to-extraDarkGray/50" />
+                    <div className="absolute inset-0 bg-linear-to-b from-white/40 via-transparent to-[#dce5ee] dark:from-background/25 dark:via-transparent dark:to-background/35" />
                     <div className="absolute inset-0 hero__vignette" />
                 </div>
                 <div className="relative z-20 hidden w-full shrink-0 justify-center sm:flex">
