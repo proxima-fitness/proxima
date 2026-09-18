@@ -12,8 +12,8 @@
  * 3. **Schema conversion** - Converts between the Proxima schedule format
  *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
- * 4. **Program mutation helpers** - Human-readable operation summaries and client-side
- *    apply of agent mutateProgram tool results with undo support.
+ * 4. **Program mutation helpers** - Human-readable operation summaries, **Mutation proposal**
+ *    collect / Accept / lock / stale expire, and atomic buildWeek apply of agent mutateProgram tool results.
  * 5. **Hevy share import hydrate** - client-side apply of a confirmed importHevyShareFolder
  *    tool result onto an empty grid (week 0 seed).
  *
@@ -1017,34 +1017,111 @@ export const tryCommitAtomicBuildWeekAndMutations = (
     return { committed: true, effectiveWeeks };
 };
 
+/** Persisted **Mutation proposal** decision on chat message metadata (ADR 0024). */
+export type TMutationProposalDecision = "accepted" | "pending" | "rejected";
+
+/** Standalone mutateProgram batch waiting on Accept (skips same-turn post-buildWeek ops). */
+export interface IMutationProposal {
+    keys: string[];
+    messageIds: string[];
+    operations: TAgentProgramOperation[];
+}
+
+function isMetadataRecord(metadata: unknown): metadata is Record<string, unknown> {
+    return metadata != null && typeof metadata === "object" && !Array.isArray(metadata);
+}
+
+function readStoredMutationProposalDecision(message: UIMessage): TMutationProposalDecision | undefined {
+    if (!isMetadataRecord(message.metadata)) return undefined;
+    const stored = message.metadata.mutationProposal;
+    if (stored === "accepted" || stored === "pending" || stored === "rejected") {
+        return stored;
+    }
+    return undefined;
+}
+
 /**
- * Applies standalone mutateProgram tool batches (live-grid edits). Skips parts after
- * buildWeek in the same turn (handled by atomic commit in 2c). Fail-all batch semantics.
+ * Decision for a **Mutation proposal** card: stored metadata wins; a later user
+ * message is implicit Reject (C5). Absence of both is pending.
+ *
+ * @param message - Assistant message that may hold mutateProgram parts
+ * @param laterMessages - Messages after `message` in the thread
  */
-export const applyMutateProgramFromMessages = (
+export function resolveMutationProposalDecision(
+    message: UIMessage,
+    laterMessages: readonly UIMessage[],
+): TMutationProposalDecision | null {
+    const stored = readStoredMutationProposalDecision(message);
+    if (stored === "accepted" || stored === "rejected") return stored;
+    if (laterMessages.some((later) => later.role === "user")) return "rejected";
+    if (stored === "pending") return "pending";
+    return null;
+}
+
+/**
+ * Writes accepted / rejected onto message metadata so hydrate does not re-open
+ * or auto-apply the batch (C7, C8).
+ *
+ * @param messages - Current thread
+ * @param messageIds - Assistant message ids that held the pending batch
+ * @param decision - Explicit Accept or Reject
+ */
+export function withMutationProposalDecision(
+    messages: TChatMessage[],
+    messageIds: readonly string[],
+    decision: Exclude<TMutationProposalDecision, "pending">,
+): TChatMessage[] {
+    const idSet = new Set(messageIds);
+    return messages.map((message) => {
+        if (!idSet.has(message.id ?? "")) return message;
+        const previous = isMetadataRecord(message.metadata) ? message.metadata : {};
+        return {
+            ...message,
+            metadata: { ...previous, mutationProposal: decision },
+        };
+    });
+}
+
+/**
+ * Collects a standalone **Mutation proposal** from mutateProgram tool parts.
+ * Does not commit. Skips parts after buildWeek in the same turn, decided cards,
+ * and implicit Reject (a later user message).
+ *
+ * @param messages - Chat thread
+ * @param status - Stream status; streaming never opens a proposal
+ * @param hevyProgram - Live grid; empty grid has no standalone proposal
+ * @param appliedKeysRef - Session keys already accepted (or atomic-committed)
+ */
+export const collectMutationProposal = (
     messages: UIMessage[],
     status: TChatStatusForAtomic | undefined,
     hevyProgram: THevyRoutine[],
     appliedKeysRef: React.RefObject<Set<string>>,
-    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
-): boolean => {
-    if (status === "streaming") return false;
-    if (!hevyProgram?.length) return false;
+): IMutationProposal | null => {
+    if (status === "streaming") return null;
+    if (!hevyProgram?.length) return null;
 
     const lastBuildWeekIdx = getLastSuccessfulBuildWeekFlatIndex(messages);
     const flatIndexByKey = buildFlatPartIndexByKey(messages);
+    const appliedKeys = appliedKeysRef.current;
 
     const pendingKeys: string[] = [];
+    const messageIds: string[] = [];
     const mergedOperations: TAgentProgramOperation[] = [];
 
-    for (const message of messages) {
+    for (let messageIndex = 0; messageIndex < messages.length; messageIndex++) {
+        const message = messages[messageIndex];
+        const decision = resolveMutationProposalDecision(message, messages.slice(messageIndex + 1));
+        if (decision === "accepted" || decision === "rejected") continue;
+
         const parts = message.parts ?? [];
+        let messageHasPending = false;
         for (let partIndex = 0; partIndex < parts.length; partIndex++) {
             const part = parts[partIndex];
             if (part.type !== "tool-mutateProgram") continue;
 
             const key = `${message.id ?? partIndex}-${partIndex}`;
-            if (appliedKeysRef.current.has(key)) continue;
+            if (appliedKeys?.has(key)) continue;
 
             const flatIdx = flatIndexByKey.get(key);
             if (flatIdx != null && lastBuildWeekIdx >= 0 && flatIdx > lastBuildWeekIdx) {
@@ -1057,24 +1134,104 @@ export const applyMutateProgramFromMessages = (
 
             pendingKeys.push(key);
             mergedOperations.push(...operations);
+            messageHasPending = true;
+        }
+        if (messageHasPending && message.id) {
+            messageIds.push(message.id);
         }
     }
 
-    if (mergedOperations.length === 0) return false;
+    if (mergedOperations.length === 0) return null;
 
-    const result = applyOperations(hevyProgram, mergedOperations);
+    return {
+        keys: pendingKeys,
+        messageIds,
+        operations: mergedOperations,
+    };
+};
+
+/**
+ * True when the pending batch still fail-all applies to the grid on screen (C9).
+ *
+ * @param hevyProgram - Current grid
+ * @param proposal - Batch from {@link collectMutationProposal}
+ */
+export function mutationProposalApplies(
+    hevyProgram: THevyRoutine[],
+    proposal: IMutationProposal,
+): boolean {
+    return !isApplyBatchFailure(applyOperations(hevyProgram, proposal.operations));
+}
+
+/**
+ * Streaming lock, plus an open **Mutation proposal** that still applies (C6, C7).
+ * First-build trailing mutate is not a proposal (`collect` skips it), so the
+ * lock lifts when that stream ends. A stale batch does not lock.
+ *
+ * @param messages - Chat thread
+ * @param status - Stream status
+ * @param hevyProgram - Current grid
+ * @param appliedKeysRef - Session keys already accepted (or atomic-committed)
+ */
+export function isAgentMutationLockActive(
+    messages: UIMessage[],
+    status: TChatStatusForAtomic | undefined,
+    hevyProgram: THevyRoutine[],
+    appliedKeysRef: React.RefObject<Set<string>>,
+): boolean {
+    if (status === "streaming") return true;
+    const proposal = collectMutationProposal(messages, status, hevyProgram, appliedKeysRef);
+    if (!proposal) return false;
+    return mutationProposalApplies(hevyProgram, proposal);
+}
+
+/**
+ * True when this mutateProgram part sits after a successful buildWeek in the
+ * current turn (atomic commit owns it; not a **Mutation proposal**).
+ *
+ * @param messages - Chat thread
+ * @param messageId - Assistant message id
+ * @param partIndex - Index of the tool part on that message
+ */
+export function isMutateProgramPartAfterBuildWeek(
+    messages: UIMessage[],
+    messageId: string,
+    partIndex: number,
+): boolean {
+    const lastBuildWeekIdx = getLastSuccessfulBuildWeekFlatIndex(messages);
+    if (lastBuildWeekIdx < 0) return false;
+    const flatIdx = buildFlatPartIndexByKey(messages).get(`${messageId}-${partIndex}`);
+    return flatIdx != null && flatIdx > lastBuildWeekIdx;
+}
+
+/**
+ * Accept: apply the pending batch fail-all and commit one undo step. Does not
+ * mark the card decided; the caller writes accepted after a successful commit,
+ * or rejected when fail-all expires the proposal (C9).
+ *
+ * @param hevyProgram - Current grid
+ * @param proposal - Batch from {@link collectMutationProposal}
+ * @param appliedKeysRef - Session idempotency keys
+ * @param commitWithUndo - Grid commit
+ */
+export function acceptMutationProposal(
+    hevyProgram: THevyRoutine[],
+    proposal: IMutationProposal,
+    appliedKeysRef: React.RefObject<Set<string>>,
+    commitWithUndo: (next: THevyRoutine[], options?: TCommitWithUndoOptions) => void,
+): boolean {
+    const result = applyOperations(hevyProgram, proposal.operations);
     if (isApplyBatchFailure(result)) {
         const reason = result.failures[0]?.reason ?? "Program modification failed.";
         toast.error(reason);
         console.error("mutateProgram batch failed", result.failures);
-        pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
         return false;
     }
 
     commitWithUndo(result.program, { recordUndo: hevyProgram.length > 0 });
-    pendingKeys.forEach((k) => appliedKeysRef.current.add(k));
+    proposal.keys.forEach((key) => appliedKeysRef.current?.add(key));
     return true;
-};
+}
 
 /** True when any day already holds exercise rows - the grid-empty test both share gates use. */
 export const programHasExerciseRows = (routines: THevyRoutine[]): boolean =>

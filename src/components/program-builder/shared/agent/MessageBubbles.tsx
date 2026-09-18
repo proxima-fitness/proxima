@@ -1,10 +1,10 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Drives timeout/retry logic.
- * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, helpers. Used by: Agent.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. Drives timeout/retry logic.
+ * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, MutationProposalCard, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useMemo, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useMemo, useState, type RefObject } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     Message,
@@ -18,12 +18,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Copy, ThumbsUp, ThumbsDown, Pencil, Trash, FileText } from "lucide-react"
 import { type ChatStatus, FileUIPart } from "ai";
+import { upsertChatHistoryTurn } from "@/api/chat-history";
+import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
 import {
-    applyMutateProgramFromMessages,
+    acceptMutationProposal,
+    collectMutationProposal,
     getMutateProgramObjectives,
+    isMutateProgramPartAfterBuildWeek,
+    mutationProposalApplies,
+    resolveMutationProposalDecision,
     tryApplyHevyShareImport,
     tryCommitAtomicBuildWeekAndMutations,
+    withMutationProposalDecision,
 } from "@/components/program-builder/utils/helpers";
+import { buildMutationProposalRecipe } from "@/components/program-builder/utils/mutation-proposal-copy";
 import {
     Reasoning,
     ReasoningContent,
@@ -34,6 +42,7 @@ import type { TToolPart } from "@/components/ai-elements/tool";
 import { getMutateProgramFailureSeverity } from "./tool-error";
 import { SoftToolFailure } from "./soft-tool-failure-ui";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
+import { focusProgramBuilderChatInput, MutationProposalCard } from "./MutationProposalCard";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
 import {
@@ -263,24 +272,71 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         lastAtomicBuildCommitKeyRef,
     ]);
 
-    useEffect(() => {
-        const modified = applyMutateProgramFromMessages(
+    const persistProposalMessages = useCallback((next: TChatMessage[]) => {
+        const chatId = getPersistChatIdRef.current?.() ?? "";
+        if (!user || !chatId) return;
+        void upsertChatHistoryTurn({ user, chatId, messages: next });
+    }, [getPersistChatIdRef, user]);
+
+    const handleAcceptProposal = useCallback(() => {
+        const proposal = collectMutationProposal(
             messages,
             status,
             hevyProgram,
             appliedMutateProgramKeysRef,
+        );
+        if (!proposal) return;
+        const committed = acceptMutationProposal(
+            hevyProgram,
+            proposal,
+            appliedMutateProgramKeysRef,
             commitWithUndo,
         );
-        if (modified) {
-            posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
+        if (!committed) {
+            const expired = withMutationProposalDecision(
+                messages,
+                proposal.messageIds,
+                "rejected",
+            );
+            setMessages(expired);
+            persistProposalMessages(expired);
+            focusProgramBuilderChatInput();
+            return;
         }
+        const next = withMutationProposalDecision(messages, proposal.messageIds, "accepted");
+        setMessages(next);
+        persistProposalMessages(next);
+        posthog?.capture?.("modified_a_program", { user: user?.id ?? "user_id_unknown" });
     }, [
-        messages,
-        status,
-        hevyProgram,
-        commitWithUndo,
-        user,
         appliedMutateProgramKeysRef,
+        commitWithUndo,
+        hevyProgram,
+        messages,
+        persistProposalMessages,
+        setMessages,
+        status,
+        user,
+    ]);
+
+    const handleRejectProposal = useCallback((messageId: string) => {
+        const proposal = collectMutationProposal(
+            messages,
+            status,
+            hevyProgram,
+            appliedMutateProgramKeysRef,
+        );
+        const messageIds = proposal?.messageIds?.length ? proposal.messageIds : [messageId];
+        const next = withMutationProposalDecision(messages, messageIds, "rejected");
+        setMessages(next);
+        persistProposalMessages(next);
+        focusProgramBuilderChatInput();
+    }, [
+        appliedMutateProgramKeysRef,
+        hevyProgram,
+        messages,
+        persistProposalMessages,
+        setMessages,
+        status,
     ]);
 
     useEffect(() => {
@@ -307,6 +363,15 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         user,
         lastHevyShareImportKeyRef,
     ]);
+
+    const pendingProposal = collectMutationProposal(
+        messages,
+        status,
+        hevyProgram,
+        appliedMutateProgramKeysRef,
+    );
+    const pendingProposalIsOpen =
+        pendingProposal != null && mutationProposalApplies(hevyProgram, pendingProposal);
 
     return (
 
@@ -773,22 +838,73 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             }
 
                                             const mutateInFlight = !isComplete;
+                                            const afterBuildWeek = isMutateProgramPartAfterBuildWeek(
+                                                messages,
+                                                message.id ?? "",
+                                                index,
+                                            );
+                                            const thisTurnStreaming = isLastMessage && status === "streaming";
+                                            const showStreamProgress = mutateInFlight || thisTurnStreaming;
+
+                                            if (showStreamProgress || afterBuildWeek) {
+                                                return (
+                                                    <Tool key={`${message.id}-${index}-mutate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                        <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
+                                                        <ToolContent>
+                                                            {mutateInFlight && operations?.length ? (
+                                                                <p className="text-sm text-muted-foreground px-3 pb-1">
+                                                                    Applying {operations.length} operation{operations.length === 1 ? "" : "s"}…
+                                                                </p>
+                                                            ) : null}
+                                                            <ModifyProgramProgress
+                                                                objectivesByRoutine={objectivesByRoutine}
+                                                                status={isComplete && !thisTurnStreaming ? "complete" : "processing"}
+                                                            />
+                                                        </ToolContent>
+                                                    </Tool>
+                                                );
+                                            }
+
+                                            const firstStandaloneMutateIndex = message.parts.findIndex((candidate, candidateIndex) => {
+                                                if (candidate.type !== "tool-mutateProgram") return false;
+                                                return !isMutateProgramPartAfterBuildWeek(
+                                                    messages,
+                                                    message.id ?? "",
+                                                    candidateIndex,
+                                                );
+                                            });
+                                            if (index !== firstStandaloneMutateIndex) {
+                                                return null;
+                                            }
+
+                                            const standaloneOperations: TAgentProgramOperation[] = [];
+                                            message.parts.forEach((candidate, candidateIndex) => {
+                                                if (candidate.type !== "tool-mutateProgram") return;
+                                                if (isMutateProgramPartAfterBuildWeek(messages, message.id ?? "", candidateIndex)) {
+                                                    return;
+                                                }
+                                                const output = (candidate as { output?: { operations?: TAgentProgramOperation[]; error?: string } }).output;
+                                                if (!output?.operations?.length || output.error) return;
+                                                standaloneOperations.push(...output.operations);
+                                            });
+                                            const recipe = buildMutationProposalRecipe(standaloneOperations, hevyProgram);
+                                            const laterMessages = messages.slice(messageIndex + 1);
+                                            const decision = resolveMutationProposalDecision(message, laterMessages);
+                                            const showActions =
+                                                pendingProposalIsOpen &&
+                                                (pendingProposal?.messageIds.includes(message.id) ?? false) &&
+                                                decision !== "accepted" &&
+                                                decision !== "rejected";
 
                                             return (
-                                                <Tool key={`${message.id}-${index}-mutate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <ToolHeader type="tool-mutateProgram" state={toolState} title="Mutate program" />
-                                                    <ToolContent>
-                                                        {mutateInFlight && operations?.length ? (
-                                                            <p className="text-sm text-muted-foreground px-3 pb-1">
-                                                                Applying {operations.length} operation{operations.length === 1 ? "" : "s"}…
-                                                            </p>
-                                                        ) : null}
-                                                        <ModifyProgramProgress
-                                                            objectivesByRoutine={objectivesByRoutine}
-                                                            status={isComplete ? "complete" : "processing"}
-                                                        />
-                                                    </ToolContent>
-                                                </Tool>
+                                                <div key={`${message.id}-${index}-mutate-proposal`} className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
+                                                    <MutationProposalCard
+                                                        recipe={recipe}
+                                                        showActions={showActions}
+                                                        onAccept={handleAcceptProposal}
+                                                        onReject={() => handleRejectProposal(message.id)}
+                                                    />
+                                                </div>
                                             );
                                         }
                                         case "tool-getWorkoutHistory": {

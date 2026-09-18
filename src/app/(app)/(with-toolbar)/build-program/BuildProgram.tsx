@@ -23,7 +23,7 @@ import { MessageSquare } from "lucide-react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";
-import { getMessageText, normalizeProgramState, programHasExerciseRows } from "@/components/program-builder/utils/helpers";
+import { getMessageText, isAgentMutationLockActive, normalizeProgramState, programHasExerciseRows } from "@/components/program-builder/utils/helpers";
 import { ProgramEditor } from "./ProgramEditor";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -103,6 +103,7 @@ import {
     resolveSendPathConfirmed,
     resolveSidebarRowKnown,
     type IChatEntryPlan,
+    type IChatNavigationLatch,
 } from "./resolve-chat-entry";
 import type { User } from "@supabase/supabase-js";
 import { useChatHistory, useChatIds } from "@/api/hooks";
@@ -131,6 +132,28 @@ function deriveChatTitle(): string {
     return "Untitled";
 }
 
+function readSidebarPosition(): "left" | "right" {
+    if (typeof window === "undefined") return "left";
+    const saved = localStorage.getItem(SIDEBAR_POSITION_KEY);
+    return saved === "left" || saved === "right" ? saved : "left";
+}
+
+function readSidebarSize(): number {
+    if (typeof window === "undefined") return 28;
+    const saved = localStorage.getItem(SIDEBAR_SIZE_KEY);
+    if (!saved) return 28;
+    const size = parseFloat(saved);
+    return size >= 20 && size <= EXPANDED_SIZE ? size : 28;
+}
+
+function chatNavigationLatchEquals(a: IChatNavigationLatch, b: IChatNavigationLatch): boolean {
+    return (
+        a.latched === b.latched
+        && a.prevChatId === b.prevChatId
+        && (a.pendingSidebarPick ?? false) === (b.pendingSidebarPick ?? false)
+    );
+}
+
 /**
  * Program builder client: chat sidebar, program state (hevyProgram), filters,
  * URL params (shareId, resume, empty, search). No props; reads searchParams and context.
@@ -138,7 +161,6 @@ function deriveChatTitle(): string {
 export function BuildProgram() {
     const { user, isLoading: isAuthLoading } = useUserContext();
     const router = useRouter();
-    const { getPersistChatIdRef } = useBuildProgramActions();
     logPageView(user?.id);
     const searchParams = useSearchParams();
     const persistSignInHref = !isAuthLoading && !user
@@ -154,19 +176,16 @@ export function BuildProgram() {
     const { session: editSession, clearEditSession } = useEditSession();
     const editHydratedRef = useRef(false);
 
-    /** URL-only fallback until shell registers getter with mint ref (export reads this ref). */
-    const getPersistChatIdFromUrl = useCallback(() => chatId, [chatId]);
-    getPersistChatIdRef.current = getPersistChatIdFromUrl;
     const isBareArrival = isBareBuildProgramArrival({ urlChatId, search, shareId, empty, resume });
     const explicitNewChat = isExplicitNewChatArrival({ empty, urlChatId, resume });
 
-    const sawNonBareArrivalRef = useRef(!isBareArrival);
-    if (!isBareArrival) {
-        sawNonBareArrivalRef.current = true;
+    const [sawNonBareArrival, setSawNonBareArrival] = useState(!isBareArrival);
+    if (!isBareArrival && !sawNonBareArrival) {
+        setSawNonBareArrival(true);
     }
     const shouldBareRedirectToEmpty = shouldRedirectBareBuildProgramToEmpty(
         isBareArrival,
-        sawNonBareArrivalRef.current,
+        sawNonBareArrival,
     );
 
     const { data: chatIds } = useChatIds(user);
@@ -190,17 +209,19 @@ export function BuildProgram() {
     const sidebarRowKnown = resolveSidebarRowKnown(chatId, chatIds);
     const sendPathConfirmed = resolveSendPathConfirmed(chatId, isChatSessionInsertConfirmed(chatId));
 
-    const chatNavLatchRef = useRef(createChatNavigationLatch(urlChatId));
-    chatNavLatchRef.current = resetChatNavigationLatchForArrival(
+    const [chatNavLatch, setChatNavLatch] = useState(() => createChatNavigationLatch(urlChatId));
+    const resetLatch = resetChatNavigationLatchForArrival(
         { empty, urlChatId, resume },
-        chatNavLatchRef.current,
+        chatNavLatch,
     );
     const { chatNavigationArrival, next: chatNavLatchNext } = advanceChatNavigationLatch(
         chatId,
-        chatNavLatchRef.current,
+        resetLatch,
         { sidebarRowKnown, sendPathConfirmed, hasEmptyParam: empty === "true" },
     );
-    chatNavLatchRef.current = chatNavLatchNext;
+    if (!chatNavigationLatchEquals(chatNavLatch, chatNavLatchNext)) {
+        setChatNavLatch(chatNavLatchNext);
+    }
     const programHydrateChatId = chatNavigationArrival ? chatId : "";
 
     const [sharedProgramLoadAttempted, setSharedProgramLoadAttempted] = useState(
@@ -225,7 +246,7 @@ export function BuildProgram() {
 
     const setProgramFromHydrate = useCallback((program: THevyRoutine[]) => {
         dispatchEditor({ type: "REPLACE_PROGRAM", program: normalizeProgramState(program) });
-    }, []);
+    }, [dispatchEditor]);
 
     const commitWithUndo = useCallback((next: THevyRoutine[], options?: TCommitWithUndoOptions) => {
         enableBuilderDraftWrites();
@@ -234,7 +255,7 @@ export function BuildProgram() {
             program: normalizeProgramState(next),
             recordUndo: options?.recordUndo ?? true,
         });
-    }, []);
+    }, [dispatchEditor]);
 
     const setHevyProgram = useCallback(
         (value: THevyRoutine[] | ((prev: THevyRoutine[]) => THevyRoutine[])) => {
@@ -252,8 +273,17 @@ export function BuildProgram() {
                 commitWithUndo(value);
             }
         },
-        [commitWithUndo],
+        [commitWithUndo, dispatchEditor],
     );
+    const programResetKey = `${programHydrateChatId}|${shareId}|${resume}|${empty}|${hevyEditArrival ? "edit" : "new"}`;
+    const [appliedProgramResetKey, setAppliedProgramResetKey] = useState(programResetKey);
+    if (appliedProgramResetKey !== programResetKey) {
+        setAppliedProgramResetKey(programResetKey);
+        if (!hevyEditArrival) {
+            setProgramFromHydrate([]);
+            setSharedProgramLoadAttempted(!isValidShareId(shareId));
+        }
+    }
     const chatHistoryFetchEnabled = resolveChatHistoryFetchEnabled({
         user,
         chatId,
@@ -317,8 +347,8 @@ export function BuildProgram() {
         [chatEntryPlan, chatHistoryData],
     );
 
-    const [sidebarPosition, setSidebarPosition] = useState<"left" | "right">("left");
-    const [sidebarSize, setSidebarSize] = useState(28);
+    const [sidebarPosition, setSidebarPosition] = useState(readSidebarPosition);
+    const [sidebarSize, setSidebarSize] = useState(readSidebarSize);
     const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
     const lastSidebarSizeRef = useRef(28);
     const saveSidebarSize = useDebouncedCallback((size: number) => {
@@ -340,12 +370,12 @@ export function BuildProgram() {
     const handleUndo = useCallback(() => {
         enableBuilderDraftWrites();
         dispatchEditor({ type: "UNDO" });
-    }, []);
+    }, [dispatchEditor]);
 
     const clearUndoBaseline = useCallback(() => {
         dispatchEditor({ type: "CLEAR_UNDO_BASELINE" });
         setHasSaveBaseline(true);
-    }, []);
+    }, [dispatchEditor, setHasSaveBaseline]);
 
     const {
         leaveDialogOpen,
@@ -353,20 +383,6 @@ export function BuildProgram() {
         onLeaveDialogOpenChange,
         onDiscardLeave,
     } = newPathLeaveGuard.useLeaveGuard();
-
-    useEffect(() => {
-        const savedPosition = localStorage.getItem(SIDEBAR_POSITION_KEY) as "left" | "right" | null;
-        if (savedPosition === "left" || savedPosition === "right") {
-            setSidebarPosition(savedPosition);
-        }
-        const savedSize = localStorage.getItem(SIDEBAR_SIZE_KEY);
-        if (savedSize) {
-            const size = parseFloat(savedSize);
-            if (size >= 20 && size <= EXPANDED_SIZE) {
-                setSidebarSize(size);
-            }
-        }
-    }, []);
 
     useEffect(() => {
         if (shouldBareRedirectToEmpty) {
@@ -396,9 +412,6 @@ export function BuildProgram() {
             clearEditSession();
         }
         editHydratedRef.current = false;
-
-        setProgramFromHydrate([]);
-        setSharedProgramLoadAttempted(!isValidShareId(shareId));
 
         const fetchSharedProgram = async () => {
             try {
@@ -711,13 +724,23 @@ function BuildProgramShell({
         lastHevyShareImportKeyRef,
     } = chat;
 
-    clearChatRef.current = clearMessages;
-    getPersistChatIdRef.current = getPersistChatId;
+    // Sidebar/export mailbox lives on a context ref; those callers run on click, not during render.
+    useEffect(() => {
+        clearChatRef.current = clearMessages;
+        getPersistChatIdRef.current = getPersistChatId;
+    }, [clearChatRef, getPersistChatIdRef, clearMessages, getPersistChatId]);
+
+    const agentMutationLock = isAgentMutationLockActive(
+        messages,
+        status,
+        hevyProgram,
+        appliedMutateProgramKeysRef,
+    );
 
     const onUndo = useCallback(() => {
-        if (status === "streaming") return;
+        if (agentMutationLock) return;
         handleUndo();
-    }, [status, handleUndo]);
+    }, [agentMutationLock, handleUndo]);
 
     useEffect(() => {
         void (async () => {
@@ -1048,7 +1071,7 @@ function BuildProgramShell({
             program={hevyProgram}
             commitWithUndo={commitWithUndo}
             setProgramFromHydrate={setProgramFromHydrate}
-            isAgentStreaming={status === "streaming"}
+            isAgentStreaming={agentMutationLock}
             completedHevyRoutineIds={completedHevyRoutineIds}
         >
             <BuildProgramToolbarTitle
@@ -1057,7 +1080,7 @@ function BuildProgramShell({
             />
             <ToolbarPortalButtons
                 canUndo={isNewPathDirty(undoStackLength)}
-                undoDisabled={status === "streaming"}
+                undoDisabled={agentMutationLock}
                 onUndo={onUndo}
                 onSave={persistMode === "sync" ? () => { void handleSync("/profile"); } : handleSave}
                 saveDisabled={
