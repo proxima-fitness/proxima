@@ -91,6 +91,7 @@ describe("weight display unit vs agent kg mismatch", () => {
             peakWeek: "",
             warmupExercises: "",
             isInLbs: true,
+            debugMode: false,
         });
         expect(body.isInLbs).toBe(true);
     });

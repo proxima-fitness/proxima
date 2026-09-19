@@ -50,6 +50,7 @@ import type { IChatEntryPlan } from "./resolve-chat-entry";
 import { resolvePersistChatId, shouldRunAutoSend, isExplicitNewChatArrival } from "./resolve-chat-entry";
 import type { useProgramRequestState } from "./use-program-request-state";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
+import { getAgentDebugMode } from "@/lib/agent-debug-mode";
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -195,6 +196,7 @@ interface IMessageContextBodyInput {
     peakWeek: string;
     warmupExercises: string;
     isInLbs: boolean;
+    debugMode: boolean;
 }
 
 /** Exported for tests - chat request body fields sent with each message. */
@@ -219,7 +221,19 @@ export function buildMessageContextBody(input: IMessageContextBodyInput) {
         warmupExercises: trimOrEmpty(input.warmupExercises),
         chatSessionId: input.chatId || undefined,
         isInLbs: input.isInLbs,
+        debugMode: input.debugMode,
     };
+}
+
+function logJevDebugFromLatestTurn(messages: TChatMessage[]): void {
+    const lastAssistant = [...messages].reverse().find((message) => message.role === "assistant");
+    if (!lastAssistant) return;
+    for (const part of lastAssistant.parts ?? []) {
+        if (part.type !== "tool-buildWeek" && part.type !== "tool-mutateProgram") continue;
+        if (!("output" in part) || part.output == null || typeof part.output !== "object") continue;
+        const jev = (part.output as { jev?: unknown }).jev;
+        if (jev) console.log("[jev]", jev);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -313,6 +327,10 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
         transport: chatTransport,
         messages: initialMessages,
         onFinish: ({ messages: finishedMessages, isAbort, isError }) => {
+            if (getAgentDebugMode()) {
+                logJevDebugFromLatestTurn(finishedMessages);
+            }
+
             // Server consume runs at request start — refresh shell counter after any
             // authenticated turn that reached the stream (success, error, or abort).
             if (user) {
@@ -433,6 +451,7 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                 peakWeek: programRequest.peakWeek,
                 warmupExercises: programRequest.warmupExercises,
                 isInLbs,
+                debugMode: getAgentDebugMode(),
             });
 
             const sendPromise = sendMessage(message, {

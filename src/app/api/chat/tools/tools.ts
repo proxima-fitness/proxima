@@ -178,6 +178,8 @@ interface IProps {
      * import** gates on an empty grid, so it needs the flag rather than the snapshot.
      */
     programHasExercises?: boolean;
+    /** Agent debug mode from the chat request. Logs Jev traces when true. */
+    debugMode?: boolean;
 }
 
 /** Fallback grid-state read for callers that pass a snapshot but no explicit flag. */
@@ -282,6 +284,7 @@ export function getTools({
     isInLbs = true,
     clientIp,
     programHasExercises,
+    debugMode = false,
 }: IProps = {}) {
 
     /** Grid-state gate for **Hevy share import**; an Edit-path chat always trips it. */
@@ -977,11 +980,12 @@ export function getTools({
                     beforeProgram: [],
                     afterProgram: builtRoutines,
                 });
-                const sanity = await evaluate(snapshot, { andyAuthored: true });
+                const sanity = await evaluate(snapshot, { andyAuthored: true, debug: debugMode });
                 if (!sanity.ok) {
                     return softToolErrorResult('buildWeek', {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
+                        ...(sanity.debug ? { jev: sanity.debug } : {}),
                     });
                 }
 
@@ -1000,6 +1004,7 @@ export function getTools({
                     routineCount: builtRoutines.length,
                     exerciseCount: totalExercises,
                     setCount: totalSets,
+                    ...(sanity.debug ? { jev: sanity.debug } : {}),
                 };
             } catch (error) {
                 console.error('Error in buildWeekTool:', error);
@@ -1172,15 +1177,19 @@ export function getTools({
                     });
                 }
 
-                const sanity = await evaluate(snapshot, { andyAuthored: afterBuildWeek });
+                const sanity = await evaluate(snapshot, { andyAuthored: afterBuildWeek, debug: debugMode });
                 if (!sanity.ok) {
                     return softToolErrorResult('mutateProgram', {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
+                        ...(sanity.debug ? { jev: sanity.debug } : {}),
                     });
                 }
 
-                return { operations: resolvedOperations };
+                return {
+                    operations: resolvedOperations,
+                    ...(sanity.debug ? { jev: sanity.debug } : {}),
+                };
             } catch (error) {
                 console.error('Error in mutateProgramTool:', error);
                 return softToolErrorResult('mutateProgram', {

@@ -171,6 +171,46 @@ describe("evaluate", () => {
         expect(result).toEqual({ ok: true, misses: [] });
     });
 
+    it("logs a Jev trace when debug is on", async () => {
+        const log = vi.spyOn(console, "log").mockImplementation(() => {});
+        const postSystemOne = vi.fn(async () => ({
+            "constraint.injurySemantic": 0.12,
+        }));
+
+        const result = await evaluate(snapshotWithInjury(), {
+            andyAuthored: true,
+            debug: true,
+            postSystemOne,
+        });
+
+        expect(result.ok).toBe(false);
+        expect(log).toHaveBeenCalledWith(
+            "[jev]",
+            expect.objectContaining({
+                ok: false,
+                andyAuthored: true,
+                nouls: { "constraint.injurySemantic": 0.12 },
+                misses: [
+                    { id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" },
+                ],
+            }),
+        );
+        expect(result.debug?.questionIds).toContain("constraint.injurySemantic");
+        log.mockRestore();
+    });
+
+    it("does not log when debug is off", async () => {
+        const log = vi.spyOn(console, "log").mockImplementation(() => {});
+
+        await evaluate(snapshotWithInjury(), {
+            andyAuthored: true,
+            postSystemOne: async () => ({ "constraint.injurySemantic": 0.99 }),
+        });
+
+        expect(log).not.toHaveBeenCalled();
+        log.mockRestore();
+    });
+
     it("does not call TypeSafe when every premise is empty", async () => {
         const postSystemOne = vi.fn(async () => {
             throw new Error("should not call TypeSafe");

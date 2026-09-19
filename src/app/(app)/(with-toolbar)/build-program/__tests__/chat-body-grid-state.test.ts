@@ -48,6 +48,7 @@ function bodyFor(messageText: string, hevyProgram: THevyRoutine[]) {
         peakWeek: "",
         warmupExercises: "",
         isInLbs: true,
+        debugMode: false,
     });
 }
 
@@ -73,5 +74,28 @@ describe("chat request body grid state", () => {
 
         expect(body.hevyProgram).toHaveLength(1);
         expect(body.programHasExercises).toBe(true);
+    });
+
+    it("forwards Agent debug mode so the server can log Jev", () => {
+        const body = buildMessageContextBody({
+            messageText: "ok load it",
+            hevyProgram: [DAY_WITH_EXERCISES],
+            chatId: "",
+            daysPerWeek: "4",
+            programLength: "8",
+            excludeAreas: [],
+            excludeEquipment: [],
+            healthIssues: [],
+            splitType: "",
+            exerciseVariability: "",
+            progressionSystem: "",
+            deloadWeek: "",
+            peakWeek: "",
+            warmupExercises: "",
+            isInLbs: true,
+            debugMode: true,
+        });
+
+        expect(body.debugMode).toBe(true);
     });
 });

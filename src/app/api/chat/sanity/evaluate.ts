@@ -48,14 +48,28 @@ export type TEvaluateMiss = {
 /**
  * Evaluate result. `ok: false` is a Soft tool failure; `misses` is empty when
  * `ok` is true. Fail-open (no key, no questions, transport error) is `ok: true`.
+ * `debug` is set only when {@link IEvaluateOptions.debug} is true.
  */
 export type TEvaluateResult = {
     ok: boolean;
     misses: TEvaluateMiss[];
+    debug?: TJevDebugTrace;
 };
 
 /** Noul values keyed by question id. Missing keys are treated as unanswered. */
 export type TSystemOneNouls = Record<string, number>;
+
+/** What Jev was asked, what it answered, and what the fail policy did. */
+export type TJevDebugTrace = {
+    skipped?: "no_questions" | "typesafe_unavailable";
+    andyAuthored: boolean;
+    questionIds: string[];
+    questions: TSanityQuestions;
+    nouls: TSystemOneNouls | null;
+    misses: TEvaluateMiss[];
+    ok: boolean;
+    snapshot: TProgramSanitySnapshot;
+};
 
 export interface IEvaluateOptions {
     /**
@@ -64,11 +78,23 @@ export interface IEvaluateOptions {
      * pass false so Training / skill questions cannot reject.
      */
     andyAuthored: boolean;
+    /** Agent debug mode. Logs the Jev trace and attaches it to the result. */
+    debug?: boolean;
     /** Test seam. Production uses {@link postSystemOne}. */
     postSystemOne?: (
         state: TProgramSanitySnapshot,
         questions: TSanityQuestions,
     ) => Promise<TSystemOneNouls | null>;
+}
+
+function finishEvaluate(
+    result: TEvaluateResult,
+    options: IEvaluateOptions,
+    trace: TJevDebugTrace,
+): TEvaluateResult {
+    if (!options.debug) return result;
+    console.log("[jev]", trace);
+    return { ...result, debug: trace };
 }
 
 /**
@@ -207,15 +233,42 @@ export async function evaluate(
     const questions = buildSanityQuestions(snapshot);
     const questionIds = Object.keys(questions);
     if (questionIds.length === 0) {
-        return { ok: true, misses: [] };
+        return finishEvaluate({ ok: true, misses: [] }, options, {
+            skipped: "no_questions",
+            andyAuthored: options.andyAuthored,
+            questionIds,
+            questions,
+            nouls: null,
+            misses: [],
+            ok: true,
+            snapshot,
+        });
     }
 
     const post = options.postSystemOne ?? postSystemOne;
     const nouls = await post(snapshot, questions);
     if (nouls == null) {
-        return { ok: true, misses: [] };
+        return finishEvaluate({ ok: true, misses: [] }, options, {
+            skipped: "typesafe_unavailable",
+            andyAuthored: options.andyAuthored,
+            questionIds,
+            questions,
+            nouls: null,
+            misses: [],
+            ok: true,
+            snapshot,
+        });
     }
 
     const misses = applyEvaluatePolicy(nouls, questionIds, options.andyAuthored);
-    return { ok: misses.length === 0, misses };
+    const ok = misses.length === 0;
+    return finishEvaluate({ ok, misses }, options, {
+        andyAuthored: options.andyAuthored,
+        questionIds,
+        questions,
+        nouls,
+        misses,
+        ok,
+        snapshot,
+    });
 }
