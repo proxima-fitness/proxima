@@ -972,6 +972,88 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).not.toBe("Mutation batch rejected: Unknown validation error");
             expect(modelOutput.value).not.toContain("Unknown validation error");
         });
+
+        it("Soft-fails same-turn periodization that leaves a claimed week day matching week 1", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({
+                hevyProgram: [],
+                programLength: 4,
+                buildWeekOnceGuard,
+                programSanityStash,
+                userMessage: "Add a deload in week 4",
+            });
+
+            const planProgram = asTestTool<{
+                durationWeeks: number;
+                goal: string;
+                daysPerWeek: number;
+                blocks: Array<{ name: string; weeks: number[]; intent: string }>;
+            }, unknown>(tools.planProgram);
+            await planProgram.execute({
+                durationWeeks: 4,
+                goal: "Strength",
+                daysPerWeek: 2,
+                blocks: [
+                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                    { name: "Deload", weeks: [4], intent: "Unload" },
+                ],
+            });
+
+            const dayRoutine = (dayNumber: number, title: string) => ({
+                dayNumber,
+                title,
+                notes: "",
+                exercises: [{
+                    exercise_template_id: "ex-1",
+                    title: "Bench Press (Barbell)",
+                    notes: "",
+                    sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
+                }],
+            });
+
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const built = (await buildWeek.execute({
+                totalDays: 2,
+                routines: [dayRoutine(1, "Push"), dayRoutine(2, "Pull")],
+            })) as { error?: string };
+            expect(built.error).toBeUndefined();
+
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "update_set",
+                    folderIds: [3],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { rpe: 5 },
+                }],
+            })) as { error?: string; message?: string; operations?: unknown[] };
+
+            expect(output.error).toBe("weekCoverage");
+            expect(output.operations).toBeUndefined();
+            expect(output.message).toContain("weekCoverage: week 4 day 2 matches week 1 set count and RPE");
+            expect(output.message).not.toContain("week 4 day 1");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("week 4 day 2 matches week 1 set count and RPE");
+        });
+
+        it("passes a live-grid update_set when there is no week claim", async () => {
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const output = (await readThenMutate(tools, [{
+                op: "update_set",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                setIndex: 0,
+                set: { rpe: 9 },
+            }])) as { error?: string; operations?: unknown[] };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toHaveLength(1);
+        });
     });
 
     describe("getWorkoutHistory tool execute", () => {

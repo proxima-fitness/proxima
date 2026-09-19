@@ -21,7 +21,7 @@
  *    (shared folder, shared routine, or a public completed workout)
  *  - importHevyShareFolder - confirmed **Hevy share import** that seeds an empty grid with the shared week
  *
- * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share
+ * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share, ../sanity
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
  */
 
@@ -80,6 +80,18 @@ import {
 } from '@/api/workout-history-read';
 import { softToolErrorResult } from './soft-tool-fail-log';
 import {
+    buildSanitySnapshot,
+    plateWeek1Across,
+    resolvePlateWeekCount,
+} from '../sanity/snapshot';
+import {
+    evaluateWeekCoverage,
+    formatWeekCoverageMessage,
+} from '../sanity/week-coverage';
+import type { IProgramSanityStash } from '../sanity/types';
+
+export type { IProgramSanityStash } from '../sanity/types';
+import {
     getBodyMeasurementsForUser,
 } from '@/api/body-measurements-read';
 import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
@@ -124,6 +136,18 @@ export interface IBuildWeekOnceGuard {
 interface IProps {
     hevyProgram?: THevyRoutine[];
     buildWeekOnceGuard?: IBuildWeekOnceGuard;
+    /**
+     * Request-scoped plan + last successful buildWeek (ADR 0025 / 02).
+     * The route allocates one object per turn. Tools write in place so
+     * same-turn mutateProgram can plate week 1. Omit in tests that do not
+     * exercise week coverage.
+     */
+    programSanityStash?: IProgramSanityStash;
+    /**
+     * Last user text this turn. The route extracts it with `readLastUserMessage`.
+     * Empty string is a valid snapshot field; omit only when the caller has no messages.
+     */
+    userMessage?: string;
     /** When false, getWorkoutHistory is omitted from the tool set (Pro-only). */
     hasActiveSubscription?: boolean;
     userId?: string;
@@ -232,12 +256,16 @@ export const getExerciseListInputSchema = z.object({
  * reference them without extra round-trips.
  *
  * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
+ * @param props.programSanityStash - Request-scoped plan + last successful buildWeek for week coverage.
+ * @param props.userMessage - This turn's last user text for the compact sanity snapshot.
  * @param props.constraintProfile - In-request Constraint profile; drives getExerciseList filters.
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
     hevyProgram,
     buildWeekOnceGuard,
+    programSanityStash,
+    userMessage,
     hasActiveSubscription = false,
     userId,
     workoutHistoryDb,
@@ -561,6 +589,8 @@ export function getTools({
     /**
      * Title: planProgramTool
      * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
+     * Also writes the plan onto `programSanityStash` so week coverage can see
+     * claimed deload / peak / easy weeks in the same turn.
      * @returns { Tool }
      */
     const planProgramTool = tool({
@@ -570,6 +600,10 @@ export function getTools({
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
+            // Coverage needs claimed deload / peak / easy weeks; the model only sees `{ plan, summary }`.
+            if (programSanityStash) {
+                programSanityStash.plan = plan;
+            }
             const blockNames = plan.blocks.map((b) => b.name).join(', ');
             const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
             return { plan, summary };
@@ -930,6 +964,11 @@ export function getTools({
                     }
                 }
 
+                // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
+                if (programSanityStash) {
+                    programSanityStash.buildWeekRoutines = builtRoutines;
+                }
+
                 if (buildWeekOnceGuard) {
                     buildWeekOnceGuard.locked = true;
                 }
@@ -982,6 +1021,8 @@ export function getTools({
     /**
      * Title: mutateProgramTool
      * Description: Typed registry operation batch with server preflight via applyOperations.
+     * After a successful apply, runs week-coverage (ADR 0025 / 02). A claimed
+     * week-day that still matches week 1 Soft-fails and omits `operations`.
      * @returns { Tool }
      */
     const mutateProgramTool = tool({
@@ -1071,13 +1112,44 @@ export function getTools({
                     }
                 }
 
-                const result = applyOperations(hevyProgram ?? [], resolvedOperations);
+                // After same-turn buildWeek the request hevyProgram has no later weeks.
+                // Plate week 1, apply on that copy, then week-coverage Soft-fail (C1 / C2).
+                // Live-grid mutate keeps applyOperations(hevyProgram) as before.
+                const afterBuildWeekPlate =
+                    afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0
+                        ? plateWeek1Across(
+                            programSanityStash?.buildWeekRoutines ?? [],
+                            resolvePlateWeekCount(programSanityStash?.plan, programLength),
+                        )
+                        : null;
+                const applyBase = afterBuildWeekPlate ?? hevyProgram ?? [];
+                const result = applyOperations(applyBase, resolvedOperations);
                 if (isApplyBatchFailure(result)) {
                     return softToolErrorResult('mutateProgram', {
                         error: 'Program mutation batch failed',
                         failures: result.failures,
                     });
                 }
+
+                const snapshot = buildSanitySnapshot({
+                    userMessage: userMessage ?? '',
+                    constraintProfile,
+                    trainingProfile,
+                    plan: programSanityStash?.plan,
+                    beforeProgram: applyBase,
+                    afterProgram: result.program,
+                });
+                const coverage = evaluateWeekCoverage(
+                    snapshot,
+                    constraintProfile?.preferences.deloadWeek,
+                );
+                if (!coverage.ok) {
+                    return softToolErrorResult('mutateProgram', {
+                        error: 'weekCoverage',
+                        message: formatWeekCoverageMessage(coverage.misses),
+                    });
+                }
+
                 return { operations: resolvedOperations };
             } catch (error) {
                 console.error('Error in mutateProgramTool:', error);
