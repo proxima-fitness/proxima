@@ -34,7 +34,6 @@ import {
 } from './training-profile';
 import { getUserTrainingProfile } from '@/api/user-training-profile';
 import { getLatestBodyMeasurement } from '@/api/body-measurements-read';
-import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -219,11 +218,6 @@ async function handleChatPost(req: Request) {
                     }),
                 );
 
-                // Fetch episodic memory when editing an existing program
-                const episodes = (user && hevyProgram.length > 0)
-                    ? await getRecentEpisodes(supabase, user.id)
-                    : [];
-
                 const systemPrompt = instructions({
                     hevyProgram,
                     daysPerWeek,
@@ -241,7 +235,6 @@ async function handleChatPost(req: Request) {
                     constraintProfile,
                     trainingProfile,
                     latestBodyMeasurement,
-                    episodes,
                     isInLbs: weightInLbs,
                     isAuthenticated: Boolean(user),
                     hasHevyApiKey: hevyKeyOnFile,

@@ -1064,7 +1064,7 @@ _Avoid_: navigateToEditHevyProgram helper, inline edit push
 What the integrated training coach persists about the user across sessions and can use when coaching. Inspectable and editable by the user on **Edit profile**. Edit-profile umbrella with subsections: **Constraint profile**, **Training profile** (structured person facts), and **Body measurements** (read from **Body measurements backup**, not freeform notes). Constraint profile and Training profile are separate user-scoped structured records. Body measurement history is a separate backup like workouts. Prompt inject covers Active Constraint Profile, Active Training profile, and latest body measurement when present.
 
 
-_Avoid_: Memories (implies freeform-only rows), agent knowledge (too vague), user preferences (too broad), folding person-facts into Constraint profile, stuffing body-measurement history into the Constraint profile row, Agent memory (use Training profile)
+_Avoid_: Memories (implies freeform-only rows), agent knowledge (too vague), user preferences (too broad), folding person-facts into Constraint profile, stuffing body-measurement history into the Constraint profile row, Agent memory (use Training profile), Session episode (removed, not a kind)
 
 
 
@@ -1075,7 +1075,7 @@ _Avoid_: Memories (implies freeform-only rows), agent knowledge (too vague), use
 Agentic-memory kind for durable structured facts about the user that are not training constraints and are **not** covered by Hevy **Body measurement** fields. v1 fields: **age** (integer years, 14-100, not date of birth), **sex** (male / female / prefer not to say, prefer-not-to-say and unset are the same empty value, not a third stored sex), **height**, experience level (beginner / novice / intermediate / advanced), physique phase (bulk / cut / maintain / recomp), **training focus**, activity level (sedentary / light / moderate / high / extreme, short forms, not questionnaire "light activity" labels), session duration cap (10-180 minutes in 10-minute steps). Height is stored canonical as centimeters. Questionnaire advanced and Edit profile use an **Imperial / Metric** toggle (Imperial → ft + in wheel; Metric → cm) and convert to cm on save. Anything present on a Hevy body-measurement entry (weight, lean mass, fat %, girths, etc.) lives only in **Body measurements backup**, never duplicated here. Filled from Questionnaire advanced and editable on Edit profile as its own subsection under Agentic memory. Persisted in its **own** user-scoped store, separate from the Constraint profile store, with the same product patterns (Edit-profile Save, agent **updateTrainingProfile** tool, prompt inject) but not the Mutation constraint gate. Mid-chat: agent may set fields when the user states them. Clear or change only on a clear user statement (same spirit as **User-stated change**). A user ask in builder chat to fill or edit Training profile (including "update my profile" / "edit my info") opens the person-fact **Questionnaire gate** questions only; that submit persists and does not build. An empty Training profile does not reopen the first-time or returning-program gate. Anonymous: Questionnaire advanced still collects answers for the session. **Persist only when signed in** (same as Constraint profile). Specific weekdays are out of scope (builder cannot enforce them).
 
 
-_Avoid_: Agent memory (deprecated name), Constraint profile (wrong kind), athlete profile (informal duplicate), user bio (identity section), chat refinements (constraint-adjacent freeform), freeform remember-this notes (v1 out of scope), sharing Mutation constraint gate, weekday schedule memory, duplicating Hevy body-measurement fields (weight, lean mass, fat %, girths), storing height as feet/inches only, merging Training profile into the Constraint profile table, Edit-profile-only Training profile with no chat update path, storing date of birth instead of age, reopening the full Questionnaire gate because Training profile is empty, building a program from a Training-profile ask submit
+_Avoid_: Agent memory (deprecated name), Constraint profile (wrong kind), athlete profile (informal duplicate), user bio (identity section), chat refinements (constraint-adjacent freeform), Session episode (removed), freeform remember-this notes (v1 out of scope), sharing Mutation constraint gate, weekday schedule memory, duplicating Hevy body-measurement fields (weight, lean mass, fat %, girths), storing height as feet/inches only, merging Training profile into the Constraint profile table, Edit-profile-only Training profile with no chat update path, storing date of birth instead of age, reopening the full Questionnaire gate because Training profile is empty, building a program from a Training-profile ask submit
 
 
 
@@ -1197,6 +1197,17 @@ Former Constraint profile freeform list for leftover chat lines. Dropped. Health
 
 
 _Avoid_: addChatRefinements, using it as a junk drawer, Restriction tag as its successor
+
+
+
+
+### Session episode (removed)
+
+
+Former hidden LLM summary of a builder chat. Dropped. Not a kind of **Agentic memory**. Durable facts stay on **Constraint profile**, **Training profile**, and **Body measurements**. Cross-chat freeform notes stay out of scope.
+
+
+_Avoid_: episodic memory, Previous Session Context, summarize-episode, a fourth Agentic-memory kind
 
 
 

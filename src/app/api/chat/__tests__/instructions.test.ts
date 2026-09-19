@@ -477,6 +477,16 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Hevy's share API may have changed");
         });
 
+        it("omits Previous Session Context on the Edit path", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("A program currently exists");
+            expect(prompt).not.toContain("Previous Session Context");
+        });
+
         it("keeps Hevy share guidance on the Edit path too", () => {
             const prompt = instructions({
                 hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],

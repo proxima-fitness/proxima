@@ -58,7 +58,7 @@ Modules under `src/api/` are plain async functions that **take the client as a p
 
 ### AI agent
 
-`POST /api/chat` runs a Vercel AI SDK `ToolLoopAgent` ("Andy"): system prompt from `instructions/instructions.ts`, tools from `tools/tools.ts`, streaming UI response, Langfuse tracing. Filesystem skills live in `.agents/skills/*/SKILL.md` (frontmatter `name`/`description`/`allowedTools`), are discovered through a sandbox at request time, and `loadSkill` narrows the active tool set. **Agentic memory** — constraint profile, training profile, latest body measurement, recent session episodes — is read per request and injected into the prompt; the agent updates it through dedicated tools. One-shot model calls (episode summary, week suggest) use `generateText` + a zod-validated JSON contract rather than the agent loop.
+`POST /api/chat` runs a Vercel AI SDK `ToolLoopAgent` ("Andy"): system prompt from `instructions/instructions.ts`, tools from `tools/tools.ts`, streaming UI response, Langfuse tracing. Filesystem skills live in `.agents/skills/*/SKILL.md` (frontmatter `name`/`description`/`allowedTools`), are discovered through a sandbox at request time, and `loadSkill` narrows the active tool set. **Agentic memory** — constraint profile, training profile, latest body measurement — is read per request and injected into the prompt; the agent updates it through dedicated tools. One-shot model calls (week suggest) use `generateText` + a zod-validated JSON contract rather than the agent loop.
 
 ### Feature limits and usage
 

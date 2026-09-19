@@ -34,11 +34,6 @@ import { buildLatestBodyMeasurementBlock } from '../tools/body-measurements';
  * @returns The complete system prompt string.
  */
 
-export interface ISessionEpisodeForPrompt {
-    summary: string;
-    created_at: string;
-}
-
 interface IProps {
     hevyProgram: THevyRoutine[];
     daysPerWeek: number;
@@ -61,8 +56,6 @@ interface IProps {
     trainingProfile?: TTrainingProfile;
     /** Latest backed-up body measurement; injects a short summary when present (all tiers). */
     latestBodyMeasurement?: TBodyMeasurementRow | null;
-    /** Recent session episodes for episodic memory (edit-path only). */
-    episodes?: ISessionEpisodeForPrompt[];
     /**
      * User's program-builder weight display preference (true = lbs, false = kg).
      * Storage is always weight_kg; this is what the UI shows.
@@ -160,19 +153,6 @@ function buildTrainingProfileBlock(profile: TTrainingProfile): string {
     return `## Active Training Profile\nPerson facts for coaching context (not hard Mutation constraint gates). Honor when planning volume, phase, focus, and session length.\n${lines}`;
 }
 
-function buildEpisodesBlock(episodes: ISessionEpisodeForPrompt[]): string {
-    if (!episodes.length) return '';
-    const lines = episodes
-        .map(e => {
-            const date = new Date(e.created_at).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric',
-            });
-            return `- ${e.summary} (${date})`;
-        })
-        .join('\n');
-    return `## Previous Session Context\nRecent coaching sessions for this program:\n${lines}`;
-}
-
 export const instructions = ({
     hevyProgram,
     daysPerWeek,
@@ -190,7 +170,6 @@ export const instructions = ({
     constraintProfile,
     trainingProfile,
     latestBodyMeasurement = null,
-    episodes = [],
     isInLbs = true,
     isAuthenticated = false,
     hasHevyApiKey = false,
@@ -295,7 +274,6 @@ export const instructions = ({
         ${trainingProfile ? buildTrainingProfileBlock(trainingProfile) : ''}
         ${buildLatestBodyMeasurementBlock(latestBodyMeasurement)}
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
-        ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
         **Upload to Hevy:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). Session flags: authenticated = **${isAuthenticated ? 'yes' : 'no'}**; Hevy API key on file = **${hasHevyApiKey ? 'yes' : 'no'}** (boolean presence only - never ask for or repeat a key). If the user asks to upload / export / send / sync / push to Hevy:
         - **Empty program:** Do **not** call **openHevyExportGate**. Tell them to build (or finish) a program first - the gate only applies when there is something on the grid to **Save**.

@@ -356,13 +356,6 @@ export function useBuildProgramChat(options: IUseBuildProgramChatOptions): IProp
                     void queryClient.invalidateQueries({
                         queryKey: ["chat-history", user.id, persistChatId],
                     });
-
-                    // Fire-and-forget episode generation for cross-session memory
-                    fetch('/api/chat/summarize-episode', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chatId: persistChatId }),
-                    }).catch(() => {}); // non-blocking
                 }
             });
         },
