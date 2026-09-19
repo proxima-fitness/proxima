@@ -111,6 +111,7 @@ describe("ConstraintProfileSection", () => {
             <ConstraintProfileSection user={user} onDirtyChange={onDirtyChange} />,
         );
 
+        expect(screen.getAllByText("Injuries & health issues").length).toBeGreaterThan(0);
         expect(screen.getByText("knee")).toBeTruthy();
         expect(screen.getByText("user said no floor work")).toBeTruthy();
         expect(

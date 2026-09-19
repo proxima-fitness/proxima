@@ -107,6 +107,7 @@ describe("AgenticMemoryPeek", () => {
         );
         openPeek();
 
+        expect(screen.getByText("Injuries & health issues")).toBeTruthy();
         expect(screen.getByText("knee")).toBeTruthy();
         expect(screen.getByText("Band")).toBeTruthy();
         expect(screen.getByText("PPL")).toBeTruthy();

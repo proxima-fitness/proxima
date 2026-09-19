@@ -103,6 +103,10 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("removeExcludedAreas");
             expect(prompt).not.toContain("removeChatRefinements");
             expect(prompt).not.toContain("addChatRefinements");
+            expect(prompt).toContain("addInjuries");
+            expect(prompt).toMatch(/can't kneel/);
+            expect(prompt).toMatch(/no overhead/);
+            expect(prompt).toMatch(/do not strip "can't kneel"/);
             expect(prompt).toMatch(/never.*preferred split/i);
             expect(prompt).toMatch(/adapt the program/i);
             expect(prompt).toMatch(/do not edit the profile down/i);

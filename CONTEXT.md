@@ -18,7 +18,7 @@ _Avoid_: Personal trainer app, Proxima app (deprecated marketing surface), landi
 ### Public API
 
 
-The versioned HTTP surface athletes, third-party apps, and agents use to write **Workouts** and **Custom movements** into a user's account, and to list **Canonical exercises**. Writes require a **Public API key**. The **Canonical exercise** list is world-readable. Distinct from Hevy sync and from signed-in app routes. A Public API **Workout** is history-only: it does not count as **Day complete**. POST is first-write-wins on **Workout source** + external ID. PUT and DELETE change or remove that **Workout**.
+The versioned HTTP surface athletes, third-party apps, and agents use to write **Workouts** and **Custom movements** into a user's account, and to list **Canonical exercises**. Writes require a **Public API key**. The **Canonical exercise** list is world-readable. Distinct from Hevy sync and from signed-in app routes. A Public API **Workout** is history-only: it does not count as **Day complete**. POST is first-write-wins on **Workout source** + external ID. GET, PUT, and DELETE address that **Workout** by its Proxima backup id.
 
 
 _Avoid_: Developer API, developer mode, webhook ingest, treating Hevy sync as this surface
@@ -1435,7 +1435,7 @@ _Avoid_: Stall detection (implementation), exercise stalls (UI component name)
 ### Workout history browse
 
 
-Profile **Recent Workouts** section, horizontal feed of backed-up **Workouts** as read-only logged day cards (title, date, duration; up to 5 exercises per preview card). **See more exercises** opens **Logged workout detail** when a workout has more than five exercises. Free for all Hevy-connected users. Cursor-paginated load-more over full synced history. Page refetches as backfill adds rows. Validates the backup read path before blind spot analysis ships. Distinct from blind spot analysis (stall detection) and from profile statistics (weekly aggregates). Placement and card shell per profile Hevy layout ADR.
+Profile **Recent Workouts** section, horizontal feed of backed-up **Workouts** as read-only logged day cards (title, date, duration; up to 5 exercises per preview card). Includes every **Workout source**, not Hevy only. **See more exercises** opens **Logged workout detail** when a workout has more than five exercises. Free for all users with backup data. Cursor-paginated load-more over full history. Page refetches as new **Workouts** arrive. Distinct from blind spot analysis (stall detection) and from profile statistics (weekly aggregates). Placement and card shell per profile Hevy layout ADR.
 
 
 _Avoid_: Workout history (ambiguous with backup or Hevy API), exercise history (Hevy API grain), sync banner (progress only)
@@ -1457,7 +1457,7 @@ _Avoid_: Workout page (ambiguous with builder day), Hevy workout URL (external a
 ### Workout history access
 
 
-Reading backed-up workouts for product features (workout history browse, blind spot analysis, agent tool). Pro-gated for agent queries and full blind spot depth. Backup sync, browse, and retention are free for all connected users so upgrade unlocks existing data immediately.
+Reading backed-up workouts for product features (workout history browse, blind spot analysis, agent tool). Any **Workout source**. Pro-gated for agent queries and full blind spot depth. Browse and retention are free for all users with backup data so upgrade unlocks existing data immediately.
 
 
 _Avoid_: Hevy API access (live fetch), export (program push to Hevy)
@@ -1479,7 +1479,7 @@ _Avoid_: getExerciseHistory (v1 scope), live Hevy fetch in chat
 ### Profile statistics
 
 
-Hevy-style aggregate chart on the profile page. Weekly Duration, Reps, and Volume totals derived from the workout history backup, with a time-range filter (last 4 weeks or last 12 weeks). Headline above the chart always shows the current Sun-Sat week total for the active tab (Duration, Reps, or Volume), independent of the chart range. When at least one prior week of backup exists, a **Profile consistency line** appears under the headline, current-week workout count and trailing average workouts per week. Duration uses workout wall time (`ended_at - started_at` per workout, summed by week). Reps uses total reps across all sets in each week (null reps excluded). Volume uses the sum of `weight_kg × reps` per set in each week (null reps excluded; zero or null weight contributes 0, same rule as blind spot session volume). Volume is stored in kg. The UI shows the user's preferred weight unit. Weeks bucket by `started_at` using Sunday-start calendar weeks (US convention). Free for all users with Hevy connected and backup data, not Pro-gated. Distinct from blind spot analysis (per-exercise stall detection) and from the header workout count (lifetime total).
+Hevy-style aggregate chart on the profile page. Weekly Duration, Reps, and Volume totals derived from the workout history backup, with a time-range filter (last 4 weeks or last 12 weeks). Headline above the chart always shows the current Sun-Sat week total for the active tab (Duration, Reps, or Volume), independent of the chart range. When at least one prior week of backup exists, a **Profile consistency line** appears under the headline, current-week workout count and trailing average workouts per week. Duration uses workout wall time (`ended_at - started_at` per workout, summed by week). Reps uses total reps across all sets in each week (null reps excluded). Volume uses the sum of `weight_kg × reps` per set in each week (null reps excluded; zero or null weight contributes 0, same rule as blind spot session volume). Volume is stored in kg. The UI shows the user's preferred weight unit. Weeks bucket by `started_at` using Sunday-start calendar weeks (US convention). Free for all users with backup data, not Pro-gated. Includes every **Workout source**. Distinct from blind spot analysis (per-exercise stall detection) and from the header workout count (lifetime total).
 
 
 _Avoid_: Workout stats (ambiguous with header count), activity chart (too generic)
@@ -1501,7 +1501,7 @@ _Avoid_: Consistency score (too vague), on-track label (deferred judgment copy)
 ### Profile calendar
 
 
-Month grid beside **Profile statistics** on the profile (Sunday-start week row, US convention, same as profile statistics). One highlighted day per calendar date that has at least one backed-up **Workout**, using the same local workout date shown on workout history browse cards (workout start, not finish). One highlight per day regardless of how many workouts that day. **Today** (user's local calendar date) always gets a distinct ring outline. When today also has a workout, the teal workout circle keeps its fill and adds a contrasting ring. User can navigate to any month across full synced backup history (independent of profile statistics' 4/12-week chart range). Highlights load per visible month and refill silently as backup sync adds workouts (no sync status copy on the calendar card). Month navigation is unbounded. Empty grids before the first workout or after today are allowed. Future months show no highlights. Hovering, focusing, or tapping a highlighted day opens the same tooltip (tap-to-open on touch; dismiss on outside tap) listing each backed-up **Workout** that day, title, duration, date, and a **See Workout** link to **Logged workout detail**, stacked when multiple sessions share a date. Opens on the current calendar month by default. Free for all Hevy-connected users with backup data (not Pro-gated). Shown only when Hevy is connected (same gate as **Recent workouts**). Distinct from profile statistics (weekly Duration/Reps/Volume aggregates).
+Month grid beside **Profile statistics** on the profile (Sunday-start week row, US convention, same as profile statistics). One highlighted day per calendar date that has at least one backed-up **Workout**, using the same local workout date shown on workout history browse cards (workout start, not finish). One highlight per day regardless of how many workouts that day. **Today** (user's local calendar date) always gets a distinct ring outline. When today also has a workout, the teal workout circle keeps its fill and adds a contrasting ring. User can navigate to any month across full synced backup history (independent of profile statistics' 4/12-week chart range). Highlights load per visible month and refill silently as backup sync adds workouts (no sync status copy on the calendar card). Month navigation is unbounded. Empty grids before the first workout or after today are allowed. Future months show no highlights. Hovering, focusing, or tapping a highlighted day opens the same tooltip (tap-to-open on touch; dismiss on outside tap) listing each backed-up **Workout** that day, title, duration, date, and a **See Workout** link to **Logged workout detail**, stacked when multiple sessions share a date. Opens on the current calendar month by default. Free for all users with backup data (not Pro-gated). Shown when the user has backed-up **Workouts** (same gate as **Recent workouts**). Distinct from profile statistics (weekly Duration/Reps/Volume aggregates).
 
 
 _Avoid_: Activity calendar (too generic), workout calendar (ambiguous with builder schedule)
@@ -1534,7 +1534,7 @@ _Avoid_: Day streak, GitHub streak, streak badge on calendar
 ### Recent workouts (profile)
 
 
-Horizontal browse feed on the profile page. Read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown only when Hevy is connected. Sits below **Program overview**, profile statistics, and blind spot on the single profile scroll. White card on muted page background per profile Hevy layout.
+Horizontal browse feed on the profile page. Read-only preview cards for backed-up **Workouts** (≤5 exercises each), newest first, cursor-paginated with load-more. Card header shows title, date, duration, and **Session goal** badge when classifiable. **See more exercises** links to logged workout detail when needed. Shown when the user has at least one backed-up **Workout**, any **Workout source**. Sits below **Program overview**, profile statistics, and blind spot on the single profile scroll. White card on muted page background per profile Hevy layout.
 
 
 _Avoid_: Workout feed (ambiguous with social feed), workout history list (too generic)
