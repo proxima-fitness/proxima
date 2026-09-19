@@ -574,7 +574,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -618,7 +617,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -649,7 +647,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -937,7 +934,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ hevyProgram: minimalHevyProgram, constraintProfile });

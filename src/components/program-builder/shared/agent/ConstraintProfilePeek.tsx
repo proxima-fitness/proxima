@@ -167,10 +167,6 @@ function PeekBody({
                             values={summary.excludedAreas ?? []}
                         />
                         <PreferenceRows preferences={summary.preferences} />
-                        <SummarySection
-                            title="Chat refinements"
-                            values={summary.chatRefinements ?? []}
-                        />
                     </div>
 
                     <div className="border-t border-border/60 pt-3">

@@ -46,7 +46,7 @@ export async function getUserConstraints(
     const { data, error } = await client
         .from("user_constraints")
         .select(
-            "injuries, excluded_equipment, excluded_areas, preferences, chat_refinements, raw_statements",
+            "injuries, excluded_equipment, excluded_areas, preferences, raw_statements",
         )
         .eq("user_id", userId)
         .maybeSingle();
@@ -67,7 +67,6 @@ export async function getUserConstraints(
             peakWeek: preferences.peakWeek ?? "",
             warmupExercises: preferences.warmupExercises ?? "",
         },
-        chatRefinements: (data.chat_refinements as string[]) ?? [],
         rawStatements: (data.raw_statements as string[]) ?? [],
     };
 }
@@ -90,7 +89,6 @@ export async function upsertUserConstraints(
             excluded_equipment: profile.excludedEquipment,
             excluded_areas: profile.excludedAreas,
             preferences: profile.preferences,
-            chat_refinements: profile.chatRefinements,
         }, { onConflict: "user_id" });
 
     if (error) {
@@ -132,7 +130,6 @@ export async function saveUserConstraintProfile(
                 excluded_equipment: record.excludedEquipment,
                 excluded_areas: record.excludedAreas,
                 preferences,
-                chat_refinements: record.chatRefinements,
                 raw_statements: record.rawStatements,
             },
             { onConflict: "user_id" },
@@ -150,7 +147,6 @@ export function emptyUserConstraintProfileRecord(): TUserConstraintProfileRecord
         excludedEquipment: [],
         excludedAreas: [],
         preferences: emptyPreferences(),
-        chatRefinements: [],
         rawStatements: [],
     };
 }

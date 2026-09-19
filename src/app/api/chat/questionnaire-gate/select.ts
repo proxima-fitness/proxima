@@ -147,7 +147,6 @@ export function hasRealConstraintProfile(
     if (!profile) return false;
     if (profile.injuries.length > 0) return true;
     if (profile.excludedAreas.length > 0) return true;
-    if (profile.chatRefinements.length > 0) return true;
     if (Object.values(profile.preferences).some((value) => value.trim() !== "")) return true;
     return equipmentBeyondGymDefaults(profile.excludedEquipment);
 }

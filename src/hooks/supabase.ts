@@ -1297,7 +1297,6 @@ export type Database = {
       }
       user_constraints: {
         Row: {
-          chat_refinements: Json
           created_at: string
           excluded_areas: Json
           excluded_equipment: Json
@@ -1308,7 +1307,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          chat_refinements?: Json
           created_at?: string
           excluded_areas?: Json
           excluded_equipment?: Json
@@ -1319,7 +1317,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          chat_refinements?: Json
           created_at?: string
           excluded_areas?: Json
           excluded_equipment?: Json

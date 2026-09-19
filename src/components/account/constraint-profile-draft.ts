@@ -19,7 +19,6 @@ export function cloneConstraintProfileDraft(
         excludedEquipment: [...record.excludedEquipment],
         excludedAreas: [...record.excludedAreas],
         preferences: { ...record.preferences },
-        chatRefinements: [...record.chatRefinements],
         rawStatements: [...record.rawStatements],
     };
 }
@@ -52,7 +51,6 @@ export function isConstraintProfileDraftDirty(
         !arraysEqual(baseline.injuries, draft.injuries) ||
         !arraysEqual(baseline.excludedEquipment, draft.excludedEquipment) ||
         !arraysEqual(baseline.excludedAreas, draft.excludedAreas) ||
-        !arraysEqual(baseline.chatRefinements, draft.chatRefinements) ||
         !arraysEqual(baseline.rawStatements, draft.rawStatements) ||
         !preferencesEqual(baseline.preferences, draft.preferences)
     );

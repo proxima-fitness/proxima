@@ -117,7 +117,7 @@ function buildQuestionnairePreferencesLine(props: {
 }
 
 function buildConstraintProfileBlock(profile: TConstraintProfile): string {
-    const { injuries, excludedEquipment, excludedAreas, preferences: p, chatRefinements } = profile;
+    const { injuries, excludedEquipment, excludedAreas, preferences: p } = profile;
 
     const prefLine = (Object.entries({
         Split: p.splitType,
@@ -136,7 +136,6 @@ function buildConstraintProfileBlock(profile: TConstraintProfile): string {
         excludedEquipment.length && `- Excluded equipment: ${excludedEquipment.join(', ')}`,
         excludedAreas.length     && `- Excluded muscle areas: ${excludedAreas.join(', ')}`,
         prefLine                 && `- Preferences: ${prefLine}`,
-        chatRefinements.length   && `- Additional refinements: ${chatRefinements.join('; ')}`,
     ].filter(Boolean).join('\n');
 
     if (!lines) return '';
@@ -278,9 +277,9 @@ export const instructions = ({
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques-use **readProgram** and answer in chat. If you did call it, explain the results in plain language.
         ${workoutHistoryGuidance}${bodyMeasurementsGuidance}${hevyShareGuidance}
 
-        **Constraint profile persistence:** The Active Constraint Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateConstraintProfile** only when there is something to persist: (1) **After questionnaire** unlock (user submitted answers or said "Build my program") **with non-empty fields** - call once in that same turn with those fields as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek**, not a stop-the-world gate. If the user skipped and every field is empty, **do not call** - nothing to persist. (2) **Any mid-chat constraint change** (injury, equipment, area, movement restriction, preference add/remove): you **must** call **updateConstraintProfile** in the same turn (prefer before **mutateProgram** when both apply). Map health → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; prefs → preferences; freeform limits → addChatRefinements; pass rawStatement when the user spoke in chat.
+        **Constraint profile persistence:** The Active Constraint Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateConstraintProfile** only when there is something to persist: (1) **After questionnaire** unlock (user submitted answers or said "Build my program") **with non-empty fields** - call once in that same turn with those fields as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek**, not a stop-the-world gate. If the user skipped and every field is empty, **do not call** - nothing to persist. (2) **Any mid-chat constraint change** (injury, equipment, area, movement restriction, preference add/remove): you **must** call **updateConstraintProfile** in the same turn (prefer before **mutateProgram** when both apply). Map health and movement limits (can't kneel, no overhead, no floor) → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; prefs → preferences; pass rawStatement when the user spoke in chat. Taste / "no supersets" is not a persisted constraint.
 
-        **Constraint profile - User-stated change (removals):** **Add** freely when you recognize a new constraint. **Remove / relax** only on a **User-stated change** (user asserts the rule no longer applies, e.g. "knee's fine now") or direct the user to **Edit profile**. Never call **removeExcludedEquipment**, **removeInjuries**, **removeExcludedAreas**, or **removeChatRefinements** to make a preferred split, template, or exercise set feasible (e.g. do not drop Exclude Machine because "PPL needs machines"). If the profile conflicts with a requested style, **adapt the program** to the profile - do not edit the profile down.
+        **Constraint profile - User-stated change (removals):** **Add** freely when you recognize a new constraint. **Remove / relax** only on a **User-stated change** (user asserts the rule no longer applies, e.g. "knee's fine now") or direct the user to **Edit profile**. Never call **removeExcludedEquipment**, **removeInjuries**, or **removeExcludedAreas** to make a preferred split, template, or exercise set feasible (e.g. do not drop Exclude Machine because "PPL needs machines", and do not strip "can't kneel" to make a squat program work). If the profile conflicts with a requested style, **adapt the program** to the profile - do not edit the profile down.
 
         **Training profile persistence:** The Active Training Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateTrainingProfile** only when there is something to persist: (1) **After questionnaire** unlock **with non-empty Questionnaire advanced / Training profile fields** - call once in that same turn as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek** (same spirit as Constraint profile). If every Training profile field is empty, **do not call**. (2) **Any mid-chat person-fact change** (age, sex, height, experience, physique phase, training focus, activity level, session duration): call **updateTrainingProfile** in the same turn. **Set** freely when the user states a fact. **Clear / change** a field only on a **User-stated change** (user asserts the fact no longer applies or gives a new value) or direct them to **Edit profile**. Training profile is **not** the Mutation constraint gate.
 

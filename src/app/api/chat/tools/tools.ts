@@ -1325,9 +1325,9 @@ export function getTools({
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
             'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
-            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or removeChatRefinements to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
+            'Never call removeExcludedEquipment, removeInjuries, or removeExcludedAreas to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
             'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
-            'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
+            'split/variability/progression/deload/peak/warmup → preferences. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
             'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
@@ -1339,12 +1339,10 @@ export function getTools({
             removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
             removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change - never to enable a preferred split/style'),
-            addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
-            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove only on User-stated change - never to enable a preferred split/style'),
             preferences: constraintPreferencesUpdateSchema,
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),
-        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
+        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, preferences, rawStatement }) => {
             if (!constraintProfile) {
                 return { error: 'No active constraint profile in this session.' };
             }
@@ -1356,8 +1354,6 @@ export function getTools({
                 removeExcludedEquipment,
                 addExcludedAreas,
                 removeExcludedAreas,
-                addChatRefinements,
-                removeChatRefinements,
             ].some((arr) => (arr?.length ?? 0) > 0);
             const hasPreferenceChange = Boolean(
                 preferences && Object.values(preferences).some((v) => typeof v === 'string' && v.trim() !== ''),
@@ -1372,7 +1368,6 @@ export function getTools({
                 ['injuries',          addInjuries,          removeInjuries],
                 ['excludedEquipment', addExcludedEquipment, removeExcludedEquipment],
                 ['excludedAreas',     addExcludedAreas,     removeExcludedAreas],
-                ['chatRefinements',   addChatRefinements,   removeChatRefinements],
             ] as const satisfies [keyof TConstraintProfile, string[] | undefined, string[] | undefined][];
 
             for (const [field, add, remove] of arrayFields) {
@@ -1418,7 +1413,6 @@ export function getTools({
                 p.injuries.length          && `Injuries: ${p.injuries.join(', ')}`,
                 p.excludedEquipment.length && `Excluded equipment: ${p.excludedEquipment.join(', ')}`,
                 p.excludedAreas.length     && `Excluded areas: ${p.excludedAreas.join(', ')}`,
-                p.chatRefinements.length   && `Refinements: ${p.chatRefinements.join('; ')}`,
             ].filter(Boolean).join(' | ') || 'No active constraints.';
             return { type: 'text' as const, value: `Constraint Profile updated. ${summary}` };
         },

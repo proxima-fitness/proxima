@@ -89,7 +89,6 @@ describe("AgenticMemoryPeek", () => {
             ...constraints.preferences,
             splitType: "ppl",
         };
-        constraints.chatRefinements = ["no floor work"];
         constraints.rawStatements = ["user said no floor work - should stay hidden"];
 
         const training = {
@@ -111,7 +110,6 @@ describe("AgenticMemoryPeek", () => {
         expect(screen.getByText("knee")).toBeTruthy();
         expect(screen.getByText("Band")).toBeTruthy();
         expect(screen.getByText("PPL")).toBeTruthy();
-        expect(screen.getByText("no floor work")).toBeTruthy();
         expect(
             screen.queryByText("user said no floor work - should stay hidden"),
         ).toBeNull();
@@ -208,10 +206,6 @@ describe("AgenticMemoryPeek", () => {
             (_, i) => `equipment-${i}`,
         );
         constraints.excludedAreas = Array.from({ length: 10 }, (_, i) => `area-${i}`);
-        constraints.chatRefinements = Array.from(
-            { length: 12 },
-            (_, i) => `refinement-${i}`,
-        );
 
         renderPeek(
             <AgenticMemoryPeek

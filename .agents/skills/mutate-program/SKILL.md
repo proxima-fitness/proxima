@@ -41,7 +41,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 |---------|----------------|
 | Injury / pain (for example "hurts my knee") | **`addInjuries`** + `rawStatement` |
 | Missing equipment (for example "don't have cables") | **`addExcludedEquipment`** + `rawStatement` |
-| Movement restriction (for example "no overhead", "can't kneel") | **`addChatRefinements`** + `rawStatement` |
+| Movement restriction (for example "no overhead", "can't kneel") | **`addInjuries`** + `rawStatement` |
 | Taste-only (for example "too boring", "swap this") | **No** profile update - replace only |
 
 ## Checklist

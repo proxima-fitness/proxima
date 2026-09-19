@@ -28,7 +28,7 @@ Pre-commit (husky) runs `lint-staged` → `npm run test:ci` → `npm run build`.
 ## Domain docs and process
 
 - **`CONTEXT.md`** is the domain glossary and the naming authority. Terms like **Proxima program**, **Program prescription**, **New path** / **Edit path**, **Week Export**, **Week complete**, **Current week**, **Agentic memory** have precise definitions plus an `_Avoid_` list of rejected synonyms. Use the glossary's vocabulary in code, tests, comments, and PR text.
-- **`docs/adr/`** holds in-flight ADRs, `docs/adr/complete/` shipped ones. Each ADR is `index.md` (decision) + `plan.md` (ship order) + numbered sub-plan slices that name what they own. Work is usually "implement sub-plan NN of ADR MMMM". Sub-plans cap at **~10 files including tests** — split rather than exceed (`docs/adr/new-path-week-loop/index.md`).
+- **`docs/adr/`** holds in-flight ADRs, `docs/adr/complete/` shipped ones. Each ADR is `index.md` (decision) + `plan.md` (ship order) + numbered sub-plan slices that name what they own. Work is usually "implement sub-plan NN of ADR MMMM". Sub-plans cap at **~10 files including tests** — split rather than exceed (`docs/adr/complete/new-path-week-loop/index.md`).
 - `AGENTS.md` and `docs/agents/` cover issue tracking (Linear, team Proxima Fitness, project Proxima Landing Page) and how to consume the domain docs.
 - If a change contradicts a shipped ADR, say so explicitly rather than silently overriding it.
 

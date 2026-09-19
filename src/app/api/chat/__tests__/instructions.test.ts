@@ -101,7 +101,8 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("removeExcludedEquipment");
             expect(prompt).toContain("removeInjuries");
             expect(prompt).toContain("removeExcludedAreas");
-            expect(prompt).toContain("removeChatRefinements");
+            expect(prompt).not.toContain("removeChatRefinements");
+            expect(prompt).not.toContain("addChatRefinements");
             expect(prompt).toMatch(/never.*preferred split/i);
             expect(prompt).toMatch(/adapt the program/i);
             expect(prompt).toMatch(/do not edit the profile down/i);

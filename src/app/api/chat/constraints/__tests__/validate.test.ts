@@ -8,7 +8,6 @@ function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfil
         excludedEquipment: [],
         excludedAreas: [],
         preferences: { splitType: '', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
-        chatRefinements: [],
         ...overrides,
     };
 }

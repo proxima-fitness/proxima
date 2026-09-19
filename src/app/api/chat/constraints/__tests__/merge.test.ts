@@ -9,7 +9,6 @@ function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfil
         excludedEquipment: [],
         excludedAreas: [],
         preferences: { splitType: '', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
-        chatRefinements: [],
         ...overrides,
     };
 }
@@ -64,17 +63,14 @@ describe('mergeConstraintProfiles', () => {
         const persisted = profile({
             excludedEquipment: ['Band'],
             excludedAreas: ['Legs'],
-            chatRefinements: ['no supersets'],
         });
         const session = profile({
             excludedEquipment: ['Cable'],
             excludedAreas: ['legs', 'Arms'],
-            chatRefinements: ['no supersets', 'prefer compounds'],
         });
         const result = mergeConstraintProfiles(persisted, session);
         expect(result.excludedEquipment).toEqual(['Band']);
         expect(result.excludedAreas).toEqual(['Legs']);
-        expect(result.chatRefinements).toEqual(['no supersets']);
     });
 
     it('handles both profiles empty', () => {

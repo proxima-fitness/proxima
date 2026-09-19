@@ -157,10 +157,6 @@ function ConstraintSectionBody({
             />
             <SummaryList title="Excluded areas" values={summary.excludedAreas ?? []} />
             <PreferenceRows preferences={summary.preferences} />
-            <SummaryList
-                title="Chat refinements"
-                values={summary.chatRefinements ?? []}
-            />
         </div>
     );
 }

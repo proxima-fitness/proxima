@@ -10,6 +10,4 @@ export type TConstraintProfile = {
         peakWeek: string;
         warmupExercises: string;
     };
-    /** Free-form constraints detected mid-conversation, e.g. "no overhead pressing", "prefer dumbbells". */
-    chatRefinements: string[];
 };

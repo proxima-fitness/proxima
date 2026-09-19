@@ -1,6 +1,6 @@
 # Proxima Landing
 
-Marketing site and logged-in app for Proxima Fitness. AI workout program builder, program vault, and training tools.
+Marketing site, logged-in app, and **Public API** for Proxima Fitness. AI workout program builder, program vault, and training tools.
 
 ## Language
 
@@ -11,6 +11,39 @@ Proxima's product role on the web, an AI agent that builds and advises on workou
 
 
 _Avoid_: Personal trainer app, Proxima app (deprecated marketing surface), landing page product
+
+
+
+
+### Public API
+
+
+The versioned HTTP surface athletes, third-party apps, and agents use to write **Workouts** and **Custom movements** into a user's account, and to list **Canonical exercises**. Writes require a **Public API key**. The **Canonical exercise** list is world-readable. Distinct from Hevy sync and from signed-in app routes. A Public API **Workout** is history-only: it does not count as **Day complete**. POST is first-write-wins on **Workout source** + external ID. PUT and DELETE change or remove that **Workout**.
+
+
+_Avoid_: Developer API, developer mode, webhook ingest, treating Hevy sync as this surface
+
+
+
+
+### Public API key
+
+
+A secret the athlete mints to call the **Public API** as themselves. One key per athlete: minted and shown once in account settings, then revoke-and-replace. Distinct from the Hevy API key used for native sync.
+
+
+_Avoid_: Hevy API key, OAuth token, session cookie
+
+
+
+
+### Workout source
+
+
+The fitness app that produced a **Workout**. A slug the caller must send, taken from the closed Public API source list of weight-training apps. Unknown slugs and `hevy` are rejected. An agent uploading on the user's behalf sets this to the app the session was logged in, not to the agent. `manual` is the listed slug when there is no app.
+
+
+_Avoid_: Agent as source, treating the API key as the source, app display name (use the slug), `other` as a catch-all
 
 
 
@@ -149,7 +182,7 @@ _Avoid_: Overarching program, program-in-progress (UI-shaped), Program (alone, a
 ### Program overview
 
 
-Per-**Proxima program** profile panel. Week rail (status for every consecutive week) plus **Week preview** for the **Selected week**. **Week complete** / **Edit current week** when that selection is the **Current week**. Also **AI week suggest**, **Edit program**, and that program's **Hevy mirror**. A percent bar under the title is **Day complete** over planned days in the **Program prescription** (each logged day moves it; **Week complete** counts that week's planned days). **Edit program** sits with **Export** until the first **Week Export**; after that it is a quiet control under the title, not on the Export row. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program **Export** dropdown. The Hevy option is gated **Week Export**. PDF / spreadsheet export the full **Program prescription**. One overview visible at a time. When multiple active programs, picker buttons at the top switch which program's overview is shown. After **Hevy mirror**, **Created programs** lists owned programs the owner **Leave**d. Replaces profile **My Programs** vault browse. Lives at the top of a single profile scroll (no Stats/Programs tabs). Backend / **Hevy program sync** must support more than one active program.
+Per-**Proxima program** profile panel. Week rail (status for every consecutive week) plus **Week preview** for the **Selected week**. **Week complete** / **Edit current week** when that selection is the **Current week**. Also **AI week suggest**, **Edit program**, and that program's **Hevy mirror**. A percent bar under the title is **Day complete** over planned days in the **Program prescription** (each logged day moves it; **Week complete** counts that week's planned days). **Edit program** is always a quiet control under the title (desktop) or in Program actions (mobile), not on the Export row. Export destinations removed from the builder (PDF, Hevy / **Week Export**, spreadsheet) live here as a per-program **Export** dropdown. The Hevy option is gated **Week Export**. PDF / spreadsheet export the full **Program prescription**. One overview visible at a time. When multiple active programs, picker buttons at the top switch which program's overview is shown. After **Hevy mirror**, **Created programs** lists owned programs the owner **Leave**d. Replaces profile **My Programs** vault browse. Lives at the top of a single profile scroll (no Stats/Programs tabs). Backend / **Hevy program sync** must support more than one active program.
 
 
 _Avoid_: Flat full-height week list with no preview, program carousel / swipe between programs, separate My Programs / My Hevy Programs sections, Stats/Programs tabs, vault browse on profile, forcing a single active program in data, builder Export button, **Week complete** / program length as the overview percent
@@ -400,10 +433,10 @@ _Avoid_: Edit mode (too broad), a second persist toolbar button, labeling this c
 ### Edit program
 
 
-Overview action that edits the **Program prescription** of that **Proxima program**. Owner-only: toolbar **Save** updates this program; it does not create a copy. Distinct from a public share load (`shareId` / Personalize), which **Save**s as a new **Proxima program**. Does not **Sync**. A week is writable only when that slot can still become a Hevy write: not exported, or linked ∧ not **Week complete** ∧ not **Current week** (**Re-Export**). **Current week** and **Week complete** columns are visible and locked. Add/delete/insert week only on the unexported tail; linked week numbers never shift. To change this week in Hevy, the user uses **Edit current week**. On **Program overview**, a header control until the first **Week Export**, then a quiet title-row control so the week loop (**Edit current week**, **AI week suggest**, **Week Export**) stays primary.
+Overview action that edits the **Program prescription** of that **Proxima program**. Owner-only: toolbar **Save** updates this program; it does not create a copy. Distinct from a public share load (`shareId` / Personalize), which **Save**s as a new **Proxima program**. Does not **Sync**. A week is writable only when that slot can still become a Hevy write: not exported, or linked ∧ not **Week complete** ∧ not **Current week** (**Re-Export**). **Current week** and **Week complete** columns are visible and locked. Add/delete/insert week only on the unexported tail; linked week numbers never shift. To change this week in Hevy, the user uses **Edit current week**. On **Program overview**, a quiet title-row control (desktop) or Program actions (mobile) so the week loop (**Edit current week**, **AI week suggest**, **Week Export**) stays primary.
 
 
-_Avoid_: Edit current week, Update program, Syncing Hevy from this entry, locking every exported week (blocks **Re-Export**), using a public share URL as the write key, forking a second program on this action, keeping it on the Export row after the gym loop has started, reindexing **Program–Hevy links** when a week is deleted
+_Avoid_: Edit current week, Update program, Syncing Hevy from this entry, locking every exported week (blocks **Re-Export**), using a public share URL as the write key, forking a second program on this action, putting it on the Export row, reindexing **Program–Hevy links** when a week is deleted
 
 
 
@@ -447,7 +480,7 @@ _Avoid_: Treating Hevy folder deletion as un-complete, treating routine deletion
 A planned **Hevy routine** already has a matching **Workout**: `workouts.routine_id` is in that week’s `hevy_routine_ids`. In **Edit current week** that day is visible, locked, and marked done. Distinct from **Week complete**. Deleting the routine does not undo this; deleting the **Workout** does. If the week is not **Week complete** and the linked folder is gone, a later **Re-Export** is a fresh slate: old **Workouts** stay in history and do not count on the new IDs.
 
 
-_Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match, carrying old logs onto a missing-folder Re-Export
+_Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match, carrying old logs onto a missing-folder Re-Export, treating a **Public API** Workout as Day complete
 
 
 _Avoid_: Calling a Workout a routine, implying the planned routine was deleted, nthDay / schedule-history as identity, title match
@@ -1050,7 +1083,7 @@ _Avoid_: Agent memory (deprecated name), Constraint profile (wrong kind), athlet
 ### Constraint profile
 
 
-Merged training constraints for one user, home-prompt inference plus questionnaire answers plus later chat refinements. Authoritative for exercise selection and program edits. Agent must not re-ask fields already captured here. Chat may add freely when it recognizes a new constraint. It may remove or relax only on a **User-stated change**. Chat writes do not reopen the **Questionnaire gate**. Unconfirmed gym-default excluded equipment is not a captured profile. One kind of Agentic memory, stored separately from **Training profile** (person facts). When a persisted row exists, array fields (injuries, excluded equipment, excluded areas, chat refinements) are **persisted-only**. Merge does not re-union with stale questionnaire/session strings, so Edit profile removals stick across chat turns. Preferences still prefer a non-empty session value. New questionnaire array values for users who already have a row must arrive via chat `updateConstraintProfile` or **Edit profile** Save, not merge alone. When the user manually edits the profile (add, change, or remove), those edits supersede questionnaire answers and chat session inputs that would put a removed constraint back. On **Edit profile**, the Constraint Profile UI maps 1:1 to persisted fields (injuries, excluded equipment, excluded areas, preferences, chat refinements, raw statements), not renamed umbrella labels, mirroring **Questionnaire core** (not Questionnaire advanced). Structured fields are editable. **Raw statements** are the user's exact words captured on agent updates, view and delete only (not freeform invent), so the user can purge wrong audit lines. Deleting a raw statement does not change injuries, equipment, areas, preferences, or chat refinements. Those are edited separately. Constraint profile changes use a dedicated Save (separate from identity Save and from **Training profile** Save). Nothing persists until that Save. On Edit profile, injuries and chat refinements accept freeform add. Excluded equipment and excluded areas use fixed pickers (questionnaire option sets). All list fields support remove. Preferences use the same option sets as the questionnaire (not freeform).
+Merged training constraints for one user, home-prompt inference plus questionnaire answers plus later chat. Authoritative for exercise selection and program edits. Agent must not re-ask fields already captured here. Chat may add freely when it recognizes a new constraint. It may remove or relax only on a **User-stated change**. Chat writes do not reopen the **Questionnaire gate**. Unconfirmed gym-default excluded equipment is not a captured profile. One kind of Agentic memory, stored separately from **Training profile** (person facts). When a persisted row exists, array fields (injuries, excluded equipment, excluded areas) are **persisted-only**. Merge does not re-union with stale questionnaire/session strings, so Edit profile removals stick across chat turns. Preferences still prefer a non-empty session value. New questionnaire array values for users who already have a row must arrive via chat `updateConstraintProfile` or **Edit profile** Save, not merge alone. When the user manually edits the profile (add, change, or remove), those edits supersede questionnaire answers and chat session inputs that would put a removed constraint back. On **Edit profile**, the Constraint Profile UI maps 1:1 to persisted fields (injuries, excluded equipment, excluded areas, preferences, raw statements), not renamed umbrella labels, mirroring **Questionnaire core** (not Questionnaire advanced). Structured fields are editable. **Raw statements** are the user's exact words captured on agent updates, view and delete only (not freeform invent), so the user can purge wrong audit lines. Deleting a raw statement does not change injuries, equipment, areas, or preferences. Those are edited separately. Constraint profile changes use a dedicated Save (separate from identity Save and from **Training profile** Save). Nothing persists until that Save. On Edit profile, **Injuries & health issues** accept freeform add. Excluded equipment and excluded areas use fixed pickers (questionnaire option sets). All list fields support remove. Preferences use the same option sets as the questionnaire (not freeform).
 
 
 _Avoid_: User preferences (too broad), questionnaire data (implementation-shaped), builder state, constraints (UI label), Other constraints (non-column label), single shared Save with identity, autosave per chip, freeform invent for equipment/areas, freeform preference text, merge re-union of arrays when a row exists, different field sets on questionnaire core vs Edit profile Constraint section, person-facts that belong in Training profile, merging Constraint profile storage with Training profile, treating gym-default excludes as a Constraint profile, reopening the Questionnaire gate on conversation change
@@ -1116,10 +1149,54 @@ _Avoid_: Explicit request (implies confirm UI), agent-inferred removal, program-
 ### Mutation constraint gate
 
 
-Hard check on agent-proposed program changes against structured Constraint profile fields (excluded equipment, excluded areas, injuries) plus structural rules such as no emptied training days. Runs before those changes reach the builder. Does not apply to manual grid edits or Sync. Those honor the user's explicit program state.
+Hard check on agent-proposed program changes against structured Constraint profile fields that catalog metadata can match (excluded equipment, excluded areas, injuries that name a muscle group) plus structural rules such as no emptied training days. Runs before those changes reach the builder. Does not apply to manual grid edits or Sync. Those honor the user's explicit program state. Does not cover Constraint profile preferences, semantic health limits the substring miss, or Training profile. Those are **Program sanity check**.
 
 
-_Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-only check
+_Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-only check, treating the gate as a full Constraint profile lock
+
+
+
+
+### Program sanity check
+
+
+Named check on a proposed program snapshot before it lands on the builder (first build or **Program mutation batch**). Code owns schema, ids, empty days, and week-coverage counts. Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry. Does not run on manual grid edits or Sync.
+
+
+_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only)
+
+
+
+
+### User-stated exception
+
+
+The user named a program outcome that would fail a Training profile or skill-principle **Program sanity check** (short day, skip a deload Andy invented, delete a lift they do not want). Those checks do not reject. Constraint profile and code gates still reject until a **User-stated change** or **Edit profile**.
+
+
+_Avoid_: User-stated change (that term is for removing a saved constraint), taste override of a hard constraint, slapping the user for an explicit ask
+
+
+
+
+### Injuries & health issues
+
+
+Constraint profile list for injuries, pain, and how or where the user can train (can't kneel, no overhead, no floor). **Questionnaire core** health issues and mid-chat health limits write here. Edit profile caption.
+
+
+_Avoid_: Chat refinements, Restriction tag, a second movement-restriction list, Injuries (label without health)
+
+
+
+
+### Chat refinements (removed)
+
+
+Former Constraint profile freeform list for leftover chat lines. Dropped. Health and movement limits belong in **Injuries & health issues**. Program-style notes do not persist on the user.
+
+
+_Avoid_: addChatRefinements, using it as a junk drawer, Restriction tag as its successor
 
 
 
@@ -1138,7 +1215,7 @@ _Avoid_: Exclude equipment (exclusion half only), gear list (too informal)
 ### Available equipment
 
 
-Positive half of the equipment constraint, what the user explicitly has (e.g. cable machine, adjustable bench, attachments). Complements excluded equipment from the questionnaire. Both apply together. **Deferred** as a first-class Constraint profile / questionnaire field. May still appear as freeform chat refinements until **Gym profile** ships.
+Positive half of the equipment constraint, what the user explicitly has (e.g. cable machine, adjustable bench, attachments). Complements excluded equipment from the questionnaire. Both apply together. **Deferred** as a first-class Constraint profile / questionnaire field until **Gym profile** ships. Not stored as a leftover chat line.
 
 
 _Avoid_: Allowed gear (informal), equipment list (ambiguous with full Hevy catalog), adding available-equipment questionnaire now ahead of Gym profile
@@ -1160,10 +1237,10 @@ _Avoid_: Available equipment (partial precursor), location (too vague), Hevy gym
 ### Movement restriction
 
 
-A constraint on how or where the user can train, e.g. no floor work, no kneeling, no single-leg exercises, avoid overhead with impingement. Lives in the constraint profile (health issues, chat refinements). Distinct from equipment constraint and from muscle-area exclusions.
+How or where the user can train, e.g. no floor, no kneeling, no overhead. A kind of **Injuries & health issues**, not a separate store.
 
 
-_Avoid_: Limitation (ambiguous with load/volume), injury (health issue may imply restrictions but is not the same term)
+_Avoid_: Chat refinements, Restriction tag, treating it as distinct from injuries
 
 
 
@@ -1171,10 +1248,10 @@ _Avoid_: Limitation (ambiguous with load/volume), injury (health issue may imply
 ### Restriction tag
 
 
-Canonical machine-readable flag for a movement restriction (e.g. no floor, no kneeling, no unilateral). Derived from the constraint profile. Used in a later enforcement slice to filter exercise candidates. Prompt and skills honor the plain-language source first. Tags tighten tool-level filtering when present.
+Rejected. Canonical flags for movement limits were never shipped. **Injuries & health issues** plus **Program sanity check** cover that job.
 
 
-_Avoid_: Movement flag (too implementation-shaped), exclusion tag (ambiguous with equipment)
+_Avoid_: Building tags as a successor to chat refinements
 
 
 
@@ -1182,10 +1259,10 @@ _Avoid_: Movement flag (too implementation-shaped), exclusion tag (ambiguous wit
 ### Exercise objection
 
 
-User pushback on one programmed movement, pain, equipment mismatch, can't perform position, or wrong stimulus, resolved by replace-in-place (or program-wide **Template swap** when the same template applies everywhere), never lone removal. Distinct from explicit remove/skip and from program-wide filters. Lasting limits implied by the objection belong in the **Constraint profile**. Taste-only swaps do not.
+User pushback on one programmed movement: pain, equipment mismatch, cannot perform a position, or wrong stimulus. Lasting limits write the **Constraint profile** (`addInjuries` or `addExcludedEquipment`). Taste or an explicit "remove / skip / I don't want that" may delete the row. An empty training day is still rejected.
 
 
-_Avoid_: Complaint (too informal), exercise feedback (too broad)
+_Avoid_: Complaint (too informal), exercise feedback (too broad), never-remove-alone, force swap on every dislike
 
 
 
@@ -1237,7 +1314,7 @@ _Avoid_: Exercise history (Hevy API term, derived view)
 ### Workout history backup
 
 
-Proxima's stored copy of a user's completed workouts, synced from connected fitness apps. Full backfill runs in the background when Hevy is first connected (all tiers, pre-stages data before Pro). Connect dialog closes immediately. Ongoing sync uses workout-count delta for new workouts, **backed-up workout revision** when Hevy reports a newer version of an existing workout, plus on-demand refresh when Blind Spot or the agent reads history. Canonical shape: workout → exercises → sets. Supersedes legacy `workout_history` / `workout_history_exercises` tables, which are removed once canonical storage ships.
+Proxima's stored copy of a user's completed **Workouts**, from Hevy sync and from the **Public API**. Hevy: full backfill runs in the background when first connected (all tiers, pre-stages data before Pro); the connect dialog closes immediately; ongoing sync uses workout-count delta, **backed-up workout revision**, plus on-demand refresh when Blind Spot or the agent reads history. Public API: the caller POSTs a completed session that matches the Public API schema. Canonical shape: workout → exercises → sets. Supersedes legacy `workout_history` / `workout_history_exercises` tables, which are removed once canonical storage ships.
 
 
 _Avoid_: Hevy sync (implementation), exercise_history backup (wrong grain), blocking connect flow
@@ -1270,7 +1347,7 @@ _Avoid_: Re-sync (ambiguous with revision), clear cache (implementation)
 ### Workout (backup)
 
 
-One completed session in workout history: what they actually lifted. Identified by app source + external ID. Not a **Hevy routine** (the plan for a day). Deleting routines in Hevy leaves **Workouts** in place.
+One completed session in workout history: what they actually lifted. Identified by **Workout source** + external ID. Written by Hevy sync or by the **Public API**. A Public API POST with the same identity does not overwrite; PUT replaces; DELETE removes. Not a **Hevy routine** (the plan for a day). Deleting routines in Hevy leaves **Workouts** in place.
 
 
 _Avoid_: Session (use workout), workout log (deprecated term), program day
@@ -1325,7 +1402,7 @@ _Avoid_: Warmup exercise (examples only), export custom (process not identity)
 ### Custom movement
 
 
-User-owned exercise identity, created in the user's Hevy app (**Hevy-native custom**) or minted on that account when exporting a non-supplemental custom (**Proxima-exported custom** with a per-account Hevy ID). Stored as `canonical_exercises` with `user_id` set. RLS: readable only by that user. Distinct from **Proxima supplemental** (shared, `user_id` null).
+User-owned exercise identity, created in the user's Hevy app (**Hevy-native custom**), minted on that account when exporting a non-supplemental custom (**Proxima-exported custom** with a per-account Hevy ID), or created through the **Public API**. Public API create requires title, exercise type, equipment, and primary muscle group (same contract as the in-app Hevy form). Stored as `canonical_exercises` with `user_id` set. RLS: readable only by that user. Distinct from **Proxima supplemental** (shared, `user_id` null).
 
 
 _Avoid_: Custom exercise (ambiguous with Hevy template object), user exercise (too generic)

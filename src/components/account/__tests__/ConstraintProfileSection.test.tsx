@@ -95,23 +95,6 @@ describe("ConstraintProfileSection", () => {
         expect(screen.queryByRole("button", { name: "Save constraints" })).toBeNull();
     });
 
-    it("shows editor when only raw statements exist", () => {
-        const record = emptyUserConstraintProfileRecord();
-        record.rawStatements = ["user said no floor work"];
-
-        useUserConstraints.mockReturnValue({
-            data: record,
-            isLoading: false,
-            isError: false,
-        });
-
-        renderSection(<ConstraintProfileSection user={user} />);
-
-        expect(screen.queryByTestId("constraint-profile-empty-state")).toBeNull();
-        expect(screen.getByText("user said no floor work")).toBeTruthy();
-        expect(screen.getByRole("button", { name: "Save constraints" })).toBeTruthy();
-    });
-
     it("loads record into draft and reports dirty after freeform add", async () => {
         const record = emptyUserConstraintProfileRecord();
         record.injuries = ["knee"];
@@ -135,7 +118,7 @@ describe("ConstraintProfileSection", () => {
                 .disabled,
         ).toBe(true);
 
-        fireEvent.change(screen.getByLabelText("Injuries"), {
+        fireEvent.change(screen.getByLabelText("Injuries & health issues"), {
             target: { value: "shoulder" },
         });
         fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);
@@ -198,12 +181,10 @@ describe("ConstraintProfileSection", () => {
             />,
         );
 
-        fireEvent.change(screen.getByLabelText("Chat refinements"), {
-            target: { value: "prefer dumbbells" },
+        fireEvent.change(screen.getByLabelText("Injuries & health issues"), {
+            target: { value: "can't kneel" },
         });
-        // Second Add button is chat refinements
-        const addButtons = screen.getAllByRole("button", { name: "Add" });
-        fireEvent.click(addButtons[1]);
+        fireEvent.click(screen.getByRole("button", { name: "Add" }));
 
         fireEvent.click(screen.getByRole("button", { name: "Save constraints" }));
 
@@ -211,7 +192,7 @@ describe("ConstraintProfileSection", () => {
             expect(saveUserConstraintProfile).toHaveBeenCalledWith(
                 "user-1",
                 expect.objectContaining({
-                    chatRefinements: ["prefer dumbbells"],
+                    injuries: ["knee", "can't kneel"],
                 }),
             );
         });
@@ -242,7 +223,7 @@ describe("ConstraintProfileSection", () => {
             <ConstraintProfileSection user={user} onDirtyChange={onDirtyChange} />,
         );
 
-        fireEvent.change(screen.getByLabelText("Injuries"), {
+        fireEvent.change(screen.getByLabelText("Injuries & health issues"), {
             target: { value: "left knee" },
         });
         fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);

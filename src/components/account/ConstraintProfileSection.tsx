@@ -323,10 +323,10 @@ function ConstraintProfileEditor({
 
     return (
         <form className="space-y-6" onSubmit={handleSave} noValidate>
-            <SettingsGroup caption="Injuries">
+            <SettingsGroup caption="Injuries & health issues">
                 <FreeformChipList
                     id="constraint-injuries"
-                    label="Injuries"
+                    label="Injuries & health issues"
                     items={draft.injuries}
                     placeholder="Add an injury or movement restriction"
                     onChange={(injuries) =>
@@ -463,18 +463,6 @@ function ConstraintProfileEditor({
                         );
                     })}
                 </div>
-            </SettingsGroup>
-
-            <SettingsGroup caption="Chat refinements">
-                <FreeformChipList
-                    id="constraint-chat-refinements"
-                    label="Chat refinements"
-                    items={draft.chatRefinements}
-                    placeholder="Add a chat refinement"
-                    onChange={(chatRefinements) =>
-                        updateDraft((current) => ({ ...current, chatRefinements }))
-                    }
-                />
             </SettingsGroup>
 
             <SettingsGroup
