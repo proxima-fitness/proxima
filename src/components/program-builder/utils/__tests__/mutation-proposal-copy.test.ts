@@ -224,6 +224,56 @@ describe("buildMutationProposalRecipe", () => {
         });
     });
 
+    it("names stacked deletes from the grid after prior ops in the batch", () => {
+        const program = [
+            makeDay({
+                exercises: [
+                    makeExercise({
+                        title: "Warmup",
+                        exercise_template_id: "WU",
+                        builder_exercise_key: 7,
+                    }),
+                    makeExercise({
+                        index: 1,
+                        title: "Deadlift (Barbell)",
+                        exercise_template_id: "DL",
+                        builder_exercise_key: 8,
+                    }),
+                ],
+            }),
+        ];
+        const recipe = buildMutationProposalRecipe(
+            [
+                {
+                    op: "delete_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                },
+                {
+                    op: "delete_exercise",
+                    folderIds: [1],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                },
+            ],
+            program,
+        );
+
+        expect(withoutLocators(recipe).days[0]?.steps).toEqual([
+            { kind: "action", text: "Remove Warmup" },
+            { kind: "action", text: "Remove Deadlift (Barbell)" },
+        ]);
+        expect(recipe.days[0]?.steps[1]).toMatchObject({
+            locator: {
+                builderExerciseKey: 8,
+                dayOrder: 1,
+                exerciseIndex: 0,
+                folderId: 1,
+            },
+        });
+    });
+
     it("reads update_set from-values off the frozen set and only names changed fields", () => {
         const recipe = buildMutationProposalRecipe(
             [

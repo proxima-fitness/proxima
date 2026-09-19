@@ -1,16 +1,20 @@
 /**
  * @module mutation-proposal-copy
  *
- * Frozen-grid recipe lines for a **Mutation proposal** (ADR 0024 / 01).
+ * Recipe lines for a **Mutation proposal** (ADR 0024 / 01).
  * Turns a **Program mutation batch** plus the current grid into the tree
- * the proposal card will render. Does not apply ops.
+ * the proposal card will render. Each line is named from a working copy after
+ * prior ops (same order as Accept). Does not write the live grid.
  *
- * Depends on: agentSchema (TAgentProgramOperation)
+ * Depends on: agentSchema (TAgentProgramOperation), apply
  * Used by: Mutation proposal card (slice 02)
  */
 
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
+import { applyOperation } from "@/components/program-builder/mutations/apply";
 import { findDay } from "@/components/program-builder/mutations/locate";
+import type { TProgramOperation } from "@/components/program-builder/mutations/schemas";
+import { isValidationFailure } from "@/components/program-builder/mutations/types";
 
 const MISSING_NAME = "…";
 
@@ -77,7 +81,8 @@ type TDraftDay = {
 };
 
 /**
- * Recipe tree for a **Program mutation batch** against the frozen grid.
+ * Recipe tree for a **Program mutation batch**. Labels use the grid after
+ * earlier ops in the same batch so stacked deletes name the row Accept hits.
  *
  * @param operations - Agent ops; streaming-partial entries must not throw
  * @param hevyProgram - Current (frozen) grid
@@ -94,15 +99,26 @@ export function buildMutationProposalRecipe(
 
     const program = hevyProgram ?? [];
     const buckets = new Map<string, TDayBucket>();
+    let working = program;
 
     for (const operation of operations) {
         if (operation == null || typeof operation !== "object") {
             continue;
         }
-        addOperationToBuckets(buckets, operation, operations, program, catalog);
+        addOperationToBuckets(buckets, operation, operations, working, catalog);
+        working = workingProgramAfter(working, operation);
     }
 
     return { days: mergeBuckets(Array.from(buckets.values()), program) };
+}
+
+/** Advance the naming copy; leave it unchanged when the op cannot apply. */
+function workingProgramAfter(
+    program: THevyRoutine[],
+    operation: TAgentProgramOperation,
+): THevyRoutine[] {
+    const result = applyOperation(program, operation as TProgramOperation);
+    return isValidationFailure(result) ? program : result.program;
 }
 
 function addOperationToBuckets(
