@@ -8,6 +8,9 @@ import {
     CONSTRAINT_HONOR_MIN,
     evaluate,
     formatEvaluateMessage,
+    JEV_MODEL,
+    noulsFromEvaluateAnswers,
+    toEvaluateQuestions,
     TRAINING_MISS_MAX,
     USER_REQUESTED_YES_MIN,
 } from "../evaluate";
@@ -114,6 +117,39 @@ describe("applyEvaluatePolicy", () => {
         );
 
         expect(misses).toEqual([]);
+    });
+});
+
+describe("JEV_MODEL", () => {
+    it("is the Gateway Jev catalog id", () => {
+        expect(JEV_MODEL).toBe("typesafe-ai/jev");
+    });
+});
+
+describe("toEvaluateQuestions", () => {
+    it("maps noul questions onto AI SDK boolean questions", () => {
+        const mapped = toEvaluateQuestions({
+            "constraint.injurySemantic": {
+                type: "noul",
+                instructions: "Does matrix honor injuries?",
+                criteria: { true: "yes", false: "no" },
+            },
+        });
+
+        expect(mapped["constraint.injurySemantic"]).toEqual({
+            type: "boolean",
+            instructions: "Does matrix honor injuries?",
+            criteria: { true: "yes", false: "no" },
+        });
+    });
+});
+
+describe("noulsFromEvaluateAnswers", () => {
+    it("reads probability as the honor noul", () => {
+        expect(noulsFromEvaluateAnswers({
+            "constraint.injurySemantic": { probability: 0.12 },
+            skipped: { probability: "nope" },
+        })).toEqual({ "constraint.injurySemantic": 0.12 });
     });
 });
 

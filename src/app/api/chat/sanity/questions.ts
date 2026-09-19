@@ -1,7 +1,7 @@
 /**
  * @module chat/sanity/questions
  *
- * Named Program sanity check Nouls for one TypeSafe `POST /v1/systemone`
+ * Named Program sanity check Nouls for one AI SDK `experimental_evaluate`
  * (ADR 0025 / 03, C7). Code skips a question when its premise is empty
  * (no `splitType` → no `constraint.splitHonor`). Question ids are for our
  * fail policy; Jev only sees `instructions` / `criteria`.

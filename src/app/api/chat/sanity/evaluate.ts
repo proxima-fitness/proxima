@@ -1,17 +1,22 @@
 /**
  * @module chat/sanity/evaluate
  *
- * One TypeSafe call over {@link buildSanityQuestions}, then the C3–C5 fail
- * policy (ADR 0025 / 03). Constraint misses reject even at low confidence.
- * Training / skill misses Soft-fail only when Andy authored the snapshot and
- * the user did not ask; low confidence fail-opens.
+ * One AI SDK {@link experimental_evaluate} call over {@link buildSanityQuestions},
+ * then the C3–C5 fail policy (ADR 0025 / 03). Constraint misses reject even at
+ * low confidence. Training / skill misses Soft-fail only when Andy authored the
+ * snapshot and the user did not ask; low confidence fail-opens.
  *
- * Missing `TYPESAFE_API_KEY` or a TypeSafe transport error fail-opens Jev
- * questions so chat stays up. Slice 2 week-coverage still ran in the caller.
+ * Same Gateway style as week suggest: `gateway` + a model id. Jev is an
+ * evaluation model, so the call is `experimental_evaluate` rather than
+ * `generateText`. Auth is the Gateway OIDC / `AI_GATEWAY_API_KEY` the SDK
+ * already uses. A transport error fail-opens Jev so chat stays up. Slice 2
+ * week-coverage still ran in the caller.
  *
- * Depends on: ./questions, ./types
+ * Depends on: ai (gateway / experimental_evaluate), ./questions, ./types
  * Used by: tools.ts
  */
+
+import { experimental_evaluate, gateway } from "ai";
 
 import {
     buildSanityQuestions,
@@ -22,7 +27,8 @@ import {
 } from "./questions";
 import type { TProgramSanitySnapshot } from "./types";
 
-const SYSTEM_ONE_URL = "https://api.typesafe.ai/v1/systemone";
+/** Same Gateway catalog id as week suggest's `gateway(model)` style. */
+export const JEV_MODEL = "typesafe-ai/jev";
 
 /**
  * Constraint honor floor. Below this (including ~0.5) is a miss.
@@ -47,7 +53,7 @@ export type TEvaluateMiss = {
 
 /**
  * Evaluate result. `ok: false` is a Soft tool failure; `misses` is empty when
- * `ok` is true. Fail-open (no key, no questions, transport error) is `ok: true`.
+ * `ok` is true. Fail-open (no questions, evaluate error) is `ok: true`.
  * `debug` is set only when {@link IEvaluateOptions.debug} is true.
  */
 export type TEvaluateResult = {
@@ -97,68 +103,77 @@ function finishEvaluate(
     return { ...result, debug: trace };
 }
 
-/**
- * Bearer key for TypeSafe. Empty / unset is missing.
- *
- * @returns Trimmed key, or undefined when Jev questions must fail open
- */
-export function readTypeSafeApiKey(): string | undefined {
-    const key = process.env.TYPESAFE_API_KEY;
-    return typeof key === "string" && key.trim() ? key.trim() : undefined;
-}
-
 function isFiniteNoul(value: unknown): value is number {
     return typeof value === "number" && Number.isFinite(value);
 }
 
+/** AI SDK boolean question. Same yes/no criteria as our stored Noul. */
+type TBooleanQuestion = {
+    type: "boolean";
+    instructions: string;
+    criteria: {
+        true: string;
+        false: string;
+    };
+};
+
 /**
- * `POST /v1/systemone` with every applicable question. One request (C7).
+ * Map ADR Nouls onto the AI SDK evaluate question type.
+ *
+ * @param questions - From {@link buildSanityQuestions}
+ */
+export function toEvaluateQuestions(
+    questions: TSanityQuestions,
+): Record<string, TBooleanQuestion> {
+    return Object.fromEntries(
+        Object.entries(questions).map(([id, question]) => [
+            id,
+            {
+                type: "boolean",
+                instructions: question.instructions,
+                criteria: question.criteria,
+            },
+        ]),
+    );
+}
+
+/**
+ * Pull 0–1 honor values out of AI SDK boolean answers (`probability`).
+ *
+ * @param answers - `experimental_evaluate` `answers` map
+ */
+export function noulsFromEvaluateAnswers(
+    answers: Record<string, { probability?: unknown }>,
+): TSystemOneNouls {
+    const nouls: TSystemOneNouls = {};
+    for (const [id, answer] of Object.entries(answers)) {
+        if (isFiniteNoul(answer?.probability)) {
+            nouls[id] = answer.probability;
+        }
+    }
+    return nouls;
+}
+
+/**
+ * One Gateway evaluate call with every applicable question (C7).
  *
  * @param state - Compact snapshot (already stripped of leftover `reason` text)
  * @param questions - From {@link buildSanityQuestions}; must be non-empty
- * @returns Noul map, or null when the key is missing or the call failed
+ * @returns Noul map, or null when the call failed
  */
 export async function postSystemOne(
     state: TProgramSanitySnapshot,
     questions: TSanityQuestions,
 ): Promise<TSystemOneNouls | null> {
-    const apiKey = readTypeSafeApiKey();
-    if (!apiKey) {
-        console.warn("[program-sanity] TYPESAFE_API_KEY missing; skipping Jev questions");
-        return null;
-    }
-
     try {
-        const response = await fetch(SYSTEM_ONE_URL, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "typesafe-ai/jev",
-                state,
-                questions,
-            }),
+        const result = await experimental_evaluate({
+            model: gateway.evaluationModel(JEV_MODEL),
+            state,
+            questions: toEvaluateQuestions(questions),
         });
-        if (!response.ok) {
-            console.warn("[program-sanity] TypeSafe HTTP", response.status);
-            return null;
-        }
-        const body: unknown = await response.json();
-        if (body == null || typeof body !== "object") return null;
-        const answers = (body as { answers?: unknown }).answers;
-        if (answers == null || typeof answers !== "object") return null;
-
-        const nouls: TSystemOneNouls = {};
-        for (const [id, answer] of Object.entries(answers as Record<string, unknown>)) {
-            if (answer == null || typeof answer !== "object") continue;
-            const noul = (answer as { noul?: unknown }).noul;
-            if (isFiniteNoul(noul)) nouls[id] = noul;
-        }
-        return nouls;
+        return noulsFromEvaluateAnswers(result.answers);
     } catch (error) {
-        console.warn("[program-sanity] TypeSafe call failed", error);
+        console.warn("[program-sanity] Jev evaluate failed", error);
         return null;
     }
 }
