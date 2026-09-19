@@ -80,6 +80,10 @@ import {
 } from '@/api/workout-history-read';
 import { softToolErrorResult } from './soft-tool-fail-log';
 import {
+    evaluate,
+    formatEvaluateMessage,
+} from '../sanity/evaluate';
+import {
     buildSanitySnapshot,
     plateWeek1Across,
     resolvePlateWeekCount,
@@ -964,6 +968,24 @@ export function getTools({
                     }
                 }
 
+                // Week 1 vs week 1 cannot fail coverage. Evaluate Training / skill
+                // as Andy-authored before lock so a reject leaves the guard unlocked.
+                const snapshot = buildSanitySnapshot({
+                    userMessage: userMessage ?? '',
+                    constraintProfile,
+                    trainingProfile,
+                    plan: programSanityStash?.plan,
+                    beforeProgram: [],
+                    afterProgram: builtRoutines,
+                });
+                const sanity = await evaluate(snapshot, { andyAuthored: true });
+                if (!sanity.ok) {
+                    return softToolErrorResult('buildWeek', {
+                        error: sanity.misses[0]?.id ?? 'evaluate',
+                        message: formatEvaluateMessage(sanity.misses),
+                    });
+                }
+
                 // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
                 if (programSanityStash) {
                     programSanityStash.buildWeekRoutines = builtRoutines;
@@ -1021,8 +1043,9 @@ export function getTools({
     /**
      * Title: mutateProgramTool
      * Description: Typed registry operation batch with server preflight via applyOperations.
-     * After a successful apply, runs week-coverage (ADR 0025 / 02). A claimed
-     * week-day that still matches week 1 Soft-fails and omits `operations`.
+     * After a successful apply, runs week-coverage (ADR 0025 / 02) then
+     * evaluate (03). A claimed week-day that still matches week 1, or a Jev
+     * reject, Soft-fails and omits `operations`.
      * @returns { Tool }
      */
     const mutateProgramTool = tool({
@@ -1147,6 +1170,14 @@ export function getTools({
                     return softToolErrorResult('mutateProgram', {
                         error: 'weekCoverage',
                         message: formatWeekCoverageMessage(coverage.misses),
+                    });
+                }
+
+                const sanity = await evaluate(snapshot, { andyAuthored: afterBuildWeek });
+                if (!sanity.ok) {
+                    return softToolErrorResult('mutateProgram', {
+                        error: sanity.misses[0]?.id ?? 'evaluate',
+                        message: formatEvaluateMessage(sanity.misses),
                     });
                 }
 

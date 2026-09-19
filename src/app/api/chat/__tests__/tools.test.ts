@@ -54,6 +54,14 @@ vi.mock("@/api/user-training-profile", async (importOriginal) => {
     };
 });
 
+vi.mock("@/app/api/chat/sanity/evaluate", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/app/api/chat/sanity/evaluate")>();
+    return {
+        ...actual,
+        evaluate: vi.fn(async () => ({ ok: true, misses: [] })),
+    };
+});
+
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getWorkoutsForUser } from "@/api/workout-history-read";
 import { getBodyMeasurementsForUser } from "@/api/body-measurements-read";
@@ -63,6 +71,7 @@ import { hevyBodyMeasurementFixture } from "@/api/__tests__/manual/hevy-body-mea
 import { HEVY_BODY_MEASUREMENT_SOURCE } from "@/api/body-measurements";
 import { zodSchema } from "ai";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
+import { evaluate } from "@/app/api/chat/sanity/evaluate";
 import {
     getTools,
     planProgramInputSchema,
@@ -487,6 +496,32 @@ describe("chat tools.ts", () => {
 
             expect(output.error).toBeUndefined();
             expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
+        });
+
+        it("does not return the built week when evaluate rejects", async () => {
+            vi.mocked(evaluate).mockResolvedValueOnce({
+                ok: false,
+                misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+            });
+
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ buildWeekOnceGuard, programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; message?: string; routines?: unknown[] };
+
+            expect(output.error).toBe("constraint.injurySemantic");
+            expect(output.routines).toBeUndefined();
+            expect(output.message).toContain("constraint.injurySemantic");
+            expect(buildWeekOnceGuard.locked).toBe(false);
+            expect(programSanityStash.buildWeekRoutines).toBeNull();
+
+            const modelOutput = await buildWeek.toModelOutput({ output });
+            expect(modelOutput.value).toContain("constraint.injurySemantic");
         });
     });
 
@@ -1053,6 +1088,31 @@ describe("chat tools.ts", () => {
 
             expect(output.error).toBeUndefined();
             expect(output.operations).toHaveLength(1);
+        });
+
+        it("does not return operations when evaluate rejects", async () => {
+            vi.mocked(evaluate).mockResolvedValueOnce({
+                ok: false,
+                misses: [{ id: "skill.sessionShape", detail: "does not honor skill.sessionShape" }],
+            });
+
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await readThenMutate(tools, [{
+                op: "update_set",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                setIndex: 0,
+                set: { rpe: 9 },
+            }])) as { error?: string; message?: string; operations?: unknown[] };
+
+            expect(output.error).toBe("skill.sessionShape");
+            expect(output.operations).toBeUndefined();
+            expect(output.message).toContain("skill.sessionShape");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("skill.sessionShape");
         });
     });
 
