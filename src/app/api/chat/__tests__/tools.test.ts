@@ -711,6 +711,24 @@ describe("chat tools.ts", () => {
             // Injuries from initialize do not filter the list
             expect(output.availableExercises).toHaveLength(1);
         });
+
+        it("omits the session-size reminder from description and toModelOutput", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
+
+            const tools = getTools({});
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(
+                tools.getExerciseList,
+            );
+            const description = (tools.getExerciseList as { description?: string }).description ?? "";
+            const output = await getExerciseList.execute({ userRequest: "program" });
+            const modelOutput = await getExerciseList.toModelOutput({ output });
+
+            expect(description).not.toMatch(/6-7/);
+            expect(description).not.toMatch(/session-size/i);
+            expect(modelOutput.value).toContain("Available exercises");
+            expect(modelOutput.value).not.toMatch(/Session size reminder/);
+            expect(modelOutput.value).not.toMatch(/6-7/);
+        });
     });
 
     describe("planProgram tool execute", () => {

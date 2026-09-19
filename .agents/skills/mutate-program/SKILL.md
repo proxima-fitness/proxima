@@ -21,13 +21,11 @@ Before **every** **mutateProgram** call:
 
 1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. Skip this step after **buildWeek** in the same turn (periodization).
 2. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`updateConstraintProfile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. Pass `rawStatement` when the user spoke in chat. Call **`updateConstraintProfile`** before **mutateProgram** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
-3. **Honor Active Constraint Profile:** Use the **Active Constraint Profile** block in the system prompt as the constraint inventory. Do **not** re-derive constraints from a scan of the full conversation alone. The profile is authoritative.
-4. **Compliance check:** Make sure that each operation in your batch violates **none** of those profile constraints. Do not swap or insert templates that use excluded equipment or that break stated movement restrictions.
-5. **No empty days:** If **delete_exercise** (or removal of the last exercise on a day) leaves a training day with **zero** exercise rows, find and add a suitable replacement **first**. Put **insert_exercise** or **edit_exercise** in the **same batch**, ordered before the delete. Use **getExerciseList**. Pick a template that honors the constraint profile and that keeps the training intent of the day.
+3. **Empty days:** Empty training days are rejected. An explicit remove is allowed.
 
 ## Exercise objection
 
-User pushback on one programmed movement (pain, equipment mismatch, cannot perform a position, wrong stimulus) is an **Exercise objection**. Replace in place. Never remove alone.
+User pushback on one programmed movement (pain, equipment mismatch, cannot perform a position, wrong stimulus) is an **Exercise objection**.
 
 | Scope | Op |
 |-------|-----|
@@ -47,7 +45,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 ## Checklist
 
 - [ ] **Persist constraint changes** via **`updateConstraintProfile`** when this turn changes constraints (same turn as mutate - non-blocking backup).
-- [ ] **Constraint gate** (above): persist (if needed) → honor Active Constraint Profile → compliance → no empty days.
+- [ ] Empty training days are rejected. An explicit remove is allowed.
 - [ ] **Exercise objection:** replace/swap per table above. Lasting limits also update the profile. Taste-only does not.
 - [ ] **readProgram** in this turn before **mutateProgram** on an existing program. Target from that snapshot. `hevyProgram.length` = N total routines (all weeks). Skip after **buildWeek** in the same turn.
 - [ ] Build **one operations array** with all registry ops for the requested change.
@@ -91,7 +89,6 @@ When the user wants a day type (for example "make day 1 a Back Day"): call **rea
 
 1. **edit_day_title** for the new name.
 2. **insert_exercise** once per movement - one `exercise` per op. Keep existing warmups. Replace warmups only when the user asks for a replace.
-3. Target **6-7 total exercise rows** per day (including 1-2 warmups). If the user asked for a short session, use fewer rows.
 
 Multi-insert in one batch: ops apply in order on an accumulating program. Use rising **exerciseIndex** values (`0` on empty day, then `1`, `2`, …). Do not reuse the same index.
 
@@ -187,17 +184,10 @@ After **readProgram**, build **folderIds** from the `folder_id` of each routine 
 }
 ```
 
-## Warmup exercises
+## Warmup exercises vs warmup sets
 
-**Warmup exercises vs warmup sets:** **Warmup exercises** are separate movements (IDs from **getExerciseList**) at the start of the day to prepare for the session. **Warmup sets** are lighter sets of the same working lift. When you add prep work, add **warmup exercises** with **`"normal"`** sets at low RPE. Do not add only extra `"warmup"`-typed sets on the main lift.
-
-**Questionnaire preference:** If the Active Constraint Profile / questionnaire prefs say **Warmup exercises: no**, do **not** insert separate warmup exercise rows. If the user asks for warmups in this turn, you can insert them. If yes or unset, follow the rules below.
-
-**Warmups increase the row count. They do not replace working exercises.** Prepend a warmup with **insert_exercise** at **exerciseIndex: 0**. That inserts an extra row. Existing working exercises shift index by one. All of them stay present. Never remove or omit a working exercise to "make room" for a warmup. If the user asks to replace it, then replace it.
-
-- If the user reports an **injury, pain, or limitation**, or asks for better prep, make sure that each affected **training day** already begins with **1-2 appropriate warmup exercises**. If the day jumps straight into heavy work, add **1-2 warmup exercises**. Bias **two** when injury or limitation is present. If prefs say warmup exercises **no**, skip this.
-- **Prepend** with **insert_exercise** at **exerciseIndex: 0** (before the current first exercise). To insert two warmups in order: **insert the first at index 0**, then **insert the second at index 1** (after the first insert shifts indices). Use **getExerciseList** for valid template IDs and titles. Match the movements of the day and any stated limitation.
-- When the change must apply to **every week**, use **folderIds** that list every week index for that **dayOrder**. Example for day 1 every week in an 8-week program: `folderIds: [0, 1, 2, 3, 4, 5, 6, 7]`, `dayOrder: 1`. Do not edit only week 1.
+A **warmup exercise** is its own row (a movement from getExerciseList at the start of the day) with set type `"normal"`.
+A **warmup set** is a lighter set on a working lift; use set type `"warmup"` only for those.
 
 ## Program types
 
