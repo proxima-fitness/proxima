@@ -795,14 +795,56 @@ describe("chat tools.ts", () => {
     });
 
     describe("mutateProgram tool execute", () => {
-        it("returns operations on successful preflight", async () => {
+        async function readThenMutate(
+            tools: ReturnType<typeof getTools>,
+            operations: unknown[],
+        ) {
+            const readProgram = asTestTool<Record<string, never>, { hevyProgram: THevyRoutine[] }>(
+                tools.readProgram,
+            );
+            await readProgram.execute({});
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            return mutateProgram.execute({ operations });
+        }
+
+        it("rejects live-grid mutateProgram before readProgram", async () => {
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+
+            const output = (await mutateProgram.execute({
+                operations: [{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Upper Push" }],
+            })) as { error?: string; message?: string };
+
+            expect(output.error).toBe("readProgram_required");
+            expect(output.message).toContain("Call readProgram");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("Call readProgram");
+        });
+
+        it("skips the readProgram gate after buildWeek in the same turn", async () => {
+            const tools = getTools({
+                hevyProgram: minimalHevyProgram,
+                buildWeekOnceGuard: { locked: true },
+            });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+
+            const output = (await mutateProgram.execute({
+                operations: [{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Upper Push" }],
+            })) as { error?: string; operations?: unknown[] };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toHaveLength(1);
+        });
+
+        it("allows mutateProgram after readProgram on an existing program", async () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram });
             const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
 
             const operations = [
                 { op: "edit_day_title" as const, folderIds: [0], dayOrder: 1, title: "Upper Push" },
             ];
-            const output = (await mutateProgram.execute({ operations })) as {
+            const output = (await readThenMutate(tools, operations)) as {
                 error?: string;
                 operations?: typeof operations;
                 failures?: unknown[];
@@ -820,31 +862,28 @@ describe("chat tools.ts", () => {
 
         it("rewrites insert titles to the catalog title", async () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram });
-            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
 
-            const output = (await mutateProgram.execute({
-                operations: [{
-                    op: "insert_exercise",
-                    folderIds: [0],
-                    dayOrder: 1,
-                    exerciseIndex: 1,
-                    exercise: {
-                        exercise_template_id: "ex-1",
-                        title: "Totally Wrong Name",
-                        rest_seconds: "90",
-                        sets: [{
-                            type: "normal",
-                            reps: 8,
-                            weight_kg: null,
-                            rpe: 8,
-                            distance_meters: null,
-                            duration_seconds: null,
-                            custom_metric: null,
-                            rep_range: null,
-                        }],
-                    },
-                }],
-            })) as {
+            const output = (await readThenMutate(tools, [{
+                op: "insert_exercise",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 1,
+                exercise: {
+                    exercise_template_id: "ex-1",
+                    title: "Totally Wrong Name",
+                    rest_seconds: "90",
+                    sets: [{
+                        type: "normal",
+                        reps: 8,
+                        weight_kg: null,
+                        rpe: 8,
+                        distance_meters: null,
+                        duration_seconds: null,
+                        custom_metric: null,
+                        rep_range: null,
+                    }],
+                },
+            }])) as {
                 error?: string;
                 operations?: Array<{ exercise?: { title?: string } }>;
             };
@@ -904,28 +943,26 @@ describe("chat tools.ts", () => {
             const tools = getTools({ hevyProgram: minimalHevyProgram, constraintProfile });
             const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
 
-            const output = (await mutateProgram.execute({
-                operations: [{
-                    op: "insert_exercise",
-                    folderIds: [0],
-                    dayOrder: 1,
-                    exerciseIndex: 0,
-                    exercise: {
-                        exercise_template_id: "ex-1",
-                        rest_seconds: "90",
-                        sets: [{
-                            type: "normal",
-                            reps: 8,
-                            weight_kg: null,
-                            rpe: 8,
-                            distance_meters: null,
-                            duration_seconds: null,
-                            custom_metric: null,
-                            rep_range: null,
-                        }],
-                    },
-                }],
-            })) as {
+            const output = (await readThenMutate(tools, [{
+                op: "insert_exercise",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                exercise: {
+                    exercise_template_id: "ex-1",
+                    rest_seconds: "90",
+                    sets: [{
+                        type: "normal",
+                        reps: 8,
+                        weight_kg: null,
+                        rpe: 8,
+                        distance_meters: null,
+                        duration_seconds: null,
+                        custom_metric: null,
+                        rep_range: null,
+                    }],
+                },
+            }])) as {
                 error?: string;
                 message?: string;
             };

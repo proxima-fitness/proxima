@@ -261,6 +261,9 @@ export function getTools({
     /** Cached result of getHevyExercises() to avoid redundant Supabase queries within a single request. */
     let cachedHevyExercises: Awaited<ReturnType<typeof getHevyExercises>> | null = null;
 
+    /** Live-grid mutateProgram must see this turn's readProgram, not last turn's indexes. */
+    let readProgramCalledThisTurn = false;
+
     /** When getExerciseList has not run this turn, load all templates so buildWeek can still validate IDs. */
     async function ensureExerciseIdToTitleMap(): Promise<void> {
         if (exerciseIdToTitle.size > 0 && cachedHevyExercises) return;
@@ -594,13 +597,18 @@ export function getTools({
     const readProgramTool = tool({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
-            'Includes day notes, exercise notes, exercise reason, sets, and structure. Call when you need the current program - not on every turn. ' +
+            'Includes day notes, exercise notes, exercise reason, sets, and structure. ' +
+            'Required before **mutateProgram** on an existing program (indexes from this snapshot, not an earlier turn). ' +
+            'Skip after **buildWeek** in the same turn. ' +
             'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
             'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
         inputSchema: readProgramInputSchema,
-        execute: async () => ({
-            hevyProgram: readProgramSnapshot(hevyProgram),
-        }),
+        execute: async () => {
+            readProgramCalledThisTurn = true;
+            return {
+                hevyProgram: readProgramSnapshot(hevyProgram),
+            };
+        },
         toModelOutput: async ({ output }) => {
             const o = output as { hevyProgram?: THevyRoutine[] };
             return {
@@ -981,6 +989,16 @@ export function getTools({
         inputSchema: mutateProgramInputSchema,
         execute: async ({ operations }) => {
             try {
+                const afterBuildWeek = Boolean(buildWeekOnceGuard?.locked);
+                if (snapshotHasExercises(hevyProgram) && !afterBuildWeek && !readProgramCalledThisTurn) {
+                    return softToolErrorResult('mutateProgram', {
+                        error: 'readProgram_required',
+                        message:
+                            'Call readProgram before mutateProgram on an existing program. ' +
+                            'Use exerciseIndex from that snapshot, not from an earlier turn.',
+                    });
+                }
+
                 await ensureExerciseIdToTitleMap();
 
                 const resolvedOperations: TAgentProgramOperation[] = [];

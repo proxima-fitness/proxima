@@ -19,10 +19,11 @@ allowedTools:
 
 Before **every** **mutateProgram** call:
 
-1. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`updateConstraintProfile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. Pass `rawStatement` when the user spoke in chat. Call **`updateConstraintProfile`** before **mutateProgram** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
-2. **Honor Active Constraint Profile:** Use the **Active Constraint Profile** block in the system prompt as the constraint inventory. Do **not** re-derive constraints from a scan of the full conversation alone. The profile is authoritative.
-3. **Compliance check:** Make sure that each operation in your batch violates **none** of those profile constraints. Do not swap or insert templates that use excluded equipment or that break stated movement restrictions.
-4. **No empty days:** If **delete_exercise** (or removal of the last exercise on a day) leaves a training day with **zero** exercise rows, find and add a suitable replacement **first**. Put **insert_exercise** or **edit_exercise** in the **same batch**, ordered before the delete. Use **getExerciseList**. Pick a template that honors the constraint profile and that keeps the training intent of the day.
+1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. Skip this step after **buildWeek** in the same turn (periodization).
+2. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`updateConstraintProfile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. Pass `rawStatement` when the user spoke in chat. Call **`updateConstraintProfile`** before **mutateProgram** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
+3. **Honor Active Constraint Profile:** Use the **Active Constraint Profile** block in the system prompt as the constraint inventory. Do **not** re-derive constraints from a scan of the full conversation alone. The profile is authoritative.
+4. **Compliance check:** Make sure that each operation in your batch violates **none** of those profile constraints. Do not swap or insert templates that use excluded equipment or that break stated movement restrictions.
+5. **No empty days:** If **delete_exercise** (or removal of the last exercise on a day) leaves a training day with **zero** exercise rows, find and add a suitable replacement **first**. Put **insert_exercise** or **edit_exercise** in the **same batch**, ordered before the delete. Use **getExerciseList**. Pick a template that honors the constraint profile and that keeps the training intent of the day.
 
 ## Exercise objection
 
@@ -48,7 +49,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 - [ ] **Persist constraint changes** via **`updateConstraintProfile`** when this turn changes constraints (same turn as mutate - non-blocking backup).
 - [ ] **Constraint gate** (above): persist (if needed) → honor Active Constraint Profile → compliance → no empty days.
 - [ ] **Exercise objection:** replace/swap per table above. Lasting limits also update the profile. Taste-only does not.
-- [ ] **readProgram** when you need the current program (weeks, days, exercises, sets, notes, reason). `hevyProgram.length` = N total routines (all weeks).
+- [ ] **readProgram** in this turn before **mutateProgram** on an existing program. Target from that snapshot. `hevyProgram.length` = N total routines (all weeks). Skip after **buildWeek** in the same turn.
 - [ ] Build **one operations array** with all registry ops for the requested change.
 - [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`**. Use one op per `from_exercise_template_id`. Omit **folderIds** / **dayOrder** to hit every week and day.
 - [ ] **Positional edits with new sets** (one slot, new prescription): use **`edit_exercise`** with grid payload (same shape as **insert_exercise**).
@@ -57,7 +58,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 
 ## Live grid vs post-build periodization
 
-- **Live-grid edit:** Call **readProgram** when you need the current program. Then call **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
+- **Live-grid edit:** Call **readProgram**, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Indexes come from that snapshot. Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
 - **Periodization right after buildWeek:** Do **not** rely on **readProgram** (snapshot can still be empty). Use builder context, **planProgram**, **buildWeek** output, and the **build-program** skill. Use **one** **mutateProgram** batch via **folderIds**. Same-turn **buildWeek** + **mutateProgram** lands immediately.
 
 ## Targeting (mutateProgram)
