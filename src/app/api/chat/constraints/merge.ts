@@ -8,7 +8,7 @@ import type { TConstraintProfile } from './types';
  * When `persisted` is null: returns session (first-time seed).
  *
  * When `persisted` is non-null:
- * - Array fields (`injuries`, `excludedEquipment`, `excludedAreas`, `chatRefinements`)
+ * - Array fields (`injuries`, `excludedEquipment`, `excludedAreas`)
  *   use persisted only - do not union with session. Edit profile removals must stick;
  *   stale questionnaire/session strings must not resurrect on the next chat turn.
  * - Preferences: session wins when non-empty; otherwise persisted is kept.
@@ -39,6 +39,5 @@ export function mergeConstraintProfiles(
             peakWeek: session.preferences.peakWeek || persisted.preferences.peakWeek,
             warmupExercises: session.preferences.warmupExercises || persisted.preferences.warmupExercises,
         },
-        chatRefinements: persisted.chatRefinements,
     };
 }

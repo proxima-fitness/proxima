@@ -23,7 +23,8 @@ import {
     usageCapResponse,
 } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
-import { getTools, type IBuildWeekOnceGuard } from './tools/tools';
+import { getTools, type IBuildWeekOnceGuard, type IProgramSanityStash } from './tools/tools';
+import { readLastUserMessage } from './sanity/snapshot';
 import { initializeConstraintProfile } from './constraints';
 import { mergeConstraintProfiles } from './constraints/merge';
 import { getUserConstraints } from '@/api/user-constraints';
@@ -33,7 +34,6 @@ import {
 } from './training-profile';
 import { getUserTrainingProfile } from '@/api/user-training-profile';
 import { getLatestBodyMeasurement } from '@/api/body-measurements-read';
-import { getRecentEpisodes } from '@/api/session-episodes';
 import { createSandbox } from './skills/sandbox';
 import { discoverSkills } from './skills/index';
 import z from 'zod';
@@ -218,11 +218,6 @@ async function handleChatPost(req: Request) {
                     }),
                 );
 
-                // Fetch episodic memory when editing an existing program
-                const episodes = (user && hevyProgram.length > 0)
-                    ? await getRecentEpisodes(supabase, user.id)
-                    : [];
-
                 const systemPrompt = instructions({
                     hevyProgram,
                     daysPerWeek,
@@ -240,15 +235,18 @@ async function handleChatPost(req: Request) {
                     constraintProfile,
                     trainingProfile,
                     latestBodyMeasurement,
-                    episodes,
                     isInLbs: weightInLbs,
                     isAuthenticated: Boolean(user),
                     hasHevyApiKey: hevyKeyOnFile,
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
+                // Same request lifetime as buildWeekOnceGuard: planProgram + buildWeek write, mutateProgram reads.
+                const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
                 const tools = getTools({
                     hevyProgram,
                     buildWeekOnceGuard,
+                    programSanityStash,
+                    userMessage: readLastUserMessage(sanitizedMessages),
                     hasActiveSubscription,
                     userId: user?.id,
                     workoutHistoryDb: user ? supabase : undefined,

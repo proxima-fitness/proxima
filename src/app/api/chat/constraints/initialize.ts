@@ -40,6 +40,5 @@ export function initializeConstraintProfile(params: IInitializeParams): TConstra
             peakWeek: params.peakWeek?.trim() ?? '',
             warmupExercises: params.warmupExercises?.trim() ?? '',
         }),
-        chatRefinements: [],
     };
 }

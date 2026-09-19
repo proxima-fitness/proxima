@@ -71,7 +71,6 @@ describe("getUserConstraints", () => {
                     excluded_equipment: ["Band"],
                     excluded_areas: ["Legs"],
                     preferences: { splitType: "PPL" },
-                    chat_refinements: ["no supersets"],
                     raw_statements: ["I hurt my knee"],
                 },
                 error: null,
@@ -81,7 +80,7 @@ describe("getUserConstraints", () => {
         const result = await getUserConstraints("user-1", client);
 
         expect(chain.select).toHaveBeenCalledWith(
-            "injuries, excluded_equipment, excluded_areas, preferences, chat_refinements, raw_statements",
+            "injuries, excluded_equipment, excluded_areas, preferences, raw_statements",
         );
         expect(result).toEqual({
             injuries: ["knee"],
@@ -95,7 +94,6 @@ describe("getUserConstraints", () => {
                 peakWeek: "",
                 warmupExercises: "",
             },
-            chatRefinements: ["no supersets"],
             rawStatements: ["I hurt my knee"],
         });
     });
@@ -108,7 +106,6 @@ describe("getUserConstraints", () => {
                     excluded_equipment: null,
                     excluded_areas: null,
                     preferences: null,
-                    chat_refinements: null,
                     raw_statements: null,
                 },
                 error: null,
@@ -137,7 +134,6 @@ describe("saveUserConstraintProfile", () => {
                 excluded_equipment: [],
                 excluded_areas: [],
                 preferences: record.preferences,
-                chat_refinements: [],
                 raw_statements: ["keep this", "and this"],
             },
             { onConflict: "user_id" },

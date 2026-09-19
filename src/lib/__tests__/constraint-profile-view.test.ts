@@ -25,7 +25,6 @@ function profile(
             warmupExercises: "",
             ...overrides.preferences,
         },
-        chatRefinements: overrides.chatRefinements ?? [],
     };
 }
 
@@ -43,7 +42,6 @@ describe("isConstraintProfileEmpty", () => {
         expect(isConstraintProfileEmpty(profile({ injuries: ["knee"] }))).toBe(false);
         expect(isConstraintProfileEmpty(profile({ excludedEquipment: ["Band"] }))).toBe(false);
         expect(isConstraintProfileEmpty(profile({ excludedAreas: ["Legs"] }))).toBe(false);
-        expect(isConstraintProfileEmpty(profile({ chatRefinements: ["no floor"] }))).toBe(false);
         expect(isConstraintProfileEmpty(profile({ preferences: { splitType: "PPL" } }))).toBe(false);
     });
 });

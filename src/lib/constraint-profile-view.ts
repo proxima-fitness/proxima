@@ -17,12 +17,11 @@ export type TConstraintProfileSummary = {
     excludedEquipment?: string[];
     excludedAreas?: string[];
     preferences?: Partial<TConstraintProfile["preferences"]>;
-    chatRefinements?: string[];
 };
 
 type TConstraintProfileViewSource = Pick<
     TConstraintProfile,
-    "injuries" | "excludedEquipment" | "excludedAreas" | "preferences" | "chatRefinements"
+    "injuries" | "excludedEquipment" | "excludedAreas" | "preferences"
 >;
 
 function truncateValue(value: string): string {
@@ -43,7 +42,6 @@ export function isConstraintProfileEmpty(
     if (profile.injuries.length > 0) return false;
     if (profile.excludedEquipment.length > 0) return false;
     if (profile.excludedAreas.length > 0) return false;
-    if (profile.chatRefinements.length > 0) return false;
 
     return !Object.values(profile.preferences).some((value) => value.trim() !== "");
 }
@@ -67,9 +65,6 @@ export function toConstraintProfileSummary(
     }
     if (profile.excludedAreas.length > 0) {
         summary.excludedAreas = truncateList(profile.excludedAreas);
-    }
-    if (profile.chatRefinements.length > 0) {
-        summary.chatRefinements = truncateList(profile.chatRefinements);
     }
 
     const preferences: Partial<TConstraintProfile["preferences"]> = {};

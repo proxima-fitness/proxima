@@ -92,7 +92,7 @@ A fresh user message must unlock an open gate.
 - [ ] **Periodization (mutateProgram) after buildWeek:** Do **not** use **readProgram** for targeting. The request snapshot can still be empty after **buildWeek** succeeds.
 - [ ] Target the **full** duplicated program (`totalDays × programLength` routines) with **folderIds** and **dayOrder** (see **Multi-week targeting** below), plus **planProgram**, **buildWeek** output, and program builder context.
 - [ ] **mutateProgram:** Before you call it, run the **Before mutateProgram** gate from the **mutate-program** skill.
-- [ ] Obey the Active Constraint Profile. Make sure that the compliance step passes. Make sure that no day is empty.
+- [ ] Empty training days are rejected. An explicit remove is allowed.
 - [ ] Prefer **one** call with a **single operations array** for all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps).
 - [ ] Use **swap_exercise_template** for post-build equipment retargets (for example, dumbbell-only) without re-specifying sets.
 - [ ] If you draft edits per week first, concatenate all operations into one batch. Then call the tool once.
@@ -124,7 +124,6 @@ You can call it on the questionnaire-gate turn with **getMoreInfoQuestions**.
 It is not building.
 
 Then use the normal workflow: **planProgram** → **getExerciseList** → **buildWeek**.
-Obey the Active Constraint Profile and the session-size targets below.
 The share is a reference, not the program.
 Never treat **fetchHevyShareFolder** output as days already on the grid.
 Never claim that you loaded the share onto the grid.
@@ -145,55 +144,14 @@ Offer it and wait for a yes.
 When they accept, plan and periodize with **planProgram** and **mutateProgram** over the loaded week.
 Do not rebuild it.
 
-## Warmup exercises
+## Warmup exercises vs warmup sets
 
-### Warmup exercises vs warmup sets
-
-**Warmup sets** are lighter sets of the same working lift.
-The set `type` can be `"warmup"` in the schema.
-**Warmup exercises** are separate movements from **getExerciseList**.
-They are mobility, activation, or easy patterns that prepare the body before working sets.
-Do not rely on routine notes alone for prep.
-
-### Questionnaire preference (`warmup-exercises` / Warmup exercises)
-
-Obey the constraint profile and questionnaire preferences.
-
-- **yes** or **unset/empty** (skipped questionnaire): include warmup exercises as below (default).
-- **no**: do **not** add separate warmup exercise rows in **buildWeek**. Still meet the working-exercise quota (~5-6 working rows per day). If warmups help on main lifts, you can still use warmup *sets*. Never override an explicit **no** because of injury or pain. If the answer is yes or unset, you can bias warmups toward the affected area.
-
-### Warmups are extra
-
-Warmup exercises do not replace working exercises.
-If a resource, plan, or user intent implies "N exercises" per session, that means **N working (main) exercises**.
-Warmup exercises are **additional** rows on top of that target.
-Example: a 6-exercise day with 1 warmup has **7 rows** in `exercises[]` total.
-It is not 5 working + 1 warmup = 6.
-Make sure that the full working-exercise quota is met before you count warmups.
-
-### When warmups are included (yes or unset)
-
-- Include **1-2 warmup exercises** as the **first** exercises on **every training day** in **buildWeek** (`exercises[0]`, and `exercises[1]` if two). Place them **before** all working exercises for that day.
-- Pick warmups that match the session. Examples: shoulder-friendly activation before pressing, hip or ankle prep before squats, light pulling before heavy pulls.
-- Use **set `type` `"normal"`**, **low RPE (about 3-5)**, and **moderate reps (about 10-15)** with a sensible `rep_range`.
-- These are standalone prep movements, not warmup sets on the main lift.
-- If the questionnaire or context mentions **injury, pain, or a movement limitation**, use **two** warmup exercises when that helps. Bias them toward **low-load mobility or activation** for the affected area. Use only IDs from **getExerciseList**.
-- In each warmup exercise’s **`reason`**, tie the choice to the day’s demands and any stated limitation. Use the same short prose style as other exercises.
-- For post-**buildWeek** warmups on duplicated weeks, use **mutateProgram** **insert_exercise** at **exerciseIndex: 0** with the correct **folderIds** and **dayOrder** per week.
-
-## Session size (exercise rows per day)
-
-**Default target (warmups yes/unset): 6-7 total rows in `exercises[]` per training day**, counting warmup row(s).
-
-- Typical layout: **1 warmup** (`exercises[0]`) + **5-6 working exercises** = 6-7 rows total.
-- If the context calls for **2 warmups** (injury, limitation, or longer session): **2 warmups** + **4-5 working exercises** = still 6-7 rows total.
-- **Warmups no:** omit warmup rows. Target **~5-6 working exercises** per day.
-- Do not routinely build days with only 4-5 total rows (~3 working after warmups). That volume is too low. If the user or context explicitly requests a short session, use that size (short time cap, brief session, deload day, or a powerlifting peaking day with deliberately low volume).
-- This default applies to all split types (PPL, Upper/Lower, Full-Body, and more). Powerlifting programs can use slightly fewer working exercises per day. They must still meet a warmup (when included) plus at least 3-4 working exercises.
+A **warmup exercise** is its own row (a movement from getExerciseList at the start of the day) with set type `"normal"`.
+A **warmup set** is a lighter set on a working lift; use set type `"warmup"` only for those.
 
 ## Target RPE and stimulus (hypertrophy programs)
 
-- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildWeek** / **mutateProgram**. For warmup exercises and intentional easy work, use **~3-5 RPE** as already described. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
+- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildWeek** / **mutateProgram**. For warmup exercises and intentional easy work, use **~3-5 RPE**. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
 - Do **not** imply that “more sets always equals more growth” without effort context. When it fits, tie weekly set choices in **`reason`** text to **hard-set quality** and to the user’s phase. Examples: primary compounds ~1-2 RIR / ~7-8.5 RPE. Isolations can be somewhat harder.
 - **Deload or easy weeks:** Reduce stimulus with **fewer working sets**, **lower target RPE**, or both. Say so in **`reason`**, **`notes`**, or routine **`notes`** so the lower stimulus is **intentional**. Do not leave it open to misread as missing intensity. See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
 
@@ -268,7 +226,7 @@ If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasi
 Use this structure.
 Set type must be one of "normal", "warmup", "dropset", "failure".
 Optional fields (`rest_seconds`, `supersets_id`, `weight_kg`) have defaults in the tool schema.
-**Warmup exercises** at the start of the day still use **`"normal"`** set types at low RPE (see **Warmup exercises** above).
+**Warmup exercises** at the start of the day still use **`"normal"`** set types at low RPE (see **Warmup exercises vs warmup sets** above).
 If the schema calls for lighter sets *within* a working exercise, reserve set `type` `"warmup"` for those sets.
 
 For each exercise **`reason`**, write 2-4 sentences of natural prose.

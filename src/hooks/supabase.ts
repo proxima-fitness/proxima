@@ -1167,47 +1167,6 @@ export type Database = {
           },
         ]
       }
-      session_episodes: {
-        Row: {
-          chat_id: string | null
-          constraints_snapshot: Json
-          created_at: string
-          id: string
-          key_decisions: Json
-          program_id: number | null
-          summary: string
-          user_id: string
-        }
-        Insert: {
-          chat_id?: string | null
-          constraints_snapshot?: Json
-          created_at?: string
-          id?: string
-          key_decisions?: Json
-          program_id?: number | null
-          summary: string
-          user_id: string
-        }
-        Update: {
-          chat_id?: string | null
-          constraints_snapshot?: Json
-          created_at?: string
-          id?: string
-          key_decisions?: Json
-          program_id?: number | null
-          summary?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "session_episodes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       test_users: {
         Row: {
           created_at: string
@@ -1297,7 +1256,6 @@ export type Database = {
       }
       user_constraints: {
         Row: {
-          chat_refinements: Json
           created_at: string
           excluded_areas: Json
           excluded_equipment: Json
@@ -1308,7 +1266,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          chat_refinements?: Json
           created_at?: string
           excluded_areas?: Json
           excluded_equipment?: Json
@@ -1319,7 +1276,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          chat_refinements?: Json
           created_at?: string
           excluded_areas?: Json
           excluded_equipment?: Json

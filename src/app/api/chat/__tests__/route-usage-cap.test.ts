@@ -106,10 +106,6 @@ vi.mock("@/api/body-measurements-read", () => ({
     getLatestBodyMeasurement: vi.fn(async () => null),
 }));
 
-vi.mock("@/api/session-episodes", () => ({
-    getRecentEpisodes: vi.fn(async () => []),
-}));
-
 vi.mock("../skills/sandbox", () => ({
     createSandbox: vi.fn(() => ({})),
 }));

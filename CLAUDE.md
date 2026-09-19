@@ -28,7 +28,7 @@ Pre-commit (husky) runs `lint-staged` → `npm run test:ci` → `npm run build`.
 ## Domain docs and process
 
 - **`CONTEXT.md`** is the domain glossary and the naming authority. Terms like **Proxima program**, **Program prescription**, **New path** / **Edit path**, **Week Export**, **Week complete**, **Current week**, **Agentic memory** have precise definitions plus an `_Avoid_` list of rejected synonyms. Use the glossary's vocabulary in code, tests, comments, and PR text.
-- **`docs/adr/`** holds in-flight ADRs, `docs/adr/complete/` shipped ones. Each ADR is `index.md` (decision) + `plan.md` (ship order) + numbered sub-plan slices that name what they own. Work is usually "implement sub-plan NN of ADR MMMM". Sub-plans cap at **~10 files including tests** — split rather than exceed (`docs/adr/new-path-week-loop/index.md`).
+- **`docs/adr/`** holds in-flight ADRs, `docs/adr/complete/` shipped ones. Each ADR is `index.md` (decision) + `plan.md` (ship order) + numbered sub-plan slices that name what they own. Work is usually "implement sub-plan NN of ADR MMMM". Sub-plans cap at **~10 files including tests** — split rather than exceed (`docs/adr/complete/new-path-week-loop/index.md`).
 - `AGENTS.md` and `docs/agents/` cover issue tracking (Linear, team Proxima Fitness, project Proxima Landing Page) and how to consume the domain docs.
 - If a change contradicts a shipped ADR, say so explicitly rather than silently overriding it.
 
@@ -58,7 +58,7 @@ Modules under `src/api/` are plain async functions that **take the client as a p
 
 ### AI agent
 
-`POST /api/chat` runs a Vercel AI SDK `ToolLoopAgent` ("Andy"): system prompt from `instructions/instructions.ts`, tools from `tools/tools.ts`, streaming UI response, Langfuse tracing. Filesystem skills live in `.agents/skills/*/SKILL.md` (frontmatter `name`/`description`/`allowedTools`), are discovered through a sandbox at request time, and `loadSkill` narrows the active tool set. **Agentic memory** — constraint profile, training profile, latest body measurement, recent session episodes — is read per request and injected into the prompt; the agent updates it through dedicated tools. One-shot model calls (episode summary, week suggest) use `generateText` + a zod-validated JSON contract rather than the agent loop.
+`POST /api/chat` runs a Vercel AI SDK `ToolLoopAgent` ("Andy"): system prompt from `instructions/instructions.ts`, tools from `tools/tools.ts`, streaming UI response, Langfuse tracing. Filesystem skills live in `.agents/skills/*/SKILL.md` (frontmatter `name`/`description`/`allowedTools`), are discovered through a sandbox at request time, and `loadSkill` narrows the active tool set. **Agentic memory** — constraint profile, training profile, latest body measurement — is read per request and injected into the prompt; the agent updates it through dedicated tools. One-shot model calls (week suggest) use `generateText` + a zod-validated JSON contract rather than the agent loop.
 
 ### Feature limits and usage
 

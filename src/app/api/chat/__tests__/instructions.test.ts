@@ -61,7 +61,11 @@ describe("chat instructions.ts", () => {
             expect(prompt).not.toContain("mutateProgram payloads");
             expect(prompt).not.toContain("list every active constraint");
             expect(prompt).toContain("Before mutateProgram (mandatory)");
-            expect(prompt).toContain("Honor the Active Constraint Profile");
+            expect(prompt).toContain("Empty training days are rejected");
+            expect(prompt).toContain("explicit remove is allowed");
+            expect(prompt).not.toContain("Honor the Active Constraint Profile");
+            expect(prompt).not.toContain("put a replacement");
+            expect(prompt).not.toContain("**Session size:**");
             expect(prompt).toContain("Exercise objection");
             expect(prompt).toContain("Mutation proposal");
             expect(prompt).toContain("I've updated");
@@ -82,7 +86,7 @@ describe("chat instructions.ts", () => {
             });
 
             expect(prompt).toContain("Before mutateProgram (mandatory)");
-            expect(prompt).toContain("zero exercise rows");
+            expect(prompt).toContain("Empty training days are rejected");
             expect(prompt).toContain("Constraint profile persistence");
             expect(prompt).not.toContain("Program tools - two flows");
             expect(prompt).not.toContain("All slot targeting is **0-based**");
@@ -101,7 +105,12 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("removeExcludedEquipment");
             expect(prompt).toContain("removeInjuries");
             expect(prompt).toContain("removeExcludedAreas");
-            expect(prompt).toContain("removeChatRefinements");
+            expect(prompt).not.toContain("removeChatRefinements");
+            expect(prompt).not.toContain("addChatRefinements");
+            expect(prompt).toContain("addInjuries");
+            expect(prompt).toMatch(/can't kneel/);
+            expect(prompt).toMatch(/no overhead/);
+            expect(prompt).toMatch(/do not strip "can't kneel"/);
             expect(prompt).toMatch(/never.*preferred split/i);
             expect(prompt).toMatch(/adapt the program/i);
             expect(prompt).toMatch(/do not edit the profile down/i);
@@ -470,6 +479,16 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("**never** load it onto the program grid by default");
             expect(prompt).toContain("needs an explicit yes");
             expect(prompt).toContain("Hevy's share API may have changed");
+        });
+
+        it("omits Previous Session Context on the Edit path", () => {
+            const prompt = instructions({
+                hevyProgram: [{ id: "1", title: "Day 1", folder_id: 0, notes: "", exercises: [] }],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            expect(prompt).toContain("A program currently exists");
+            expect(prompt).not.toContain("Previous Session Context");
         });
 
         it("keeps Hevy share guidance on the Edit path too", () => {

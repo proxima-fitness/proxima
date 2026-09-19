@@ -34,7 +34,6 @@ function profile(
             warmupExercises: "",
             ...overrides.preferences,
         },
-        chatRefinements: overrides.chatRefinements ?? [],
     };
 }
 
@@ -49,7 +48,7 @@ describe("hasRealConstraintProfile", () => {
         ).toBe(false);
     });
 
-    it("accepts injuries, extra equipment, areas, prefs, or chat refinements", () => {
+    it("accepts injuries, extra equipment, areas, or prefs", () => {
         expect(hasRealConstraintProfile(profile({ injuries: ["knee"] }))).toBe(true);
         expect(
             hasRealConstraintProfile(profile({ excludedEquipment: ["barbell"] })),
@@ -57,9 +56,6 @@ describe("hasRealConstraintProfile", () => {
         expect(hasRealConstraintProfile(profile({ excludedAreas: ["legs"] }))).toBe(true);
         expect(
             hasRealConstraintProfile(profile({ preferences: { splitType: "ppl" } })),
-        ).toBe(true);
-        expect(
-            hasRealConstraintProfile(profile({ chatRefinements: ["no floor"] })),
         ).toBe(true);
     });
 });

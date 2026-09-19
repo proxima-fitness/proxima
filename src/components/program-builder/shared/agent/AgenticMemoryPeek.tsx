@@ -150,17 +150,13 @@ function ConstraintSectionBody({
 
     return (
         <div className="space-y-4">
-            <SummaryList title="Injuries" values={summary.injuries ?? []} />
+            <SummaryList title="Injuries & health issues" values={summary.injuries ?? []} />
             <SummaryList
                 title="Excluded equipment"
                 values={summary.excludedEquipment ?? []}
             />
             <SummaryList title="Excluded areas" values={summary.excludedAreas ?? []} />
             <PreferenceRows preferences={summary.preferences} />
-            <SummaryList
-                title="Chat refinements"
-                values={summary.chatRefinements ?? []}
-            />
         </div>
     );
 }

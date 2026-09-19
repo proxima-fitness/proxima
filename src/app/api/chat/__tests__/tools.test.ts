@@ -54,6 +54,14 @@ vi.mock("@/api/user-training-profile", async (importOriginal) => {
     };
 });
 
+vi.mock("@/app/api/chat/sanity/evaluate", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/app/api/chat/sanity/evaluate")>();
+    return {
+        ...actual,
+        evaluate: vi.fn(async () => ({ ok: true, misses: [] })),
+    };
+});
+
 import { getHevyExercises } from "@/components/program-builder/api/hevy";
 import { getWorkoutsForUser } from "@/api/workout-history-read";
 import { getBodyMeasurementsForUser } from "@/api/body-measurements-read";
@@ -63,6 +71,7 @@ import { hevyBodyMeasurementFixture } from "@/api/__tests__/manual/hevy-body-mea
 import { HEVY_BODY_MEASUREMENT_SOURCE } from "@/api/body-measurements";
 import { zodSchema } from "ai";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
+import { evaluate } from "@/app/api/chat/sanity/evaluate";
 import {
     getTools,
     planProgramInputSchema,
@@ -488,6 +497,32 @@ describe("chat tools.ts", () => {
             expect(output.error).toBeUndefined();
             expect(vi.mocked(getHevyExercises).mock.calls.length).toBe(1);
         });
+
+        it("does not return the built week when evaluate rejects", async () => {
+            vi.mocked(evaluate).mockResolvedValueOnce({
+                ok: false,
+                misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+            });
+
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ buildWeekOnceGuard, programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            const output = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; message?: string; routines?: unknown[] };
+
+            expect(output.error).toBe("constraint.injurySemantic");
+            expect(output.routines).toBeUndefined();
+            expect(output.message).toContain("constraint.injurySemantic");
+            expect(buildWeekOnceGuard.locked).toBe(false);
+            expect(programSanityStash.buildWeekRoutines).toBeNull();
+
+            const modelOutput = await buildWeek.toModelOutput({ output });
+            expect(modelOutput.value).toContain("constraint.injurySemantic");
+        });
     });
 
     describe("getExerciseList tool", () => {
@@ -574,7 +609,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -618,7 +652,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -649,7 +682,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ constraintProfile });
@@ -678,6 +710,24 @@ describe("chat tools.ts", () => {
             expect(output.availableExercises?.map((e) => e.id)).toEqual(["ex-2"]);
             // Injuries from initialize do not filter the list
             expect(output.availableExercises).toHaveLength(1);
+        });
+
+        it("omits the session-size reminder from description and toModelOutput", async () => {
+            vi.mocked(getHevyExercises).mockResolvedValueOnce([...multiExerciseTemplates] as never);
+
+            const tools = getTools({});
+            const getExerciseList = asTestTool<{ userRequest: string }, TExerciseListOutput>(
+                tools.getExerciseList,
+            );
+            const description = (tools.getExerciseList as { description?: string }).description ?? "";
+            const output = await getExerciseList.execute({ userRequest: "program" });
+            const modelOutput = await getExerciseList.toModelOutput({ output });
+
+            expect(description).not.toMatch(/6-7/);
+            expect(description).not.toMatch(/session-size/i);
+            expect(modelOutput.value).toContain("Available exercises");
+            expect(modelOutput.value).not.toMatch(/Session size reminder/);
+            expect(modelOutput.value).not.toMatch(/6-7/);
         });
     });
 
@@ -937,7 +987,6 @@ describe("chat tools.ts", () => {
                     peakWeek: "",
                     warmupExercises: "",
                 },
-                chatRefinements: [],
             };
 
             const tools = getTools({ hevyProgram: minimalHevyProgram, constraintProfile });
@@ -975,6 +1024,113 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).toMatch(/excluded equipment|Mutation rejected/i);
             expect(modelOutput.value).not.toBe("Mutation batch rejected: Unknown validation error");
             expect(modelOutput.value).not.toContain("Unknown validation error");
+        });
+
+        it("Soft-fails same-turn periodization that leaves a claimed week day matching week 1", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({
+                hevyProgram: [],
+                programLength: 4,
+                buildWeekOnceGuard,
+                programSanityStash,
+                userMessage: "Add a deload in week 4",
+            });
+
+            const planProgram = asTestTool<{
+                durationWeeks: number;
+                goal: string;
+                daysPerWeek: number;
+                blocks: Array<{ name: string; weeks: number[]; intent: string }>;
+            }, unknown>(tools.planProgram);
+            await planProgram.execute({
+                durationWeeks: 4,
+                goal: "Strength",
+                daysPerWeek: 2,
+                blocks: [
+                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                    { name: "Deload", weeks: [4], intent: "Unload" },
+                ],
+            });
+
+            const dayRoutine = (dayNumber: number, title: string) => ({
+                dayNumber,
+                title,
+                notes: "",
+                exercises: [{
+                    exercise_template_id: "ex-1",
+                    title: "Bench Press (Barbell)",
+                    notes: "",
+                    sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
+                }],
+            });
+
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const built = (await buildWeek.execute({
+                totalDays: 2,
+                routines: [dayRoutine(1, "Push"), dayRoutine(2, "Pull")],
+            })) as { error?: string };
+            expect(built.error).toBeUndefined();
+
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "update_set",
+                    folderIds: [3],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { rpe: 5 },
+                }],
+            })) as { error?: string; message?: string; operations?: unknown[] };
+
+            expect(output.error).toBe("weekCoverage");
+            expect(output.operations).toBeUndefined();
+            expect(output.message).toContain("weekCoverage: week 4 day 2 matches week 1 set count and RPE");
+            expect(output.message).not.toContain("week 4 day 1");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("week 4 day 2 matches week 1 set count and RPE");
+        });
+
+        it("passes a live-grid update_set when there is no week claim", async () => {
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const output = (await readThenMutate(tools, [{
+                op: "update_set",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                setIndex: 0,
+                set: { rpe: 9 },
+            }])) as { error?: string; operations?: unknown[] };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toHaveLength(1);
+        });
+
+        it("does not return operations when evaluate rejects", async () => {
+            vi.mocked(evaluate).mockResolvedValueOnce({
+                ok: false,
+                misses: [{ id: "skill.sessionShape", detail: "does not honor skill.sessionShape" }],
+            });
+
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await readThenMutate(tools, [{
+                op: "update_set",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                setIndex: 0,
+                set: { rpe: 9 },
+            }])) as { error?: string; message?: string; operations?: unknown[] };
+
+            expect(output.error).toBe("skill.sessionShape");
+            expect(output.operations).toBeUndefined();
+            expect(output.message).toContain("skill.sessionShape");
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain("skill.sessionShape");
         });
     });
 

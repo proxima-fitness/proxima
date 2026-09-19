@@ -34,11 +34,6 @@ import { buildLatestBodyMeasurementBlock } from '../tools/body-measurements';
  * @returns The complete system prompt string.
  */
 
-export interface ISessionEpisodeForPrompt {
-    summary: string;
-    created_at: string;
-}
-
 interface IProps {
     hevyProgram: THevyRoutine[];
     daysPerWeek: number;
@@ -61,8 +56,6 @@ interface IProps {
     trainingProfile?: TTrainingProfile;
     /** Latest backed-up body measurement; injects a short summary when present (all tiers). */
     latestBodyMeasurement?: TBodyMeasurementRow | null;
-    /** Recent session episodes for episodic memory (edit-path only). */
-    episodes?: ISessionEpisodeForPrompt[];
     /**
      * User's program-builder weight display preference (true = lbs, false = kg).
      * Storage is always weight_kg; this is what the UI shows.
@@ -117,7 +110,7 @@ function buildQuestionnairePreferencesLine(props: {
 }
 
 function buildConstraintProfileBlock(profile: TConstraintProfile): string {
-    const { injuries, excludedEquipment, excludedAreas, preferences: p, chatRefinements } = profile;
+    const { injuries, excludedEquipment, excludedAreas, preferences: p } = profile;
 
     const prefLine = (Object.entries({
         Split: p.splitType,
@@ -136,11 +129,10 @@ function buildConstraintProfileBlock(profile: TConstraintProfile): string {
         excludedEquipment.length && `- Excluded equipment: ${excludedEquipment.join(', ')}`,
         excludedAreas.length     && `- Excluded muscle areas: ${excludedAreas.join(', ')}`,
         prefLine                 && `- Preferences: ${prefLine}`,
-        chatRefinements.length   && `- Additional refinements: ${chatRefinements.join('; ')}`,
     ].filter(Boolean).join('\n');
 
     if (!lines) return '';
-    return `## Active Constraint Profile\nHonor all of the following when planning, periodizing, selecting exercises, and building. Respect health/injury entries for exercise selection, volume, and movement choices.\n${lines}`;
+    return `## Active Constraint Profile\n${lines}`;
 }
 
 function buildTrainingProfileBlock(profile: TTrainingProfile): string {
@@ -161,19 +153,6 @@ function buildTrainingProfileBlock(profile: TTrainingProfile): string {
     return `## Active Training Profile\nPerson facts for coaching context (not hard Mutation constraint gates). Honor when planning volume, phase, focus, and session length.\n${lines}`;
 }
 
-function buildEpisodesBlock(episodes: ISessionEpisodeForPrompt[]): string {
-    if (!episodes.length) return '';
-    const lines = episodes
-        .map(e => {
-            const date = new Date(e.created_at).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric',
-            });
-            return `- ${e.summary} (${date})`;
-        })
-        .join('\n');
-    return `## Previous Session Context\nRecent coaching sessions for this program:\n${lines}`;
-}
-
 export const instructions = ({
     hevyProgram,
     daysPerWeek,
@@ -191,7 +170,6 @@ export const instructions = ({
     constraintProfile,
     trainingProfile,
     latestBodyMeasurement = null,
-    episodes = [],
     isInLbs = true,
     isAuthenticated = false,
     hasHevyApiKey = false,
@@ -278,17 +256,15 @@ export const instructions = ({
         **rateProgram:** Call **only** when the user explicitly asks to **rate** their program (e.g. "Rate my program"). Never for improvement tips, reviews, or critiques-use **readProgram** and answer in chat. If you did call it, explain the results in plain language.
         ${workoutHistoryGuidance}${bodyMeasurementsGuidance}${hevyShareGuidance}
 
-        **Constraint profile persistence:** The Active Constraint Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateConstraintProfile** only when there is something to persist: (1) **After questionnaire** unlock (user submitted answers or said "Build my program") **with non-empty fields** - call once in that same turn with those fields as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek**, not a stop-the-world gate. If the user skipped and every field is empty, **do not call** - nothing to persist. (2) **Any mid-chat constraint change** (injury, equipment, area, movement restriction, preference add/remove): you **must** call **updateConstraintProfile** in the same turn (prefer before **mutateProgram** when both apply). Map health → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; prefs → preferences; freeform limits → addChatRefinements; pass rawStatement when the user spoke in chat.
+        **Constraint profile persistence:** The Active Constraint Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateConstraintProfile** only when there is something to persist: (1) **After questionnaire** unlock (user submitted answers or said "Build my program") **with non-empty fields** - call once in that same turn with those fields as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek**, not a stop-the-world gate. If the user skipped and every field is empty, **do not call** - nothing to persist. (2) **Any mid-chat constraint change** (injury, equipment, area, movement restriction, preference add/remove): you **must** call **updateConstraintProfile** in the same turn (prefer before **mutateProgram** when both apply). Map health and movement limits (can't kneel, no overhead, no floor) → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; prefs → preferences; pass rawStatement when the user spoke in chat. Taste / "no supersets" is not a persisted constraint.
 
-        **Constraint profile - User-stated change (removals):** **Add** freely when you recognize a new constraint. **Remove / relax** only on a **User-stated change** (user asserts the rule no longer applies, e.g. "knee's fine now") or direct the user to **Edit profile**. Never call **removeExcludedEquipment**, **removeInjuries**, **removeExcludedAreas**, or **removeChatRefinements** to make a preferred split, template, or exercise set feasible (e.g. do not drop Exclude Machine because "PPL needs machines"). If the profile conflicts with a requested style, **adapt the program** to the profile - do not edit the profile down.
+        **Constraint profile - User-stated change (removals):** **Add** freely when you recognize a new constraint. **Remove / relax** only on a **User-stated change** (user asserts the rule no longer applies, e.g. "knee's fine now") or direct the user to **Edit profile**. Never call **removeExcludedEquipment**, **removeInjuries**, or **removeExcludedAreas** to make a preferred split, template, or exercise set feasible (e.g. do not drop Exclude Machine because "PPL needs machines", and do not strip "can't kneel" to make a squat program work). If the profile conflicts with a requested style, **adapt the program** to the profile - do not edit the profile down.
 
         **Training profile persistence:** The Active Training Profile in this prompt is in-session context - it does **not** mean Agentic memory is already written. Call **updateTrainingProfile** only when there is something to persist: (1) **After questionnaire** unlock **with non-empty Questionnaire advanced / Training profile fields** - call once in that same turn as a non-blocking backup alongside **planProgram** / **getExerciseList** / **buildWeek** (same spirit as Constraint profile). If every Training profile field is empty, **do not call**. (2) **Any mid-chat person-fact change** (age, sex, height, experience, physique phase, training focus, activity level, session duration): call **updateTrainingProfile** in the same turn. **Set** freely when the user states a fact. **Clear / change** a field only on a **User-stated change** (user asserts the fact no longer applies or gives a new value) or direct them to **Edit profile**. Training profile is **not** the Mutation constraint gate.
 
-        **Before mutateProgram (mandatory):** On an existing program, call **readProgram** in this turn first and target from that snapshot — not from an earlier turn. Honor the Active Constraint Profile below. Never leave a training day with zero exercise rows - put a replacement (**insert_exercise** / **edit_exercise**) in the same batch before **delete_exercise**. Mid-chat constraint changes: follow **Constraint profile persistence** above. Op cookbook, targeting, and Exercise objection live in the **mutate-program** skill (and post-build periodization in **build-program**). **buildWeek** / **mutateProgram** hard-reject constraint violations - fix and retry.
+        **Before mutateProgram (mandatory):** On an existing program, call **readProgram** in this turn first and target from that snapshot — not from an earlier turn. Empty training days are rejected; an explicit remove is allowed. Mid-chat constraint changes: follow **Constraint profile persistence** above. Op cookbook, targeting, and Exercise objection live in the **mutate-program** skill (and post-build periodization in **build-program**). **buildWeek** / **mutateProgram** hard-reject constraint violations - fix and retry.
 
         **Mutation proposal:** A standalone **mutateProgram** on an existing program does **not** change the grid until the user Accepts. Visible reply = proposal voice: what you want to change, and that they can Accept or Reject on the card. Do **not** write "I've updated", "Your program is now", "I've changed", or any past-tense confirmation. The card is the batch; your text is the ask. Same-turn **buildWeek** + trailing **mutateProgram** still lands immediately (first build / rebuild).
-
-        **Session size:** When building a program, target **6-7 total exercise rows per training day** in \`buildWeek\` (including 1-2 warmup rows when warmup exercises are yes or unset). If questionnaire prefs say warmup exercises **no**, omit separate warmup rows and still target ~5-6 working exercises per day. Only go below those targets if the user explicitly requested a short session, time cap, deload, or peaking day.
 
         **Mandatory skill loading:** When the user's message is clearly requesting to create, build, or generate a **new** workout program, training program, or exercise routine-including the very first message in a new chat-you **must** call \`loadSkill\` with \`build-program\` first. In that same turn, call \`getMoreInfoQuestions\` (plus \`fetchHevyShareFolder\` when they pasted a Hevy share link, since reading it is context gathering, not building). After that tool returns: if it says the Questionnaire gate is **not needed**, continue this turn with \`planProgram\` / \`getExerciseList\` / \`buildWeek\`. If questions opened, do **not** call those tools yet — stop, send your visible response, and wait for submit or "Build my program". Asking to load a **share** onto an empty grid as-is is not a new-program request: \`importHevyShareFolder\` is never gated behind the questionnaire, and you should not open the questionnaire instead of honoring a confirmed load. When the user asks to fill or edit **Training profile** (including "update my profile" / "edit my info") and it is **not** a new-program request, call \`getMoreInfoQuestions\` and wait; after they submit, persist with \`updateTrainingProfile\` and do **not** plan or build. For modifying an existing program (edits, swaps, or **changing program length** e.g. "make it 2 weeks", "shorten to 4 weeks"), load the \`mutate-program\` skill instead - not \`build-program\`.
         ${daysPerWeek != null && programLength != null ? `Program builder context: the user has selected ${daysPerWeek} days per week and ${programLength} weeks total. Builder length is the template/duplication setting - changing it does not remove weeks from the live grid; use **mutateProgram** **delete_week** when the user wants fewer weeks on an existing program.` : ''}
@@ -296,7 +272,6 @@ export const instructions = ({
         ${trainingProfile ? buildTrainingProfileBlock(trainingProfile) : ''}
         ${buildLatestBodyMeasurementBlock(latestBodyMeasurement)}
         ${hevyProgram?.length ? `A program currently exists (${hevyProgram.length} routines on the grid). Default to **mutate-program** for edits and length changes unless the user explicitly wants a brand-new program from scratch.` : ''}
-        ${hevyProgram?.length && episodes.length ? buildEpisodesBlock(episodes) : ''}
 
         **Upload to Hevy:** You cannot upload or send the program to Hevy from chat (unlike ChatGPT-style "just tell the bot"). Session flags: authenticated = **${isAuthenticated ? 'yes' : 'no'}**; Hevy API key on file = **${hasHevyApiKey ? 'yes' : 'no'}** (boolean presence only - never ask for or repeat a key). If the user asks to upload / export / send / sync / push to Hevy:
         - **Empty program:** Do **not** call **openHevyExportGate**. Tell them to build (or finish) a program first - the gate only applies when there is something on the grid to **Save**.

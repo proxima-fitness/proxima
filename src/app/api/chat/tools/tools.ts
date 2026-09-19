@@ -21,7 +21,7 @@
  *    (shared folder, shared routine, or a public completed workout)
  *  - importHevyShareFolder - confirmed **Hevy share import** that seeds an empty grid with the shared week
  *
- * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share
+ * Depends on: ai, zod, @/components/program-builder/api/hevy, @/assets/constants, @/lib/hevy-share, ../sanity
  * Used by: /api/chat/route.ts (passed to ToolLoopAgent)
  */
 
@@ -80,6 +80,22 @@ import {
 } from '@/api/workout-history-read';
 import { softToolErrorResult } from './soft-tool-fail-log';
 import {
+    evaluate,
+    formatEvaluateMessage,
+} from '../sanity/evaluate';
+import {
+    buildSanitySnapshot,
+    plateWeek1Across,
+    resolvePlateWeekCount,
+} from '../sanity/snapshot';
+import {
+    evaluateWeekCoverage,
+    formatWeekCoverageMessage,
+} from '../sanity/week-coverage';
+import type { IProgramSanityStash } from '../sanity/types';
+
+export type { IProgramSanityStash } from '../sanity/types';
+import {
     getBodyMeasurementsForUser,
 } from '@/api/body-measurements-read';
 import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
@@ -124,6 +140,18 @@ export interface IBuildWeekOnceGuard {
 interface IProps {
     hevyProgram?: THevyRoutine[];
     buildWeekOnceGuard?: IBuildWeekOnceGuard;
+    /**
+     * Request-scoped plan + last successful buildWeek (ADR 0025 / 02).
+     * The route allocates one object per turn. Tools write in place so
+     * same-turn mutateProgram can plate week 1. Omit in tests that do not
+     * exercise week coverage.
+     */
+    programSanityStash?: IProgramSanityStash;
+    /**
+     * Last user text this turn. The route extracts it with `readLastUserMessage`.
+     * Empty string is a valid snapshot field; omit only when the caller has no messages.
+     */
+    userMessage?: string;
     /** When false, getWorkoutHistory is omitted from the tool set (Pro-only). */
     hasActiveSubscription?: boolean;
     userId?: string;
@@ -232,12 +260,16 @@ export const getExerciseListInputSchema = z.object({
  * reference them without extra round-trips.
  *
  * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
+ * @param props.programSanityStash - Request-scoped plan + last successful buildWeek for week coverage.
+ * @param props.userMessage - This turn's last user text for the compact sanity snapshot.
  * @param props.constraintProfile - In-request Constraint profile; drives getExerciseList filters.
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
     hevyProgram,
     buildWeekOnceGuard,
+    programSanityStash,
+    userMessage,
     hasActiveSubscription = false,
     userId,
     workoutHistoryDb,
@@ -367,7 +399,7 @@ export function getTools({
      */
     const getExerciseListTool = tool({
 
-        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Target 6-7 total exercise rows per training day including warmup(s); see the build-program skill for the session-size default and exceptions. Exclusion filters come from the Active Constraint Profile - do not pass exclude args.',
+        description: 'Provides access to all available Hevy exercises for building workout programs. Use this tool when users request workout programs. The tool returns a reference list of exercises (ID and title only) - you should then build a complete, well-structured day using exercise IDs, titles, sets, rep_range (for true ranges like 8-12) or reps (for fixed counts like 5 sets x 5 reps), and RPE. For fixed-rep work, set rep_range to null and use reps only. Exclusion filters come from the Active Constraint Profile - do not pass exclude args.',
         inputSchema: getExerciseListInputSchema,
 
         execute: async ({ userRequest }) => {
@@ -448,7 +480,7 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.\n\nSession size reminder: target 6-7 total exercise rows per training day in buildWeek (including the 1-2 warmup rows). A typical day = 1 warmup + 5-6 working exercises. Only go below 6 total if the user explicitly requested a short session, time cap, or deload day.`,
+                value: `Available exercises (${output.totalExercises} total):\n${exerciseList}\n\nCRITICAL: You must ONLY use exercise_template_id values that exist in the list above. Do not invent exercises or use IDs that are not in this list.`,
             };
         },
     });
@@ -561,6 +593,8 @@ export function getTools({
     /**
      * Title: planProgramTool
      * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
+     * Also writes the plan onto `programSanityStash` so week coverage can see
+     * claimed deload / peak / easy weeks in the same turn.
      * @returns { Tool }
      */
     const planProgramTool = tool({
@@ -570,6 +604,10 @@ export function getTools({
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
+            // Coverage needs claimed deload / peak / easy weeks; the model only sees `{ plan, summary }`.
+            if (programSanityStash) {
+                programSanityStash.plan = plan;
+            }
             const blockNames = plan.blocks.map((b) => b.name).join(', ');
             const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
             return { plan, summary };
@@ -699,8 +737,7 @@ export function getTools({
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
-            'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong. ' +
-            'Session size: target **6-7 total rows in `exercises[]` per training day** including warmup row(s). Typical day = 1 warmup + 5-6 working exercises. Only drop below 6 total rows if the user explicitly asked for a short/brief session, time cap, deload day, or peaking day with deliberately low volume.',
+            'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
         inputSchema: z.object({
             totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
             routines: z
@@ -930,6 +967,29 @@ export function getTools({
                     }
                 }
 
+                // Week 1 vs week 1 cannot fail coverage. Evaluate Training / skill
+                // as Andy-authored before lock so a reject leaves the guard unlocked.
+                const snapshot = buildSanitySnapshot({
+                    userMessage: userMessage ?? '',
+                    constraintProfile,
+                    trainingProfile,
+                    plan: programSanityStash?.plan,
+                    beforeProgram: [],
+                    afterProgram: builtRoutines,
+                });
+                const sanity = await evaluate(snapshot, { andyAuthored: true });
+                if (!sanity.ok) {
+                    return softToolErrorResult('buildWeek', {
+                        error: sanity.misses[0]?.id ?? 'evaluate',
+                        message: formatEvaluateMessage(sanity.misses),
+                    });
+                }
+
+                // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
+                if (programSanityStash) {
+                    programSanityStash.buildWeekRoutines = builtRoutines;
+                }
+
                 if (buildWeekOnceGuard) {
                     buildWeekOnceGuard.locked = true;
                 }
@@ -982,6 +1042,9 @@ export function getTools({
     /**
      * Title: mutateProgramTool
      * Description: Typed registry operation batch with server preflight via applyOperations.
+     * After a successful apply, runs week-coverage (ADR 0025 / 02) then
+     * evaluate (03). A claimed week-day that still matches week 1, or a Jev
+     * reject, Soft-fails and omits `operations`.
      * @returns { Tool }
      */
     const mutateProgramTool = tool({
@@ -1071,13 +1134,52 @@ export function getTools({
                     }
                 }
 
-                const result = applyOperations(hevyProgram ?? [], resolvedOperations);
+                // After same-turn buildWeek the request hevyProgram has no later weeks.
+                // Plate week 1, apply on that copy, then week-coverage Soft-fail (C1 / C2).
+                // Live-grid mutate keeps applyOperations(hevyProgram) as before.
+                const afterBuildWeekPlate =
+                    afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0
+                        ? plateWeek1Across(
+                            programSanityStash?.buildWeekRoutines ?? [],
+                            resolvePlateWeekCount(programSanityStash?.plan, programLength),
+                        )
+                        : null;
+                const applyBase = afterBuildWeekPlate ?? hevyProgram ?? [];
+                const result = applyOperations(applyBase, resolvedOperations);
                 if (isApplyBatchFailure(result)) {
                     return softToolErrorResult('mutateProgram', {
                         error: 'Program mutation batch failed',
                         failures: result.failures,
                     });
                 }
+
+                const snapshot = buildSanitySnapshot({
+                    userMessage: userMessage ?? '',
+                    constraintProfile,
+                    trainingProfile,
+                    plan: programSanityStash?.plan,
+                    beforeProgram: applyBase,
+                    afterProgram: result.program,
+                });
+                const coverage = evaluateWeekCoverage(
+                    snapshot,
+                    constraintProfile?.preferences.deloadWeek,
+                );
+                if (!coverage.ok) {
+                    return softToolErrorResult('mutateProgram', {
+                        error: 'weekCoverage',
+                        message: formatWeekCoverageMessage(coverage.misses),
+                    });
+                }
+
+                const sanity = await evaluate(snapshot, { andyAuthored: afterBuildWeek });
+                if (!sanity.ok) {
+                    return softToolErrorResult('mutateProgram', {
+                        error: sanity.misses[0]?.id ?? 'evaluate',
+                        message: formatEvaluateMessage(sanity.misses),
+                    });
+                }
+
                 return { operations: resolvedOperations };
             } catch (error) {
                 console.error('Error in mutateProgramTool:', error);
@@ -1325,9 +1427,9 @@ export function getTools({
             'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
             'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
-            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or removeChatRefinements to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
+            'Never call removeExcludedEquipment, removeInjuries, or removeExcludedAreas to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
             'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
-            'split/variability/progression/deload/peak/warmup → preferences; freeform limits → addChatRefinements. ' +
+            'split/variability/progression/deload/peak/warmup → preferences. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
             'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
@@ -1339,12 +1441,10 @@ export function getTools({
             removeExcludedEquipment: z.array(z.string()).optional().describe('Equipment to allow again only on User-stated change - never to enable a preferred split/style'),
             addExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to exclude'),
             removeExcludedAreas: z.array(z.string()).optional().describe('Muscle areas to allow again only on User-stated change - never to enable a preferred split/style'),
-            addChatRefinements: z.array(z.string()).optional().describe('Free-form training constraints to add, e.g. "no overhead pressing"'),
-            removeChatRefinements: z.array(z.string()).optional().describe('Free-form constraints to remove only on User-stated change - never to enable a preferred split/style'),
             preferences: constraintPreferencesUpdateSchema,
             rawStatement: z.string().optional().describe("The user's exact words expressing this constraint"),
         }),
-        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, addChatRefinements, removeChatRefinements, preferences, rawStatement }) => {
+        execute: async ({ addInjuries, removeInjuries, addExcludedEquipment, removeExcludedEquipment, addExcludedAreas, removeExcludedAreas, preferences, rawStatement }) => {
             if (!constraintProfile) {
                 return { error: 'No active constraint profile in this session.' };
             }
@@ -1356,8 +1456,6 @@ export function getTools({
                 removeExcludedEquipment,
                 addExcludedAreas,
                 removeExcludedAreas,
-                addChatRefinements,
-                removeChatRefinements,
             ].some((arr) => (arr?.length ?? 0) > 0);
             const hasPreferenceChange = Boolean(
                 preferences && Object.values(preferences).some((v) => typeof v === 'string' && v.trim() !== ''),
@@ -1372,7 +1470,6 @@ export function getTools({
                 ['injuries',          addInjuries,          removeInjuries],
                 ['excludedEquipment', addExcludedEquipment, removeExcludedEquipment],
                 ['excludedAreas',     addExcludedAreas,     removeExcludedAreas],
-                ['chatRefinements',   addChatRefinements,   removeChatRefinements],
             ] as const satisfies [keyof TConstraintProfile, string[] | undefined, string[] | undefined][];
 
             for (const [field, add, remove] of arrayFields) {
@@ -1418,7 +1515,6 @@ export function getTools({
                 p.injuries.length          && `Injuries: ${p.injuries.join(', ')}`,
                 p.excludedEquipment.length && `Excluded equipment: ${p.excludedEquipment.join(', ')}`,
                 p.excludedAreas.length     && `Excluded areas: ${p.excludedAreas.join(', ')}`,
-                p.chatRefinements.length   && `Refinements: ${p.chatRefinements.join('; ')}`,
             ].filter(Boolean).join(' | ') || 'No active constraints.';
             return { type: 'text' as const, value: `Constraint Profile updated. ${summary}` };
         },
