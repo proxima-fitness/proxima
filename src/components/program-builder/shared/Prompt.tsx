@@ -4,10 +4,11 @@
  * @module Prompt
  * Landing hero: title, subtitle, prompt input, product preview, and gradient backdrop.
  * Syncs SSR user into UserContext.
- * Depends on: PromptTemplate, ResumeDraftBanner, UserContext, ProximaStarCanvasDynamic. Used by: build-program/landing.
+ * Depends on: PromptTemplate, ResumeDraftBanner, UserContext, ProximaStarCanvasDynamic, RotatingHeroTagline. Used by: build-program/landing.
  */
 import { useEffect } from "react";
 import { ProximaStarCanvasDynamic } from "@/components/landing/proxima-star/ProximaStarCanvasDynamic";
+import { RotatingHeroTagline } from "@/components/landing/RotatingHeroTagline";
 import { useUserContext } from "@/contexts/UserContext";
 import { User } from "@supabase/supabase-js";
 import {
@@ -84,12 +85,9 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.85, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            <div className="max-sm:px-6 font-tertiary text-6xl font-bold text-foreground max-sm:text-4xl">
-                                Programs Built Around{" "}
-                                <span className="text-lightSecondary">Your Life</span>
-                            </div>
+                            <RotatingHeroTagline />
                             <div className="px-12 text-center text-xl font-normal leading-tight text-muted-foreground max-sm:px-2 max-sm:text-base">
-                                <span className="block">Proxima builds your program, makes updates based on your workouts,</span>
+                                <span className="block">Proxima builds your program, tailors it based on your workouts,</span>
                                 <span className="block">and syncs changes to your fitness app</span>
                             </div>
                         </motion.div>

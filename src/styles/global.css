@@ -363,6 +363,19 @@
     );
   }
 
+  /* Hero tagline swap: scanline that reads as a brief telemetry dropout. */
+  .hero-tagline-scan {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(51, 187, 207, 0.15) 18%,
+      rgba(232, 121, 249, 0.75) 48%,
+      rgba(51, 187, 207, 0.95) 72%,
+      transparent 100%
+    );
+    box-shadow: 0 0 14px rgba(51, 187, 207, 0.55);
+  }
+
   /* Product peek under CTA - readable slice, dissolve into page. */
   .hero__product-preview {
     max-height: min(34vh, 300px);
