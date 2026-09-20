@@ -463,6 +463,83 @@ _Avoid_: Using it as this-week SoT after Export, treating last week's Hevy diver
 
 
 
+### First build
+
+
+Creating a multi-week **Program prescription** on the **New path** (empty grid or a one-week seed such as **Hevy share import** expand). Week 1 is authored, copied across program length, then the **Periodization wave** is applied. The result lands immediately. Distinct from a **Mutation proposal** on an existing program.
+
+
+_Avoid_: First chat turn, first `buildWeek` payload alone (week 1 without the wave), treating plated clones as a finished **Proxima program**
+
+
+
+
+### Periodization
+
+
+Prescribed change of target RPE, working-set count, and rep range across weeks of a **Program prescription**: accumulation climbs, a deload is easier, a peak is harder. Written at **First build**. Distinct from **Progression**.
+
+
+_Avoid_: Progression, weekProgression, pre-writing kg or logged reps, **AI week suggest**
+
+
+
+
+### Progression
+
+
+Updating the next occurrence of the same lift's weight or achieved reps from how that lift was performed. Not in the product. Distinct from **Periodization** and from **AI week suggest**.
+
+
+_Avoid_: Periodization, applying the questionnaire progression system at **First build**, `constraint.progressionHonor` on a first-build grid, silent double-progression in **Hevy program sync**
+
+
+
+
+### Periodization wave
+
+
+Andy-authored week-by-week **Periodization** targets on the **First build** plan. Deltas from week 1 on **Exercise role** mains (RPE and set count). Absolute rep range only at a **Block boundary**. Accessory RPE/set line only on claimed deload or peak weeks. Code applies it before the grid may land. Distinct from **Progression**.
+
+
+_Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays, Andy emitting per-week `mutateProgram` `update_set` as the apply path
+
+
+
+
+### Exercise role
+
+
+Tag on each week-1 exercise row at **First build**: `main`, `accessory`, or `warmup`. The **Periodization wave** attaches to mains. Not persisted on the **Program prescription**. Not sent to Hevy. Distinct from set type `"warmup"` (a lighter set on a working lift).
+
+
+_Avoid_: Compound flag in the catalog, first-row-is-the-main (warmup *rows* sit first), storing the tag for **Edit program** re-stamp
+
+
+
+
+### Block boundary
+
+
+The first week of a new named block on the **First build** plan (new job: intensification, peak, deload). Rep range on the **Periodization wave** may change here. When exercise variability is `lots`, lifts may swap here, not every week. Distinct from **Current week**.
+
+
+_Avoid_: Every Sunday, weekly main-lift hopping, using **Selected week**
+
+
+
+
+### %1RM load
+
+
+Deferred. Prescribed kg from a known 1RM (including a Hevy 1RM). Not **First build** **Periodization**. Not **Progression**.
+
+
+_Avoid_: Filling `weight_kg` at **First build**, treating `% 1RM` / `percent_rm` as the wave, mixing prescribed load with RPE deltas
+
+
+
+
 ### Week complete
 
 
@@ -546,10 +623,10 @@ _Avoid_: Treating the schedule-history stamp as **Day complete** SoT, Sync (Edit
 ### AI week suggest
 
 
-After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** on first expand of the suggest panel, not on mark-complete or Export click. Cached once per program + completed week. Cache miss with remaining LLM: successful generate consumes one unit (same meter as chat). Cache miss at 0 remaining: still generate, cache the full row, return a truncated summary and no changes (Apply replaced by Upgrade). Unlock is remaining > 0: full cache, no regenerate, no consume. A row that already consumed a unit always returns full, even if remaining is later 0. Apply, skip, cache hit, and failed generate do not consume. Distinct from **Edit current week** and from silent double-progression in **Hevy program sync**.
+After **Week complete**, optional progression / exercise tweaks for week N+1. Generated **lazily** on first expand of the suggest panel, not on mark-complete or Export click. Cached once per program + completed week. Cache miss with remaining LLM: successful generate consumes one unit (same meter as chat). Cache miss at 0 remaining: still generate, cache the full row, return a truncated summary and no changes (Apply replaced by Upgrade). Unlock is remaining > 0: full cache, no regenerate, no consume. A row that already consumed a unit always returns full, even if remaining is later 0. Apply, skip, cache hit, and failed generate do not consume. Distinct from **Edit current week**, from silent double-progression in **Hevy program sync**, from **First build** **Periodization**, and from **Progression**.
 
 
-_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation, company-borne suggest for users who still have credits, a second suggest meter, charging both generate and apply, CSS blur of a full payload, regenerating a cached row after checkout
+_Avoid_: Sync dialog summary, modifyProgram (tool), living-loop ad-hoc chat edit, eager cron generation, company-borne suggest for users who still have credits, a second suggest meter, charging both generate and apply, CSS blur of a full payload, regenerating a cached row after checkout, treating this as **First build** **Periodization**
 
 
 
@@ -590,7 +667,7 @@ _Avoid_: Silent one-week Save, forced re-Export of week 1, Update program, conve
 ### Hevy share import
 
 
-**New path only** action that hydrates the builder from a public Hevy share link (folder, routine, or completed workout) as a **one-week seed**. Shared routines → days in week 0 only. A workout → a single day whose loads are what was actually lifted. Uses the same fetch + adapter as **Hevy share fetch**, then loads the adapted routines onto an **empty** grid after user confirm. Adapter strips foreign Hevy routine/folder IDs and assigns **builder routine keys**. Keeps titles, exercises, and sets. Does not require the **questionnaire** first. Questionnaire applies when generating/expanding, not when loading a share. Not **Edit path**, not Sync to the shared folder, and not a **Program-Hevy link**. Multi-week expand is a separate ask. Distinct from **Make into a program**.
+**New path only** action that hydrates the builder from a public Hevy share link (folder, routine, or completed workout) as a **one-week seed**. Shared routines → days in week 0 only. A workout → a single day whose loads are what was actually lifted. Uses the same fetch + adapter as **Hevy share fetch**, then loads the adapted routines onto an **empty** grid after user confirm. Adapter strips foreign Hevy routine/folder IDs and assigns **builder routine keys**. Keeps titles, exercises, and sets. Does not require the **questionnaire** first. Questionnaire applies when generating/expanding, not when loading a share. Not **Edit path**, not Sync to the shared folder, and not a **Program-Hevy link**. Multi-week expand is a separate ask and is **First build** (same plate + **Periodization wave** as an empty-grid build). Distinct from **Make into a program**.
 
 
 _Avoid_: Edit arrival, Hevy program sync, scraping the share HTML, Sync to share URL, auto-load on paste, auto multi-week on import, keeping share Hevy routine IDs, import while on Edit path, blocking import behind getMoreInfoQuestions
@@ -907,7 +984,7 @@ _Avoid_: Mode toggle, program picker
 ### Edit agent
 
 
-The chat agent has the same program-building tools in Edit mode as in New mode. Standalone agent edits are a **Mutation proposal**; Accept updates working builder state and sets edit dirty. Same-turn first build still lands immediately. The user Syncs to push changes to Hevy.
+The chat agent has the same program-building tools in Edit mode as in New mode. Standalone agent edits are a **Mutation proposal**; Accept updates working builder state and sets edit dirty. **First build** still lands immediately. The user Syncs to push changes to Hevy.
 
 
 _Avoid_: Read-only chat, constrained edit tools, auto-apply live-grid edits without a **Mutation proposal**
@@ -940,7 +1017,7 @@ _Avoid_: Patch, JSON edit
 ### Mutation proposal
 
 
-A **Program mutation batch** the coach wants to apply to an existing program, shown in chat until the user Accepts or discards it. Accept commits it to the in-memory builder. Reject, a new user message, or a stale fail-all discards it. Distinct from first build (a new week plus same-turn periodization), which still lands immediately. Distinct from **AI week suggest**, whose Apply writes the **Program prescription** on Program overview.
+A **Program mutation batch** the coach wants to apply to an existing program, shown in chat until the user Accepts or discards it. Accept commits it to the in-memory builder. Reject, a new user message, or a stale fail-all discards it. Distinct from **First build**, which still lands immediately. Distinct from **AI week suggest**, whose Apply writes the **Program prescription** on Program overview.
 
 
 _Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** button), patch preview, auto-apply on ready
@@ -1160,10 +1237,10 @@ _Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-
 ### Program sanity check
 
 
-Named check on a proposed program snapshot before it lands on the builder (first build or **Program mutation batch**). Code owns schema, ids, empty days, and week-coverage counts. Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry. Does not run on manual grid edits or Sync.
+Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build**). Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry. Does not run on manual grid edits or Sync.
 
 
-_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only)
+_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only `buildWeek` payload, `constraint.progressionHonor` as a **First build** question
 
 
 
@@ -1171,7 +1248,7 @@ _Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation con
 ### User-stated exception
 
 
-The user named a program outcome that would fail a Training profile or skill-principle **Program sanity check** (short day, skip a deload Andy invented, delete a lift they do not want). Those checks do not reject. Constraint profile and code gates still reject until a **User-stated change** or **Edit profile**.
+The user named a program outcome that would fail a Training profile or skill-principle **Program sanity check** (short day, skip a deload Andy invented, delete a lift they do not want, every week the same). Those checks do not reject. Skipping **Periodization** is this, not a skipped **Questionnaire advanced**. Constraint profile and code gates still reject until a **User-stated change** or **Edit profile**.
 
 
 _Avoid_: User-stated change (that term is for removing a saved constraint), taste override of a hard constraint, slapping the user for an explicit ask
@@ -1303,10 +1380,10 @@ _Avoid_: Always-visible (first-time only), primary questions, required questions
 ### Questionnaire advanced
 
 
-Collapsed-by-default on the first-time **Questionnaire gate**. Programming style prefs (excluded areas, preferred split, exercise variability, progression system, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). First-time users can ignore and still build. Prefill person facts from an existing Training profile when present. Empty advanced answers are valid. A Training-profile ask opens the person-fact subset alone, not style prefs and not **Questionnaire core**.
+Collapsed-by-default on the first-time **Questionnaire gate**. Programming style prefs (excluded areas, preferred split, exercise variability, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). Progression system is stored with those style prefs but is **Progression**, not **First build** **Periodization**. Empty advanced is still a **First build** with a default wave, not a same-week program. First-time users can ignore and still build. Prefill person facts from an existing Training profile when present. A Training-profile ask opens the person-fact subset alone, not style prefs and not **Questionnaire core**.
 
 
-_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile, opening advanced because the agent wants person facts
+_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile, opening advanced because the agent wants person facts, treating skipped advanced as no **Periodization**, treating progression system as the **Periodization wave**
 
 
 

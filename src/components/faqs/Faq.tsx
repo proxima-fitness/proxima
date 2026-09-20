@@ -5,20 +5,24 @@
 /**
  * @module Faq
  * FAQ section: list of expandable Q&A items (FAQItem). Questions/answers are hardcoded in the section.
- * Depends on: style, public icons.
- * Used by: landing/faq page.
+ * Depends on: style, public icons, HowItWorksSteps TYPESAFE_JEV_URL.
+ * Used by: landing/faq page, pricing, proxima-app.
  */
-import { useId, useReducer } from "react";
+import { useId, useReducer, type ReactNode } from "react";
 import styles from "../../style";
 import { minus, add } from "public";
+import { TYPESAFE_JEV_URL } from "@/components/landing/HowItWorksSteps";
 
 interface IFAQItemProps {
     question: string;
-    answer: string;
-};
+    answer: ReactNode;
+}
 
 const iconClass =
     "h-[23px] w-[23px] shrink-0 object-contain opacity-80 pt-0.5 [filter:brightness(0)] dark:[filter:brightness(0)_invert(1)]";
+
+const faqLinkClass =
+    "font-medium text-foreground underline underline-offset-2 hover:text-lightSecondary";
 
 /** Single expandable FAQ row: question, toggle icon; when open shows answer. */
 const FAQItem = ({ question, answer }: IFAQItemProps) => {
@@ -77,8 +81,56 @@ export const Faq = () => {
             <div className="mx-auto mt-10 w-full max-w-2xl px-4 sm:max-w-[680px] sm:px-6">
                 <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
                     <FAQItem
-                        question="How is this different from just asking ChatGPT?"
-                        answer="ChatGPT has no memory of your previous workouts and no direct connection to Hevy. Proxima reads your actual Hevy history to build and adjust your program around what you've already been doing."
+                        question="How is this different from asking ChatGPT or Claude?"
+                        answer={
+                            <>
+                                Andy is the waiter and planner. He writes your program onto a grid
+                                from Hevy&apos;s catalog. A second model then critiques that week
+                                against your injuries, equipment, and the training block (powered by{" "}
+                                <a
+                                    href={TYPESAFE_JEV_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={faqLinkClass}
+                                >
+                                    TypeSafe
+                                </a>
+                                ). A miss, and Andy rewrites before you see it. ChatGPT and Claude
+                                answer in a chat thread. The next time you open them, that thread is
+                                all they have.
+                            </>
+                        }
+                    />
+                    <FAQItem
+                        question="How does Proxima actually build a program?"
+                        answer={
+                            <>
+                                Proxima asks about goals, injuries, equipment, and schedule. Andy
+                                plans a multi-week block, picks from Hevy&apos;s catalog, and writes
+                                week 1 onto the grid. A coaching domain expert model critiques the week before it
+                                lands. Later weeks get periodized from that plan. After you train, it
+                                can read your Hevy history and suggest next week&apos;s progression.
+                            </>
+                        }
+                    />
+                    <FAQItem
+                        question="How is the program checked before I see it?"
+                        answer={
+                            <>
+                                After Andy plans a week, a separate critique model (powered by{" "}
+                                <a
+                                    href={TYPESAFE_JEV_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={faqLinkClass}
+                                >
+                                    TypeSafe
+                                </a>
+                                ) scores whether it honors your injuries, equipment, and the training
+                                block. A miss sends Andy back to fix it. You see the week only after
+                                that check.
+                            </>
+                        }
                     />
                     <FAQItem
                         question="What does science-backed actually mean here? "
@@ -94,7 +146,7 @@ export const Faq = () => {
                     />
                     <FAQItem
                         question="Can I edit the program after it's generated?"
-                        answer="Unlike ChatGPT, your program stays in the app and you can modify it without having to re-generate the entire program, allowing you to go through an iterative improvement cycle before saving it to Hevy (or to PDF/Spreadsheet)."
+                        answer="Yes. The program stays on the grid. Swap exercises, change sets, or keep chatting against the same program. Export to Hevy, PDF, or spreadsheet when you want it in the gym."
                     />
                     <FAQItem
                         question="How do I actually get the program into Hevy?"

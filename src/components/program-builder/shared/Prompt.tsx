@@ -87,8 +87,8 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         >
                             <RotatingHeroTagline />
                             <div className="px-12 text-center text-xl font-normal leading-tight text-muted-foreground max-sm:px-2 max-sm:text-base">
-                                <span className="block">Proxima builds your program, tailors it based on your workouts,</span>
-                                <span className="block">and syncs changes to your fitness app</span>
+                                <span className="block">Proxima builds an adaptive personalized plan from your constraints and workout logs.</span>
+                                <span className="block">Train in your fitness app and your plan will tailor itself to you.</span>
                             </div>
                         </motion.div>
                         <motion.div
