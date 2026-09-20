@@ -1,0 +1,35 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Proxima Public API",
+        "version": "1.0.0",
+        "description": "Versioned HTTP surface for **Canonical exercises**, **Custom movements**, and history-only **Workouts**. GET /api/v1/exercises is world-readable. Writes use a **Proxima API key** (`Authorization: Bearer`)."
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "This host"
+        }
+    ],
+    "apiDir": "src/app/api/v1",
+    "routerType": "app",
+    "schemaDir": "src/lib/public-api/openapi-schemas",
+    "schemaType": "zod",
+    "schemaFiles": [],
+    "outputFile": "openapi.generated.json",
+    "outputDir": "./src/lib/public-api",
+    "includeOpenApiRoutes": true,
+    "ignoreRoutes": [],
+    "defaultResponseSet": "none",
+    "debug": false,
+    "components": {
+        "securitySchemes": {
+            "proximaApiKey": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "pxa_",
+                "description": "Proxima API key minted once in account settings. Optional on GET /api/v1/exercises; required on writes."
+            }
+        }
+    }
+}
