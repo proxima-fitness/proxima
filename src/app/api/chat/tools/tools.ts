@@ -1023,7 +1023,7 @@ export function getTools({
                         : undefined;
                 return {
                     type: 'text' as const,
-                    value: `Error: ${message || 'Failed to build week'}`,
+                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again.`,
                 };
             }
 

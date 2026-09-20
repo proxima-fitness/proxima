@@ -5,9 +5,11 @@ import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 
 import {
     buildSanitySnapshot,
+    compactSnapshotForEvaluate,
     plateWeek1Across,
     readLastUserMessage,
     resolvePlateWeekCount,
+    snapshotForStandaloneEvaluate,
 } from "../snapshot";
 import type { TPlanProgram } from "../types";
 
@@ -172,5 +174,45 @@ describe("buildSanitySnapshot", () => {
             expect.objectContaining({ week: 1, day: 1, matchesWeek1Stimulus: false }),
         ]);
         expect(snapshot.matchingWeek1Days).toEqual([]);
+    });
+});
+
+describe("compactSnapshotForEvaluate", () => {
+    it("drops later-week clones that this batch did not change", () => {
+        const week1 = [makeDay()];
+        const snapshot = buildSanitySnapshot({
+            userMessage: "",
+            beforeProgram: plateWeek1Across(week1, 5),
+            afterProgram: plateWeek1Across(week1, 5),
+        });
+
+        const compacted = compactSnapshotForEvaluate(snapshot);
+        expect(compacted.matrix.map((row) => row.week)).toEqual([1]);
+        expect(snapshot.matrix).toHaveLength(5);
+    });
+});
+
+describe("snapshotForStandaloneEvaluate", () => {
+    it("keeps only changed days so untouched honor gaps cannot reject", () => {
+        const snapshot = buildSanitySnapshot({
+            userMessage: "do those",
+            beforeProgram: [makeDay(), makeDay({ id: "2", order: "2", title: "Pull" })],
+            afterProgram: [
+                makeDay({
+                    exercises: [makeExercise({ supersets_id: 1 }), makeExercise({
+                        index: 1,
+                        title: "Lateral Raise (Dumbbell)",
+                        exercise_template_id: "ex-2",
+                        supersets_id: 1,
+                    })],
+                }),
+                makeDay({ id: "2", order: "2", title: "Pull" }),
+            ],
+        });
+
+        expect(snapshot.changedDays).toEqual([{ week: 1, day: 1 }]);
+        expect(snapshotForStandaloneEvaluate(snapshot).matrix).toEqual([
+            expect.objectContaining({ week: 1, day: 1, title: "Push" }),
+        ]);
     });
 });

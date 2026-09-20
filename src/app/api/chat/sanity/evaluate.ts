@@ -3,8 +3,10 @@
  *
  * One AI SDK {@link experimental_evaluate} call over {@link buildSanityQuestions},
  * then the C3–C5 fail policy (ADR 0025 / 03). Constraint misses reject even at
- * low confidence. Training / skill misses Soft-fail only when Andy authored the
- * snapshot and the user did not ask; low confidence fail-opens.
+ * low confidence on Andy-authored snapshots. Standalone later mutations only
+ * ask delta Constraint questions on `changedDays`, so a pre-existing grid
+ * cannot lock out every batch. Training / skill misses Soft-fail only when
+ * Andy authored the snapshot and the user did not ask; low confidence fail-opens.
  *
  * Same Gateway style as week suggest: `gateway` + a model id. Jev is an
  * evaluation model, so the call is `experimental_evaluate` rather than
@@ -12,7 +14,7 @@
  * already uses. A transport error fail-opens Jev so chat stays up. Slice 2
  * week-coverage still ran in the caller.
  *
- * Depends on: ai (gateway / experimental_evaluate), ./questions, ./types
+ * Depends on: ai (gateway / experimental_evaluate), ./questions, ./snapshot, ./types
  * Used by: tools.ts
  */
 
@@ -25,6 +27,7 @@ import {
     userRequestedId,
     type TSanityQuestions,
 } from "./questions";
+import { compactSnapshotForEvaluate, snapshotForStandaloneEvaluate } from "./snapshot";
 import type { TProgramSanitySnapshot } from "./types";
 
 /** Same Gateway catalog id as week suggest's `gateway(model)` style. */
@@ -245,7 +248,7 @@ export async function evaluate(
     snapshot: TProgramSanitySnapshot,
     options: IEvaluateOptions,
 ): Promise<TEvaluateResult> {
-    const questions = buildSanityQuestions(snapshot);
+    const questions = buildSanityQuestions(snapshot, { andyAuthored: options.andyAuthored });
     const questionIds = Object.keys(questions);
     if (questionIds.length === 0) {
         return finishEvaluate({ ok: true, misses: [] }, options, {
@@ -260,8 +263,11 @@ export async function evaluate(
         });
     }
 
+    const jevState = options.andyAuthored
+        ? compactSnapshotForEvaluate(snapshot)
+        : snapshotForStandaloneEvaluate(snapshot);
     const post = options.postSystemOne ?? postSystemOne;
-    const nouls = await post(snapshot, questions);
+    const nouls = await post(jevState, questions);
     if (nouls == null) {
         return finishEvaluate({ ok: true, misses: [] }, options, {
             skipped: "typesafe_unavailable",

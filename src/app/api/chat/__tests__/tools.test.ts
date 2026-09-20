@@ -522,6 +522,7 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await buildWeek.toModelOutput({ output });
             expect(modelOutput.value).toContain("constraint.injurySemantic");
+            expect(modelOutput.value).toContain("The program grid is unchanged");
         });
     });
 

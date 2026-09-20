@@ -268,4 +268,94 @@ describe("evaluate", () => {
         expect(postSystemOne).not.toHaveBeenCalled();
         expect(result).toEqual({ ok: true, misses: [] });
     });
+
+    it("does not reject a standalone later mutation on pre-existing whole-program Constraint misses", async () => {
+        const postSystemOne = vi.fn(async () => {
+            throw new Error("should not re-judge the existing program");
+        });
+
+        const result = await evaluate({
+            userMessage: "do those",
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "Left ankle surgery recovery, Medial patellar plica syndrome",
+                excludeEquipment: "band,plate",
+                splitType: "ppl",
+                exerciseVariability: "little",
+                progressionSystem: "linear",
+                peakWeek: "no",
+                warmupExercises: "no",
+            }),
+            trainingProfile: initializeTrainingProfile({
+                experienceLevel: "intermediate",
+                physiquePhase: "cut",
+                trainingFocus: "fat_loss",
+                activityLevel: "light",
+                sessionDurationMin: 90,
+            }),
+            weekIntents: [],
+            changedDays: [],
+            matchingWeek1Days: [{ week: 2, day: 1 }],
+            matrix: [
+                {
+                    week: 1,
+                    day: 1,
+                    title: "1 - Push Day",
+                    exercises: [{ title: "Chest Press (Machine)", workingSetCount: 3, rpeMin: 8, rpeMax: 9 }],
+                    matchesWeek1Stimulus: false,
+                },
+                {
+                    week: 2,
+                    day: 1,
+                    title: "1 - Push Day",
+                    exercises: [{ title: "Chest Press (Machine)", workingSetCount: 3, rpeMin: 8, rpeMax: 9 }],
+                    matchesWeek1Stimulus: true,
+                },
+            ],
+        }, {
+            andyAuthored: false,
+            postSystemOne,
+        });
+
+        expect(postSystemOne).not.toHaveBeenCalled();
+        expect(result).toEqual({ ok: true, misses: [] });
+    });
+
+    it("still rejects a standalone mutation that introduces a Constraint miss on a changed day", async () => {
+        const result = await evaluate(snapshotWithInjury(), {
+            andyAuthored: false,
+            postSystemOne: async () => ({ "constraint.injurySemantic": 0.06 }),
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.misses[0]?.id).toBe("constraint.injurySemantic");
+    });
+
+    it("sends Jev only the changed days on a standalone later mutation", async () => {
+        const postSystemOne = vi.fn(async (state: TProgramSanitySnapshot) => {
+            expect(state.matrix).toEqual([
+                expect.objectContaining({ week: 1, day: 1, title: "Lower" }),
+            ]);
+            return { "constraint.injurySemantic": 0.99 };
+        });
+
+        const result = await evaluate({
+            ...snapshotWithInjury(),
+            matrix: [
+                snapshotWithInjury().matrix[0],
+                {
+                    week: 1,
+                    day: 3,
+                    title: "3 - Leg Day",
+                    exercises: [{ title: "Squat (Barbell)", workingSetCount: 3, rpeMin: 8, rpeMax: 9 }],
+                    matchesWeek1Stimulus: false,
+                },
+            ],
+        }, {
+            andyAuthored: false,
+            postSystemOne,
+        });
+
+        expect(postSystemOne).toHaveBeenCalledOnce();
+        expect(result.ok).toBe(true);
+    });
 });

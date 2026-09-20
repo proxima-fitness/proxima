@@ -13,6 +13,8 @@
  *
  * The returned object is numbers and profiles only. It is safe to hand to Jev
  * in slice 3 without leftover `reason` text or full set objects.
+ * {@link compactSnapshotForEvaluate} / {@link snapshotForStandaloneEvaluate}
+ * trim plated clones before the Jev call.
  *
  * Depends on: ./types, ./week-coverage
  * Used by: tools.ts, route.ts
@@ -241,5 +243,42 @@ export function buildSanitySnapshot(input: {
             .filter((row) => row.matchesWeek1Stimulus)
             .map((row) => ({ week: row.week, day: row.day })),
         matrix,
+    };
+}
+
+function dayRefKey(day: TDayRef): string {
+    return `${day.week}:${day.day}`;
+}
+
+/**
+ * Drop later-week clones this batch did not touch. Jev 1.13 loses accuracy
+ * on leftover plated weeks (C6). Week 1, changed later days, and later days
+ * that already differ from week 1 stay.
+ *
+ * @param snapshot - Full compact result from {@link buildSanitySnapshot}
+ */
+export function compactSnapshotForEvaluate(snapshot: TProgramSanitySnapshot): TProgramSanitySnapshot {
+    const changed = new Set(snapshot.changedDays.map(dayRefKey));
+    return {
+        ...snapshot,
+        matrix: snapshot.matrix.filter((row) => {
+            if (row.week === 1) return true;
+            if (changed.has(dayRefKey(row))) return true;
+            return !row.matchesWeek1Stimulus;
+        }),
+    };
+}
+
+/**
+ * Standalone later mutation: Jev only sees days this batch changed, so
+ * pre-existing honor gaps on untouched days cannot reject the batch.
+ *
+ * @param snapshot - Full compact result from {@link buildSanitySnapshot}
+ */
+export function snapshotForStandaloneEvaluate(snapshot: TProgramSanitySnapshot): TProgramSanitySnapshot {
+    const changed = new Set(snapshot.changedDays.map(dayRefKey));
+    return {
+        ...snapshot,
+        matrix: snapshot.matrix.filter((row) => changed.has(dayRefKey(row))),
     };
 }

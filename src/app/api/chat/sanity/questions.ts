@@ -6,8 +6,14 @@
  * (no `splitType` → no `constraint.splitHonor`). Question ids are for our
  * fail policy; Jev only sees `instructions` / `criteria`.
  *
- * Constraint ids are fail-closed and have no User-stated exception.
- * Training / skill ids each get a `userRequested.<id>` companion Noul.
+ * Constraint ids are fail-closed and have no User-stated exception on
+ * Andy-authored snapshots. First `buildWeek` is week 1 only, so progression,
+ * week-intent, and stimulus questions wait until later weeks are in `matrix`.
+ * Standalone later mutations omit whole-program Constraint questions
+ * (split / variability / progression / deload / peak) and Training / skill
+ * questions so a pre-existing grid cannot lock out every batch. Delta
+ * Constraint questions (injury / equipment / warmup) stay only when
+ * `changedDays` is non-empty.
  * Age / sex / height and `skill.exerciseObjectionReplace` are never asked.
  *
  * Depends on: ./types
@@ -63,6 +69,15 @@ export const TRAINING_OR_SKILL_QUESTION_ID_SET: ReadonlySet<string> = new Set([
     ...SKILL_QUESTION_IDS,
 ]);
 
+/** Options for {@link buildSanityQuestions}. */
+export type TBuildSanityQuestionsOptions = {
+    /**
+     * First `buildWeek` or same-turn periodization. Default true so callers
+     * that omit it keep the Andy-authored question set.
+     */
+    andyAuthored?: boolean;
+};
+
 /** TypeSafe Noul body. `criteria` pins yes / no so Jev 1.13 does not invent a spectrum. */
 export type TNoulQuestion = {
     type: "noul";
@@ -110,9 +125,19 @@ function userRequestedNoul(outcome: string): TNoulQuestion {
  * means evaluate should not call TypeSafe.
  *
  * @param snapshot - Compact result after apply / first `buildWeek`
+ * @param options.andyAuthored - See {@link TBuildSanityQuestionsOptions.andyAuthored}
  * @returns Question map; omitted keys are empty-premise skips
  */
-export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQuestions {
+export function buildSanityQuestions(
+    snapshot: TProgramSanitySnapshot,
+    options: TBuildSanityQuestionsOptions = {},
+): TSanityQuestions {
+    const andyAuthored = options.andyAuthored !== false;
+    const hasChangedDays = snapshot.changedDays.length > 0;
+    const askWholeProgramConstraints = andyAuthored;
+    const askDeltaConstraints = andyAuthored || hasChangedDays;
+    const askTrainingOrSkill = andyAuthored;
+
     const questions: TSanityQuestions = {};
     const constraints = snapshot.constraintProfile;
     const training = snapshot.trainingProfile;
@@ -120,60 +145,61 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
     const injuries = (constraints?.injuries ?? []).filter(hasText);
     const excludedEquipment = (constraints?.excludedEquipment ?? []).filter(hasText);
     const hasLaterWeekChange = snapshot.changedDays.some((day) => day.week > 1);
+    const hasLaterWeek = snapshot.matrix.some((row) => row.week > 1);
     const hasWeekIntents = snapshot.weekIntents.length > 0;
     const hasExercises = snapshot.matrix.some((row) => row.exercises.length > 0);
     const hasProgramType = hasText(training?.trainingFocus) || hasWeekIntents;
 
-    if (injuries.length > 0) {
+    if (askDeltaConstraints && injuries.length > 0) {
         questions["constraint.injurySemantic"] = noul(
             "Does `matrix` honor every limit in `constraintProfile.injuries`?",
-            "No exercise or set prescription would aggravate or ignore a listed injury or health limit, including limits that do not name a muscle group.",
-            "At least one listed injury or health limit is ignored or contradicted.",
+            "Listed injuries are accommodated: aggravating patterns are absent or replaced with joint-friendly variations (machine, seated, limited ROM, supported). Rehab-appropriate work for a listed joint counts as honor.",
+            "The week clearly loads an aggravating pattern for a listed injury (for example a deep loaded squat or lunge with knee or ankle limits) with no accommodation.",
         );
     }
-    if (excludedEquipment.length > 0) {
+    if (askDeltaConstraints && excludedEquipment.length > 0) {
         questions["constraint.equipmentSemantic"] = noul(
             "Does `matrix` honor `constraintProfile.excludedEquipment`?",
-            "No listed exercise requires excluded equipment, including names a catalog string match would miss.",
-            "At least one exercise uses or requires excluded equipment.",
+            "No listed exercise requires an excluded equipment type. Catalog types are distinct: a barbell is not `plate`, a cable is not `band`, and a machine is not `other` (sled/box/rope).",
+            "At least one exercise requires excluded equipment of that same catalog type.",
         );
     }
-    if (hasText(prefs?.splitType)) {
+    if (askWholeProgramConstraints && hasText(prefs?.splitType)) {
         questions["constraint.splitHonor"] = noul(
             "Does `matrix` honor `constraintProfile.preferences.splitType`?",
             "Day titles and exercise grouping match the stated split.",
             "The week is a different split than the stated preference.",
         );
     }
-    if (hasText(prefs?.exerciseVariability)) {
+    if (askWholeProgramConstraints && hasText(prefs?.exerciseVariability)) {
         questions["constraint.variabilityHonor"] = noul(
             "Does `matrix` honor `constraintProfile.preferences.exerciseVariability`?",
             "Exercise variety across days matches the stated variability preference.",
             "Variety is clearly higher or lower than the stated preference.",
         );
     }
-    if (hasText(prefs?.progressionSystem)) {
+    if (askWholeProgramConstraints && hasLaterWeek && hasText(prefs?.progressionSystem)) {
         questions["constraint.progressionHonor"] = noul(
-            "Does `matrix` honor `constraintProfile.preferences.progressionSystem`?",
-            "Set prescriptions match the stated progression system (for example RPE-based vs linear).",
-            "The prescriptions use a different progression system than the preference.",
+            "Does `matrix` honor `constraintProfile.preferences.progressionSystem` across the weeks that are present?",
+            "Later weeks add load or reps in a way that matches the stated system. Target RPE on sets is compatible with linear and double progression. Only judge weeks present in `matrix`.",
+            "Later weeks clearly follow a different progression system than the preference.",
         );
     }
-    if (prefs?.deloadWeek === "yes") {
+    if (askWholeProgramConstraints && prefs?.deloadWeek === "yes") {
         questions["constraint.deloadHonor"] = noul(
             "Do the deload days in `matrix` honor a real deload given `weekIntents` and `constraintProfile.preferences.deloadWeek`?",
             "Claimed deload days are meaningfully easier in working-set count or RPE than week 1. `matchesWeek1Stimulus` is already computed; do not count.",
             "Claimed deload days still train hard, or the easier week is missing.",
         );
     }
-    if (hasText(prefs?.peakWeek)) {
+    if (askWholeProgramConstraints && prefs?.peakWeek === "yes") {
         questions["constraint.peakHonor"] = noul(
             "Does `matrix` honor `constraintProfile.preferences.peakWeek` given `weekIntents`?",
             "A peak week is present and harder than surrounding weeks in a way that matches the preference.",
             "The stated peak-week preference is ignored.",
         );
     }
-    if (hasText(prefs?.warmupExercises)) {
+    if (askDeltaConstraints && hasText(prefs?.warmupExercises)) {
         questions["constraint.warmupPolicy"] = noul(
             "Does `matrix` honor `constraintProfile.preferences.warmupExercises`?",
             "Warmup presence matches the stated warmup preference.",
@@ -181,7 +207,7 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
         );
     }
 
-    if (training?.sessionDurationMin != null) {
+    if (askTrainingOrSkill && training?.sessionDurationMin != null) {
         questions["training.sessionDurationFit"] = noul(
             "Does `matrix` fit `trainingProfile.sessionDurationMin` as a session-length cap?",
             "Each day's working work would finish near or under that many minutes for this trainee.",
@@ -191,7 +217,7 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
             "a session shorter or longer than `trainingProfile.sessionDurationMin` minutes",
         );
     }
-    if (hasText(training?.experienceLevel)) {
+    if (askTrainingOrSkill && hasText(training?.experienceLevel)) {
         questions["training.experienceFit"] = noul(
             "Does `matrix` fit `trainingProfile.experienceLevel`?",
             "Volume, exercise choice, and complexity match that experience level.",
@@ -201,27 +227,27 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
             "a week that does not fit `trainingProfile.experienceLevel`",
         );
     }
-    if (hasText(training?.physiquePhase)) {
+    if (askTrainingOrSkill && hasText(training?.physiquePhase)) {
         questions["training.physiquePhaseFit"] = noul(
             "Does `matrix` fit `trainingProfile.physiquePhase`?",
-            "Volume and stimulus match that physique phase.",
-            "The week fights that physique phase.",
+            "Volume and stimulus are reasonable for that phase. A cut or fat-loss phase can be a normal hypertrophy week at moderate volume. Do not require extra cardio, circuits, or an extreme volume cut.",
+            "The week is clearly the wrong phase (for example a peaking max-out week on a cut, or a long deficit-style starvation week on a bulk).",
         );
         questions[userRequestedId("training.physiquePhaseFit")] = userRequestedNoul(
             "a week that does not fit `trainingProfile.physiquePhase`",
         );
     }
-    if (hasText(training?.trainingFocus)) {
+    if (askTrainingOrSkill && hasText(training?.trainingFocus)) {
         questions["training.trainingFocusFit"] = noul(
             "Does `matrix` fit `trainingProfile.trainingFocus`?",
-            "Lift selection and set style match that training focus.",
-            "The week is aimed at a different training focus.",
+            "Lift selection and set style match that focus. Fat-loss lifting is still resistance training; a machine or cable PPL is a fit. Do not require metcon, HIIT, or circuits.",
+            "The week is aimed at a clearly different focus (for example a meet-peak powerlifting week when the focus is fat loss).",
         );
         questions[userRequestedId("training.trainingFocusFit")] = userRequestedNoul(
             "a week that does not fit `trainingProfile.trainingFocus`",
         );
     }
-    if (hasText(training?.activityLevel)) {
+    if (askTrainingOrSkill && hasText(training?.activityLevel)) {
         questions["training.activityLevelFit"] = noul(
             "Does `matrix` fit `trainingProfile.activityLevel`?",
             "Weekly load is appropriate for that activity level.",
@@ -232,25 +258,27 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
         );
     }
 
-    if (hasExercises) {
+    if (askTrainingOrSkill && hasExercises) {
         questions["skill.sessionShape"] = noul(
             "Does each day in `matrix` have a sound session shape (main lifts, accessories, not a thin or overloaded day)?",
-            "Each training day is a complete, balanced session.",
-            "At least one day is thin, chaotic, or overloaded.",
+            "Each training day has a coherent main-plus-accessories shape for its split role. A 3-4 exercise machine day is complete. Do not require 6 or more movements.",
+            "A day is empty, is a single random lift, or mixes unrelated roles with no structure.",
         );
         questions[userRequestedId("skill.sessionShape")] = userRequestedNoul(
             "a thin, short, or unusually shaped training day",
         );
+    }
+    if (askTrainingOrSkill && hasLaterWeek && hasWeekIntents && hasExercises) {
         questions["skill.stimulusHonor"] = noul(
-            "Does the working-set count and RPE in `matrix` honor the week's intent in `weekIntents` and the user's training goal?",
-            "Stimulus matches the claimed week intent and goal. Do not count rows; `matchesWeek1Stimulus` is already computed.",
-            "Stimulus fights the claimed week intent or goal.",
+            "Do the days present in `matrix` honor the intent listed for those same weeks in `weekIntents` and the training goal?",
+            "Stimulus matches the claimed intent for weeks that appear in `matrix`. Ignore weeks that are not in `matrix`. A normal hypertrophy week on a fat-loss or cut profile is a fit. Do not count rows; `matchesWeek1Stimulus` is already computed.",
+            "A present week clearly fights its own claimed intent or the training goal.",
         );
         questions[userRequestedId("skill.stimulusHonor")] = userRequestedNoul(
             "stimulus that does not match the claimed week intent or goal",
         );
     }
-    if (hasWeekIntents) {
+    if (askTrainingOrSkill && hasLaterWeek && hasWeekIntents) {
         questions["skill.weekIntentHonor"] = noul(
             "Does each week in `matrix` honor its `weekIntents` name and intent?",
             "The week's days match that block's claimed intent.",
@@ -260,7 +288,7 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
             "a week that ignores its plan intent",
         );
     }
-    if (hasLaterWeekChange) {
+    if (askTrainingOrSkill && hasLaterWeekChange) {
         questions["skill.periodizationCoverage"] = noul(
             "Do the later-week days in `changedDays` semantically honor the periodization those days claim?",
             "The already-changed days are a real progression, deload, or peak versus week 1. Do not count how many days changed.",
@@ -270,7 +298,7 @@ export function buildSanityQuestions(snapshot: TProgramSanitySnapshot): TSanityQ
             "periodization that does not really change later weeks",
         );
     }
-    if (hasProgramType) {
+    if (askTrainingOrSkill && hasProgramType) {
         questions["skill.programTypeHonor"] = noul(
             "Does `matrix` honor the program type implied by `trainingProfile.trainingFocus` and `weekIntents`?",
             "The week is the kind of program those fields describe.",

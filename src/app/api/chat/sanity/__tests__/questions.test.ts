@@ -61,16 +61,66 @@ describe("buildSanityQuestions", () => {
         expect(withoutDeload["constraint.deloadHonor"]).toBeUndefined();
     });
 
-    it("includes constraint.peakHonor only when peakWeek is set", () => {
+    it("includes constraint.peakHonor only when peakWeek is yes", () => {
         const withPeak = buildSanityQuestions(emptySnapshot({
             constraintProfile: initializeConstraintProfile({ peakWeek: "yes" }),
+        }));
+        const peakNo = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ peakWeek: "no" }),
         }));
         const withoutPeak = buildSanityQuestions(emptySnapshot({
             constraintProfile: initializeConstraintProfile({}),
         }));
 
         expect(withPeak["constraint.peakHonor"]).toBeDefined();
+        expect(peakNo["constraint.peakHonor"]).toBeUndefined();
         expect(withoutPeak["constraint.peakHonor"]).toBeUndefined();
+    });
+
+    it("omits whole-program Constraint and Training / skill on a standalone later mutation", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "left ankle",
+                excludeEquipment: "band",
+                splitType: "ppl",
+                exerciseVariability: "little",
+                progressionSystem: "linear",
+                peakWeek: "no",
+                warmupExercises: "no",
+            }),
+            trainingProfile: initializeTrainingProfile({
+                experienceLevel: "intermediate",
+                trainingFocus: "fat_loss",
+                sessionDurationMin: 90,
+            }),
+            changedDays: [],
+            matrix: [dayRow(1, 1)],
+        }), { andyAuthored: false });
+
+        expect(Object.keys(questions)).toEqual([]);
+    });
+
+    it("keeps delta Constraint questions on a standalone mutation that changed a day", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "left ankle",
+                excludeEquipment: "band",
+                splitType: "ppl",
+                progressionSystem: "linear",
+                warmupExercises: "no",
+            }),
+            trainingProfile: initializeTrainingProfile({ trainingFocus: "fat_loss" }),
+            changedDays: [{ week: 1, day: 3 }],
+            matrix: [dayRow(1, 3)],
+        }), { andyAuthored: false });
+
+        expect(questions["constraint.injurySemantic"]).toBeDefined();
+        expect(questions["constraint.equipmentSemantic"]).toBeDefined();
+        expect(questions["constraint.warmupPolicy"]).toBeDefined();
+        expect(questions["constraint.splitHonor"]).toBeUndefined();
+        expect(questions["constraint.progressionHonor"]).toBeUndefined();
+        expect(questions["training.trainingFocusFit"]).toBeUndefined();
+        expect(questions["skill.sessionShape"]).toBeUndefined();
     });
 
     it("adds userRequested companions for Training / skill ids and never for Constraint", () => {
@@ -126,5 +176,57 @@ describe("buildSanityQuestions", () => {
         expect(questions["skill.periodizationCoverage"]).toBeDefined();
         expect(questions["skill.weekIntentHonor"]).toBeDefined();
         expect(questions[userRequestedId("skill.periodizationCoverage")]).toBeDefined();
+    });
+
+    it("omits multi-week honor questions from a week-1-only first build", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "left ankle, bad knee pain",
+                excludeEquipment: "band,plate,other",
+                splitType: "ppl",
+                progressionSystem: "linear",
+                warmupExercises: "no",
+            }),
+            trainingProfile: initializeTrainingProfile({
+                physiquePhase: "cut",
+                trainingFocus: "fat_loss",
+            }),
+            weekIntents: [
+                { week: 1, name: "Build", intent: "Hypertrophy" },
+                { week: 8, name: "Deload", intent: "Unload" },
+            ],
+            changedDays: [{ week: 1, day: 1 }],
+            matrix: [dayRow(1, 1), dayRow(1, 2), dayRow(1, 3)],
+        }));
+
+        expect(questions["constraint.injurySemantic"]).toBeDefined();
+        expect(questions["constraint.splitHonor"]).toBeDefined();
+        expect(questions["constraint.progressionHonor"]).toBeUndefined();
+        expect(questions["skill.weekIntentHonor"]).toBeUndefined();
+        expect(questions["skill.stimulusHonor"]).toBeUndefined();
+        expect(questions["skill.periodizationCoverage"]).toBeUndefined();
+    });
+
+    it("asks progression and week-intent only when later weeks are in the matrix", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ progressionSystem: "linear" }),
+            weekIntents: [{ week: 2, name: "Build", intent: "Add load" }],
+            changedDays: [{ week: 2, day: 1 }],
+            matrix: [dayRow(1, 1), dayRow(2, 1)],
+        }));
+
+        expect(questions["constraint.progressionHonor"]).toBeDefined();
+        expect(questions["skill.weekIntentHonor"]).toBeDefined();
+        expect(questions["skill.stimulusHonor"]).toBeDefined();
+    });
+
+    it("treats joint-friendly substitutions as injury honor", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "left ankle" }),
+            matrix: [dayRow(1, 1)],
+        }));
+
+        expect(questions["constraint.injurySemantic"]?.criteria.true).toMatch(/joint-friendly|accommodat/i);
+        expect(questions["constraint.progressionHonor"]).toBeUndefined();
     });
 });
