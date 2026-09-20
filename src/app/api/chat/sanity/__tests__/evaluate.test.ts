@@ -168,7 +168,7 @@ describe("evaluate", () => {
         }));
 
         const result = await evaluate(snapshotWithInjury(), {
-            andyAuthored: true,
+            firstBuild: true,
             postSystemOne,
         });
 
@@ -188,7 +188,7 @@ describe("evaluate", () => {
         }));
 
         const result = await evaluate(snapshotThinDay("Keep today to one curl, I asked for a short day"), {
-            andyAuthored: true,
+            firstBuild: true,
             postSystemOne,
         });
 
@@ -199,7 +199,7 @@ describe("evaluate", () => {
     it("fail-opens Jev questions when TypeSafe returns null (missing key / transport)", async () => {
         const postSystemOne = vi.fn(async () => null);
         const result = await evaluate(snapshotWithInjury(), {
-            andyAuthored: true,
+            firstBuild: true,
             postSystemOne,
         });
 
@@ -214,7 +214,7 @@ describe("evaluate", () => {
         }));
 
         const result = await evaluate(snapshotWithInjury(), {
-            andyAuthored: true,
+            firstBuild: true,
             debug: true,
             postSystemOne,
         });
@@ -224,7 +224,7 @@ describe("evaluate", () => {
             "[jev]",
             expect.objectContaining({
                 ok: false,
-                andyAuthored: true,
+                firstBuild: true,
                 nouls: { "constraint.injurySemantic": 0.12 },
                 misses: [
                     { id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" },
@@ -239,7 +239,7 @@ describe("evaluate", () => {
         const log = vi.spyOn(console, "log").mockImplementation(() => {});
 
         await evaluate(snapshotWithInjury(), {
-            andyAuthored: true,
+            firstBuild: true,
             postSystemOne: async () => ({ "constraint.injurySemantic": 0.99 }),
         });
 
@@ -261,7 +261,7 @@ describe("evaluate", () => {
             matchingWeek1Days: [],
             matrix: [],
         }, {
-            andyAuthored: true,
+            firstBuild: true,
             postSystemOne,
         });
 
@@ -312,7 +312,7 @@ describe("evaluate", () => {
                 },
             ],
         }, {
-            andyAuthored: false,
+            firstBuild: false,
             postSystemOne,
         });
 
@@ -322,7 +322,7 @@ describe("evaluate", () => {
 
     it("still rejects a standalone mutation that introduces a Constraint miss on a changed day", async () => {
         const result = await evaluate(snapshotWithInjury(), {
-            andyAuthored: false,
+            firstBuild: false,
             postSystemOne: async () => ({ "constraint.injurySemantic": 0.06 }),
         });
 
@@ -351,7 +351,7 @@ describe("evaluate", () => {
                 },
             ],
         }, {
-            andyAuthored: false,
+            firstBuild: false,
             postSystemOne,
         });
 

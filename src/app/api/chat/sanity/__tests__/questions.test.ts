@@ -95,7 +95,7 @@ describe("buildSanityQuestions", () => {
             }),
             changedDays: [],
             matrix: [dayRow(1, 1)],
-        }), { andyAuthored: false });
+        }), { firstBuild: false });
 
         expect(Object.keys(questions)).toEqual([]);
     });
@@ -112,7 +112,7 @@ describe("buildSanityQuestions", () => {
             trainingProfile: initializeTrainingProfile({ trainingFocus: "fat_loss" }),
             changedDays: [{ week: 1, day: 3 }],
             matrix: [dayRow(1, 3)],
-        }), { andyAuthored: false });
+        }), { firstBuild: false });
 
         expect(questions["constraint.injurySemantic"]).toBeDefined();
         expect(questions["constraint.equipmentSemantic"]).toBeDefined();

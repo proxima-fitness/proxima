@@ -20,6 +20,7 @@ vi.mock("@/contexts/BuildProgramActionsContext", () => ({
 }));
 
 const debugModeState = { debugMode: false };
+const testUserState = { isTestUser: false };
 
 vi.mock("@/contexts/AgentDebugModeContext", () => ({
     useAgentDebugMode: () => ({
@@ -27,6 +28,14 @@ vi.mock("@/contexts/AgentDebugModeContext", () => ({
         setDebugMode: vi.fn(),
     }),
 }));
+
+vi.mock("@/api/feature-limits", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/api/feature-limits")>();
+    return {
+        ...actual,
+        isTestUser: () => testUserState.isTestUser,
+    };
+});
 
 const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }));
 
@@ -96,6 +105,7 @@ describe("MessageBubbles soft tool UI", () => {
     afterEach(() => {
         cleanup();
         debugModeState.debugMode = false;
+        testUserState.isTestUser = false;
         posthogCapture.mockClear();
         resetAiToolErrorCaptureForTests();
     });
@@ -124,7 +134,7 @@ describe("MessageBubbles soft tool UI", () => {
         );
     });
 
-    it("non-debug: soft fail on mutateProgram shows Planning only", () => {
+    it("non-debug: soft fail on mutateProgram shows Reading only", () => {
         debugModeState.debugMode = false;
         const messages = assistantWithPart({
             type: "tool-mutateProgram",
@@ -136,8 +146,9 @@ describe("MessageBubbles soft tool UI", () => {
 
         renderBubbles(<MessageBubbles {...baseProps(messages)} />);
 
-        expect(screen.getByText("Planning…")).toBeTruthy();
+        expect(screen.getByText("Reading...")).toBeTruthy();
         expect(screen.queryByText("Send to Developer")).toBeNull();
+        expect(screen.queryByText(/Call readProgram/i)).toBeNull();
         expect(posthogCapture).toHaveBeenCalledWith(
             "ai_tool_error",
             expect.objectContaining({
@@ -194,8 +205,30 @@ describe("MessageBubbles soft tool UI", () => {
         expect(screen.queryByText("Send to Developer")).toBeNull();
     });
 
+    it("debug mode without a test user still hides mutateProgram warnings", () => {
+        debugModeState.debugMode = true;
+        testUserState.isTestUser = false;
+        const messages = assistantWithPart({
+            type: "tool-mutateProgram",
+            toolCallId: "mp-debug-hidden",
+            state: "output-available",
+            input: { operations: [] },
+            output: {
+                error: "readProgram_required",
+                message: "Call readProgram before mutateProgram on an existing program.",
+            },
+        } as TChatMessage["parts"][number]);
+
+        renderBubbles(<MessageBubbles {...baseProps(messages)} />);
+
+        expect(screen.getByText("Reading...")).toBeTruthy();
+        expect(screen.queryByText("Send to Developer")).toBeNull();
+        expect(screen.queryByText(/Call readProgram/i)).toBeNull();
+    });
+
     it("debug mode: soft fail shows ToolErrorPanel for buildWeek and mutateProgram", () => {
         debugModeState.debugMode = true;
+        testUserState.isTestUser = true;
         const messages: TChatMessage[] = [
             {
                 id: "a-debug",
@@ -222,7 +255,7 @@ describe("MessageBubbles soft tool UI", () => {
         renderBubbles(<MessageBubbles {...baseProps(messages)} />);
 
         expect(screen.queryByText("Recalculating…")).toBeNull();
-        expect(screen.queryByText("Planning…")).toBeNull();
+        expect(screen.queryByText("Reading...")).toBeNull();
         expect(screen.getAllByText("Send to Developer").length).toBeGreaterThanOrEqual(2);
         expect(screen.getByText("Build week")).toBeTruthy();
         expect(screen.getByText("Mutate program")).toBeTruthy();

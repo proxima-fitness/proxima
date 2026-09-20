@@ -3,10 +3,10 @@
  *
  * One AI SDK {@link experimental_evaluate} call over {@link buildSanityQuestions},
  * then the C3–C5 fail policy (ADR 0025 / 03). Constraint misses reject even at
- * low confidence on Andy-authored snapshots. Standalone later mutations only
+ * low confidence on a first `buildWeek`. Standalone later mutations only
  * ask delta Constraint questions on `changedDays`, so a pre-existing grid
- * cannot lock out every batch. Training / skill misses Soft-fail only when
- * Andy authored the snapshot and the user did not ask; low confidence fail-opens.
+ * cannot lock out every batch. Training / skill misses Soft-fail only on a
+ * first build when the user did not ask; low confidence fail-opens.
  *
  * Same Gateway style as week suggest: `gateway` + a model id. Jev is an
  * evaluation model, so the call is `experimental_evaluate` rather than
@@ -71,7 +71,7 @@ export type TSystemOneNouls = Record<string, number>;
 /** What Jev was asked, what it answered, and what the fail policy did. */
 export type TJevDebugTrace = {
     skipped?: "no_questions" | "typesafe_unavailable";
-    andyAuthored: boolean;
+    firstBuild: boolean;
     questionIds: string[];
     questions: TSanityQuestions;
     nouls: TSystemOneNouls | null;
@@ -86,7 +86,7 @@ export interface IEvaluateOptions {
      * same-turn periodization). Standalone later **Program mutation batch**s
      * pass false so Training / skill questions cannot reject.
      */
-    andyAuthored: boolean;
+    firstBuild: boolean;
     /** Agent debug mode. Logs the Jev trace and attaches it to the result. */
     debug?: boolean;
     /** Test seam. Production uses {@link postSystemOne}. */
@@ -190,13 +190,13 @@ function honorDetail(id: string): string {
  *
  * @param nouls - Answered honor + `userRequested.*` Nouls
  * @param questionIds - Keys that were actually sent (so empty premises stay omitted)
- * @param andyAuthored - See {@link IEvaluateOptions.andyAuthored}
+ * @param firstBuild - See {@link IEvaluateOptions.firstBuild}
  * @returns Misses to Soft-fail; empty when the snapshot passes
  */
 export function applyEvaluatePolicy(
     nouls: TSystemOneNouls,
     questionIds: string[],
-    andyAuthored: boolean,
+    firstBuild: boolean,
 ): TEvaluateMiss[] {
     const misses: TEvaluateMiss[] = [];
 
@@ -213,7 +213,7 @@ export function applyEvaluatePolicy(
         }
 
         if (!TRAINING_OR_SKILL_QUESTION_ID_SET.has(id)) continue;
-        if (!andyAuthored) continue;
+        if (!firstBuild) continue;
         // Unanswered or mid-band / yes → pass (fail-open, C5).
         if (!isFiniteNoul(noul) || noul > TRAINING_MISS_MAX) continue;
 
@@ -240,20 +240,20 @@ export function formatEvaluateMessage(misses: TEvaluateMiss[]): string {
  * Ask applicable Jev questions and apply the fail policy.
  *
  * @param snapshot - Compact result; must already exist (C1 / C6)
- * @param options.andyAuthored - First `buildWeek` or same-turn periodization
- * @returns Soft-fail payload when any Constraint miss, or an Andy-authored
+ * @param options.firstBuild - First `buildWeek` or same-turn periodization
+ * @returns Soft-fail payload when any Constraint miss, or a first-build
  *   Training / skill miss without a User-stated exception
  */
 export async function evaluate(
     snapshot: TProgramSanitySnapshot,
     options: IEvaluateOptions,
 ): Promise<TEvaluateResult> {
-    const questions = buildSanityQuestions(snapshot, { andyAuthored: options.andyAuthored });
+    const questions = buildSanityQuestions(snapshot, { firstBuild: options.firstBuild });
     const questionIds = Object.keys(questions);
     if (questionIds.length === 0) {
         return finishEvaluate({ ok: true, misses: [] }, options, {
             skipped: "no_questions",
-            andyAuthored: options.andyAuthored,
+            firstBuild: options.firstBuild,
             questionIds,
             questions,
             nouls: null,
@@ -263,7 +263,7 @@ export async function evaluate(
         });
     }
 
-    const jevState = options.andyAuthored
+    const jevState = options.firstBuild
         ? compactSnapshotForEvaluate(snapshot)
         : snapshotForStandaloneEvaluate(snapshot);
     const post = options.postSystemOne ?? postSystemOne;
@@ -271,7 +271,7 @@ export async function evaluate(
     if (nouls == null) {
         return finishEvaluate({ ok: true, misses: [] }, options, {
             skipped: "typesafe_unavailable",
-            andyAuthored: options.andyAuthored,
+            firstBuild: options.firstBuild,
             questionIds,
             questions,
             nouls: null,
@@ -281,10 +281,10 @@ export async function evaluate(
         });
     }
 
-    const misses = applyEvaluatePolicy(nouls, questionIds, options.andyAuthored);
+    const misses = applyEvaluatePolicy(nouls, questionIds, options.firstBuild);
     const ok = misses.length === 0;
     return finishEvaluate({ ok, misses }, options, {
-        andyAuthored: options.andyAuthored,
+        firstBuild: options.firstBuild,
         questionIds,
         questions,
         nouls,

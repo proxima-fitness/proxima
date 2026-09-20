@@ -17,6 +17,7 @@ import {
     ToolHeader,
     warningStatusOverride,
 } from "@/components/ai-elements/tool";
+import { isTestUser } from "@/api/feature-limits";
 import { captureAiToolError } from "@/lib/capture-ai-tool-error";
 import { useUserContext } from "@/contexts/UserContext";
 import {
@@ -55,8 +56,8 @@ export const SOFT_FAIL_CALM: Record<TSoftFailTool, TCalmCopy> = {
         debugTitle: "Build week",
     },
     mutateProgram: {
-        title: "Planning",
-        copy: "Planning…",
+        title: "Reading",
+        copy: "Reading...",
         toolType: "tool-mutateProgram",
         debugTitle: "Mutate program",
     },
@@ -100,8 +101,8 @@ export type TSoftToolFailureProps = {
 };
 
 /**
- * Soft fail UI: `input-available` + calm copy when debug off;
- * existing ToolErrorPanel (+ optional warning chrome) when debug on.
+ * Soft fail UI: `input-available` + calm copy unless a test user has
+ * Agent debug mode on; then ToolErrorPanel (+ optional warning chrome).
  * Caller must set React `key` on this element in lists.
  */
 export function SoftToolFailure({
@@ -114,6 +115,7 @@ export function SoftToolFailure({
 }: TSoftToolFailureProps) {
     const { user } = useUserContext();
     const calm = SOFT_FAIL_CALM[tool];
+    const showDebugPanel = debugMode && isTestUser(user);
 
     const toolType = calm.toolType as ToolUIPart["type"];
 
@@ -137,7 +139,7 @@ export function SoftToolFailure({
         toolCallId,
     ]);
 
-    if (!debugMode) {
+    if (!showDebugPanel) {
         return (
             <Tool defaultOpen className={TOOL_SHELL_CLASS}>
                 <ToolHeader type={toolType} state="input-available" title={calm.title} />

@@ -99,7 +99,7 @@ import {
     getBodyMeasurementsForUser,
 } from '@/api/body-measurements-read';
 import { readBodyMeasurementsSyncCursor } from '@/api/body-measurements-sync';
-import { tool } from 'ai';
+import { tool, type Tool } from 'ai';
 import type { TConstraintProfile } from '../constraints';
 import { sanitizeExcludedEquipment, splitConstraintCsv } from '../constraints/initialize';
 import { validateAgainstConstraints } from '../constraints/validate';
@@ -256,6 +256,41 @@ export const getExerciseListInputSchema = z.object({
     userRequest: z.string().describe('The user\'s workout request or description'),
 });
 
+type TSandboxToolContext = {
+    sandbox: ISandbox;
+};
+
+type TLoadSkillToolContext = {
+    sandbox: ISandbox;
+    skills: ISkillMetadata[];
+    activeToolScope: { allowedTools: string[] | null };
+};
+
+/**
+ * Portable `getTools` return type. `Tool` is a public `ai` export, and the
+ * three skill tools keep their context so `ToolLoopAgent.toolsContext` still
+ * type-checks.
+ */
+export type TChatTools = {
+    getExerciseList: Tool;
+    getMoreInfoQuestions: Tool;
+    openHevyExportGate: Tool;
+    planProgram: Tool;
+    readProgram: Tool;
+    fetchHevyShareFolder: Tool;
+    importHevyShareFolder: Tool;
+    buildWeek: Tool;
+    mutateProgram: Tool;
+    rateProgram: Tool;
+    loadSkill: Tool<unknown, unknown, TLoadSkillToolContext>;
+    readFile: Tool<unknown, unknown, TSandboxToolContext>;
+    bash: Tool<unknown, unknown, TSandboxToolContext>;
+    updateConstraintProfile: Tool;
+    updateTrainingProfile: Tool;
+    getWorkoutHistory?: Tool;
+    getBodyMeasurements?: Tool;
+};
+
 /**
  * Factory that creates the complete tool set for the chat agent. Captures
  * the Constraint profile and current program in a closure so each tool can
@@ -285,7 +320,7 @@ export function getTools({
     clientIp,
     programHasExercises,
     debugMode = false,
-}: IProps = {}) {
+}: IProps = {}): TChatTools {
 
     /** Grid-state gate for **Hevy share import**; an Edit-path chat always trips it. */
     const gridHasExercises = programHasExercises ?? snapshotHasExercises(hevyProgram);
@@ -970,8 +1005,8 @@ export function getTools({
                     }
                 }
 
-                // Week 1 vs week 1 cannot fail coverage. Evaluate Training / skill
-                // as Andy-authored before lock so a reject leaves the guard unlocked.
+                // Week 1 vs week 1 cannot fail coverage. Evaluate as firstBuild
+                // before lock so a reject leaves the guard unlocked.
                 const snapshot = buildSanitySnapshot({
                     userMessage: userMessage ?? '',
                     constraintProfile,
@@ -980,7 +1015,7 @@ export function getTools({
                     beforeProgram: [],
                     afterProgram: builtRoutines,
                 });
-                const sanity = await evaluate(snapshot, { andyAuthored: true, debug: debugMode });
+                const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
                 if (!sanity.ok) {
                     return softToolErrorResult('buildWeek', {
                         error: sanity.misses[0]?.id ?? 'evaluate',
@@ -1177,7 +1212,7 @@ export function getTools({
                     });
                 }
 
-                const sanity = await evaluate(snapshot, { andyAuthored: afterBuildWeek, debug: debugMode });
+                const sanity = await evaluate(snapshot, { firstBuild: afterBuildWeek, debug: debugMode });
                 if (!sanity.ok) {
                     return softToolErrorResult('mutateProgram', {
                         error: sanity.misses[0]?.id ?? 'evaluate',
@@ -1669,8 +1704,8 @@ export function getTools({
             ...baseTools,
             getWorkoutHistory: getWorkoutHistoryTool,
             getBodyMeasurements: getBodyMeasurementsTool,
-        };
+        } as TChatTools;
     }
 
-    return baseTools;
+    return baseTools as TChatTools;
 }

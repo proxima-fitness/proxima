@@ -6,10 +6,10 @@
  * (no `splitType` → no `constraint.splitHonor`). Question ids are for our
  * fail policy; Jev only sees `instructions` / `criteria`.
  *
- * Constraint ids are fail-closed and have no User-stated exception on
- * Andy-authored snapshots. First `buildWeek` is week 1 only, so progression,
+ * Constraint ids are fail-closed and have no User-stated exception on a
+ * first `buildWeek`. That first build is week 1 only, so progression,
  * week-intent, and stimulus questions wait until later weeks are in `matrix`.
- * Standalone later mutations omit whole-program Constraint questions
+ * Later standalone mutations omit whole-program Constraint questions
  * (split / variability / progression / deload / peak) and Training / skill
  * questions so a pre-existing grid cannot lock out every batch. Delta
  * Constraint questions (injury / equipment / warmup) stay only when
@@ -36,7 +36,7 @@ export const CONSTRAINT_QUESTION_IDS = [
 
 export type TConstraintQuestionId = (typeof CONSTRAINT_QUESTION_IDS)[number];
 
-/** Training-profile question ids. Andy-authored only; User-stated exception + fail-open. */
+/** Training-profile question ids. First-build only; User-stated exception + fail-open. */
 export const TRAINING_QUESTION_IDS = [
     "training.sessionDurationFit",
     "training.experienceFit",
@@ -72,10 +72,10 @@ export const TRAINING_OR_SKILL_QUESTION_ID_SET: ReadonlySet<string> = new Set([
 /** Options for {@link buildSanityQuestions}. */
 export type TBuildSanityQuestionsOptions = {
     /**
-     * First `buildWeek` or same-turn periodization. Default true so callers
-     * that omit it keep the Andy-authored question set.
+     * First `buildWeek` or same-turn periodization after that build.
+     * Default true so callers that omit it keep the full first-build set.
      */
-    andyAuthored?: boolean;
+    firstBuild?: boolean;
 };
 
 /** TypeSafe Noul body. `criteria` pins yes / no so Jev 1.13 does not invent a spectrum. */
@@ -125,18 +125,18 @@ function userRequestedNoul(outcome: string): TNoulQuestion {
  * means evaluate should not call TypeSafe.
  *
  * @param snapshot - Compact result after apply / first `buildWeek`
- * @param options.andyAuthored - See {@link TBuildSanityQuestionsOptions.andyAuthored}
+ * @param options.firstBuild - See {@link TBuildSanityQuestionsOptions.firstBuild}
  * @returns Question map; omitted keys are empty-premise skips
  */
 export function buildSanityQuestions(
     snapshot: TProgramSanitySnapshot,
     options: TBuildSanityQuestionsOptions = {},
 ): TSanityQuestions {
-    const andyAuthored = options.andyAuthored !== false;
+    const firstBuild = options.firstBuild !== false;
     const hasChangedDays = snapshot.changedDays.length > 0;
-    const askWholeProgramConstraints = andyAuthored;
-    const askDeltaConstraints = andyAuthored || hasChangedDays;
-    const askTrainingOrSkill = andyAuthored;
+    const askWholeProgramConstraints = firstBuild;
+    const askDeltaConstraints = firstBuild || hasChangedDays;
+    const askTrainingOrSkill = firstBuild;
 
     const questions: TSanityQuestions = {};
     const constraints = snapshot.constraintProfile;
