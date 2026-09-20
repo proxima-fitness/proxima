@@ -12,10 +12,10 @@ import { animate } from "motion";
 import { useReducedMotion } from "motion/react";
 
 export const HERO_TAGLINES = [
-    "The universe finally revolves around you.",
-    "Small star. Massive pull.",
-    "Plans change. Your program should too.",
-    "Ground control for your training.",
+    "The Universe finally revolves around You.",
+    "Small Star. Massive Pull Day.",
+    "Plans Change. Your Program should too.",
+    "Ground Control for your Training.",
 ] as const;
 
 export const HERO_TAGLINE_HOLD_MS = 5000;

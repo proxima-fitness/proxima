@@ -43,7 +43,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Proxima Fitness | Ground control for your training.',
+    title: 'Proxima Fitness | Ground Control for your Training.',
     description: 'Describe your goals, get a tailored program, track in your fitness app, and your program adapts with you.',
     manifest: "/manifest.webmanifest",
     icons: {
