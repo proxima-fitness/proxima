@@ -319,18 +319,29 @@ export type Database = {
           created_at: string
           feedback: string | null
           id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           feedback?: string | null
           id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           feedback?: string | null
           id?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       followers: {
         Row: {
