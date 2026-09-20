@@ -3,7 +3,7 @@
   "info": {
     "title": "Proxima Public API",
     "version": "1.0.0",
-    "description": "Versioned HTTP surface for **Canonical exercises**, **Custom movements**, and history-only **Workouts**. GET /api/v1/exercises is world-readable. Writes use a **Proxima API key** (`Authorization: Bearer`)."
+    "description": "Versioned HTTP surface for **Canonical exercises**, **Custom exercises**, and history-only **Workouts**. GET /api/v1/exercises is world-readable. Writes use a **Proxima API key** (`Authorization: Bearer`)."
   },
   "servers": [
     {
@@ -72,6 +72,54 @@
           "error"
         ]
       },
+      "PublicApiCreateCustomExercise": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display title. Duplicate normalized title for this user returns the existing id."
+          },
+          "exercise_type": {
+            "type": "string",
+            "description": "Same slugs as the in-app Hevy create form."
+          },
+          "equipment": {
+            "type": "string",
+            "description": "Same slugs as the in-app Hevy create form (`equipment_category`)."
+          },
+          "primary_muscle_group": {
+            "type": "string",
+            "description": "Same slugs as the in-app Hevy create form (`muscle_group`)."
+          },
+          "secondary_muscle_groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other muscles. Same slugs as primary."
+          }
+        },
+        "required": [
+          "title",
+          "exercise_type",
+          "equipment",
+          "primary_muscle_group"
+        ]
+      },
+      "PublicApiCreatedExercise": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Canonical exercise ID. Use as `canonical_exercise_id` on a Workout."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
       "PublicApiExercise": {
         "type": "object",
         "properties": {
@@ -120,7 +168,7 @@
       "get": {
         "operationId": "listExercises",
         "summary": "List Canonical exercises",
-        "description": "Paginated globals (`user_id` null). A valid Proxima API keyalso returns that user's Custom movements. Never another user's. No key required.",
+        "description": "Paginated globals (`user_id` null). A valid Proxima API keyalso returns that user's Custom exercises. Never another user's. No key required.",
         "tags": [
           "Exercises"
         ],
@@ -167,6 +215,61 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCustomExercise",
+        "summary": "Create a Custom exercise",
+        "description": "Key required. Required: title, exercise type, equipment, primary muscle. Optional: other muscles. Same enums as the in-app Hevy form. Duplicate normalized title for this user returns the existing id (200). Never inserts a global.",
+        "tags": [
+          "Exercises"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "proximaApiKey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicApiCreateCustomExercise"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical exercise ID. Use as `canonical_exercise_id` on a Workout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiCreatedExercise"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {

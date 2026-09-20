@@ -1,7 +1,7 @@
 /**
  * @module api/custom-movements
  *
- * Mints **Custom movement** rows - `canonical_exercises` owned by one user - for exercises that
+ * Mints **Custom exercise** rows - `canonical_exercises` owned by one user - for exercises that
  * reach Proxima without a canonical identity of their own. Today that is Week Export resolving a
  * **Hevy share import**: the share keeps the sharer's `exercise_template_id`, so their
  * **Hevy-native custom** arrives as a movement this user's library has never seen (ADR 0022).
@@ -12,14 +12,14 @@
  * resolves to the row the first export created rather than failing on the unique index.
  *
  * Depends on: uuid, @supabase/supabase-js, @/hooks/supabase (generated types),
- *             api/exercise-identity, api/index
- * Used by: program-builder/api/hevy (Week Export custom resolve)
+ *             api/exercise-identity; browser client is loaded only when `db` is omitted
+ * Used by: program-builder/api/hevy (Week Export custom resolve),
+ *          Public API POST /api/v1/exercises
  */
 import { v4 as uuidv4 } from "uuid";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, TablesInsert } from "@/hooks/supabase";
 import { exerciseMatchKey, normalizeExerciseTitle } from "./exercise-identity";
-import { supabase } from ".";
 
 type TSupabase = SupabaseClient<Database>;
 
@@ -29,7 +29,7 @@ const UNIQUE_VIOLATION = "23505";
 /** `canonical_exercise_mappings.source` for anything that came from Hevy. */
 const HEVY_SOURCE = "hevy" as const;
 
-/** What a new **Custom movement** is described by - the mirror's column names, not Hevy's. */
+/** What a new **Custom exercise** is described by - the mirror's column names, not Hevy's. */
 export type TCustomMovementDraft = {
     title: string;
     exercise_type: string | null;
@@ -39,7 +39,7 @@ export type TCustomMovementDraft = {
 };
 
 /**
- * Finds this user's own **Custom movement** with that identity key.
+ * Finds this user's own **Custom exercise** with that identity key.
  * Never searches globally - a title-only lookup fuses two users' private movements.
  */
 async function lookupOwnCustomMovement(
@@ -62,7 +62,7 @@ async function lookupOwnCustomMovement(
 }
 
 /**
- * Creates - or finds - the signed-in user's **Custom movement** for one movement title.
+ * Creates - or finds - the signed-in user's **Custom exercise** for one title.
  *
  * The unique index on `(user_id, normalized_title)` is the arbiter: a lookup first, and a
  * unique violation is read as "somebody else won the race", not as a failure.
@@ -70,23 +70,24 @@ async function lookupOwnCustomMovement(
  * @param userId - Owner of the new row; never another user, and never null (that would be a
  *                 **Global canonical**, which no client is allowed to mint from an import)
  * @param draft - Title and metadata for the new row
- * @param db - Supabase client; defaults to the browser client
+ * @param db - Supabase client; omit to use the browser client (Week Export)
  * @returns The canonical exercise ID that now holds this title for this user
  * @throws {Error} When the row can be neither found nor inserted
  */
 export async function mintCustomMovement(
     userId: string,
     draft: TCustomMovementDraft,
-    db: TSupabase = supabase,
+    db?: TSupabase,
 ): Promise<string> {
+    const client = db ?? (await import(".")).supabase;
     const title = draft.title.trim();
     if (!title) {
-        throw new Error("Cannot mint a Custom movement without a title");
+        throw new Error("Cannot mint a Custom exercise without a title");
     }
 
     const normalizedTitle = normalizeExerciseTitle(title);
 
-    const existing = await lookupOwnCustomMovement(db, userId, normalizedTitle);
+    const existing = await lookupOwnCustomMovement(client, userId, normalizedTitle);
     if (existing) {
         return existing;
     }
@@ -103,7 +104,7 @@ export async function mintCustomMovement(
         equipment: draft.equipment,
     };
 
-    const { error } = await db.from("canonical_exercises").insert(row);
+    const { error } = await client.from("canonical_exercises").insert(row);
     if (!error) {
         return row.id;
     }
@@ -112,7 +113,7 @@ export async function mintCustomMovement(
         throw new Error(error.message);
     }
 
-    const winner = await lookupOwnCustomMovement(db, userId, normalizedTitle);
+    const winner = await lookupOwnCustomMovement(client, userId, normalizedTitle);
     if (!winner) {
         throw new Error(error.message);
     }
@@ -121,7 +122,7 @@ export async function mintCustomMovement(
 }
 
 /**
- * Points a Hevy template ID at a **Custom movement**, so workout history sync resolves the
+ * Points a Hevy template ID at a **Custom exercise**, so workout history sync resolves the
  * movement the user is about to log to the row Week Export just minted, rather than lazily
  * creating a second one.
  *
@@ -132,13 +133,14 @@ export async function mintCustomMovement(
  *
  * @param hevyTemplateId - Template ID on the user's own Hevy account
  * @param canonicalExerciseId - Row from {@link mintCustomMovement}
- * @param db - Supabase client; defaults to the browser client
+ * @param db - Supabase client; omit to use the browser client (Week Export)
  */
 export async function mapHevyTemplateToCustomMovement(
     hevyTemplateId: string,
     canonicalExerciseId: string,
-    db: TSupabase = supabase,
+    db?: TSupabase,
 ): Promise<void> {
+    const client = db ?? (await import(".")).supabase;
     const mapping: TablesInsert<"canonical_exercise_mappings"> = {
         id: uuidv4(),
         source: HEVY_SOURCE,
@@ -146,7 +148,7 @@ export async function mapHevyTemplateToCustomMovement(
         canonical_exercise_id: canonicalExerciseId,
     };
 
-    const { error } = await db
+    const { error } = await client
         .from("canonical_exercise_mappings")
         .upsert(mapping, { onConflict: "source,external_exercise_id", ignoreDuplicates: true });
 

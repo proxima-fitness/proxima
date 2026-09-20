@@ -3,7 +3,7 @@
  *
  * Paginated **Canonical exercise** catalog for the Public API (ADR 0026 / 03).
  * Globals (`user_id` null) are world-readable. A resolved **Proxima API key**
- * also includes that athlete's **Custom movements**. Another user's rows never
+ * also includes that athlete's **Custom exercises**. Another user's rows never
  * appear. Response objects omit `user_id`.
  *
  * Depends on: @supabase/supabase-js, zod, @/hooks/supabase
@@ -80,7 +80,7 @@ export function parseExerciseListQuery(
 }
 
 /**
- * Lists globals, plus the key holder's **Custom movements** when `userId` is set.
+ * Lists globals, plus the key holder's **Custom exercises** when `userId` is set.
  *
  * @param db - Service-role client (RLS bypass; visibility is applied here)
  * @param options.userId - Resolved key owner, or null for an unauthenticated GET

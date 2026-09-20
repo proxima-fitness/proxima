@@ -18,7 +18,7 @@ _Avoid_: Personal trainer app, Proxima app (deprecated marketing surface), landi
 ### Public API
 
 
-The versioned HTTP surface athletes, third-party apps, and agents use to write **Workouts** and **Custom movements** into a user's account, and to list **Canonical exercises**. Writes require a **Public API key**. The **Canonical exercise** list is world-readable. Distinct from Hevy sync and from signed-in app routes. A Public API **Workout** is history-only: it does not count as **Day complete**. POST is first-write-wins on **Workout source** + external ID. GET, PUT, and DELETE address that **Workout** by its Proxima backup id.
+The versioned HTTP surface athletes, third-party apps, and agents use to write **Workouts** and **Custom exercises** into a user's account, and to list **Canonical exercises**. Writes require a **Public API key**. The **Canonical exercise** list is world-readable. Distinct from Hevy sync and from signed-in app routes. A Public API **Workout** is history-only: it does not count as **Day complete**. POST is first-write-wins on **Workout source** + external ID. GET, PUT, and DELETE address that **Workout** by its Proxima backup id.
 
 
 _Avoid_: Developer API, developer mode, webhook ingest, treating Hevy sync as this surface
@@ -1391,7 +1391,7 @@ _Avoid_: Builder set (prescription), program set (planned)
 ### Canonical exercise
 
 
-Cross-app movement identity in Proxima, name, muscles, equipment. **Global canonical** rows (`user_id` null) include the shared Hevy library seed and **Proxima supplemental** customs, readable by all authenticated users. Distinct from **Custom movement** (user-owned, `user_id` set, RLS-gated).
+Cross-app movement identity in Proxima, name, muscles, equipment. **Global canonical** rows (`user_id` null) include the shared Hevy library seed and **Proxima supplemental** customs, readable by all authenticated users. Distinct from **Custom exercise** (user-owned, `user_id` set, RLS-gated).
 
 
 _Avoid_: Catalog exercise (deprecated term), Hevy exercise template (app-specific), workout exercise (instance in a logged workout)
@@ -1402,7 +1402,7 @@ _Avoid_: Catalog exercise (deprecated term), Hevy exercise template (app-specifi
 ### Proxima supplemental
 
 
-Shared custom exercises Proxima added to the exercise library (e.g. warmup templates), flagged `is_proxima_supplemental` on the template mirror. Stored as global canonical rows (`user_id` null). Readable by all users. Distinct from **Custom movement** (one user's Hevy app creation).
+Shared custom exercises Proxima added to the exercise library (e.g. warmup templates), flagged `is_proxima_supplemental` on the template mirror. Stored as global canonical rows (`user_id` null). Readable by all users. Distinct from **Custom exercise** (one user's Hevy app creation).
 
 
 _Avoid_: Warmup exercise (examples only), export custom (process not identity)
@@ -1410,13 +1410,13 @@ _Avoid_: Warmup exercise (examples only), export custom (process not identity)
 
 
 
-### Custom movement
+### Custom exercise
 
 
 User-owned exercise identity, created in the user's Hevy app (**Hevy-native custom**), minted on that account when exporting a non-supplemental custom (**Proxima-exported custom** with a per-account Hevy ID), or created through the **Public API**. Public API create requires title, exercise type, equipment, and primary muscle group (same contract as the in-app Hevy form). Stored as `canonical_exercises` with `user_id` set. RLS: readable only by that user. Distinct from **Proxima supplemental** (shared, `user_id` null).
 
 
-_Avoid_: Custom exercise (ambiguous with Hevy template object), user exercise (too generic)
+_Avoid_: Custom movement (old term), user exercise (too generic)
 
 
 

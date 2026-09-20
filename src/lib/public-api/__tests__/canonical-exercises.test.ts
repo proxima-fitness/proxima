@@ -228,7 +228,7 @@ describe("listPublicApiExercises", () => {
         }
     });
 
-    it("keyed list includes that user's Custom movements and never another user's", async () => {
+    it("keyed list includes that user's Custom exercises and never another user's", async () => {
         const result = await listPublicApiExercises(catalogDb(seed), {
             userId: OWNER_ID,
             page: 1,

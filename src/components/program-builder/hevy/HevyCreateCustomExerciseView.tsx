@@ -3,7 +3,8 @@
 /**
  * @module HevyCreateCustomExerciseView
  * Form to create a Hevy custom exercise template (POST /v1/exercise_templates).
- * Depends on: Input, Select, MultiSelect, postHevyCustomExercise, TanStack Query.
+ * Depends on: Input, Select, MultiSelect, postHevyCustomExercise, TanStack Query,
+ *   hevy-create-custom-exercise-options, hevy-muscle-group-labels.
  */
 
 import { useState } from "react";
@@ -11,34 +12,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { postHevyCustomExercise } from "@/components/program-builder/api/hevy";
+import {
+    getHevyEquipmentSelectOptions,
+    getHevyExerciseTypeSelectOptions,
+} from "@/components/program-builder/hevy/hevy-create-custom-exercise-options";
 import { getHevyMuscleGroupSelectOptions } from "@/components/program-builder/hevy/hevy-muscle-group-labels";
 import { Input } from "@/components/ui/input";
 import MultiSelect from "@/components/ui/multi-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const EXERCISE_TYPE_OPTIONS: { value: THevyPostExerciseTemplate["exercise_type"]; label: string }[] = [
-    { value: "weight_reps", label: "Weight + Reps" },
-    { value: "reps_only", label: "Reps only" },
-    { value: "bodyweight_reps", label: "Bodyweight reps" },
-    { value: "bodyweight_assisted_reps", label: "Bodyweight assisted reps" },
-    { value: "duration", label: "Duration" },
-    { value: "weight_duration", label: "Weight + duration" },
-    { value: "distance_duration", label: "Distance + duration" },
-    { value: "short_distance_weight", label: "Short distance + weight" },
-];
-
-const EQUIPMENT_OPTIONS: { value: THevyPostExerciseTemplate["equipment_category"]; label: string }[] = [
-    { value: "none", label: "None" },
-    { value: "barbell", label: "Barbell" },
-    { value: "dumbbell", label: "Dumbbell" },
-    { value: "kettlebell", label: "Kettlebell" },
-    { value: "machine", label: "Machine" },
-    { value: "plate", label: "Plate" },
-    { value: "resistance_band", label: "Resistance band" },
-    { value: "suspension", label: "Suspension" },
-    { value: "other", label: "Other" },
-];
-
+const EXERCISE_TYPE_OPTIONS = getHevyExerciseTypeSelectOptions();
+const EQUIPMENT_OPTIONS = getHevyEquipmentSelectOptions();
 const MUSCLE_GROUP_OPTIONS = getHevyMuscleGroupSelectOptions();
 
 const MUSCLE_MULTI_OPTIONS: TSelectOption[] = MUSCLE_GROUP_OPTIONS.map((o) => ({
