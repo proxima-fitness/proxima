@@ -447,6 +447,32 @@ export const useHevySecret = (user: User | undefined | null) => {
     });
 };
 
+/** React Query key for **Proxima API key** presence (never the secret). */
+export const PROXIMA_API_KEY_PRESENCE_QUERY_KEY = ["proxima_api_key_present"] as const;
+
+async function fetchProximaApiKeyPresence(): Promise<boolean> {
+    const response = await fetch("/api/account/proxima-api-key");
+    if (!response.ok) {
+        throw new Error("Failed to check Proxima API key");
+    }
+    const body = (await response.json()) as { present?: unknown };
+    return body.present === true;
+}
+
+/**
+ * Presence-only: whether the signed-in athlete has a **Proxima API key**.
+ * Never returns the secret.
+ *
+ * @param user - The Supabase auth user (query disabled when null)
+ */
+export const useHasProximaApiKey = (user: User | undefined | null) => {
+    return useQuery({
+        queryKey: PROXIMA_API_KEY_PRESENCE_QUERY_KEY,
+        queryFn: fetchProximaApiKeyPresence,
+        enabled: !!user,
+    });
+};
+
 /**
  * Fetches the current user's feature limits (export cap, LLM request cap),
  * falling back to anonymous localStorage limits when not logged in.

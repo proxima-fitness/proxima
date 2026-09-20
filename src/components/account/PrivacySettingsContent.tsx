@@ -6,7 +6,8 @@
  * Client body for /account/privacy: optional platform improvement and marketing
  * consent toggles, policy links, and data-deletion guidance.
  *
- * Depends on: UserContext, UserConsentsContext, api/user-consents, UI card/label.
+ * Depends on: UserContext, UserConsentsContext, api/user-consents,
+ *   ProximaApiKeySection, UI card/label.
  * Used by: (app)/account/privacy/page.tsx.
  */
 
@@ -22,6 +23,7 @@ import {
 } from "@/api/user-consents";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUserConsentsContext } from "@/contexts/UserConsentsContext";
+import { ProximaApiKeySection } from "@/components/account/ProximaApiKeySection";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConsentSwitch } from "@/components/legal/ConsentSwitch";
 import { Label } from "@/components/ui/label";
@@ -145,6 +147,8 @@ export function PrivacySettingsContent() {
                         Manage optional consents for platform improvement and marketing email.
                     </p>
                 </div>
+
+                <ProximaApiKeySection />
 
                 <Card>
                     <CardHeader>

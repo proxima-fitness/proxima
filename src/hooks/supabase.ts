@@ -1570,8 +1570,12 @@ export type Database = {
         Args: { p_feature: string }
         Returns: undefined
       }
-      insert_secret: { Args: { secret: string }; Returns: string }
+      insert_secret: {
+        Args: { secret: string; secret_name?: string }
+        Returns: string
+      }
       read_secret: { Args: { secret_name: string }; Returns: string }
+      resolve_proxima_api_key: { Args: { p_secret: string }; Returns: string }
       revise_backed_up_workout: {
         Args: {
           p_description: string
@@ -1645,7 +1649,24 @@ export type Database = {
       }
     }
     Enums: {
-      source_type: "hevy"
+      source_type:
+        | "hevy"
+        | "manual"
+        | "strong"
+        | "macrofactor_workouts"
+        | "fitbod"
+        | "gravl"
+        | "apple_health"
+        | "jefit"
+        | "caliber"
+        | "boostcamp"
+        | "liftosaur"
+        | "strengthlog"
+        | "alpha_progression"
+        | "stronglifts"
+        | "setgraph"
+        | "rp_hypertrophy"
+        | "juggernaut"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1776,7 +1797,25 @@ export const Constants = {
   },
   public: {
     Enums: {
-      source_type: ["hevy"],
+      source_type: [
+        "hevy",
+        "manual",
+        "strong",
+        "macrofactor_workouts",
+        "fitbod",
+        "gravl",
+        "apple_health",
+        "jefit",
+        "caliber",
+        "boostcamp",
+        "liftosaur",
+        "strengthlog",
+        "alpha_progression",
+        "stronglifts",
+        "setgraph",
+        "rp_hypertrophy",
+        "juggernaut",
+      ],
     },
   },
 } as const
