@@ -7,7 +7,8 @@
  * session is ignored.
  *
  * Depends on: @/api/supabase-admin, @/lib/public-api/proxima-api-key,
- *   @/lib/public-api/canonical-exercises, @/lib/public-api/custom-exercise
+ *   @/lib/public-api/canonical-exercises, @/lib/public-api/custom-exercise,
+ *   @/lib/public-api/public-api-rate-limit
  * Used by: Scalar Try It, third-party / agent callers
  */
 
@@ -22,6 +23,13 @@ import {
     createPublicApiCustomExercise,
     parseCreateCustomExerciseBody,
 } from "@/lib/public-api/custom-exercise";
+import {
+    checkPublicApiIpRateLimit,
+    checkPublicApiWriteRateLimit,
+    publicApiBlockedJson,
+    publicApiRateLimitHeaders,
+    type TPublicApiRateLimitResult,
+} from "@/lib/public-api/public-api-rate-limit";
 
 /**
  * List Canonical exercises
@@ -32,14 +40,21 @@ import {
  * @responseDescription A page of exercises the caller may read.
  * @add 400:PublicApiError
  * @add 401:PublicApiError
+ * @add 429:PublicApiError
+ * @add 503:PublicApiError
  * @operationId listExercises
  * @openapi
  */
 export async function GET(request: Request) {
     try {
+        const ipLimit = await checkPublicApiIpRateLimit(request);
+        if (!ipLimit.allowed) {
+            return blocked(ipLimit);
+        }
+
         const admin = getServiceRoleClient();
         if (!admin) {
-            return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
+            return json({ error: "Service unavailable" }, 500, ipLimit);
         }
 
         const authorization = request.headers.get("authorization");
@@ -47,13 +62,13 @@ export async function GET(request: Request) {
         if (authorization) {
             userId = await resolveProximaApiKeyUserId(admin, authorization);
             if (!userId) {
-                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+                return json({ error: "Unauthorized" }, 401, ipLimit);
             }
         }
 
         const parsed = parseExerciseListQuery(new URL(request.url).searchParams);
         if (!parsed.ok) {
-            return NextResponse.json({ error: parsed.error }, { status: 400 });
+            return json({ error: parsed.error }, 400, ipLimit);
         }
 
         const page = await listPublicApiExercises(admin, {
@@ -62,10 +77,10 @@ export async function GET(request: Request) {
             pageSize: parsed.pageSize,
         });
         if (!page) {
-            return NextResponse.json({ error: "Failed to list exercises" }, { status: 500 });
+            return json({ error: "Failed to list exercises" }, 500, ipLimit);
         }
 
-        return NextResponse.json(page);
+        return json(page, 200, ipLimit);
     } catch (error) {
         console.error("public-api exercises GET error:", error);
         return NextResponse.json({ error: "Failed to list exercises" }, { status: 500 });
@@ -81,20 +96,27 @@ export async function GET(request: Request) {
  * @responseDescription Canonical exercise ID. Use as `canonical_exercise_id` on a Workout.
  * @add 401:PublicApiError
  * @add 422:PublicApiError
+ * @add 429:PublicApiError
+ * @add 503:PublicApiError
  * @auth proximaApiKey
  * @operationId createCustomExercise
  * @openapi
  */
 export async function POST(request: Request) {
     try {
+        const ipLimit = await checkPublicApiIpRateLimit(request);
+        if (!ipLimit.allowed) {
+            return blocked(ipLimit);
+        }
+
         const admin = getServiceRoleClient();
         if (!admin) {
-            return NextResponse.json({ error: "Service unavailable" }, { status: 500 });
+            return json({ error: "Service unavailable" }, 500, ipLimit);
         }
 
         const authorization = request.headers.get("authorization");
         if (!authorization) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return json({ error: "Unauthorized" }, 401, ipLimit);
         }
 
         const [userId, rawBody] = await Promise.all([
@@ -102,21 +124,42 @@ export async function POST(request: Request) {
             request.json().catch(() => undefined),
         ]);
         if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return json({ error: "Unauthorized" }, 401, ipLimit);
         }
+
+        const writeLimit = await checkPublicApiWriteRateLimit(userId);
+        if (!writeLimit.allowed) {
+            return blocked(writeLimit);
+        }
+
         if (rawBody === undefined) {
-            return NextResponse.json({ error: "Invalid JSON" }, { status: 422 });
+            return json({ error: "Invalid JSON" }, 422, writeLimit);
         }
 
         const parsed = parseCreateCustomExerciseBody(rawBody);
         if (!parsed.ok) {
-            return NextResponse.json({ error: parsed.error }, { status: 422 });
+            return json({ error: parsed.error }, 422, writeLimit);
         }
 
         const id = await createPublicApiCustomExercise(admin, userId, parsed.draft);
-        return NextResponse.json({ id });
+        return json({ id }, 200, writeLimit);
     } catch (error) {
         console.error("public-api exercises POST error:", error);
         return NextResponse.json({ error: "Failed to create exercise" }, { status: 500 });
     }
+}
+
+function json(body: unknown, status: number, rateLimit: TPublicApiRateLimitResult) {
+    return NextResponse.json(body, {
+        status,
+        headers: publicApiRateLimitHeaders(rateLimit),
+    });
+}
+
+function blocked(result: Extract<TPublicApiRateLimitResult, { allowed: false }>) {
+    const response = publicApiBlockedJson(result);
+    return NextResponse.json(response.body, {
+        status: response.status,
+        headers: response.headers,
+    });
 }

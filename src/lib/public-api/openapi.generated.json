@@ -120,6 +120,227 @@
           "id"
         ]
       },
+      "PublicApiWorkoutId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Proxima Workout backup id."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PublicApiWorkout": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Proxima Workout backup id."
+          },
+          "source": {
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "ended_at": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "canonical_exercise_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "ID from GET /api/v1/exercises or POST /api/v1/exercises."
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "sets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "set_type": {
+                        "type": "string",
+                        "description": "normal, warmup, dropset, or failure."
+                      },
+                      "weight_kg": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "reps": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "duration_seconds": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "distance_meters": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "rpe": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "custom_metric": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "rep_range_start": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "rep_range_end": {
+                        "type": "number",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "set_type",
+                      "weight_kg",
+                      "reps",
+                      "duration_seconds",
+                      "distance_meters",
+                      "rpe",
+                      "custom_metric",
+                      "rep_range_start",
+                      "rep_range_end"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "canonical_exercise_id",
+                "sets",
+                "notes"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "external_id",
+          "started_at",
+          "ended_at",
+          "title",
+          "description",
+          "exercises"
+        ]
+      },
+      "PublicApiReplaceWorkout": {
+        "type": "object",
+        "properties": {
+          "started_at": {
+            "type": "string",
+            "description": "ISO 8601 start."
+          },
+          "ended_at": {
+            "type": "string",
+            "description": "ISO 8601 end. Must be at or after started_at."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicApiWorkoutExercise"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "started_at",
+          "ended_at",
+          "title",
+          "exercises"
+        ]
+      },
+      "empty": {},
+      "PublicApiCreateWorkout": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Closed Workout source list. hevy is rejected."
+          },
+          "external_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Caller identity for this session. Unique with source per athlete."
+          },
+          "started_at": {
+            "type": "string",
+            "description": "ISO 8601 start."
+          },
+          "ended_at": {
+            "type": "string",
+            "description": "ISO 8601 end. Must be at or after started_at."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicApiWorkoutExercise"
+            },
+            "minItems": 1,
+            "description": "At least one exercise."
+          }
+        },
+        "required": [
+          "source",
+          "external_id",
+          "started_at",
+          "ended_at",
+          "title",
+          "exercises"
+        ]
+      },
+      "PublicApiCreatedWorkout": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Proxima Workout backup id."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
       "PublicApiExercise": {
         "type": "object",
         "properties": {
@@ -158,6 +379,76 @@
           "equipment",
           "primary_muscle_group",
           "secondary_muscle_groups"
+        ]
+      },
+      "PublicApiWorkoutSet": {
+        "type": "object",
+        "properties": {
+          "set_type": {
+            "type": "string",
+            "description": "normal, warmup, dropset, or failure."
+          },
+          "weight_kg": {
+            "type": "number",
+            "nullable": true
+          },
+          "reps": {
+            "type": "number",
+            "nullable": true
+          },
+          "duration_seconds": {
+            "type": "number",
+            "nullable": true
+          },
+          "distance_meters": {
+            "type": "number",
+            "nullable": true
+          },
+          "rpe": {
+            "type": "number",
+            "nullable": true
+          },
+          "custom_metric": {
+            "type": "number",
+            "nullable": true
+          },
+          "rep_range_start": {
+            "type": "number",
+            "nullable": true
+          },
+          "rep_range_end": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "set_type"
+        ]
+      },
+      "PublicApiWorkoutExercise": {
+        "type": "object",
+        "properties": {
+          "canonical_exercise_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID from GET /api/v1/exercises or POST /api/v1/exercises."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Exercise-level notes."
+          },
+          "sets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicApiWorkoutSet"
+            },
+            "minItems": 1,
+            "description": "At least one set."
+          }
+        },
+        "required": [
+          "canonical_exercise_id",
+          "sets"
         ]
       }
     },
@@ -222,6 +513,26 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
           }
         }
       },
@@ -270,6 +581,361 @@
           },
           "422": {
             "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts": {
+      "post": {
+        "operationId": "createWorkout",
+        "summary": "Create a Workout",
+        "description": "Key required. First-write-wins on source + external_id. Same identity + same body → 200 existing id. Same identity + different body → 409. Rejects hevy, unknown source, routine_id, empty exercises/sets, and unread canonical_exercise_id. Persists routine_id null so the row cannot participate in Day complete.",
+        "tags": [
+          "Workouts"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "proximaApiKey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicApiCreateWorkout"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proxima Workout backup id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiCreatedWorkout"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts/{id}": {
+      "get": {
+        "operationId": "getWorkout",
+        "summary": "Get a Workout",
+        "description": "Key required. Returns one Workout the key holder owns. Missing or another user's id is 404.",
+        "tags": [
+          "Workouts"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "Proxima Workout backup id."
+            },
+            "required": true,
+            "description": "Proxima Workout backup id.",
+            "example": "123"
+          }
+        ],
+        "security": [
+          {
+            "proximaApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiWorkout"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceWorkout",
+        "summary": "Replace a Workout",
+        "description": "Key required. Full-replaces title, times, description, exercises, and sets. source and external_id stay. routine_id stays null.",
+        "tags": [
+          "Workouts"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "Proxima Workout backup id."
+            },
+            "required": true,
+            "description": "Proxima Workout backup id.",
+            "example": "123"
+          }
+        ],
+        "security": [
+          {
+            "proximaApiKey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicApiReplaceWorkout"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiWorkout"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWorkout",
+        "summary": "Delete a Workout",
+        "description": "Key required. Hard-deletes the Workout. Exercises and sets cascade.",
+        "tags": [
+          "Workouts"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "Proxima Workout backup id."
+            },
+            "required": true,
+            "description": "Proxima Workout backup id.",
+            "example": "123"
+          }
+        ],
+        "security": [
+          {
+            "proximaApiKey": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
             "content": {
               "application/json": {
                 "schema": {

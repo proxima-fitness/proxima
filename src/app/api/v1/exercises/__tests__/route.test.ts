@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockAdmin, mockGetAdmin, mockResolve, mockList, mockCreate } = vi.hoisted(() => ({
     mockAdmin: { kind: "service-role" },
@@ -32,6 +32,12 @@ vi.mock("@/lib/public-api/custom-exercise", async (importOriginal) => {
     };
 });
 
+import {
+    PUBLIC_API_IP_RATE_LIMIT_PER_MINUTE,
+    PUBLIC_API_WRITE_RATE_LIMIT_PER_HOUR,
+    resetPublicApiRateLimitersForTests,
+    setPublicApiRateLimitersForTests,
+} from "@/lib/public-api/public-api-rate-limit";
 import { GET, POST } from "@/app/api/v1/exercises/route";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
@@ -73,6 +79,31 @@ function postRequest(body: unknown, headers?: HeadersInit): Request {
     });
 }
 
+function allowAllLimiters() {
+    setPublicApiRateLimitersForTests({
+        ip: {
+            async limit() {
+                return {
+                    success: true,
+                    remaining: PUBLIC_API_IP_RATE_LIMIT_PER_MINUTE - 1,
+                    reset: Date.now() + 60_000,
+                    limit: PUBLIC_API_IP_RATE_LIMIT_PER_MINUTE,
+                };
+            },
+        },
+        write: {
+            async limit() {
+                return {
+                    success: true,
+                    remaining: PUBLIC_API_WRITE_RATE_LIMIT_PER_HOUR - 1,
+                    reset: Date.now() + 3_600_000,
+                    limit: PUBLIC_API_WRITE_RATE_LIMIT_PER_HOUR,
+                };
+            },
+        },
+    });
+}
+
 beforeEach(() => {
     mockGetAdmin.mockReset();
     mockResolve.mockReset();
@@ -81,6 +112,11 @@ beforeEach(() => {
     mockGetAdmin.mockReturnValue(mockAdmin);
     mockList.mockResolvedValue(PAGE);
     mockCreate.mockResolvedValue(CREATED_ID);
+    allowAllLimiters();
+});
+
+afterEach(() => {
+    resetPublicApiRateLimitersForTests();
 });
 
 describe("GET /api/v1/exercises", () => {
@@ -143,6 +179,37 @@ describe("GET /api/v1/exercises", () => {
 
         expect(response.status).toBe(400);
         expect(body).toEqual({ error: "page must be a positive integer" });
+        expect(mockList).not.toHaveBeenCalled();
+    });
+
+    it("is 429 with Retry-After when the IP window is exhausted", async () => {
+        setPublicApiRateLimitersForTests({
+            ip: {
+                async limit() {
+                    return {
+                        success: false,
+                        remaining: 0,
+                        reset: Date.now() + 60_000,
+                        limit: PUBLIC_API_IP_RATE_LIMIT_PER_MINUTE,
+                    };
+                },
+            },
+            write: null,
+        });
+
+        const response = await GET(request());
+        expect(response.status).toBe(429);
+        expect(await response.json()).toEqual({ error: "Too many requests" });
+        expect(response.headers.get("Retry-After")).toEqual(expect.any(String));
+        expect(mockList).not.toHaveBeenCalled();
+    });
+
+    it("is 503 when Redis is not configured", async () => {
+        setPublicApiRateLimitersForTests({ ip: null, write: null });
+
+        const response = await GET(request());
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ error: "Service unavailable" });
         expect(mockList).not.toHaveBeenCalled();
     });
 });

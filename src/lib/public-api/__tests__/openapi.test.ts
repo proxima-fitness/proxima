@@ -25,15 +25,54 @@ function exercisesPost() {
     };
 }
 
+type TOpenApiOperation = {
+    parameters?: Array<{ in: string; name: string }>;
+    security?: unknown;
+};
+
+type TOpenApiPath = {
+    delete?: TOpenApiOperation;
+    get?: TOpenApiOperation;
+    post?: TOpenApiOperation;
+    put?: TOpenApiOperation;
+};
+
+type TOpenApiSchema = {
+    properties?: Record<string, unknown>;
+    required?: string[];
+};
+
+function pathItem(matcher: (path: string) => boolean): TOpenApiPath {
+    const path = Object.keys(PUBLIC_API_OPENAPI.paths).find(matcher);
+    expect(path).toBeDefined();
+    return PUBLIC_API_OPENAPI.paths[
+        path as keyof typeof PUBLIC_API_OPENAPI.paths
+    ] as TOpenApiPath;
+}
+
+function schema(name: string): TOpenApiSchema {
+    return (
+        PUBLIC_API_OPENAPI.components.schemas as Record<string, TOpenApiSchema>
+    )[name];
+}
+
 describe("PUBLIC_API_OPENAPI", () => {
-    it("is generated OpenAPI 3 for GET and POST exercises", () => {
+    it("is generated OpenAPI 3 for exercises and workouts", () => {
         expect(PUBLIC_API_OPENAPI.openapi.startsWith("3.")).toBe(true);
         expect(PUBLIC_API_OPENAPI.info.title).toBe("Proxima Public API");
         const { get } = exercisesGet();
         const { post } = exercisesPost();
         expect(get).toBeDefined();
         expect(post).toBeDefined();
-        expect(Object.keys(PUBLIC_API_OPENAPI.paths)).toHaveLength(1);
+        expect(
+            pathItem((candidate) => candidate.endsWith("/workouts") && !candidate.includes("{"))
+                .post,
+        ).toBeDefined();
+        const byId = pathItem((candidate) => candidate.includes("/workouts/{"));
+        expect(byId.get).toBeDefined();
+        expect(byId.put).toBeDefined();
+        expect(byId.delete).toBeDefined();
+        expect(Object.keys(PUBLIC_API_OPENAPI.paths)).toHaveLength(3);
     });
 
     it("lets Try It list exercises with no key and never documents user_id", () => {
@@ -71,6 +110,33 @@ describe("PUBLIC_API_OPENAPI", () => {
         expect(
             PUBLIC_API_OPENAPI.components.schemas.PublicApiCreatedExercise.properties.id.format,
         ).toBe("uuid");
+    });
+
+    it("requires a Proxima API key on Workout writes and documents first-write-wins", () => {
+        const collection = pathItem(
+            (candidate) => candidate.endsWith("/workouts") && !candidate.includes("{"),
+        );
+        const byId = pathItem((candidate) => candidate.includes("/workouts/{"));
+        expect(collection.post?.security).toEqual([{ proximaApiKey: [] }]);
+        expect(byId.get?.security).toEqual([{ proximaApiKey: [] }]);
+        expect(byId.put?.security).toEqual([{ proximaApiKey: [] }]);
+        expect(byId.delete?.security).toEqual([{ proximaApiKey: [] }]);
+        expect(byId.get?.parameters).toEqual(
+            expect.arrayContaining([expect.objectContaining({ in: "path", name: "id" })]),
+        );
+        expect(schema("PublicApiCreateWorkout").required).toEqual(
+            expect.arrayContaining([
+                "source",
+                "external_id",
+                "started_at",
+                "ended_at",
+                "title",
+                "exercises",
+            ]),
+        );
+        expect(schema("PublicApiReplaceWorkout").properties).not.toHaveProperty("source");
+        expect(schema("PublicApiReplaceWorkout").properties).not.toHaveProperty("external_id");
+        expect(schema("PublicApiCreateWorkout").properties).not.toHaveProperty("routine_id");
     });
 });
 
