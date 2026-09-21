@@ -1,10 +1,12 @@
 /**
  * @module chat/sanity/stalemate
  *
- * Request-scoped **Program stalemate** (ADR 0027 / 01, C8). The same honor id
- * or code-gate error twice this turn stops `buildWeek` / `mutateProgram`.
- * Schema, empty days, and bad ids are not counted. Same-week skip lives on
- * the stash; the card click's next request sets it from the exact user text.
+ * Request-scoped **Program stalemate** (ADR 0027 / 01, C8; ADR 0029 / 02).
+ * The same honor id or code-gate error twice this turn stops `buildWeek` /
+ * `mutateProgram`. Schema, empty days, bad ids, and structural stamp Soft-fails
+ * (`missingWave` / `missingRoles` / `emptyMains`) are not counted. Same-week
+ * skip lives on the stash; the card click's next request sets it from the
+ * exact user text.
  *
  * Depends on: ./types, ../constraints/types, ../constraints/initialize
  * Used by: tools.ts, week-coverage.ts, ProgramStalemateCard
@@ -15,9 +17,11 @@ import type { TConstraintProfile } from "../constraints/types";
 import type {
     IProgramSanityStash,
     IProgramStalematePayload,
+    TProgramStalemateAction,
     TProgramStalemateChip,
     TProgramStalemateKind,
     TStalemateChipField,
+    TStalematePreferenceKey,
 } from "./types";
 
 /** Tool `error` on a stop after escalate, and on later calls this request. */
@@ -38,6 +42,13 @@ export const FIX_IT_MESSAGE = "Fix it.";
 
 const ESCALATE_ERROR_CODES = new Set(["constraint_violation", "weekCoverage"]);
 
+/** Structural stamp Soft-fails: Andy retries; never escalate to a chip-less card. */
+const STRUCTURAL_STAMP_NO_ESCALATE = new Set([
+    "periodizationStamp.missingWave",
+    "periodizationStamp.missingRoles",
+    "periodizationStamp.emptyMains",
+]);
+
 /** Exercise fields the Mutation constraint gate `matchesAny` reads. */
 export type TStalemateExerciseMeta = {
     equipment?: string | null;
@@ -47,11 +58,13 @@ export type TStalemateExerciseMeta = {
 
 /**
  * Soft-fail `error` strings that count toward a Program stalemate.
- * Empty days, bad ids, Zod, and `readProgram_required` return null.
+ * Empty days, bad ids, Zod, `readProgram_required`, and structural stamp
+ * Soft-fails return null.
  *
  * @param error - Tool result `error` string
  */
 export function stalemateKeyForError(error: string): string | null {
+    if (STRUCTURAL_STAMP_NO_ESCALATE.has(error)) return null;
     if (ESCALATE_ERROR_CODES.has(error)) return error;
     if (
         error.startsWith("constraint.") ||
@@ -193,6 +206,21 @@ function whyForKey(key: string): string {
     if (key === "constraint.equipmentSemantic") {
         return "This program still uses equipment you've excluded.";
     }
+    if (key === "constraint.peakHonor") {
+        return "Your saved peak-week preference still conflicts with this program.";
+    }
+    if (key === "constraint.deloadHonor") {
+        return "Your saved deload-week preference still conflicts with this program.";
+    }
+    if (key === "constraint.splitHonor") {
+        return "Your saved split preference still conflicts with this program.";
+    }
+    if (key === "constraint.variabilityHonor") {
+        return "Your saved exercise-variability preference still conflicts with this program.";
+    }
+    if (key === "constraint.warmupPolicy") {
+        return "Your saved warmup preference still conflicts with this program.";
+    }
     if (key.startsWith("training.") || key.startsWith("skill.")) {
         return "This program doesn't match the training you asked for.";
     }
@@ -220,8 +248,104 @@ function chipsForKey(
     return [];
 }
 
+function fixItAction(): TProgramStalemateAction {
+    return { label: FIX_IT_MESSAGE, message: FIX_IT_MESSAGE };
+}
+
+function preferenceClearAction(
+    key: TStalematePreferenceKey,
+    label: string,
+    message: string,
+): TProgramStalemateAction {
+    return {
+        label,
+        message,
+        preference: { key, value: "" },
+    };
+}
+
+/**
+ * Preference honor buttons: **User-stated change** on that preference, plus
+ * **Fix it.** Warmup may flip yes/no when the saved value is binary.
+ *
+ * @param key - Counted Soft-fail id
+ * @param profile - Active Constraint profile, if any
+ */
+function preferenceActionsForKey(
+    key: string,
+    profile: TConstraintProfile | null | undefined,
+): TProgramStalemateAction[] {
+    const prefs = profile?.preferences;
+    switch (key) {
+        case "constraint.peakHonor":
+            return [
+                preferenceClearAction(
+                    "peakWeek",
+                    "I don't need a peak week",
+                    "I no longer want a peak week",
+                ),
+                fixItAction(),
+            ];
+        case "constraint.deloadHonor":
+            return [
+                preferenceClearAction(
+                    "deloadWeek",
+                    "I don't need a deload week",
+                    "I no longer want a deload week",
+                ),
+                fixItAction(),
+            ];
+        case "constraint.splitHonor":
+            return [
+                preferenceClearAction(
+                    "splitType",
+                    "Clear my split preference",
+                    "I no longer have a split preference",
+                ),
+                fixItAction(),
+            ];
+        case "constraint.variabilityHonor":
+            return [
+                preferenceClearAction(
+                    "exerciseVariability",
+                    "Clear exercise variability preference",
+                    "I no longer have an exercise variability preference",
+                ),
+                fixItAction(),
+            ];
+        case "constraint.warmupPolicy": {
+            const current = prefs?.warmupExercises?.trim().toLowerCase() ?? "";
+            const actions: TProgramStalemateAction[] = [];
+            if (current === "yes" || current === "no") {
+                const flipped = current === "yes" ? "no" : "yes";
+                actions.push({
+                    label: flipped === "yes"
+                        ? "I want warmup exercises"
+                        : "Skip warmup exercises",
+                    message: flipped === "yes"
+                        ? "I want warmup exercises in my program"
+                        : "I do not want warmup exercises in my program",
+                    preference: { key: "warmupExercises", value: flipped },
+                });
+            }
+            actions.push(
+                preferenceClearAction(
+                    "warmupExercises",
+                    "Clear warmup preference",
+                    "I no longer have a warmup preference",
+                ),
+                fixItAction(),
+            );
+            return actions;
+        }
+        default:
+            return [];
+    }
+}
+
 /**
  * Card payload for an escalated Soft-fail. Chips are exact saved strings.
+ * Preference honors and empty-chip constraint misses carry `actions`.
  *
  * @param key - Counted honor id or code-gate error
  * @param profile - Active Constraint profile, if any
@@ -232,11 +356,18 @@ export function buildStalematePayload(
     profile: TConstraintProfile | null | undefined,
     exercises?: TStalemateExerciseMeta[],
 ): IProgramStalematePayload {
+    const kind = kindForKey(key);
+    const chips = chipsForKey(key, profile, exercises);
+    let actions = preferenceActionsForKey(key, profile);
+    if (kind === "constraint" && chips.length === 0 && actions.length === 0) {
+        actions = [fixItAction()];
+    }
     return {
-        chips: chipsForKey(key, profile, exercises),
+        chips,
         key,
-        kind: kindForKey(key),
+        kind,
         why: whyForKey(key),
+        ...(actions.length > 0 ? { actions } : {}),
     };
 }
 
@@ -249,6 +380,32 @@ function isChip(value: unknown): value is TProgramStalemateChip {
             record.field === "excludedAreas") &&
         typeof record.value === "string" &&
         record.value.length > 0
+    );
+}
+
+const PREFERENCE_KEYS = new Set<string>([
+    "splitType",
+    "exerciseVariability",
+    "deloadWeek",
+    "peakWeek",
+    "warmupExercises",
+]);
+
+function isAction(value: unknown): value is TProgramStalemateAction {
+    if (!value || typeof value !== "object") return false;
+    const record = value as {
+        label?: unknown;
+        message?: unknown;
+        preference?: { key?: unknown; value?: unknown };
+    };
+    if (typeof record.label !== "string" || !record.label) return false;
+    if (typeof record.message !== "string" || !record.message) return false;
+    if (record.preference === undefined) return true;
+    if (!record.preference || typeof record.preference !== "object") return false;
+    return (
+        typeof record.preference.key === "string" &&
+        PREFERENCE_KEYS.has(record.preference.key) &&
+        typeof record.preference.value === "string"
     );
 }
 
@@ -267,6 +424,7 @@ export function readStalematePayload(output: unknown): IProgramStalematePayload 
         key?: unknown;
         kind?: unknown;
         why?: unknown;
+        actions?: unknown;
     };
     if (typeof body.key !== "string" || !body.key) return null;
     if (
@@ -278,7 +436,14 @@ export function readStalematePayload(output: unknown): IProgramStalematePayload 
     }
     if (typeof body.why !== "string") return null;
     const chips = Array.isArray(body.chips) ? body.chips.filter(isChip) : [];
-    return { chips, key: body.key, kind: body.kind, why: body.why };
+    const actions = Array.isArray(body.actions) ? body.actions.filter(isAction) : undefined;
+    return {
+        chips,
+        key: body.key,
+        kind: body.kind,
+        why: body.why,
+        ...(actions && actions.length > 0 ? { actions } : {}),
+    };
 }
 
 /**

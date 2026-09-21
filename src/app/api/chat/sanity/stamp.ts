@@ -2,8 +2,9 @@
  * @module chat/sanity/stamp
  *
  * Compiles a stashed Periodization wave + Exercise roles into mutation
- * registry ops (ADR 0027 / 03, C2). Deltas are week1+delta (set). Warmup
- * rows and warmup sets are not stamped. weight_kg is never invented.
+ * registry ops (ADR 0027 / 03, C2; ADR 0029 / 01). Deltas are week1+delta
+ * (set), floored at 1 working set. Warmup rows and warmup sets are not
+ * stamped. weight_kg is never invented.
  *
  * Depends on: ./periodization-wave, ./types, mutations/agentSchema
  * Used by: snapshot.ts plateThenStamp, tools.ts buildWeek, helpers.ts commit
@@ -161,29 +162,6 @@ export function compilePeriodizationStamp(
 
     const weeks = Math.max(1, weekCount);
     const rows = waveByWeek(wave);
-
-    for (let w = 2; w <= weeks; w++) {
-        const row = rows.get(w);
-        if (!row) continue;
-        for (const day of week1) {
-            const dayOrder = Number(day.order);
-            const exercises = day.exercises ?? [];
-            for (let exerciseIndex = 0; exerciseIndex < exercises.length; exerciseIndex++) {
-                const role = roleByKey.get(roleKey(dayOrder, exerciseIndex));
-                if (role == null) continue;
-                const delta = deltasForRole(row, role);
-                if (delta == null) continue;
-                const workingCount = workingSetsOf(exercises[exerciseIndex]).length;
-                if (workingCount + delta.setCountDelta < 1) {
-                    return fail(
-                        "periodizationStamp.workingSetsBelowOne",
-                        `Week ${w} working-set count would drop below 1 (day ${dayOrder}, exercise ${exerciseIndex}).`,
-                    );
-                }
-            }
-        }
-    }
-
     const operations: TAgentProgramOperation[] = [];
 
     for (let w = 2; w <= weeks; w++) {

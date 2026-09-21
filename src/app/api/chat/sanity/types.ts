@@ -59,6 +59,30 @@ export type TProgramStalemateChip = {
 };
 
 /**
+ * Preference field a **Program stalemate** action may clear or flip
+ * (ADR 0029 / 02). Not `progressionSystem` - that honor is out of this card.
+ */
+export type TStalematePreferenceKey =
+    | "splitType"
+    | "exerciseVariability"
+    | "deloadWeek"
+    | "peakWeek"
+    | "warmupExercises";
+
+/**
+ * Click action beyond injury/equipment chips. Preference writes are a
+ * **User-stated change**. `preference` omitted means message-only (**Fix it.**).
+ */
+export type TProgramStalemateAction = {
+    label: string;
+    message: string;
+    preference?: {
+        key: TStalematePreferenceKey;
+        value: string;
+    };
+};
+
+/**
  * Card kind. Constraint chips persist a saved row. Week-coverage sets the
  * same-week skip. Training / skill clicks are the next user message.
  */
@@ -66,13 +90,15 @@ export type TProgramStalemateKind = "constraint" | "weekCoverage" | "training";
 
 /**
  * Payload the client card needs. Honor `key` is the counted Soft-fail id.
- * `chips` are exact stored strings, never paraphrases.
+ * `chips` are exact stored strings, never paraphrases. `actions` cover
+ * preference honors and empty-chip **Fix it.** (ADR 0029 / 02).
  */
 export interface IProgramStalematePayload {
     chips: TProgramStalemateChip[];
     key: string;
     kind: TProgramStalemateKind;
     why: string;
+    actions?: TProgramStalemateAction[];
 }
 
 /**

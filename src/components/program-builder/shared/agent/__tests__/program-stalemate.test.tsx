@@ -10,6 +10,7 @@ import {
     MAKE_LATER_WEEKS_DIFFERENT_MESSAGE,
     SAME_WEEK_SKIP_MESSAGE,
     USER_REQUESTED_EXCEPTION_MESSAGE,
+    buildStalematePayload,
 } from "@/app/api/chat/sanity/stalemate";
 import type { IProgramStalematePayload } from "@/app/api/chat/sanity/types";
 import { resetAiToolErrorCaptureForTests } from "@/lib/capture-ai-tool-error";
@@ -232,6 +233,86 @@ describe("ProgramStalemateCard", () => {
             { text: USER_REQUESTED_EXCEPTION_MESSAGE },
             undefined,
         );
+        expect(sendMessage).toHaveBeenCalledWith({ text: FIX_IT_MESSAGE }, undefined);
+    });
+
+    it("shows preference clear and Fix it for peakHonor", async () => {
+        userState.user = { id: "user-1" };
+        getUserConstraints.mockResolvedValue({
+            ...emptyUserConstraintProfileRecord(),
+            preferences: {
+                ...emptyUserConstraintProfileRecord().preferences,
+                peakWeek: "yes",
+            },
+        });
+        saveUserConstraintProfile.mockResolvedValue(undefined);
+        const sendMessage = vi.fn(async () => {});
+        const onPreferenceChange = vi.fn();
+        const peakPayload = buildStalematePayload(
+            "constraint.peakHonor",
+            {
+                injuries: [],
+                excludedEquipment: [],
+                excludedAreas: [],
+                preferences: {
+                    splitType: "",
+                    exerciseVariability: "",
+                    progressionSystem: "",
+                    deloadWeek: "",
+                    peakWeek: "yes",
+                    warmupExercises: "",
+                },
+            },
+        );
+
+        renderWithProviders(
+            <ProgramStalemateCard
+                payload={ peakPayload }
+                sendMessage={ sendMessage }
+                healthIssues={ [] }
+                excludeEquipment={ [] }
+                handleHealthIssues={ vi.fn() }
+                handleExcludeEquipment={ vi.fn() }
+                onPreferenceChange={ onPreferenceChange }
+            />,
+        );
+
+        expect(screen.getByRole("button", { name: "I don't need a peak week" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: FIX_IT_MESSAGE })).toBeTruthy();
+
+        fireEvent.click(screen.getByRole("button", { name: "I don't need a peak week" }));
+
+        await waitFor(() => {
+            expect(saveUserConstraintProfile).toHaveBeenCalledTimes(1);
+        });
+        expect(onPreferenceChange).toHaveBeenCalledWith("peakWeek", "");
+        const saved = saveUserConstraintProfile.mock.calls[0][1];
+        expect(saved.preferences.peakWeek).toBe("");
+        expect(sendMessage).toHaveBeenCalledWith(
+            { text: "I no longer want a peak week" },
+            { body: { peakWeek: "" } },
+        );
+    });
+
+    it("shows Fix it when a constraint payload has empty chips and no actions", () => {
+        const sendMessage = vi.fn(async () => {});
+        renderWithProviders(
+            <ProgramStalemateCard
+                payload={ {
+                    chips: [],
+                    key: "constraint.unknownHonor",
+                    kind: "constraint",
+                    why: "This program still conflicts with a saved training constraint.",
+                } }
+                sendMessage={ sendMessage }
+                healthIssues={ [] }
+                excludeEquipment={ [] }
+                handleHealthIssues={ vi.fn() }
+                handleExcludeEquipment={ vi.fn() }
+            />,
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: FIX_IT_MESSAGE }));
         expect(sendMessage).toHaveBeenCalledWith({ text: FIX_IT_MESSAGE }, undefined);
     });
 });

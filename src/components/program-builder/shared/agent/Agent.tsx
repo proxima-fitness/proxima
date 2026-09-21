@@ -28,6 +28,7 @@ import { inferDaysPerWeek, inferProgramLength } from "@/components/program-build
 import { toast } from "sonner"
 import { useUserContext } from "@/contexts/UserContext"
 import { useHevySecret } from "@/api/hooks"
+import type { TStalematePreferenceKey } from "@/app/api/chat/sanity/types"
 import {
     onChatThreadPointerCancel,
     onChatThreadPointerDown,
@@ -193,6 +194,32 @@ export const Agent: React.FC<IProps> = (props) => {
         lastHevyShareImportKeyRef,
         showStart = false,
     } = props;
+
+    const onPreferenceChange = useCallback((key: TStalematePreferenceKey, value: string) => {
+        switch (key) {
+            case "splitType":
+                handleSplitType(value);
+                return;
+            case "exerciseVariability":
+                handleExerciseVariability(value);
+                return;
+            case "deloadWeek":
+                handleDeloadWeek(value);
+                return;
+            case "peakWeek":
+                handlePeakWeek(value);
+                return;
+            case "warmupExercises":
+                handleWarmupExercises(value);
+                return;
+        }
+    }, [
+        handleDeloadWeek,
+        handleExerciseVariability,
+        handlePeakWeek,
+        handleSplitType,
+        handleWarmupExercises,
+    ]);
 
     const chatFooterRef = useRef<HTMLDivElement>(null);
     const [measuredFooterHeight, setMeasuredFooterHeight] = useState<number | null>(null);
@@ -548,6 +575,7 @@ export const Agent: React.FC<IProps> = (props) => {
                             handleDaysPerWeek={handleDaysPerWeek}
                             handleExcludeEquipment={handleExcludeEquipment}
                             handleHealthIssues={handleHealthIssues}
+                            onPreferenceChange={onPreferenceChange}
                             isBuilding={isBuilding}
                             handleIsBuilding={handleIsBuilding}
                             isLoading={isLoading}

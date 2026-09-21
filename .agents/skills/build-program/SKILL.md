@@ -173,6 +173,7 @@ The wave on **planProgram** is how later weeks differ from week 1. Code applies 
 
 - One row per week, `1..durationWeeks`. Week 1 is the baseline: `main` deltas both `0`, no `accessory`, no `mainRepRange`.
 - `main`: `rpeDelta` and `setCountDelta` from week 1, applied to every `main` row. Every week after week 1 needs a non-zero main delta, or its mains are a copy of week 1 and the build Soft-fails.
+- Working-set count floors at **1**. A deload or peak with a large negative `setCountDelta` may leave one working set; do **not** inflate week-1 baselines just to absorb that delta.
 - `accessory`: only on weeks whose block is a deload, unload, taper, or peak, and required there.
 - `mainRepRange`: only on a **Block boundary** (first week of a block after week 1), when the new block changes the rep target.
 - Special weeks are easier or harder work: RPE and sets on the wave. Keep day titles as they are. The block name carries "Deload" or "Peak", not the days.

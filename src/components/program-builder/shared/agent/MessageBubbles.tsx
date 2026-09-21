@@ -53,6 +53,7 @@ import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { focusProgramBuilderChatInput, MutationProposalCard } from "./MutationProposalCard";
 import { ProgramStalemateCard } from "./ProgramStalemateCard";
 import { readStalematePayload } from "@/app/api/chat/sanity/stalemate";
+import type { TStalematePreferenceKey } from "@/app/api/chat/sanity/types";
 import { isTestUser } from "@/api/feature-limits";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
@@ -96,6 +97,8 @@ interface IProps {
     handleDaysPerWeek: (value: string) => void;
     handleExcludeEquipment: (value: TSelectOption[]) => void;
     handleHealthIssues: (value: TSelectOption[]) => void;
+    /** Session preference write for preference-honor **User-stated change**. */
+    onPreferenceChange?: (key: TStalematePreferenceKey, value: string) => void;
     isBuilding: boolean;
     handleIsBuilding: (isBuilding: boolean) => void;
     isLoading: boolean;
@@ -251,6 +254,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         healthIssues,
         handleExcludeEquipment,
         handleHealthIssues,
+        onPreferenceChange,
         status,
         error,
         onRetry,
@@ -856,6 +860,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 excludeEquipment={excludeEquipment}
                                                                 handleHealthIssues={handleHealthIssues}
                                                                 handleExcludeEquipment={handleExcludeEquipment}
+                                                                onPreferenceChange={onPreferenceChange}
                                                                 getChatId={resolvePersistChatId}
                                                                 tool="buildWeek"
                                                                 toolCallId={toolCallId}
@@ -973,6 +978,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 excludeEquipment={excludeEquipment}
                                                                 handleHealthIssues={handleHealthIssues}
                                                                 handleExcludeEquipment={handleExcludeEquipment}
+                                                                onPreferenceChange={onPreferenceChange}
                                                                 getChatId={resolvePersistChatId}
                                                                 tool="mutateProgram"
                                                                 toolCallId={toolCallId}

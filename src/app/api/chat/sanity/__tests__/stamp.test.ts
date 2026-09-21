@@ -134,12 +134,15 @@ describe("compilePeriodizationStamp", () => {
         expect(result.error).toBe("periodizationStamp.emptyMains");
     });
 
-    it("Soft-fails when a working-set count would drop below 1", () => {
-        const oneWorking = makeDay({
+    it("floors working-set count at 1 when week1 + setCountDelta would go below 1", () => {
+        const twoWorking = makeDay({
             exercises: [
                 makeExercise({
                     index: 0,
-                    sets: [makeSet({ type: "warmup", rpe: 5 }), makeSet({ index: 1, rpe: 7 })],
+                    sets: [
+                        makeSet({ index: 0, rpe: 7, weight_kg: 60 }),
+                        makeSet({ index: 1, rpe: 8, weight_kg: 60 }),
+                    ],
                 }),
             ],
         });
@@ -149,13 +152,103 @@ describe("compilePeriodizationStamp", () => {
         const wave: TPeriodizationWave = {
             weeks: [
                 { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
-                { week: 2, main: { rpeDelta: 0, setCountDelta: -1 } },
+                { week: 2, main: { rpeDelta: -1, setCountDelta: -2 } },
             ],
         };
-        const result = compilePeriodizationStamp([oneWorking], wave, mainOnly, 2);
-        expect(result.ok).toBe(false);
-        if (result.ok) return;
-        expect(result.error).toBe("periodizationStamp.workingSetsBelowOne");
+        const result = compilePeriodizationStamp([twoWorking], wave, mainOnly, 2);
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+
+        const week2Edit = result.operations.find(
+            (op) => op.op === "edit_exercise" && op.folderIds?.[0] === 1 && op.exerciseIndex === 0,
+        );
+        expect(week2Edit?.op).toBe("edit_exercise");
+        if (week2Edit?.op !== "edit_exercise") return;
+        expect(week2Edit.exercise.sets.filter((set) => set.type !== "warmup")).toHaveLength(1);
+        expect(week2Edit.exercise.sets[0]?.rpe).toBe(6);
+        expect(week2Edit.exercise.sets[0]?.weight_kg).toBe(60);
+    });
+
+    /**
+     * Prod dogfood (ADR 0029 / 01): canonical 8-week Peak/Taper wave (week 8
+     * main/accessory setCountDelta -2) vs a typical hypertrophy day with 2
+     * working sets on the main. Floors at 1; does not Soft-fail.
+     */
+    it("floors an 8-week deload -2 on a 2-working-set main at day 1 exercise 1", () => {
+        const eightWeekPeakTaperWave: TPeriodizationWave = {
+            weeks: [
+                { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                { week: 2, main: { rpeDelta: 0, setCountDelta: 1 } },
+                { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+                {
+                    week: 4,
+                    main: { rpeDelta: 1, setCountDelta: 0 },
+                    mainRepRange: { start: 5, end: 8 },
+                },
+                { week: 5, main: { rpeDelta: 2, setCountDelta: 0 } },
+                { week: 6, main: { rpeDelta: 2, setCountDelta: 0 } },
+                {
+                    week: 7,
+                    main: { rpeDelta: 2, setCountDelta: -1 },
+                    accessory: { rpeDelta: -1, setCountDelta: -1 },
+                    mainRepRange: { start: 3, end: 5 },
+                },
+                {
+                    week: 8,
+                    main: { rpeDelta: 0, setCountDelta: -2 },
+                    accessory: { rpeDelta: -2, setCountDelta: -2 },
+                },
+            ],
+        };
+        const twoWorkingMain = makeDay({
+            exercises: [
+                makeExercise({
+                    index: 0,
+                    title: "Band Pull Apart",
+                    exercise_template_id: "ex-wu",
+                    sets: [makeSet({ type: "normal", rpe: 5, weight_kg: null })],
+                }),
+                makeExercise({
+                    index: 1,
+                    title: "Chest Press (Machine)",
+                    sets: [
+                        makeSet({ index: 0, rpe: 7, weight_kg: 60 }),
+                        makeSet({ index: 1, rpe: 8, weight_kg: 60 }),
+                    ],
+                }),
+                makeExercise({
+                    index: 2,
+                    title: "Cable Fly",
+                    exercise_template_id: "ex-acc",
+                    sets: [
+                        makeSet({ rpe: 7, weight_kg: 20 }),
+                        makeSet({ index: 1, rpe: 7, weight_kg: 20 }),
+                    ],
+                }),
+            ],
+        });
+        const result = compilePeriodizationStamp(
+            [twoWorkingMain],
+            eightWeekPeakTaperWave,
+            roles,
+            8,
+        );
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+
+        const week8MainEdit = result.operations.find(
+            (op) => op.op === "edit_exercise" && op.folderIds?.[0] === 7 && op.exerciseIndex === 1,
+        );
+        expect(week8MainEdit?.op).toBe("edit_exercise");
+        if (week8MainEdit?.op !== "edit_exercise") return;
+        expect(week8MainEdit.exercise.sets.filter((set) => set.type !== "warmup")).toHaveLength(1);
+
+        const week8AccessoryEdit = result.operations.find(
+            (op) => op.op === "edit_exercise" && op.folderIds?.[0] === 7 && op.exerciseIndex === 2,
+        );
+        expect(week8AccessoryEdit?.op).toBe("edit_exercise");
+        if (week8AccessoryEdit?.op !== "edit_exercise") return;
+        expect(week8AccessoryEdit.exercise.sets.filter((set) => set.type !== "warmup")).toHaveLength(1);
     });
 
     it("emits update_set RPE and edit_exercise set-count for mains, not add_set", () => {

@@ -1,10 +1,10 @@
 /**
  * @module ProgramStalemateCard
  *
- * Ordinary-user **Program stalemate** card (ADR 0027 / 01). Why it failed,
- * miss-specific chips or buttons, plus type-in-composer. Chip click persists
- * that exact Constraint profile string then sends a user message. Not a
- * Mutation proposal.
+ * Ordinary-user **Program stalemate** card (ADR 0027 / 01; ADR 0029 / 02). Why
+ * it failed, miss-specific chips or buttons, plus type-in-composer. Chip and
+ * preference clicks persist a **User-stated change** then send a user message.
+ * Not a Mutation proposal.
  *
  * Depends on: stalemate helpers, user-constraints, Button.
  * Used by: MessageBubbles.
@@ -32,8 +32,10 @@ import {
 } from "@/app/api/chat/sanity/stalemate";
 import type {
     IProgramStalematePayload,
+    TProgramStalemateAction,
     TProgramStalemateChip,
     TStalemateChipField,
+    TStalematePreferenceKey,
 } from "@/app/api/chat/sanity/types";
 import { focusProgramBuilderChatInput } from "./MutationProposalCard";
 
@@ -50,6 +52,8 @@ export interface IProgramStalemateCardProps {
     handleExcludeEquipment: (value: TSelectOption[]) => void;
     handleHealthIssues: (value: TSelectOption[]) => void;
     healthIssues: TSelectOption[];
+    /** Session preference write for preference-honor **User-stated change**. */
+    onPreferenceChange?: (key: TStalematePreferenceKey, value: string) => void;
     payload: IProgramStalematePayload;
     sendMessage: TSendMessageWithContext;
     tool?: "buildWeek" | "mutateProgram";
@@ -62,8 +66,9 @@ function sessionValues(options: TSelectOption[]): string[] {
 }
 
 /**
- * Program stalemate actions: constraint chips, same-week skip, or training
- * user-stated exception. Click is a user message. They can still type.
+ * Program stalemate actions: constraint chips, preference clears, same-week
+ * skip, training exception, or **Fix it.** Click is a user message. They can
+ * still type.
  */
 export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
     excludeEquipment,
@@ -71,6 +76,7 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
     handleExcludeEquipment,
     handleHealthIssues,
     healthIssues,
+    onPreferenceChange,
     payload,
     sendMessage,
     tool = "buildWeek",
@@ -155,6 +161,44 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
         user,
     ]);
 
+    const runAction = useCallback(async (action: TProgramStalemateAction) => {
+        if (busy) return;
+        if (!action.preference) {
+            sendUserText(action.message);
+            return;
+        }
+        setBusy(true);
+        const { key, value } = action.preference;
+        onPreferenceChange?.(key, value);
+
+        if (user) {
+            try {
+                const existing = await getUserConstraints(user.id);
+                const base = existing ?? emptyUserConstraintProfileRecord();
+                await saveUserConstraintProfile(user.id, {
+                    ...base,
+                    preferences: {
+                        ...base.preferences,
+                        [key]: value,
+                    },
+                    rawStatements: existing?.rawStatements ?? [],
+                });
+                await queryClient.invalidateQueries({ queryKey: ["user-constraints", user.id] });
+            } catch {
+                // Session body + onPreferenceChange still carry this User-stated change.
+            }
+        }
+
+        sendUserText(action.message, { [key]: value });
+        setBusy(false);
+    }, [busy, onPreferenceChange, queryClient, sendUserText, user]);
+
+    const actions = payload.actions ?? [];
+    const showFixItFallback =
+        payload.kind === "constraint" &&
+        payload.chips.length === 0 &&
+        actions.length === 0;
+
     return (
         <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -220,6 +264,28 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
                                 { FIX_IT_MESSAGE }
                             </Button>
                         </>
+                    ) : null }
+                    { actions.map((action) => (
+                        <Button
+                            key={ `${action.label}:${action.preference?.key ?? "msg"}` }
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={ busy }
+                            onClick={ () => void runAction(action) }
+                        >
+                            { action.label }
+                        </Button>
+                    )) }
+                    { showFixItFallback ? (
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={ () => sendUserText(FIX_IT_MESSAGE) }
+                        >
+                            { FIX_IT_MESSAGE }
+                        </Button>
                     ) : null }
                     <p className="text-[12px] text-muted-foreground">
                         Or type a different ask below.

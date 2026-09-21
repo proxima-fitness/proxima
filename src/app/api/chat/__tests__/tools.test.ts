@@ -788,6 +788,30 @@ describe("chat tools.ts", () => {
             expect(programSanityStash.exerciseRoles).toBeUndefined();
         });
 
+        it("does not escalate structural stamp Soft-fails into a Program stalemate", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ buildWeekOnceGuard, programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            const first = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown };
+            const second = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown };
+
+            expect(first.error).toBe("periodizationStamp.missingWave");
+            expect(second.error).toBe("periodizationStamp.missingWave");
+            expect(first.stalemate).toBeUndefined();
+            expect(second.stalemate).toBeUndefined();
+            expect(programSanityStash.stalemateStopped).toBeUndefined();
+            expect(programSanityStash.softFailCounts).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+        });
+
         it("Soft-fails compile when week 1 has no main and leaves the guard unlocked", async () => {
             const buildWeekOnceGuard = { locked: false };
             const tools = getTools({
@@ -821,7 +845,14 @@ describe("chat tools.ts", () => {
                 goal: string;
                 daysPerWeek: number;
                 blocks: typeof fourWeekBlocks;
-                periodizationWave: typeof fourWeekDeloadWave | typeof fourWeekStampedWave;
+                periodizationWave: {
+                    weeks: Array<{
+                        week: number;
+                        main: { rpeDelta: number; setCountDelta: number };
+                        accessory?: { rpeDelta: number; setCountDelta: number };
+                        mainRepRange?: { start: number; end: number };
+                    }>;
+                };
             };
 
             function planInput(wave: TPlanInput["periodizationWave"]): TPlanInput {
@@ -950,6 +981,65 @@ describe("chat tools.ts", () => {
                 expect(output.routines).toBeUndefined();
                 expect(buildWeekOnceGuard.locked).toBe(false);
                 expect(programSanityStash.buildWeekRoutines).toBeNull();
+            });
+
+            /**
+             * ADR 0029 / 01: 2-set week-1 mains + deload setCountDelta -2 must
+             * reach evaluate (mocked pass), not Soft-fail at stamp.
+             */
+            it("reaches evaluate when a deload setCountDelta floors 2-set mains at 1", async () => {
+                vi.mocked(evaluate).mockClear();
+                const floorWave = {
+                    weeks: [
+                        { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+                        { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+                        {
+                            week: 4,
+                            main: { rpeDelta: -2, setCountDelta: -2 },
+                            accessory: { rpeDelta: -1, setCountDelta: -1 },
+                        },
+                    ],
+                };
+                const twoSetDays = [1, 2].map((dayNumber) => ({
+                    dayNumber,
+                    title: `Day ${dayNumber}`,
+                    notes: "",
+                    exercises: [
+                        {
+                            exercise_template_id: "ex-1",
+                            title: "Bench Press (Barbell)",
+                            notes: "",
+                            role: "main" as const,
+                            sets: [
+                                { type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 8 },
+                                { type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 8 },
+                            ],
+                        },
+                        {
+                            exercise_template_id: "ex-1",
+                            title: "Bench Press (Barbell)",
+                            notes: "",
+                            role: "accessory" as const,
+                            sets: [
+                                { type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 7 },
+                                { type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 7 },
+                            ],
+                        },
+                    ],
+                }));
+                const { buildWeekOnceGuard, planProgram, buildWeek } = setup();
+                await planProgram.execute(planInput(floorWave));
+
+                const output = (await buildWeek.execute({ totalDays: 2, routines: twoSetDays })) as {
+                    error?: string;
+                    routines?: THevyRoutine[];
+                };
+
+                expect(output.error).toBeUndefined();
+                expect(output.error).not.toBe("periodizationStamp.workingSetsBelowOne");
+                expect(vi.mocked(evaluate)).toHaveBeenCalledOnce();
+                expect(buildWeekOnceGuard.locked).toBe(true);
             });
         });
 

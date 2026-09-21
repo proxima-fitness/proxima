@@ -45,17 +45,18 @@ describe("stalemateKeyForError", () => {
         expect(stalemateKeyForError("training.sessionDurationFit")).toBe(
             "training.sessionDurationFit",
         );
-        expect(stalemateKeyForError("periodizationStamp.missingWave")).toBe(
-            "periodizationStamp.missingWave",
-        );
+        expect(stalemateKeyForError("constraint.peakHonor")).toBe("constraint.peakHonor");
     });
 
-    it("does not count schema, empty-day, bad id, or readProgram_required", () => {
+    it("does not count schema, empty-day, bad id, readProgram_required, or structural stamp Soft-fails", () => {
         expect(stalemateKeyForError("Invalid exercises")).toBeNull();
         expect(stalemateKeyForError("Invalid routines")).toBeNull();
         expect(stalemateKeyForError("Invalid exercise_template_id")).toBeNull();
         expect(stalemateKeyForError("Program mutation batch failed")).toBeNull();
         expect(stalemateKeyForError("readProgram_required")).toBeNull();
+        expect(stalemateKeyForError("periodizationStamp.missingWave")).toBeNull();
+        expect(stalemateKeyForError("periodizationStamp.missingRoles")).toBeNull();
+        expect(stalemateKeyForError("periodizationStamp.emptyMains")).toBeNull();
     });
 });
 
@@ -139,11 +140,42 @@ describe("buildStalematePayload", () => {
             { field: "injuries", value: "can't kneel" },
             { field: "injuries", value: "left ankle" },
         ]);
+        expect(payload.actions).toBeUndefined();
     });
 
     it("uses training kind for skill and training honor ids", () => {
         expect(buildStalematePayload("skill.sessionShape", null).kind).toBe("training");
         expect(buildStalematePayload("weekCoverage", null).kind).toBe("weekCoverage");
+    });
+
+    it("gives peakHonor a preference clear and Fix it", () => {
+        const payload = buildStalematePayload(
+            "constraint.peakHonor",
+            profile({ preferences: {
+                splitType: "",
+                exerciseVariability: "",
+                progressionSystem: "",
+                deloadWeek: "",
+                peakWeek: "yes",
+                warmupExercises: "",
+            } }),
+        );
+        expect(payload.kind).toBe("constraint");
+        expect(payload.chips).toEqual([]);
+        expect(payload.actions).toEqual([
+            {
+                label: "I don't need a peak week",
+                message: "I no longer want a peak week",
+                preference: { key: "peakWeek", value: "" },
+            },
+            { label: "Fix it.", message: "Fix it." },
+        ]);
+    });
+
+    it("still offers Fix it when a constraint miss has empty chips", () => {
+        const payload = buildStalematePayload("constraint.unknownHonor", null);
+        expect(payload.chips).toEqual([]);
+        expect(payload.actions).toEqual([{ label: "Fix it.", message: "Fix it." }]);
     });
 });
 
