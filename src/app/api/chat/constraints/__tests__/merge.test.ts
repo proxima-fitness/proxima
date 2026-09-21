@@ -34,17 +34,40 @@ describe('mergeConstraintProfiles', () => {
         expect(result.injuries).not.toContain('bad knee');
     });
 
-    it('session preferences win when non-empty', () => {
+    it('persisted empty split beats session non-empty (PPL)', () => {
         const persisted = profile({
-            preferences: { splitType: 'PPL', exerciseVariability: 'high', progressionSystem: 'linear', deloadWeek: '', peakWeek: '', warmupExercises: '' },
+            preferences: { splitType: '', exerciseVariability: 'high', progressionSystem: 'linear', deloadWeek: '', peakWeek: '', warmupExercises: '' },
         });
         const session = profile({
-            preferences: { splitType: 'Upper/Lower', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
+            preferences: { splitType: 'PPL', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
         });
         const result = mergeConstraintProfiles(persisted, session);
-        expect(result.preferences.splitType).toBe('Upper/Lower');
+        expect(result.preferences.splitType).toBe('');
         expect(result.preferences.exerciseVariability).toBe('high');
         expect(result.preferences.progressionSystem).toBe('linear');
+    });
+
+    it('persisted empty split beats session Full Body', () => {
+        const persisted = profile({
+            preferences: { splitType: '', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
+        });
+        const session = profile({
+            preferences: { splitType: 'Full Body', exerciseVariability: '', progressionSystem: '', deloadWeek: '', peakWeek: '', warmupExercises: '' },
+        });
+        const result = mergeConstraintProfiles(persisted, session);
+        expect(result.preferences.splitType).toBe('');
+    });
+
+    it('session preferences seed when persisted is null', () => {
+        const session = profile({
+            preferences: { splitType: 'PPL', exerciseVariability: 'high', progressionSystem: 'DUP', deloadWeek: 'week 4', peakWeek: '', warmupExercises: 'yes' },
+        });
+        const result = mergeConstraintProfiles(null, session);
+        expect(result.preferences.splitType).toBe('PPL');
+        expect(result.preferences.exerciseVariability).toBe('high');
+        expect(result.preferences.progressionSystem).toBe('DUP');
+        expect(result.preferences.deloadWeek).toBe('week 4');
+        expect(result.preferences.warmupExercises).toBe('yes');
     });
 
     it('persisted preferences kept when session is empty', () => {

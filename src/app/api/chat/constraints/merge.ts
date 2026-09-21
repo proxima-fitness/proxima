@@ -11,10 +11,11 @@ import type { TConstraintProfile } from './types';
  * - Array fields (`injuries`, `excludedEquipment`, `excludedAreas`)
  *   use persisted only - do not union with session. Edit profile removals must stick;
  *   stale questionnaire/session strings must not resurrect on the next chat turn.
- * - Preferences: session wins when non-empty; otherwise persisted is kept.
+ * - Preferences: persisted only (same tradeoff as arrays). Cleared prefs must stick;
+ *   stale questionnaire/session preference strings must not resurrect.
  *
- * Tradeoff: new questionnaire array values for users with an existing row must arrive
- * via `updateConstraintProfile` or Edit profile Save - not merge alone.
+ * Tradeoff: new questionnaire array or preference values for users with an existing
+ * row must arrive via `updateConstraintProfile` or Edit profile Save - not merge alone.
  */
 export function mergeConstraintProfiles(
     persisted: TConstraintProfile | null,
@@ -31,13 +32,6 @@ export function mergeConstraintProfiles(
         injuries: persisted.injuries,
         excludedEquipment: sanitizeExcludedEquipment(persisted.excludedEquipment),
         excludedAreas: persisted.excludedAreas,
-        preferences: {
-            splitType: session.preferences.splitType || persisted.preferences.splitType,
-            exerciseVariability: session.preferences.exerciseVariability || persisted.preferences.exerciseVariability,
-            progressionSystem: session.preferences.progressionSystem || persisted.preferences.progressionSystem,
-            deloadWeek: session.preferences.deloadWeek || persisted.preferences.deloadWeek,
-            peakWeek: session.preferences.peakWeek || persisted.preferences.peakWeek,
-            warmupExercises: session.preferences.warmupExercises || persisted.preferences.warmupExercises,
-        },
+        preferences: { ...persisted.preferences },
     };
 }
