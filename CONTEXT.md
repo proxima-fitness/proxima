@@ -513,7 +513,7 @@ _Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays
 Tag on each week-1 exercise row at **First build**: `main`, `accessory`, or `warmup`. The **Periodization wave** attaches to mains. Not persisted on the **Program prescription**. Not sent to Hevy. Distinct from set type `"warmup"` (a lighter set on a working lift).
 
 
-_Avoid_: Compound flag in the catalog, first-row-is-the-main (warmup *rows* sit first), storing the tag for **Edit program** re-stamp
+_Avoid_: Compound flag on a Hevy exercise template, first-row-is-the-main (warmup *rows* sit first), storing the tag for **Edit program** re-stamp
 
 
 
@@ -1050,10 +1050,10 @@ _Avoid_: Jump after Save/Sync, jump on historical cards, jump with no row, jump 
 ### Soft tool failure
 
 
-A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue. The model gets fix text and may retry in-turn. Ordinary users see calm in-progress copy only. Full tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn.
+A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue. The model gets fix text and may retry in-turn. The first miss of an honor id this turn is calm in-progress copy for ordinary users. The second of the same id is a **Program stalemate**, not a third hidden retry. Full raw tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn and from **Hard agent failure**.
 
 
-_Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure
+_Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure, Workout generation failed on a Soft tool failure
 
 
 
@@ -1061,10 +1061,10 @@ _Avoid_: Tool crash (implies hard fail), validation error shown to user, treatin
 ### Hard agent failure
 
 
-The chat stream dies or the client declares the turn dead (stall timeout, network, payload too large, provider/gateway kill). Surfaces recovery UI and `ai_agent_error` (with `errorClass` when known). Not a Soft tool failure.
+The chat stream dies (network, payload too large, provider/gateway kill, Vercel function `maxDuration`). Surfaces recovery UI and `ai_agent_error` (with `errorClass` when known). Not a Soft tool failure. Not an empty-grid wall-clock timer while Andy is still Soft-failing.
 
 
-_Avoid_: Soft tool error panel, rate limit (usage cap is a separate 402 path), An error occurred (opaque SDK default, not a product term)
+_Avoid_: Soft tool error panel, rate limit (usage cap is a separate 402 path), An error occurred (opaque SDK default, not a product term), Workout generation failed because no week landed in 120s
 
 
 
@@ -1226,7 +1226,7 @@ _Avoid_: Explicit request (implies confirm UI), agent-inferred removal, program-
 ### Mutation constraint gate
 
 
-Hard check on agent-proposed program changes against structured Constraint profile fields that catalog metadata can match (excluded equipment, excluded areas, injuries that name a muscle group) plus structural rules such as no emptied training days. Runs before those changes reach the builder. Does not apply to manual grid edits or Sync. Those honor the user's explicit program state. Does not cover Constraint profile preferences, semantic health limits the substring miss, or Training profile. Those are **Program sanity check**.
+Hard check on agent-proposed program changes against structured Constraint profile fields that a **Hevy exercise template** can match on equipment or primary muscle group (excluded equipment, excluded areas, injuries that name a muscle group) plus structural rules such as no emptied training days. Runs before those changes reach the builder. Does not apply to manual grid edits or Sync. Those honor the user's explicit program state. Does not cover Constraint profile preferences, semantic health limits the string miss, or Training profile. Those are **Program sanity check**.
 
 
 _Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-only check, treating the gate as a full Constraint profile lock
@@ -1237,7 +1237,7 @@ _Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-
 ### Program sanity check
 
 
-Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build**). Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry. Does not run on manual grid edits or Sync.
+Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build** unless a **Program stalemate** same-week skip this build). Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry until a **Program stalemate**. Does not run on manual grid edits or Sync.
 
 
 _Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only `buildWeek` payload, `constraint.progressionHonor` as a **First build** question
@@ -1245,13 +1245,24 @@ _Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation con
 
 
 
+### Program stalemate
+
+
+Andy and a **Program sanity check**, **Mutation constraint gate**, or week-coverage miss disagreed twice on the same honor id or error code this turn. Nothing lands. The user chooses (exact Constraint profile chip, same-week skip this **First build**, or a different program). Distinct from a hidden Soft tool failure retry and from **Hard agent failure**.
+
+
+_Avoid_: Workout generation failed, Jev popup, retry dialog, Soft-fail escalation, honor check (the question ids), landing a rejected week to dodge a timer
+
+
+
+
 ### User-stated exception
 
 
-The user named a program outcome that would fail a Training profile or skill-principle **Program sanity check** (short day, skip a deload Andy invented, delete a lift they do not want, every week the same). Those checks do not reject. Skipping **Periodization** is this, not a skipped **Questionnaire advanced**. Constraint profile and code gates still reject until a **User-stated change** or **Edit profile**.
+The user named a program outcome that would fail a Training profile or skill-principle **Program sanity check** (short day, skip a deload Andy invented, delete a lift they do not want, every week the same). Those checks do not reject. Skipping **Periodization** is this, not a skipped **Questionnaire advanced**. A **Program stalemate** "same week every week" choice skips week-coverage for that **First build** only. Constraint profile and the **Mutation constraint gate** still reject until a **User-stated change** or **Edit profile**.
 
 
-_Avoid_: User-stated change (that term is for removing a saved constraint), taste override of a hard constraint, slapping the user for an explicit ask
+_Avoid_: User-stated change (that term is for removing a saved constraint), taste override of a hard constraint, slapping the user for an explicit ask, skipped **Questionnaire advanced** as a same-week skip
 
 
 

@@ -5,7 +5,7 @@
  * `openapi.generated.json`.
  *
  * Depends on: ./openapi.generated.json
- * Used by: GET /openapi.json, Scalar at /scalar
+ * Used by: GET /openapi.json, Scalar at /developers
  */
 
 import spec from "./openapi.generated.json";

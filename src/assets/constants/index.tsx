@@ -6061,7 +6061,10 @@ export const footerLinks = [
         name: "Blog",
         link: "/blog",
       },
-
+      {
+        name: "Developers",
+        link: "/developers",
+      },
     ],
   },
   {

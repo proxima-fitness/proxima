@@ -45,9 +45,15 @@ export const Footer: React.FC = () => {
                                             index !== footerlink.links.length - 1 ? "mb-4" : "mb-0"
                                         }` }
                                     >
-                                        <Link href={ link.link } className="cursor-pointer block">
-                                            {link.name}
-                                        </Link>
+                                        {link.link === "/developers" ? (
+                                            <a href={ link.link } className="cursor-pointer block">
+                                                {link.name}
+                                            </a>
+                                        ) : (
+                                            <Link href={ link.link } className="cursor-pointer block">
+                                                {link.name}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

@@ -2,8 +2,7 @@
 
 /**
  * @module HowItWorksSteps
- * Accordion steps for the homepage How it works section. The critique panel
- * opens by default so #how-it-works lands on why this is not a single LLM call.
+ * Accordion steps for the homepage How it works section. All panels start closed.
  * Depends on: Accordion UI. Used by: HowItWorksSection.
  */
 
@@ -37,7 +36,7 @@ const steps: IHowItWorksStep[] = [
     },
     {
         id: "critique",
-        title: "A coaching domain expert model critiques the week",
+        title: "Then the week has to pass review",
         body: (
             <>
                 After Andy writes the plan, a separate
@@ -68,16 +67,12 @@ const steps: IHowItWorksStep[] = [
     },
 ];
 
-/** Default-open value for the critique panel. */
-export const HOW_IT_WORKS_DEFAULT_OPEN = "critique";
-
-/** Numbered How it works accordion. Critique step is open on first paint. */
+/** Numbered How it works accordion. All steps start closed. */
 export function HowItWorksSteps() {
     return (
         <Accordion
             type="single"
             collapsible
-            defaultValue={HOW_IT_WORKS_DEFAULT_OPEN}
             className="mt-12 w-full"
         >
             {steps.map((step, index) => (

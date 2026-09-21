@@ -4,7 +4,7 @@
  * Serves the Public API OpenAPI 3 document (ADR 0026 / 03).
  *
  * Depends on: @/lib/public-api/openapi
- * Used by: Scalar at /scalar, third-party clients
+ * Used by: Scalar at /developers, third-party clients
  */
 
 import { NextResponse } from "next/server";

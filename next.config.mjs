@@ -60,6 +60,11 @@ const nextConfig = {
         source: '/dashboard',
         destination: '/profile',
         permanent: true,
+      },
+      {
+        source: '/scalar',
+        destination: '/developers',
+        permanent: true,
       }
     ]
   },
