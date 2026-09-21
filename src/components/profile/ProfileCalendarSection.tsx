@@ -3,7 +3,8 @@
 /**
  * @module ProfileCalendarSection
  *
- * Profile calendar card - month grid with teal workout-day highlights and session tooltips.
+ * Profile calendar card. Month grid with teal workout-day highlights. Shown for
+ * any signed-in user; Hevy connect is not a gate.
  *
  * Depends on: useProfileCalendar, workout-history-calendar helpers, buildWorkoutDetailHref
  * Used by: ProfileContent

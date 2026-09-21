@@ -98,7 +98,7 @@ describe("ProfileContent", () => {
         expect(screen.getByTestId("profile-hero")).toBeTruthy();
     });
 
-    it("hides hero and recent workouts when logged out / Hevy disconnected", () => {
+    it("hides hero, calendar, and recent workouts when logged out", () => {
         useUserContext.mockReturnValue({ user: null });
         useHevySecret.mockReturnValue({ data: undefined });
 
@@ -109,5 +109,17 @@ describe("ProfileContent", () => {
         expect(screen.getByTestId("profile-stats")).toBeTruthy();
         expect(screen.queryByTestId("profile-calendar")).toBeNull();
         expect(screen.queryByTestId("recent-workouts")).toBeNull();
+    });
+
+    it("shows calendar, statistics, and recent workouts without a Hevy key", () => {
+        useUserContext.mockReturnValue({ user: { id: "user-1" } });
+        useHevySecret.mockReturnValue({ data: undefined });
+
+        renderContent(<ProfileContent />);
+
+        expect(screen.getByTestId("profile-hero")).toBeTruthy();
+        expect(screen.getByTestId("profile-calendar")).toBeTruthy();
+        expect(screen.getByTestId("profile-stats")).toBeTruthy();
+        expect(screen.getByTestId("recent-workouts")).toBeTruthy();
     });
 });

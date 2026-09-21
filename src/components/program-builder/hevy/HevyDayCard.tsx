@@ -4,7 +4,7 @@
  * @module HevyDayCard
  * Single day card in the Hevy program builder: draggable card with title, notes indicator, exercise list,
  * add exercise button, superset creation, and dropdown (delete, edit title, add note, duplicate day). Keyboard shortcuts when focused.
- * Depends on: HevyExerciseVisualizer, HevyDuplicateDay, DropIndicator, convertHevyExerciseIntoHevyAddExercise, DayCardSourceBadge, SessionGoalBadge.
+ * Depends on: HevyExerciseVisualizer, HevyDuplicateDay, DropIndicator, convertHevyExerciseIntoHevyAddExercise, DayCardSourceBadge, SessionGoalBadge, workoutSourceLabel.
  * Used by: HevyColumn (one per day in that week).
  */
 
@@ -36,6 +36,7 @@ import {
 } from "@/utils/general/helpers";
 import { DayCardSourceBadge } from "@/components/profile/DayCardSourceBadge";
 import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
+import { workoutSourceLabel } from "@/lib/public-api/workout-source";
 
 /** Props for a single day card within a week column. */
 interface IProps {
@@ -91,6 +92,8 @@ interface IProps {
     isMobile?: boolean;
     /** Read-only: show session goal pill in card header (default true). */
     showSessionGoalBadge?: boolean;
+    /** Read-only: show Workout source pill when `day.source` is set (default true). */
+    showWorkoutSource?: boolean;
 }
 
 /**
@@ -125,6 +128,7 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         hevyExercises,
         isMobile = false,
         showSessionGoalBadge = true,
+        showWorkoutSource = true,
     } = props;
 
     const isReadOnly = variant === "read-only";
@@ -216,6 +220,9 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
         totalExerciseCount != null &&
         totalExerciseCount > (day.exercises?.length ?? 0);
     const resolvedWorkoutId = workoutId ?? day.id;
+    const workoutSource = showWorkoutSource && day.source
+        ? workoutSourceLabel(day.source)
+        : undefined;
 
     return (
         <>
@@ -246,6 +253,14 @@ export const HevyDayCard: React.FC<IProps> = (props) => {
                                     {formatWorkoutWallDuration(day.started_at, day.ended_at) && (
                                         <span>{formatWorkoutWallDuration(day.started_at, day.ended_at)}</span>
                                     )}
+                                    {workoutSource ? (
+                                        <span
+                                            className="rounded-full border border-border/60 px-2 py-0.5 font-secondary text-xs text-muted-foreground"
+                                            aria-label={`Workout source: ${workoutSource}`}
+                                        >
+                                            {workoutSource}
+                                        </span>
+                                    ) : null}
                                     {showSessionGoalBadge && <SessionGoalBadge day={day} />}
                                 </div>
                             </div>

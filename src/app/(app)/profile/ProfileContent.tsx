@@ -5,7 +5,8 @@
  *
  * Client profile body: single scroll on muted background — hero (when signed
  * in), Program overview first (Suspense: overview reads `?programId=`), then
- * calendar/statistics, blind spot, recent workouts (ADR 0010 / 05). Resume-draft
+ * calendar/statistics, blind spot, recent workouts (ADR 0010 / 05, ADR 0026 / 06).
+ * Calendar and recent workouts render for any signed-in user. Resume-draft
  * banner sits above the stack.
  *
  * Depends on: UserContext, useHevyPrograms/useHevySecret, ProfileHero,
@@ -38,10 +39,7 @@ const PROFILE_PAGE_X =
 export function ProfileContent() {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
-
     const { data: hevyPrograms, isLoading: isLoadingHevy } = useHevyPrograms(user, hevyApiKey ?? "");
-
-    const hevyConnected = Boolean(hevyApiKey);
 
     useEffect(() => {
         posthog?.capture?.("page_view", { page: "/profile", user: user?.id ?? "user_id_unknown" });
@@ -67,13 +65,13 @@ export function ProfileContent() {
                 </Suspense>
 
                 <div className="grid gap-4 lg:grid-cols-5 lg:items-stretch">
-                    {hevyConnected ? (
+                    {user ? (
                         <div className="h-full lg:col-span-2">
                             <ProfileCalendarSection />
                         </div>
                     ) : null}
                     <div className="h-full lg:col-span-3">
-                        <ProfileStatisticsSection hevyConnected={hevyConnected} />
+                        <ProfileStatisticsSection />
                     </div>
                 </div>
 
@@ -84,7 +82,7 @@ export function ProfileContent() {
                     />
                 </Card>
 
-                {hevyConnected ? <RecentWorkoutsSection /> : null}
+                {user ? <RecentWorkoutsSection /> : null}
             </div>
         </div>
     );

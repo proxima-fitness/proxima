@@ -4,7 +4,8 @@
  * Client-only logged workout detail: metadata block + full read-only HevyDayCard.
  * React Query → GET /api/workout-history/workouts/[id].
  *
- * Depends on: useWorkoutDetail, useHevyExercises, HevyDayCard, UserContext
+ * Depends on: useWorkoutDetail, useHevyExercises, HevyDayCard, UserContext,
+ *   workoutSourceLabel
  * Used by: (app)/workout/[id]/page.tsx
  */
 "use client";
@@ -14,7 +15,6 @@ import { notFound, usePathname, useSearchParams } from "next/navigation";
 import { useUserContext } from "@/contexts/UserContext";
 import { useHevyExercises, useWorkoutDetail } from "@/api/hooks";
 import { WorkoutNotFoundError } from "@/api/workout-history-browse";
-import { HEVY_WORKOUT_SOURCE } from "@/api/workout-history";
 import { HevyDayCard } from "@/components/program-builder/hevy/HevyDayCard";
 import { Badge } from "@/components/ui/badge";
 import { SessionGoalBadge } from "@/components/profile/SessionGoalBadge";
@@ -27,10 +27,7 @@ import {
 } from "@/utils/general/helpers";
 import styles from "@/style";
 import { buildAuthLoginHref } from "@/lib/sign-in-return";
-
-const SOURCE_LABELS: Record<string, string> = {
-    [HEVY_WORKOUT_SOURCE]: "Hevy",
-};
+import { workoutSourceLabel } from "@/lib/public-api/workout-source";
 
 function countExercisesAndSets(workout: THevyRoutine): { exercises: number; sets: number } {
     const exercises = workout.exercises ?? [];
@@ -124,7 +121,7 @@ export function WorkoutDetailContent({
     }
 
     const { exercises: exerciseCount, sets: setCount } = countExercisesAndSets(workout);
-    const sourceLabel = workout.source ? SOURCE_LABELS[workout.source] ?? workout.source : undefined;
+    const sourceLabel = workout.source ? workoutSourceLabel(workout.source) : undefined;
     const formattedDate = convertSupabaseDateToReadable(workout.started_at);
     const duration = formatWorkoutWallDuration(workout.started_at, workout.ended_at);
 
@@ -172,6 +169,7 @@ export function WorkoutDetailContent({
                         day={workout}
                         hevyExercises={hevyExercises}
                         showSessionGoalBadge={false}
+                        showWorkoutSource={false}
                     />
                 </div>
             </div>

@@ -5,6 +5,7 @@
  *
  * Profile horizontal browse feed of backed-up workouts as read-only preview cards.
  * Cursor-paginated via React Query; refetches page 1 when sync backfill adds rows.
+ * Shown for any signed-in user (ADR 0026 / 06). Hevy connect is not a gate.
  *
  * Depends on: useLoggedWorkoutBrowse, useHevyExercises, useHevySecret, useWorkoutHistorySyncPoller
  * Used by: ProfileContent
@@ -37,14 +38,14 @@ function PreviewCardSkeleton() {
     );
 }
 
-/** Horizontal Recent Workouts feed - Hevy-connected users only. */
+/** Horizontal Recent Workouts feed. */
 export function RecentWorkoutsSection() {
     const { user } = useUserContext();
     const { data: hevyApiKey } = useHevySecret(user);
     const hevyConnected = Boolean(hevyApiKey);
     const { progress, retry, isPolling } = useWorkoutHistorySyncPoller(hevyConnected);
 
-    const { data: hevyExercises } = useHevyExercises(hevyConnected);
+    const { data: hevyExercises } = useHevyExercises(Boolean(user));
     const {
         data,
         isLoading,
@@ -52,7 +53,7 @@ export function RecentWorkoutsSection() {
         hasNextPage,
         isFetchingNextPage,
         fetchNextPage,
-    } = useLoggedWorkoutBrowse(user, hevyConnected);
+    } = useLoggedWorkoutBrowse(user, true);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -69,17 +70,21 @@ export function RecentWorkoutsSection() {
         progress && isSyncing ? Math.max(0, progress.hevyCount - progress.backedUpCount) : 0;
 
     const showEmptySyncing = !isLoading && previewItems.length === 0 && isSyncing;
-    const showEmptyCaughtUp =
-        !isLoading && previewItems.length === 0 && syncStatus === "synced";
     const showEmptyError =
         !isLoading && previewItems.length === 0 && syncStatus === "error";
+    const showEmpty =
+        !isLoading &&
+        !isError &&
+        previewItems.length === 0 &&
+        !showEmptySyncing &&
+        !showEmptyError;
 
     const showScrollableFeed =
         !isLoading &&
         !isError &&
         !showEmptySyncing &&
         !showEmptyError &&
-        !showEmptyCaughtUp &&
+        !showEmpty &&
         previewItems.length > 0;
 
     useEffect(() => {
@@ -118,10 +123,6 @@ export function RecentWorkoutsSection() {
         container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     };
 
-    if (!hevyConnected) {
-        return null;
-    }
-
     return (
         <section aria-labelledby="recent-workouts-heading">
             <Card className={cn(PROFILE_SECTION_CARD_CLASS, "sm:overflow-visible")}>
@@ -129,7 +130,7 @@ export function RecentWorkoutsSection() {
                     id="recent-workouts-heading"
                     icon={<History className="size-4 shrink-0 opacity-80" aria-hidden />}
                     title="Recent workouts"
-                    description="Synced from Hevy."
+                    description="Your backed-up workouts."
                 />
 
                 {isLoading ? (
@@ -164,9 +165,9 @@ export function RecentWorkoutsSection() {
                             {isPolling ? "Retrying…" : "Retry sync"}
                         </Button>
                     </div>
-                ) : showEmptyCaughtUp ? (
+                ) : showEmpty ? (
                     <p className="pt-4 text-sm text-muted-foreground">
-                        No backed-up workouts yet. Log a workout in Hevy to see it here.
+                        No backed-up workouts yet.
                     </p>
                 ) : (
                     <div className="relative overflow-hidden pt-4">

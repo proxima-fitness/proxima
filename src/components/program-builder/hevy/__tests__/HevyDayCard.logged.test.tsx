@@ -142,6 +142,18 @@ describe("HevyDayCard read-only variant", () => {
         expect(screen.queryByText("In Hevy")).toBeNull();
         expect(screen.queryByText("Completed")).toBeNull();
     });
+
+    it("shows a non-Hevy Workout source on the preview card", () => {
+        const day = mapBackedUpWorkoutToHevyRoutine({
+            ...backedUpWorkoutFixture,
+            source: "strong",
+        });
+
+        render(<HevyDayCard variant="read-only" day={day} />);
+
+        expect(screen.getByText("Strong")).toBeTruthy();
+        expect(screen.getByLabelText("Workout source: Strong")).toBeTruthy();
+    });
 });
 
 describe("HevyDayCard Proposal mark gutter", () => {

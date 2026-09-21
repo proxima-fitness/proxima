@@ -5,7 +5,7 @@
  * these slugs. `hevy` stays on `source_type` for native sync and is reserved.
  *
  * Depends on: nothing
- * Used by: Public API workout routes (ADR 0026 / 05)
+ * Used by: Public API workout routes (ADR 0026 / 05), profile history (ADR 0026 / 06)
  */
 
 /** Native sync only. Public API writes must not use this slug. */
@@ -39,6 +39,35 @@ export type TPublicApiWorkoutSource = (typeof PUBLIC_API_WORKOUT_SOURCES)[number
 export const PUBLIC_API_WORKOUT_SOURCE_SET: ReadonlySet<string> = new Set(
     PUBLIC_API_WORKOUT_SOURCES,
 );
+
+const WORKOUT_SOURCE_LABELS: Record<string, string> = {
+    [HEVY_RESERVED_SOURCE]: "Hevy",
+    manual: "Manual",
+    strong: "Strong",
+    macrofactor_workouts: "MacroFactor",
+    fitbod: "Fitbod",
+    gravl: "Gravl",
+    apple_health: "Apple Health",
+    jefit: "Jefit",
+    caliber: "Caliber",
+    boostcamp: "Boostcamp",
+    liftosaur: "Liftosaur",
+    strengthlog: "StrengthLog",
+    alpha_progression: "Alpha Progression",
+    stronglifts: "StrongLifts",
+    setgraph: "Setgraph",
+    rp_hypertrophy: "RP Hypertrophy",
+    juggernaut: "Juggernaut",
+};
+
+/**
+ * Display name for a **Workout source** slug.
+ *
+ * @param slug - Backup `workouts.source` value
+ */
+export function workoutSourceLabel(slug: string): string {
+    return WORKOUT_SOURCE_LABELS[slug] ?? slug;
+}
 
 /**
  * True when the slug is reserved for Hevy native sync.

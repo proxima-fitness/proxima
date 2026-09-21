@@ -5,6 +5,7 @@ import {
     isReservedHevySource,
     PUBLIC_API_WORKOUT_SOURCES,
     PUBLIC_API_WORKOUT_SOURCE_SET,
+    workoutSourceLabel,
 } from "../workout-source";
 
 /** ADR 0026 v1 list — hardcoded so a silent drop in the module fails this file. */
@@ -56,5 +57,19 @@ describe("isReservedHevySource", () => {
         expect(isReservedHevySource("manual")).toBe(false);
         expect(isReservedHevySource("strong")).toBe(false);
         expect(isReservedHevySource("Hevy")).toBe(false);
+    });
+});
+
+describe("workoutSourceLabel", () => {
+    it("names Hevy and Public API Workout sources", () => {
+        expect(workoutSourceLabel("hevy")).toBe("Hevy");
+        expect(workoutSourceLabel("strong")).toBe("Strong");
+        expect(workoutSourceLabel("macrofactor_workouts")).toBe("MacroFactor");
+        expect(workoutSourceLabel("apple_health")).toBe("Apple Health");
+        expect(workoutSourceLabel("manual")).toBe("Manual");
+    });
+
+    it("returns the slug when the source is unknown", () => {
+        expect(workoutSourceLabel("not_a_source")).toBe("not_a_source");
     });
 });

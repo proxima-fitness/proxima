@@ -510,7 +510,7 @@ export const useWorkoutDetail = (user: User | undefined | null, workoutId: strin
  * Cursor-paginated browse feed of logged workout previews for the profile section.
  *
  * @param user - Authenticated user (query disabled when null)
- * @param enabled - When false, skips fetch (e.g. Hevy not connected)
+ * @param enabled - When false, skips fetch
  */
 export const useLoggedWorkoutBrowse = (user: User | undefined | null, enabled: boolean) => {
     return useInfiniteQuery({
@@ -638,7 +638,7 @@ export const useBodyMeasurementsHistory = (
  * Weekly Duration/Reps aggregates for the profile statistics chart.
  *
  * @param user - Authenticated user (query disabled when null)
- * @param enabled - When false, skips fetch (e.g. Hevy not connected)
+ * @param enabled - When false, skips fetch
  * @param weeks - Chart range: 4 or 12 Sunday-start weeks
  */
 export const useProfileStatistics = (

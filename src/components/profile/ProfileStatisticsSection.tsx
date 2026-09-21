@@ -1,20 +1,20 @@
- 
 "use client";
 
 /**
  * @module ProfileStatisticsSection
  *
- * Profile statistics card: Duration/Reps/Volume tabs, weekly bar chart, "This week" headline,
- * 4/12 week range selector. Connect CTA when Hevy not connected.
+ * Profile statistics card: Duration/Reps/Volume tabs, weekly bar chart, "This week"
+ * headline, 4/12 week range selector. Reads every Workout source. Hevy connect is
+ * not a gate (ADR 0026 / 06).
  *
- * Depends on: useProfileStatistics, useWorkoutHistorySyncPoller, ConnectHevyDialog
+ * Depends on: useProfileStatistics, useHevySecret, useWorkoutHistorySyncPoller
  * Used by: ProfileContent
  */
 
 import { useMemo, useState } from "react";
 import { Loader2, ChartLineIcon } from "lucide-react";
 import { useUserContext } from "@/contexts/UserContext";
-import { useProfileStatistics } from "@/api/hooks";
+import { useHevySecret, useProfileStatistics } from "@/api/hooks";
 import {
     formatDurationFromSeconds,
     formatProfileConsistencyLine,
@@ -23,10 +23,8 @@ import {
     formatWeekBucketLabel,
 } from "@/api/workout-history-statistics";
 import { isWorkoutHistorySyncInProgress } from "@/api/workout-history-sync";
-import { ConnectHevyDialog } from "@/components/header/ConnectHevyDialog";
 import { usePoundsOrKgContext } from "@/contexts/PoundsOrKgContext";
 import { getWeightUnit } from "@/lib/weightUtils";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
     Select,
@@ -53,10 +51,6 @@ import {
 
 type TMetric = "duration" | "reps" | "volume";
 type TWeekRange = 4 | 12;
-
-interface IProps {
-    hevyConnected: boolean;
-}
 
 function StatisticsChartSkeleton() {
     return (
@@ -157,15 +151,16 @@ function WeeklyBarChart({
     );
 }
 
-/** Statistics card with weekly chart or connect CTA. */
-export function ProfileStatisticsSection({ hevyConnected }: IProps) {
+/** Statistics card with weekly chart. */
+export function ProfileStatisticsSection() {
     const { user } = useUserContext();
+    const { data: hevyApiKey } = useHevySecret(user);
+    const hevyConnected = Boolean(hevyApiKey);
     const { isInLbs } = usePoundsOrKgContext();
-    const [connectOpen, setConnectOpen] = useState(false);
     const [metric, setMetric] = useState<TMetric>("duration");
     const [weekRange, setWeekRange] = useState<TWeekRange>(12);
 
-    const { data, isLoading, isError } = useProfileStatistics(user, hevyConnected, weekRange);
+    const { data, isLoading, isError } = useProfileStatistics(user, true, weekRange);
 
     const { data: progress } = useQuery({
         queryKey: WORKOUT_HISTORY_SYNC_PROGRESS_QUERY_KEY,
@@ -221,45 +216,29 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                             />
                         }
                         title="Statistics"
-                        description="Weekly totals from your Hevy backup."
+                        description="Weekly totals from your backed-up workouts."
                         action={
-                            hevyConnected ? (
-                                <Select
-                                    value={String(weekRange)}
-                                    onValueChange={(value) =>
-                                        setWeekRange(value === "12" ? 12 : 4)
-                                    }
+                            <Select
+                                value={String(weekRange)}
+                                onValueChange={(value) =>
+                                    setWeekRange(value === "12" ? 12 : 4)
+                                }
+                            >
+                                <SelectTrigger
+                                    className="h-8 w-[132px] shrink-0 rounded-full border-border/60 text-xs"
+                                    aria-label="Chart time range"
                                 >
-                                    <SelectTrigger
-                                        className="h-8 w-[132px] shrink-0 rounded-full border-border/60 text-xs"
-                                        aria-label="Chart time range"
-                                    >
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="4">Last 4 weeks</SelectItem>
-                                        <SelectItem value="12">Last 12 weeks</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            ) : null
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="4">Last 4 weeks</SelectItem>
+                                    <SelectItem value="12">Last 12 weeks</SelectItem>
+                                </SelectContent>
+                            </Select>
                         }
                     />
 
-                    {!hevyConnected ? (
-                        <div className="flex flex-col items-center justify-center px-1 py-6 text-center">
-                            <p className="max-w-sm text-xs text-muted-foreground">
-                                Connect Hevy to see weekly duration, rep, and volume totals from
-                                your backed-up workouts.
-                            </p>
-                            <Button
-                                type="button"
-                                className="mt-3 rounded-full bg-lightSecondary px-4 text-sm text-white hover:bg-lightSecondary/90"
-                                onClick={() => setConnectOpen(true)}
-                            >
-                                Connect Hevy
-                            </Button>
-                        </div>
-                    ) : isLoading ? (
+                    {isLoading ? (
                         <StatisticsChartSkeleton />
                     ) : isError || !data ? (
                         <p className="pt-2 text-xs text-muted-foreground">
@@ -346,8 +325,7 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                                         </div>
                                     ) : (
                                         <p className="text-xs text-muted-foreground">
-                                            No backed-up workouts in this range yet. Log a workout
-                                            in Hevy to see weekly totals here.
+                                            No backed-up workouts in this range yet.
                                         </p>
                                     )}
                                 </div>
@@ -373,11 +351,6 @@ export function ProfileStatisticsSection({ hevyConnected }: IProps) {
                     )}
                 </Card>
             </section>
-
-            <ConnectHevyDialog
-                openConnectHevyDialog={connectOpen}
-                handleOpenConnectHevyDialog={setConnectOpen}
-            />
         </>
     );
 }
