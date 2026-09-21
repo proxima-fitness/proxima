@@ -36,11 +36,11 @@ Platform improvement
 
 With your optional consent, Proxima may use your workout history backup, saved programs, builder usage, and coaching chat content to improve our products and services - for example, to refine program recommendations, fix bugs, and evaluate feature quality. Where feasible, we aggregate or de-identify this information. This data is not sold, shared for third-party advertising, or used to target ads.
 
-The Proxima Fitness Website and Application also use PostHog and Google Analytics as part of platform improvement. These tools collect pseudonymous usage data - such as pages visited, feature interactions, device and browser information, and session activity - to help us understand how the Services are used and where to improve them. PostHog and Google Analytics are covered by the same optional platform improvement consent; you can turn this off in Privacy settings once that page is available in your account menu. For more on Google Analytics, see How Google uses Data (https://www.google.com/policies/privacy/partners).
+The Proxima Fitness Website and Application also use PostHog and Google Analytics as part of platform improvement. These tools collect pseudonymous usage data - such as pages visited, feature interactions, device and browser information, and session activity - to help us understand how the Services are used and where to improve them. PostHog and Google Analytics are covered by the same optional platform improvement consent; you can turn this off in Settings in your account menu. For more on Google Analytics, see How Google uses Data (https://www.google.com/policies/privacy/partners).
 
 Marketing
 
-With your separate optional consent, Proxima may send you promotional emails about new features, offers, or product updates. Marketing email is off by default. You can opt in at sign-up or later in Privacy settings, and opt out at any time from Privacy settings or via the unsubscribe link in any marketing email. Opting out of marketing does not affect transactional messages about your account or the Services.
+With your separate optional consent, Proxima may send you promotional emails about new features, offers, or product updates. Marketing email is off by default. You can opt in at sign-up or later in Settings, and opt out at any time from Settings or via the unsubscribe link in any marketing email. Opting out of marketing does not affect transactional messages about your account or the Services.
 
 Collection, Use, and Disclosure of Your Personal Information
 

@@ -1,7 +1,7 @@
 /**
  * @module (app)/account/privacy/page
  *
- * Privacy settings route for optional consent toggles. Sits at
+ * Settings route for API key management and optional consent toggles. Sits at
  * src/app/(app)/account/privacy/page.tsx; route "/account/privacy".
  * Suspense wraps content because PrivacySettingsContent uses useSearchParams.
  *
@@ -15,8 +15,8 @@ import { PrivacySettingsContent } from "@/components/account/PrivacySettingsCont
 import { Spinner } from "@/components/ui/spinner";
 
 export const metadata = {
-    title: "Privacy settings | Proxima Fitness",
-    description: "Manage your optional privacy and marketing consent preferences.",
+    title: "Settings | Proxima Fitness",
+    description: "Manage your Proxima API key and optional privacy and marketing consent preferences.",
 };
 
 function PrivacyFallback() {
@@ -27,7 +27,7 @@ function PrivacyFallback() {
     );
 }
 
-/** Privacy settings page; delegates to PrivacySettingsContent. */
+/** Settings page; delegates to PrivacySettingsContent. */
 export default function PrivacySettingsPage() {
     return (
         <Suspense fallback={<PrivacyFallback />}>

@@ -129,7 +129,7 @@ export function PrivacySettingsContent() {
         return (
             <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
                 <p className="text-muted-foreground mb-4 max-w-md">
-                    Sign in to manage your privacy and marketing preferences.
+                    Sign in to manage your settings.
                 </p>
                 <Link href={loginHref} className="text-secondary underline underline-offset-2 hover:text-lightSecondary">
                     Log in
@@ -142,9 +142,9 @@ export function PrivacySettingsContent() {
         <div className="min-h-screen bg-muted px-4 py-10 text-foreground">
             <div className="mx-auto max-w-2xl space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Privacy settings</h1>
+                    <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Settings</h1>
                     <p className="mt-2 text-muted-foreground">
-                        Manage optional consents for platform improvement and marketing email.
+                        Manage your Proxima API key and optional consent preferences.
                     </p>
                 </div>
 

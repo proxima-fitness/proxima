@@ -1734,7 +1734,7 @@ _Avoid_: Deactivate (ambiguous, may imply recoverable), unsubscribe (email-only)
 ### Platform improvement consent
 
 
-Optional opt-in allowing Proxima to use the user's workout history backup, programs, builder usage, coaching chats, and **service analytics** (PostHog, Google Analytics) to improve the product and services, aggregated or de-identified where feasible. PostHog and Google Analytics are disclosed together in Privacy Policy and controlled by this single toggle (not a separate analytics consent). Not used for marketing, third-party sale, or ad targeting. v1: store preference and disclose in policy only. **Do not** gate PostHog/GA capture or other pipelines on the flag yet (deferred follow-up). Revocable on **Privacy settings**.
+Optional opt-in allowing Proxima to use the user's workout history backup, programs, builder usage, coaching chats, and **service analytics** (PostHog, Google Analytics) to improve the product and services, aggregated or de-identified where feasible. PostHog and Google Analytics are disclosed together in Privacy Policy and controlled by this single toggle (not a separate analytics consent). Not used for marketing, third-party sale, or ad targeting. v1: store preference and disclose in policy only. **Do not** gate PostHog/GA capture or other pipelines on the flag yet (deferred follow-up). Revocable on **Settings**.
 
 
 _Avoid_: Analytics consent (separate toggle), research opt-in (subset only), anonymous-only aggregates (v1 scope is broader), operational analytics carve-out (PostHog is in-scope)
@@ -1756,7 +1756,7 @@ _Avoid_: Browsewrap banner, dismissible update toast
 ### Marketing consent
 
 
-Optional opt-in to receive promotional emails and offers from Proxima. Not required for account or product use. Default off until explicitly opted in. Collected at sign-up and editable on the dedicated Privacy settings page. Not re-prompted on every sign-in.
+Optional opt-in to receive promotional emails and offers from Proxima. Not required for account or product use. Default off until explicitly opted in. Collected at sign-up and editable on the dedicated **Settings** page. Not re-prompted on every sign-in.
 
 
 _Avoid_: Newsletter signup (too narrow), notifications (in-app vs email)
@@ -1767,7 +1767,7 @@ _Avoid_: Newsletter signup (too narrow), notifications (in-app vs email)
 ### Edit profile
 
 
-Dedicated account page for identity (name, username, bio, photo) and for inspecting/editing **Agentic memory**. Identity section first, then Agentic-memory subsections: **Constraint profile**, **Training profile**, and **Body measurements** (read-only from **Body measurements backup**). Distinct from the profile page (training stats, Hevy programs, recent workouts) and from **Privacy settings**. Replaces the old profile-page dialog. Separate Saves for identity, Constraint profile (**Save constraints**), and Training profile. Body measurements are sync-backed only (no draft Save). Unsaved identity **or** Constraint profile **or** Training profile drafts block leave with a warn, stay or discard.
+Dedicated account page for identity (name, username, bio, photo) and for inspecting/editing **Agentic memory**. Identity section first, then Agentic-memory subsections: **Constraint profile**, **Training profile**, and **Body measurements** (read-only from **Body measurements backup**). Distinct from the profile page (training stats, Hevy programs, recent workouts) and from **Settings**. Replaces the old profile-page dialog. Separate Saves for identity, Constraint profile (**Save constraints**), and Training profile. Body measurements are sync-backed only (no draft Save). Unsaved identity **or** Constraint profile **or** Training profile drafts block leave with a warn, stay or discard.
 
 
 _Avoid_: Edit profile dialog, profile preferences card, silent discard of unsaved edits, Constraint-profile-first layout that hides Training profile, tabs that hide memory, constraint-only leave warn, single shared Save, localStorage draft, autosave per chip, treating body-measurement history as a Constraint Save, editable body measurements in v1
@@ -1786,13 +1786,13 @@ _Avoid_: Constraint profile peek (old name, too narrow), Context hover (token us
 
 
 
-### Privacy settings
+### Settings
 
 
-Dedicated account page reachable from the sidebar account menu. Hosts revocable **Platform improvement consent** and **Marketing consent** toggles. Distinct from **Edit profile** and from the **Legal acceptance dialog** (required policy gate).
+Dedicated account page reachable from the sidebar account menu. Hosts **Proxima API key** management plus revocable **Platform improvement consent** and **Marketing consent** toggles. Distinct from **Edit profile** and from the **Legal acceptance dialog** (required policy gate).
 
 
-_Avoid_: Profile preferences card, settings (too generic)
+_Avoid_: Privacy settings (old name, too narrow), Profile preferences card
 
 
 

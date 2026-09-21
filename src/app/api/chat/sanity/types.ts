@@ -10,7 +10,7 @@
  * Full set objects, `reason`, notes, ids, and `builder_exercise_key` do not appear.
  *
  * Depends on: TConstraintProfile
- * Used by: snapshot.ts, week-coverage.ts, tools.ts
+ * Used by: snapshot.ts, week-coverage.ts, stalemate.ts, tools.ts
  */
 
 import type { TConstraintProfile } from "../constraints/types";
@@ -36,14 +36,45 @@ export type TPlanProgram = {
     blocks: TPlanBlock[];
 };
 
+/** Constraint-profile array a **Program stalemate** chip names. */
+export type TStalemateChipField = "injuries" | "excludedEquipment" | "excludedAreas";
+
+/** Exact saved Constraint profile string the user may remove. */
+export type TProgramStalemateChip = {
+    field: TStalemateChipField;
+    value: string;
+};
+
+/**
+ * Card kind. Constraint chips persist a saved row. Week-coverage sets the
+ * same-week skip. Training / skill clicks are the next user message.
+ */
+export type TProgramStalemateKind = "constraint" | "weekCoverage" | "training";
+
+/**
+ * Payload the client card needs. Honor `key` is the counted Soft-fail id.
+ * `chips` are exact stored strings, never paraphrases.
+ */
+export interface IProgramStalematePayload {
+    chips: TProgramStalemateChip[];
+    key: string;
+    kind: TProgramStalemateKind;
+    why: string;
+}
+
 /**
  * Mutable per-request bag, same lifetime as `IBuildWeekOnceGuard`.
  * `planProgram` and a successful `buildWeek` write here so same-turn
  * `mutateProgram` can plate week 1 and know which weeks were claimed.
+ * Slice 1 (ADR 0027) also counts Soft-fail keys and the same-week skip.
  */
 export interface IProgramSanityStash {
     plan: TPlanProgram | null;
     buildWeekRoutines: THevyRoutine[] | null;
+    skipSameWeekCoverage?: boolean;
+    softFailCounts?: Record<string, number>;
+    stalemate?: IProgramStalematePayload | null;
+    stalemateStopped?: boolean;
 }
 
 /** One 1-based week and the block that owns it. Later blocks win if a week is listed twice. */

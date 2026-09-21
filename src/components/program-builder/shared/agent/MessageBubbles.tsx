@@ -1,10 +1,10 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. Drives timeout/retry logic.
- * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, MutationProposalCard, helpers. Used by: Agent.
+ * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. A **Program stalemate** card replaces the empty-grid timeout banner.
+ * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, MutationProposalCard, ProgramStalemateCard, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
-import { useCallback, useEffect, useRef, useMemo, useState, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useState, type RefObject } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     Message,
@@ -51,6 +51,9 @@ import { getMutateProgramFailureSeverity } from "./tool-error";
 import { SoftToolFailure } from "./soft-tool-failure-ui";
 import { ModifyProgramProgress } from "./ModifyProgramProgress";
 import { focusProgramBuilderChatInput, MutationProposalCard } from "./MutationProposalCard";
+import { ProgramStalemateCard } from "./ProgramStalemateCard";
+import { readStalematePayload } from "@/app/api/chat/sanity/stalemate";
+import { isTestUser } from "@/api/feature-limits";
 import { WorkoutHistoryToolContent } from "./WorkoutHistoryToolContent";
 import type { TWorkoutHistoryToolOutput } from "@/app/api/chat/tools/workout-history";
 import {
@@ -221,6 +224,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const { user } = useUserContext();
     const { getPersistChatIdRef } = useBuildProgramActions();
     const { debugMode } = useAgentDebugMode();
+    const showStalemateDebug = debugMode && isTestUser(user);
     const { data: hevyExercises } = useHevyExercises();
     const proposalMarksLive = useProposalMarkKeys().size > 0;
     const exerciseCatalog = useMemo(() => {
@@ -243,12 +247,15 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         isBuilding,
         programLength,
         daysPerWeek,
+        excludeEquipment,
+        healthIssues,
+        handleExcludeEquipment,
+        handleHealthIssues,
         status,
         error,
         onRetry,
         retryCount,
         maxRetries,
-        onTimeoutError,
         hevyProgram,
         commitWithUndo,
         onBuildComplete,
@@ -259,11 +266,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
-
-    const TIMEOUT_MS = 120000; // No progress for this long during build triggers onTimeoutError
-    const lastProgressTimestampRef = useRef<number>(0);
-    const prevIsBuildingRef = useRef(false);
-    const timeoutCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Collect buildWeek output from messages (single call expected)
     const { totalDays, allRoutines } = useMemo(() => {
@@ -298,48 +300,6 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     }, [messages, daysPerWeek]);
 
     useEffect(() => {
-        const buildJustStarted = isBuilding && !prevIsBuildingRef.current;
-        prevIsBuildingRef.current = isBuilding;
-
-        if (buildJustStarted) {
-            lastProgressTimestampRef.current = Date.now();
-        }
-
-        // Timeout: every 5s while building, if no progress (no routines) for TIMEOUT_MS then onTimeoutError
-        if (timeoutCheckIntervalRef.current) {
-            clearInterval(timeoutCheckIntervalRef.current);
-            timeoutCheckIntervalRef.current = null;
-        }
-
-        // Only start timeout checking when building and not already errored
-        if (isBuilding && !error && totalDays > 0 && allRoutines.length === 0) {
-            // Initialize the timestamp if not already set
-            if (lastProgressTimestampRef.current === 0) {
-                lastProgressTimestampRef.current = Date.now();
-            }
-
-            timeoutCheckIntervalRef.current = setInterval(() => {
-                const elapsed = Date.now() - lastProgressTimestampRef.current;
-                if (elapsed >= TIMEOUT_MS) {
-                    console.warn(`Workout generation timeout: ${elapsed}ms since last progress`);
-                    onTimeoutError();
-                    if (timeoutCheckIntervalRef.current) {
-                        clearInterval(timeoutCheckIntervalRef.current);
-                        timeoutCheckIntervalRef.current = null;
-                    }
-                }
-            }, 5000);
-        }
-
-        return () => {
-            if (timeoutCheckIntervalRef.current) {
-                clearInterval(timeoutCheckIntervalRef.current);
-                timeoutCheckIntervalRef.current = null;
-            }
-        };
-    }, [isBuilding, error, totalDays, allRoutines.length, onTimeoutError]);
-
-    useEffect(() => {
         // After stream finishes: duplicate week 1, merge post-buildWeek mutateProgram ops, one commit
         const programLengthFromUi = programLength ? Number(programLength) : undefined;
         const weeksFallback = programLengthFromUi ?? 1;
@@ -360,6 +320,11 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                 daysPerWeek: totalDays || allRoutines.length,
                 programLength: result.effectiveWeeks ?? weeksFallback,
             });
+            return;
+        }
+        // Empty-grid wall-clock is not a Hard agent failure. Drop the spinner when the stream ended with no land.
+        if (isBuilding && status === "ready" && allRoutines.length === 0) {
+            handleIsBuilding(false);
         }
     }, [
         messages,
@@ -374,6 +339,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
         allRoutines.length,
         appliedMutateProgramKeysRef,
         lastAtomicBuildCommitKeyRef,
+        isBuilding,
     ]);
 
     const persistProposalMessages = useCallback((next: TChatMessage[]) => {
@@ -867,6 +833,37 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         : "input-streaming";
 
                                             if (buildHasError) {
+                                                const stalemate = readStalematePayload(toolOutput);
+                                                if (stalemate) {
+                                                    return (
+                                                        <div key={`${message.id}-${index}-build-stalemate`}>
+                                                            {showStalemateDebug ? (
+                                                                <SoftToolFailure
+                                                                    tool="buildWeek"
+                                                                    debugMode={debugMode}
+                                                                    errorCtx={{
+                                                                        errorText: buildPart.errorText,
+                                                                        output: toolOutput,
+                                                                    }}
+                                                                    getChatId={resolvePersistChatId}
+                                                                    toolCallId={toolCallId}
+                                                                />
+                                                            ) : null}
+                                                            <ProgramStalemateCard
+                                                                payload={stalemate}
+                                                                sendMessage={sendMessage}
+                                                                healthIssues={healthIssues}
+                                                                excludeEquipment={excludeEquipment}
+                                                                handleHealthIssues={handleHealthIssues}
+                                                                handleExcludeEquipment={handleExcludeEquipment}
+                                                                getChatId={resolvePersistChatId}
+                                                                tool="buildWeek"
+                                                                toolCallId={toolCallId}
+                                                                toolOutput={toolOutput}
+                                                            />
+                                                        </div>
+                                                    );
+                                                }
                                                 return (
                                                     <SoftToolFailure
                                                         key={`${message.id}-${index}-build-error`}
@@ -955,6 +952,35 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                     errorText: mutatePart.errorText,
                                                     output: mutatePart.output,
                                                 };
+                                                const stalemate = readStalematePayload(mutatePart.output);
+                                                if (stalemate) {
+                                                    return (
+                                                        <div key={`${message.id}-${index}-mutate-stalemate`}>
+                                                            {showStalemateDebug ? (
+                                                                <SoftToolFailure
+                                                                    tool="mutateProgram"
+                                                                    debugMode={debugMode}
+                                                                    errorCtx={errorCtx}
+                                                                    getChatId={resolvePersistChatId}
+                                                                    severity={getMutateProgramFailureSeverity(errorCtx)}
+                                                                    toolCallId={toolCallId}
+                                                                />
+                                                            ) : null}
+                                                            <ProgramStalemateCard
+                                                                payload={stalemate}
+                                                                sendMessage={sendMessage}
+                                                                healthIssues={healthIssues}
+                                                                excludeEquipment={excludeEquipment}
+                                                                handleHealthIssues={handleHealthIssues}
+                                                                handleExcludeEquipment={handleExcludeEquipment}
+                                                                getChatId={resolvePersistChatId}
+                                                                tool="mutateProgram"
+                                                                toolCallId={toolCallId}
+                                                                toolOutput={mutatePart.output}
+                                                            />
+                                                        </div>
+                                                    );
+                                                }
                                                 return (
                                                     <SoftToolFailure
                                                         key={`${message.id}-${index}-mutate-error`}

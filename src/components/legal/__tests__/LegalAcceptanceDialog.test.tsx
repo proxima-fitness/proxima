@@ -67,7 +67,7 @@ describe("LegalAcceptanceDialog", () => {
     it("shows optional consent preferences in a grouped panel", () => {
         render(<LegalAcceptanceDialog />);
 
-        expect(screen.getByText("Change anytime in Privacy settings.")).toBeTruthy();
+        expect(screen.getByText("Change anytime in Settings.")).toBeTruthy();
         expect(
             screen.getByText("Allow Proxima to use my usage data to improve the service."),
         ).toBeTruthy();

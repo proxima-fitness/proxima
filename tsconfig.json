@@ -32,7 +32,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "typeRoots": [
       "./@types"
@@ -50,14 +50,15 @@
     "src/components",
     "src/custom.d.ts",
     "./@types",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-    "exclude": [
-        "node_modules",
-        ".next",
-        "dist",
-        "coverage",
-        "supabase/functions",
-        "optimized-black-hole"
-    ]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "coverage",
+    "supabase/functions",
+    "optimized-black-hole"
+  ]
 }

@@ -73,10 +73,15 @@ import { zodSchema } from "ai";
 import { mutateProgramInputSchema } from "@/components/program-builder/mutations";
 import { evaluate } from "@/app/api/chat/sanity/evaluate";
 import {
+    SAME_WEEK_SKIP_MESSAGE,
+    STALEMATE_MODEL_STOP,
+} from "@/app/api/chat/sanity/stalemate";
+import {
     getTools,
     planProgramInputSchema,
     getExerciseListInputSchema,
 } from "@/app/api/chat/tools/tools";
+import type { IProgramSanityStash } from "@/app/api/chat/sanity/types";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 import type { TBodyMeasurementRow } from "@/api/body-measurements-read";
@@ -523,6 +528,158 @@ describe("chat tools.ts", () => {
             const modelOutput = await buildWeek.toModelOutput({ output });
             expect(modelOutput.value).toContain("constraint.injurySemantic");
             expect(modelOutput.value).toContain("The program grid is unchanged");
+        });
+
+        it("stops buildWeek on the second of the same honor id and does not return routines", async () => {
+            vi.mocked(evaluate)
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                });
+
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ buildWeekOnceGuard, programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            const first = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown; routines?: unknown[] };
+            expect(first.error).toBe("constraint.injurySemantic");
+            expect(first.stalemate).toBeUndefined();
+            expect(first.routines).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+
+            const second = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: { key?: string }; routines?: unknown[] };
+            expect(second.error).toBe("constraint.injurySemantic");
+            expect(second.stalemate?.key).toBe("constraint.injurySemantic");
+            expect(second.routines).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+            expect(programSanityStash.buildWeekRoutines).toBeNull();
+
+            const modelOutput = await buildWeek.toModelOutput({ output: second });
+            expect(modelOutput.value).toBe(STALEMATE_MODEL_STOP);
+            expect(modelOutput.value).not.toContain("call buildWeek again");
+
+            const third = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; routines?: unknown[] };
+            expect(third.error).toBe("program_stalemate");
+            expect(third.routines).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+        });
+
+        it("does not escalate when two different honor ids fail", async () => {
+            vi.mocked(evaluate)
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "skill.sessionShape", detail: "does not honor skill.sessionShape" }],
+                });
+
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ programSanityStash, buildWeekOnceGuard: { locked: false } });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            const first = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown };
+            const second = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown };
+
+            expect(first.error).toBe("constraint.injurySemantic");
+            expect(second.error).toBe("skill.sessionShape");
+            expect(first.stalemate).toBeUndefined();
+            expect(second.stalemate).toBeUndefined();
+        });
+
+        it("never escalates empty-day or bad id Soft-fails", async () => {
+            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const emptyDay = { ...minimalRoutine, exercises: [] };
+            const badIdRoutine = {
+                ...minimalRoutine,
+                exercises: [{
+                    ...minimalRoutine.exercises[0],
+                    exercise_template_id: "not-in-db",
+                }],
+            };
+
+            const emptyFirst = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [emptyDay],
+            })) as { error?: string; stalemate?: unknown };
+            const emptySecond = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [emptyDay],
+            })) as { error?: string; stalemate?: unknown };
+            expect(emptyFirst.error).toBe("Invalid exercises");
+            expect(emptySecond.error).toBe("Invalid exercises");
+            expect(emptySecond.stalemate).toBeUndefined();
+
+            const badFirst = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [badIdRoutine],
+            })) as { error?: string; stalemate?: unknown };
+            const badSecond = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [badIdRoutine],
+            })) as { error?: string; stalemate?: unknown };
+            expect(badFirst.error).toBe("Invalid exercise_template_id");
+            expect(badSecond.error).toBe("Invalid exercise_template_id");
+            expect(badSecond.stalemate).toBeUndefined();
+        });
+
+        it("resets the stalemate count on a new user message (new request stash)", async () => {
+            vi.mocked(evaluate)
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                });
+
+            const firstTurn = { plan: null, buildWeekRoutines: null };
+            const firstTools = getTools({ programSanityStash: firstTurn });
+            const firstBuild = asTestTool<TBuildWeekInput, unknown>(firstTools.buildWeek);
+            await firstBuild.execute({ totalDays: 1, routines: [minimalRoutine] });
+            const firstEscalate = (await firstBuild.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { stalemate?: unknown };
+            expect(firstEscalate.stalemate).toBeDefined();
+
+            const nextTurn = { plan: null, buildWeekRoutines: null };
+            const nextTools = getTools({ programSanityStash: nextTurn });
+            const nextBuild = asTestTool<TBuildWeekInput, unknown>(nextTools.buildWeek);
+            const nextFirst = (await nextBuild.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: unknown };
+            expect(nextFirst.error).toBe("constraint.injurySemantic");
+            expect(nextFirst.stalemate).toBeUndefined();
         });
     });
 
@@ -1092,6 +1249,69 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("week 4 day 2 matches week 1 set count and RPE");
+        });
+
+        it("passes claimed-week clones when the same-week skip message is this turn's user text", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({
+                hevyProgram: [],
+                programLength: 4,
+                buildWeekOnceGuard,
+                programSanityStash,
+                userMessage: SAME_WEEK_SKIP_MESSAGE,
+            });
+
+            const planProgram = asTestTool<{
+                durationWeeks: number;
+                goal: string;
+                daysPerWeek: number;
+                blocks: Array<{ name: string; weeks: number[]; intent: string }>;
+            }, unknown>(tools.planProgram);
+            await planProgram.execute({
+                durationWeeks: 4,
+                goal: "Strength",
+                daysPerWeek: 2,
+                blocks: [
+                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                    { name: "Deload", weeks: [4], intent: "Unload" },
+                ],
+            });
+
+            const dayRoutine = (dayNumber: number, title: string) => ({
+                dayNumber,
+                title,
+                notes: "",
+                exercises: [{
+                    exercise_template_id: "ex-1",
+                    title: "Bench Press (Barbell)",
+                    notes: "",
+                    sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
+                }],
+            });
+
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const built = (await buildWeek.execute({
+                totalDays: 2,
+                routines: [dayRoutine(1, "Push"), dayRoutine(2, "Pull")],
+            })) as { error?: string };
+            expect(built.error).toBeUndefined();
+
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await mutateProgram.execute({
+                operations: [{
+                    op: "update_set",
+                    folderIds: [3],
+                    dayOrder: 1,
+                    exerciseIndex: 0,
+                    setIndex: 0,
+                    set: { rpe: 5 },
+                }],
+            })) as { error?: string; operations?: unknown[] };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toHaveLength(1);
+            expect(programSanityStash.skipSameWeekCoverage).toBe(true);
         });
 
         it("passes a live-grid update_set when there is no week claim", async () => {

@@ -166,14 +166,20 @@ export function lastWeekFromMatrix(matrix: TDayMatrixRow[]): number {
 /**
  * Soft-fail when any claimed week-day still has `matchesWeek1Stimulus`.
  * No claimed weeks (live-grid tweak, or no deload/peak/easy plan) is a pass.
+ * A **Program stalemate** same-week skip this First build is a pass.
  *
  * @param snapshot - Compact result after this batch applied
  * @param deloadWeek - Constraint profile `preferences.deloadWeek`
+ * @param skipSameWeekCoverage - Stash flag from the stalemate same-week click
  */
 export function evaluateWeekCoverage(
     snapshot: TProgramSanitySnapshot,
     deloadWeek: string | undefined,
+    skipSameWeekCoverage = false,
 ): TWeekCoverageResult {
+    if (skipSameWeekCoverage) {
+        return { ok: true, misses: [] };
+    }
     const lastWeek = lastWeekFromMatrix(snapshot.matrix);
     const claimed = new Set(claimedWeekNumbers(snapshot.weekIntents, deloadWeek, lastWeek));
     if (claimed.size === 0) {

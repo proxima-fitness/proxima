@@ -69,7 +69,7 @@ export function OptionalConsentPreferences({
         <div className="overflow-hidden rounded-lg border border-border/60 bg-muted">
             <div className="border-b border-border/60 px-3 py-1.5">
                 <p className="text-[11px] text-muted-foreground/80">
-                    Change anytime in Privacy settings.
+                    Change anytime in Settings.
                 </p>
             </div>
             <div className="divide-y divide-border/60">

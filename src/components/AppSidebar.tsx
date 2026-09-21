@@ -17,7 +17,7 @@ import {
     Crown,
     UserRound,
     Trash2,
-    Shield,
+    Settings,
     LockIcon,
     Link2,
     Sun,
@@ -607,8 +607,8 @@ export function AppSidebar() {
                                                 className="cursor-pointer flex items-center gap-2"
                                                 onClick={closeMobileSidebar}
                                             >
-                                                <Shield className="h-4 w-4" />
-                                                Privacy settings
+                                                <Settings className="h-4 w-4" />
+                                                Settings
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem

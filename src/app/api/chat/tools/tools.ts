@@ -92,7 +92,17 @@ import {
     evaluateWeekCoverage,
     formatWeekCoverageMessage,
 } from '../sanity/week-coverage';
-import type { IProgramSanityStash } from '../sanity/types';
+import {
+    applySameWeekSkipFromUserMessage,
+    buildStalematePayload,
+    isStalemateOutput,
+    shouldEscalate,
+    stalemateKeyForError,
+    STALEMATE_ERROR,
+    STALEMATE_MODEL_STOP,
+    type TStalemateExerciseMeta,
+} from '../sanity/stalemate';
+import type { IProgramSanityStash, IProgramStalematePayload } from '../sanity/types';
 
 export type { IProgramSanityStash } from '../sanity/types';
 import {
@@ -249,6 +259,41 @@ function patchStringArray(arr: string[], add?: string[], remove?: string[]): str
         ...arr.filter(s => !removeSet.has(s.toLowerCase())),
         ...addFlat.filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
     ];
+}
+
+/** Counted Soft-fail: first miss stays honor retry, second of the same id is a Program stalemate. */
+function countedSoftFail<T extends { error: string }>(
+    tool: 'buildWeek' | 'mutateProgram',
+    stash: IProgramSanityStash | undefined,
+    profile: TConstraintProfile | undefined,
+    result: T,
+    exercises?: TStalemateExerciseMeta[],
+): T {
+    const key = stalemateKeyForError(result.error);
+    const escalate = shouldEscalate(stash, key);
+    if (!escalate || !key) {
+        return softToolErrorResult(tool, result);
+    }
+    const payload = buildStalematePayload(key, profile, exercises);
+    if (stash) stash.stalemate = payload;
+    return softToolErrorResult(tool, { ...result, stalemate: payload });
+}
+
+/**
+ * Apply the same-week skip from this turn's user text, then stop if this
+ * request already escalated.
+ */
+function stalemateStopResult(
+    stash: IProgramSanityStash | undefined,
+    userMessage: string | undefined,
+): { error: string; message: string; stalemate?: IProgramStalematePayload } | null {
+    applySameWeekSkipFromUserMessage(stash, userMessage);
+    if (!stash?.stalemateStopped) return null;
+    return {
+        error: STALEMATE_ERROR,
+        message: STALEMATE_MODEL_STOP,
+        ...(stash.stalemate ? { stalemate: stash.stalemate } : {}),
+    };
 }
 
 /** Exported for tests: getExerciseList accepts userRequest only; filters come from Constraint profile. */
@@ -869,6 +914,11 @@ export function getTools({
 
         execute: async ({ totalDays, routines }) => {
             try {
+                const stopped = stalemateStopResult(programSanityStash, userMessage);
+                if (stopped) {
+                    return softToolErrorResult('buildWeek', stopped);
+                }
+
                 if (buildWeekOnceGuard?.locked) {
                     return softToolErrorResult('buildWeek', {
                         error: 'buildWeek already completed',
@@ -998,10 +1048,10 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return softToolErrorResult('buildWeek', {
+                        return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
                             error: 'constraint_violation',
                             message: `Fix these exercises and call buildWeek again:\n${lines}`,
-                        });
+                        }, exerciseMeta);
                     }
                 }
 
@@ -1017,7 +1067,7 @@ export function getTools({
                 });
                 const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
                 if (!sanity.ok) {
-                    return softToolErrorResult('buildWeek', {
+                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
                         ...(sanity.debug ? { jev: sanity.debug } : {}),
@@ -1051,6 +1101,12 @@ export function getTools({
         },
 
         toModelOutput: async ({ output }) => {
+            if (isStalemateOutput(output)) {
+                return {
+                    type: 'text' as const,
+                    value: STALEMATE_MODEL_STOP,
+                };
+            }
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const message =
                     'message' in output && typeof output.message === 'string'
@@ -1092,6 +1148,11 @@ export function getTools({
         inputSchema: mutateProgramInputSchema,
         execute: async ({ operations }) => {
             try {
+                const stopped = stalemateStopResult(programSanityStash, userMessage);
+                if (stopped) {
+                    return softToolErrorResult('mutateProgram', stopped);
+                }
+
                 const afterBuildWeek = Boolean(buildWeekOnceGuard?.locked);
                 if (snapshotHasExercises(hevyProgram) && !afterBuildWeek && !readProgramCalledThisTurn) {
                     return softToolErrorResult('mutateProgram', {
@@ -1167,10 +1228,10 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return softToolErrorResult('mutateProgram', {
+                        return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                             error: 'constraint_violation',
                             message: `Mutation rejected - constraint violations:\n${lines}`,
-                        });
+                        }, incomingExercises);
                     }
                 }
 
@@ -1204,9 +1265,10 @@ export function getTools({
                 const coverage = evaluateWeekCoverage(
                     snapshot,
                     constraintProfile?.preferences.deloadWeek,
+                    programSanityStash?.skipSameWeekCoverage === true,
                 );
                 if (!coverage.ok) {
-                    return softToolErrorResult('mutateProgram', {
+                    return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: 'weekCoverage',
                         message: formatWeekCoverageMessage(coverage.misses),
                     });
@@ -1214,7 +1276,7 @@ export function getTools({
 
                 const sanity = await evaluate(snapshot, { firstBuild: afterBuildWeek, debug: debugMode });
                 if (!sanity.ok) {
-                    return softToolErrorResult('mutateProgram', {
+                    return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
                         ...(sanity.debug ? { jev: sanity.debug } : {}),
@@ -1240,6 +1302,12 @@ export function getTools({
             }
         },
         toModelOutput: async ({ output }) => {
+            if (isStalemateOutput(output)) {
+                return {
+                    type: 'text' as const,
+                    value: STALEMATE_MODEL_STOP,
+                };
+            }
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const o = output as {
                     error: string;

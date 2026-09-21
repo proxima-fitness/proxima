@@ -125,4 +125,11 @@ describe("evaluateWeekCoverage", () => {
         expect(result.ok).toBe(false);
         expect(result.misses).toEqual([{ week: 4, day: 1 }]);
     });
+
+    it("passes a claimed-week clone when skipSameWeekCoverage is set", () => {
+        const cloned = plateWeek1Across([makeDay(0, "1"), makeDay(0, "2")], 4);
+        const result = evaluateWeekCoverage(snapshotFrom(cloned), "", true);
+        expect(result.ok).toBe(true);
+        expect(result.misses).toEqual([]);
+    });
 });
