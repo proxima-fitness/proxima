@@ -63,12 +63,13 @@ If every Training profile field is empty, do not call `updateTrainingProfile`.
 
 ### buildWeek once
 
-After **getExerciseList**, call **buildWeek exactly once** per user request.
-That single call generates the new program week template for all training days.
-Do not call **buildWeek** again after it succeeds.
-Use **mutateProgram** for every post-build change.
-That includes reps, RPE, rest, titles, notes, and multi-week periodization.
-Never use a second **buildWeek** to fix or tweak the week.
+After **getExerciseList**, call **buildWeek** once, for week 1 only, with an **Exercise role** on every exercise row.
+Code copies week 1 across the program length and applies the **Periodization wave** from **planProgram**.
+The whole program lands in that one step. **Periodization** is the wave, not a follow-up edit.
+
+- **Success:** the program is on the grid. Do not call **buildWeek** again. Changes the user asks for later go through **mutateProgram**.
+- **Soft-fail:** the grid is unchanged. Fix what the error names, then call **buildWeek** again. If the wave caused it, call **planProgram** again this turn with a corrected wave first.
+- **Program stalemate** (the same miss twice): stop calling tools. Write a short visible reply. The card on screen is the user's move.
 
 ## Checklist
 
@@ -85,18 +86,14 @@ A fresh user message must unlock an open gate.
 - [ ] If questions opened, do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram** yet. If the questionnaire is done, the gate was not needed, or the user clearly continues (for example, "Build my program"), continue with the steps below.
 - [ ] **Persist Constraint Profile:** If there are non-empty fields to persist on the unlock turn, call **`updateConstraintProfile` once**. Keep this on the same turn as plan, list, and build. Do not block those tools. If every field is empty, skip the call.
 - [ ] **Persist Training Profile:** If Questionnaire advanced or Training profile fields are non-empty on the unlock turn, call **`updateTrainingProfile` once**. Keep this on the same turn. Do not block plan, list, or build. If every field is empty, skip the call.
-- [ ] **planProgram** once: Write a structured plan for the full mesocycle (duration, blocks, optional week-by-week progression table). Use questionnaire answers and program builder context (days per week, weeks). If powerlifting, bodybuilding, hyrox, crossfit, or weight-loss resources are loaded, use them.
+- [ ] **planProgram:** duration, blocks, and the **Periodization wave** (see **Periodization wave** below). Use questionnaire answers and program builder context (days per week, weeks). If powerlifting, bodybuilding, hyrox, crossfit, or weight-loss resources are loaded, use them.
 - [ ] Call **getExerciseList** with the user requirements. If program builder context has days per week or program length, obey that context.
 - [ ] Select exercises from the returned list (`id: title`). Use only IDs that appear in the list.
-- [ ] Call **buildWeek** once for week 1 only. Set `routines.length` to totalDays. Set `dayNumber` from 1 to N in order. Align the structure with **planProgram**. If the plan requires stable exercise choices within blocks, keep those choices stable.
-- [ ] **Periodization (mutateProgram) after buildWeek:** Do **not** use **readProgram** for targeting. The request snapshot can still be empty after **buildWeek** succeeds.
-- [ ] Target the **full** duplicated program (`totalDays × programLength` routines) with **folderIds** and **dayOrder** (see **Multi-week targeting** below), plus **planProgram**, **buildWeek** output, and program builder context.
-- [ ] **mutateProgram:** Before you call it, run the **Before mutateProgram** gate from the **mutate-program** skill.
-- [ ] Empty training days are rejected. An explicit remove is allowed.
-- [ ] Prefer **one** call with a **single operations array** for all periodization (per-week RPE, reps, rest, notes, block-boundary exercise swaps).
-- [ ] Use **swap_exercise_template** for post-build equipment retargets (for example, dumbbell-only) without re-specifying sets.
-- [ ] If you draft edits per week first, concatenate all operations into one batch. Then call the tool once.
-- [ ] After success: write a brief summary (max 5 bullets).
+- [ ] Call **buildWeek** once for week 1 only. Set `routines.length` to totalDays. Set `dayNumber` from 1 to N in order. Put a `role` on every exercise. Align the structure with **planProgram**.
+- [ ] Empty training days are rejected.
+- [ ] **Soft-fail:** follow **buildWeek once** above (fix, optionally **planProgram** again, then **buildWeek**).
+- [ ] **Exercise variability `lots`:** see **Exercise variability** below for the **Block boundary** swaps.
+- [ ] After success: write a short summary (max 5 bullets) of the program that is now on the grid. It already landed, so this is not a **Mutation proposal** and there is nothing to Accept.
 
 ## Tool dependency rule
 
@@ -139,10 +136,25 @@ It is **not** gated behind **getMoreInfoQuestions**.
 After a share is loaded, the week is already on the grid.
 Do **not** call **buildWeek** to recreate it.
 Use **mutateProgram** for edits.
-Expanding that seed to more weeks or adding progression is a **separate ask**.
+Expanding that seed to more weeks is a **separate ask**.
 Offer it and wait for a yes.
-When they accept, plan and periodize with **planProgram** and **mutateProgram** over the loaded week.
-Do not rebuild it.
+
+### Expanding that seed
+
+Expanding a loaded share is **First build**, not an edit.
+The seeded week is week 1.
+Code copies it across the program and applies your **Periodization wave**, same as a new build.
+
+1. Call **readProgram** for each seeded day's `order` and exercise positions.
+2. Call **planProgram** with the length, blocks, and a **Periodization wave**.
+3. Call **buildWeek** with **expandHevyShareSeed** only: one **Exercise role** per seeded exercise, every day. Leave out `totalDays` and `routines`.
+
+Do not re-author the seeded week in `routines`.
+Do not periodize it with **mutateProgram**.
+The same sanity check and **Program stalemate** apply as on any **First build**.
+
+Shared sets often have no RPE.
+`rpeDelta` cannot move a set that has none, so lean on `setCountDelta` (and `mainRepRange` at a **Block boundary**) for those weeks.
 
 ## Warmup exercises vs warmup sets
 
@@ -151,25 +163,26 @@ A **warmup set** is a lighter set on a working lift; use set type `"warmup"` onl
 
 ## Target RPE and stimulus (hypertrophy programs)
 
-- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildWeek** / **mutateProgram**. For warmup exercises and intentional easy work, use **~3-5 RPE**. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
+- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildWeek**. For warmup exercises and intentional easy work, use **~3-5 RPE**. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
 - Do **not** imply that “more sets always equals more growth” without effort context. When it fits, tie weekly set choices in **`reason`** text to **hard-set quality** and to the user’s phase. Examples: primary compounds ~1-2 RIR / ~7-8.5 RPE. Isolations can be somewhat harder.
-- **Deload or easy weeks:** Reduce stimulus with **fewer working sets**, **lower target RPE**, or both. Say so in **`reason`**, **`notes`**, or routine **`notes`** so the lower stimulus is **intentional**. Do not leave it open to misread as missing intensity. See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
+- **Deload or easy weeks:** Reduce stimulus on the **Periodization wave** with **fewer working sets**, **lower target RPE**, or both. Name the block for what it is (for example "Deload", intent "reduce fatigue") so the lower stimulus reads as **intentional**. See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
 
-## Multi-week targeting (mutateProgram)
+## Periodization wave
 
-The client duplicates week 1 across all program weeks.
-Periodization ops target specific weeks and days.
-They do **not** use flat routine-index paths.
+The wave on **planProgram** is how later weeks differ from week 1. Code applies it at **buildWeek**. See the **planProgram** schema for field details.
 
-- **folderIds:** 0-based week index. Week 1 → `[0]`, week W → `[W - 1]`. One op can list multiple weeks: `folderIds: [0, 1, 2, 3]`.
-- **dayOrder:** 1-based day within the week (matches **buildWeek** `dayNumber`).
-- For **week** `w` (1-based) and **day** `d` (1-based): `folderIds: [w - 1]`, `dayOrder: d`.
+- One row per week, `1..durationWeeks`. Week 1 is the baseline: `main` deltas both `0`, no `accessory`, no `mainRepRange`.
+- `main`: `rpeDelta` and `setCountDelta` from week 1, applied to every `main` row. Every week after week 1 needs a non-zero main delta, or its mains are a copy of week 1 and the build Soft-fails.
+- `accessory`: only on weeks whose block is a deload, unload, taper, or peak, and required there.
+- `mainRepRange`: only on a **Block boundary** (first week of a block after week 1), when the new block changes the rep target.
+- Special weeks are easier or harder work: RPE and sets on the wave. Keep day titles as they are. The block name carries "Deload" or "Peak", not the days.
 
-Example: 4 days/week, week 3, day 2 → `folderIds: [2]`, `dayOrder: 2`.
+**Constraint profile preferences** shape the blocks and the wave when set: a yes on `deloadWeek` adds a deload block, and a yes on `peakWeek` adds a peak block before the end. A skipped **Questionnaire advanced** still gets a default wave (for example, a steady RPE or set climb with a deload when the program is long enough).
 
-**Batch order:** Put **insert_exercise** before **update_set** and other index-based ops on the same day.
-Prefer **update_set** for RPE, reps, and rest periodization.
-See the **mutateProgram** tool description for op fields.
+## Exercise variability
+
+- **`little` / `some`** (or unset): the same lifts every week. The wave changes the work, not the movements.
+- **`lots`**: write a richer week 1 with more distinct movements across the days. Change lifts only at a **Block boundary**, with **swap_exercise_template** through **mutateProgram**, `folderIds` covering the weeks from that boundary on. Never swap every week, and never through the wave.
 
 ## Program types
 
@@ -207,10 +220,8 @@ If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasi
 - **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. If you pass `exercise_template_id`, the server **auto-corrects** the title from the database. Mismatches do not break the build. Still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
 - **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays. Mismatches return a validation error from the tool.
-- **First week only**: The client duplicates the first week across all weeks. Build only one week in a single buildWeek call. Do not emit multiple weeks in buildWeek.
-- **readProgram vs periodization**: After **buildWeek**, **readProgram** can still return an empty snapshot (request-start staleness). For multi-week **mutateProgram**, use **buildWeek** output + **planProgram** + **folderIds** / **dayOrder**. Do not wait on **readProgram**.
-- **Operation batch safety:** Prefer **update_set** / **edit_day_title** for periodization (RPE, reps, rest, titles). If you use bulk **insert_exercise** / **delete_exercise**, order the operations carefully. Those ops shift **exerciseIndex** for later ops on the same day.
-- **Merged batch vs mutate-program skill:** The mutate-program skill says "one batch, one call." For **this** multi-week generation flow, you can draft per week first. You **must** still deliver **one merged operations array** in a single **mutateProgram** call when possible.
+- **First week only**: Code copies week 1 across all weeks and applies the wave. Build only one week in a single buildWeek call. Do not emit multiple weeks in buildWeek.
+- **readProgram after buildWeek**: The **readProgram** snapshot is from request start, so it does not show a program built this turn. Target a same-turn **mutateProgram** from **buildWeek** output with **folderIds** (0-based week) and **dayOrder** (1-based day).
 
 ## Rep ranges
 
@@ -219,7 +230,7 @@ If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasi
 
 - Use `rep_range` for all hypertrophy or bodybuilding sets and most strength accessories where a true range is intended (for example, 8-12, 10-15). When you provide `rep_range`, also set `reps` as a fallback (typically the upper bound of the range, for example `12`).
 - **Fixed-rep rule:** When the prescription is a single fixed rep count (for example, 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (for example, `{start: 5, end: 5}`). That displays as "5-5" in the UI, which is incorrect. Use `rep_range: null, reps: 5` instead.
-- When periodizing via **mutateProgram**, use **update_set** with the full `{start, end}` **rep_range** object. Do not send only `start` or only `end`. To change from a range to fixed reps, set **rep_range** to **null** and **reps** to the fixed value in the same or follow-up **update_set** op.
+- When editing rep ranges via **mutateProgram**, use **update_set** with the full `{start, end}` **rep_range** object. Do not send only `start` or only `end`. To change from a range to fixed reps, set **rep_range** to **null** and **reps** to the fixed value in the same or follow-up **update_set** op.
 
 ## buildWeek shape
 
@@ -228,6 +239,7 @@ Set type must be one of "normal", "warmup", "dropset", "failure".
 Optional fields (`rest_seconds`, `supersets_id`, `weight_kg`) have defaults in the tool schema.
 **Warmup exercises** at the start of the day still use **`"normal"`** set types at low RPE (see **Warmup exercises vs warmup sets** above).
 If the schema calls for lighter sets *within* a working exercise, reserve set `type` `"warmup"` for those sets.
+Every exercise needs a `role`: `main` for the lifts the wave progresses, `accessory` for the rest, `warmup` for warmup rows.
 
 For each exercise **`reason`**, write 2-4 sentences of natural prose.
 Cover what the movement does, where it sits in the split, its position in the session, and how it fits this person’s plan or questionnaire answers.
@@ -253,6 +265,7 @@ Do not use the example values to influence the real **buildWeek** tool response.
           "sets": [
             { "type": "normal", "reps": 15, "rep_range": { "start": 10, "end": 15 }, "rpe": 4 }
           ],
+          "role": "warmup",
           "reason": "Shoulder and upper-back activation before any pressing. This is the first movement on Push day, so it primes the rotator cuff while the nervous system is still fresh. Low RPE prep work - you wanted a brief warm-up on every session before loading the shoulders."
         },
         {
@@ -261,6 +274,7 @@ Do not use the example values to influence the real **buildWeek** tool response.
           "sets": [
             { "type": "normal", "reps": 12, "rep_range": { "start": 8, "end": 12 }, "rpe": 8 }
           ],
+          "role": "main",
           "reason": "A heavy horizontal push; you said bench irritates front shoulders, so elbows stay tucked and ROM controlled, not wide-flare max width. Primary pressing here so pull day can prioritize rows/hinges without doubling anterior fatigue same day. Heaviest compound while groove is freshest; flyes/cables after on purpose. Drives this session's chest volume before accessories."
         }
       ]

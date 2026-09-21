@@ -358,4 +358,47 @@ describe("evaluate", () => {
         expect(postSystemOne).toHaveBeenCalledOnce();
         expect(result.ok).toBe(true);
     });
+
+    it("judges a stamped First build on every later week the stamp changed, without constraint.progressionHonor", async () => {
+        const stamped: TProgramSanitySnapshot = {
+            userMessage: "Build me a 3 week program",
+            constraintProfile: initializeConstraintProfile({ progressionSystem: "linear", deloadWeek: "yes" }),
+            trainingProfile: null,
+            weekIntents: [
+                { week: 1, name: "Accumulation", intent: "Volume" },
+                { week: 2, name: "Accumulation", intent: "Volume" },
+                { week: 3, name: "Deload", intent: "Unload" },
+            ],
+            changedDays: [{ week: 2, day: 1 }, { week: 3, day: 1 }],
+            matchingWeek1Days: [],
+            matrix: [1, 2, 3].map((week) => ({
+                week,
+                day: 1,
+                title: "Lower",
+                exercises: [{ title: "Squat", workingSetCount: week === 3 ? 2 : 3, rpeMin: 6 + week, rpeMax: 6 + week }],
+                matchesWeek1Stimulus: false,
+            })),
+        };
+        const postSystemOne = vi.fn(async (state: TProgramSanitySnapshot, questions: Record<string, unknown>) => {
+            expect(state.matrix.map((row) => row.week)).toEqual([1, 2, 3]);
+            expect(questions).not.toHaveProperty("constraint.progressionHonor");
+            expect(questions).toHaveProperty("constraint.deloadHonor");
+            expect(questions).toHaveProperty("skill.periodizationCoverage");
+            return { "constraint.deloadHonor": 0.9 };
+        });
+
+        const result = await evaluate(stamped, { firstBuild: true, postSystemOne });
+
+        expect(postSystemOne).toHaveBeenCalledOnce();
+        expect(result).toEqual({ ok: true, misses: [] });
+    });
+
+    it("does not reject a Training / skill miss when firstBuild is false (Case 2)", async () => {
+        const result = await evaluate(snapshotThinDay("more please"), {
+            firstBuild: false,
+            postSystemOne: async () => ({ "skill.sessionShape": 0.02 }),
+        });
+
+        expect(result).toEqual({ ok: true, misses: [] });
+    });
 });

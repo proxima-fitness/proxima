@@ -105,6 +105,7 @@ export const navLinks = [
 export const navIdToUrl: Record<string, string> = {
     home: "/",
     programs: "/programs",
+    developers: "/developers",
     about: "/about",
     pricing: "/pricing",
     profile: "/profile",

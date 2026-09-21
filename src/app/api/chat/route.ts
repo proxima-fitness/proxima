@@ -243,7 +243,11 @@ async function handleChatPost(req: Request) {
                 });
                 const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
                 // Same request lifetime as buildWeekOnceGuard: planProgram + buildWeek write, mutateProgram reads.
-                const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+                const programSanityStash: IProgramSanityStash = {
+                    plan: null,
+                    buildWeekRoutines: null,
+                    exerciseRoles: null,
+                };
                 const tools = getTools({
                     hevyProgram,
                     buildWeekOnceGuard,

@@ -15,7 +15,11 @@ vi.mock("sonner", () => ({
     },
 }));
 
-import { getHevyShareImportSeed, tryApplyHevyShareImport } from "../helpers";
+import {
+    getHevyShareImportSeed,
+    tryApplyHevyShareImport,
+    tryCommitAtomicBuildWeekAndMutations,
+} from "../helpers";
 
 const makeShareDay = (dayNumber: number, title: string): THevyRoutine => ({
     id: String(dayNumber),
@@ -197,6 +201,101 @@ describe("tryApplyHevyShareImport", () => {
         // Second pass sees the grid the first commit produced.
         expect(tryApplyHevyShareImport(messages, "ready", SEED, keyRef, commitWithUndo)).toBe(false);
         expect(commitWithUndo).toHaveBeenCalledOnce();
+        expect(toastError).not.toHaveBeenCalled();
+    });
+});
+
+describe("Hevy share import expand commit", () => {
+    const rpeSeed = SEED.map((day) => ({
+        ...day,
+        exercises: day.exercises.map((exercise) => ({
+            ...exercise,
+            sets: exercise.sets.map((set) => ({ ...set, rpe: 7 })),
+        })),
+    }));
+    const roles = [
+        { dayOrder: 1, exerciseIndex: 0, role: "main" as const },
+        { dayOrder: 2, exerciseIndex: 0, role: "main" as const },
+    ];
+    const wave = {
+        weeks: [
+            { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+            { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+            { week: 3, main: { rpeDelta: 2, setCountDelta: 1 } },
+        ],
+    };
+
+    function expandThread(): UIMessage[] {
+        return [
+            ...threadWith(importedOutput(rpeSeed)),
+            { id: "u2", role: "user", parts: [{ type: "text", text: "yes, expand it" }] },
+            {
+                id: "a2",
+                role: "assistant",
+                parts: [
+                    {
+                        type: "tool-planProgram",
+                        toolCallId: "p1",
+                        state: "output-available",
+                        input: {},
+                        output: { plan: { durationWeeks: 3, periodizationWave: wave } },
+                    },
+                    {
+                        type: "tool-buildWeek",
+                        toolCallId: "b1",
+                        state: "output-available",
+                        input: { expandHevyShareSeed: { exerciseRoles: roles } },
+                        output: {
+                            routines: rpeSeed,
+                            exerciseRoles: roles,
+                            totalDays: 2,
+                            expandedHevyShareSeed: true,
+                        },
+                    },
+                ] as UIMessage["parts"],
+            },
+        ];
+    }
+
+    it("plates the seed across the plan and stamps the wave, with undo", () => {
+        const appliedKeys = createRef<Set<string>>();
+        appliedKeys.current = new Set();
+        const lastCommitKey = newImportKeyRef();
+        const commitWithUndo = vi.fn();
+
+        const result = tryCommitAtomicBuildWeekAndMutations(
+            expandThread(),
+            "ready",
+            3,
+            rpeSeed,
+            appliedKeys,
+            lastCommitKey,
+            commitWithUndo,
+        );
+
+        expect(result).toEqual({ committed: true, effectiveWeeks: 3 });
+        const [committed, options] = commitWithUndo.mock.calls[0] as [THevyRoutine[], unknown];
+        // The seed was on the grid, so the expand is undoable.
+        expect(options).toEqual({ recordUndo: true });
+        expect(committed.map((r) => r.folder_id)).toEqual([0, 0, 1, 1, 2, 2]);
+
+        const mainSets = (week: number) =>
+            committed.find((r) => r.folder_id === week && r.order === "1")?.exercises[0].sets ?? [];
+        // Not a plated clone: later-week mains carry week1 + delta.
+        expect(mainSets(0).map((set) => set.rpe)).toEqual([7]);
+        expect(mainSets(1).map((set) => set.rpe)).toEqual([8]);
+        expect(mainSets(2).map((set) => set.rpe)).toEqual([9, 9]);
+        // Lifted loads from the share stay as they were; the stamp never invents kg.
+        expect(mainSets(2).map((set) => set.weight_kg)).toEqual([60, 60]);
+    });
+
+    it("leaves the already-applied seed alone after the expand lands", () => {
+        const keyRef = newImportKeyRef();
+        keyRef.current = "a1-0";
+        const commitWithUndo = vi.fn();
+
+        expect(tryApplyHevyShareImport(expandThread(), "ready", rpeSeed, keyRef, commitWithUndo)).toBe(false);
+        expect(commitWithUndo).not.toHaveBeenCalled();
         expect(toastError).not.toHaveBeenCalled();
     });
 });

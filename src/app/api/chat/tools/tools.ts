@@ -10,7 +10,7 @@
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
  *  - openHevyExportGate - opens the Hevy export gate footer (sign-in / Hevy key prerequisites)
- *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
+ *  - planProgram - structured multi-week plan (duration, blocks, Periodization wave) before buildWeek
  *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - mutateProgram - stages typed registry operation batches; standalone is a Mutation proposal until Accept
@@ -85,14 +85,36 @@ import {
 } from '../sanity/evaluate';
 import {
     buildSanitySnapshot,
+    plateThenStamp,
     plateWeek1Across,
     resolvePlateWeekCount,
 } from '../sanity/snapshot';
 import {
+    evaluateFirstBuildWeekCoverage,
     evaluateWeekCoverage,
+    formatFirstBuildWeekCoverageMessage,
     formatWeekCoverageMessage,
 } from '../sanity/week-coverage';
-import type { IProgramSanityStash } from '../sanity/types';
+import {
+    applySameWeekSkipFromUserMessage,
+    buildStalematePayload,
+    isStalemateOutput,
+    shouldEscalate,
+    stalemateKeyForError,
+    STALEMATE_ERROR,
+    STALEMATE_MODEL_STOP,
+    type TStalemateExerciseMeta,
+} from '../sanity/stalemate';
+import {
+    periodizationWaveSchema,
+    refinePeriodizationWave,
+} from '../sanity/periodization-wave';
+import type {
+    IProgramSanityStash,
+    IProgramStalematePayload,
+    TExerciseRole,
+    TExerciseRoleAssignment,
+} from '../sanity/types';
 
 export type { IProgramSanityStash } from '../sanity/types';
 import {
@@ -198,11 +220,11 @@ const planBlockSchema = z.object({
     intent: z.string().describe('Training focus for this block (volume, intensity, taper, etc.).'),
 });
 
-/** Per-lift or pattern progression: parallel arrays keyed by metric name, length must match durationWeeks when numeric arrays. */
-const weekProgressionEntrySchema = z.record(
-    z.string(),
-    z.union([z.array(z.number()), z.string()]),
-);
+const EXERCISE_ROLES = ['main', 'accessory', 'warmup'] as const;
+
+function isExerciseRole(value: unknown): value is TExerciseRole {
+    return value === 'main' || value === 'accessory' || value === 'warmup';
+}
 
 /** Exported for tests: same schema as planProgram tool input. */
 export const planProgramInputSchema = z
@@ -211,27 +233,13 @@ export const planProgramInputSchema = z
         goal: z.string().min(1).max(500).describe('Primary goal in plain language.'),
         daysPerWeek: z.number().int().min(1).max(7).describe('Training days per week.'),
         blocks: z.array(planBlockSchema).min(1).describe('Mesocycle blocks covering the program.'),
-        weekProgression: z
-            .record(z.string(), weekProgressionEntrySchema)
-            .optional()
-            .describe(
-                'Optional progression table (e.g. squat/bench/deadlift keys) with parallel numeric arrays per metric; each array length must equal durationWeeks.',
-            ),
+        periodizationWave: periodizationWaveSchema.describe(
+            'Required Periodization wave: one row per 1-based week. Main deltas from week 1; accessory only on claimed deload / unload / taper / peak weeks; mainRepRange only on a Block boundary after week 1.',
+        ),
         notes: z.array(z.string()).optional().describe('Programming rules (e.g. swap variations only at block boundaries).'),
     })
     .superRefine((data, ctx) => {
-        const w = data.durationWeeks;
-        for (const [lift, attrs] of Object.entries(data.weekProgression ?? {})) {
-            for (const [metric, val] of Object.entries(attrs)) {
-                if (Array.isArray(val) && val.length !== w) {
-                    ctx.addIssue({
-                        code: 'custom',
-                        message: `weekProgression.${lift}.${metric} must have length ${w} (durationWeeks)`,
-                        path: ['weekProgression', lift, metric],
-                    });
-                }
-            }
-        }
+        refinePeriodizationWave(data, ctx);
     });
 
 /** Expand add/remove args that may contain comma-joined CSV blobs into tokens. */
@@ -249,6 +257,41 @@ function patchStringArray(arr: string[], add?: string[], remove?: string[]): str
         ...arr.filter(s => !removeSet.has(s.toLowerCase())),
         ...addFlat.filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
     ];
+}
+
+/** Counted Soft-fail: first miss stays honor retry, second of the same id is a Program stalemate. */
+function countedSoftFail<T extends { error: string }>(
+    tool: 'buildWeek' | 'mutateProgram',
+    stash: IProgramSanityStash | undefined,
+    profile: TConstraintProfile | undefined,
+    result: T,
+    exercises?: TStalemateExerciseMeta[],
+): T {
+    const key = stalemateKeyForError(result.error);
+    const escalate = shouldEscalate(stash, key);
+    if (!escalate || !key) {
+        return softToolErrorResult(tool, result);
+    }
+    const payload = buildStalematePayload(key, profile, exercises);
+    if (stash) stash.stalemate = payload;
+    return softToolErrorResult(tool, { ...result, stalemate: payload });
+}
+
+/**
+ * Apply the same-week skip from this turn's user text, then stop if this
+ * request already escalated.
+ */
+function stalemateStopResult(
+    stash: IProgramSanityStash | undefined,
+    userMessage: string | undefined,
+): { error: string; message: string; stalemate?: IProgramStalematePayload } | null {
+    applySameWeekSkipFromUserMessage(stash, userMessage);
+    if (!stash?.stalemateStopped) return null;
+    return {
+        error: STALEMATE_ERROR,
+        message: STALEMATE_MODEL_STOP,
+        ...(stash.stalemate ? { stalemate: stash.stalemate } : {}),
+    };
 }
 
 /** Exported for tests: getExerciseList accepts userRequest only; filters come from Constraint profile. */
@@ -630,7 +673,7 @@ export function getTools({
 
     /**
      * Title: planProgramTool
-     * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
+     * Description: Records a structured multi-week plan before buildWeek (mesocycles, Periodization wave).
      * Also writes the plan onto `programSanityStash` so week coverage can see
      * claimed deload / peak / easy weeks in the same turn.
      * @returns { Tool }
@@ -638,13 +681,19 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program only.',
+            'Include a **Periodization wave**. This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program; call it again only after a buildWeek Soft-fail, to change the wave.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
-            // Coverage needs claimed deload / peak / easy weeks; the model only sees `{ plan, summary }`.
+            // Coverage needs claimed deload / peak / easy weeks; stamp (slice 3) needs the wave.
             if (programSanityStash) {
-                programSanityStash.plan = plan;
+                programSanityStash.plan = {
+                    durationWeeks: plan.durationWeeks,
+                    daysPerWeek: plan.daysPerWeek,
+                    goal: plan.goal,
+                    blocks: plan.blocks,
+                    periodizationWave: plan.periodizationWave,
+                };
             }
             const blockNames = plan.blocks.map((b) => b.name).join(', ');
             const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
@@ -661,7 +710,7 @@ export function getTools({
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with mutateProgram; do not call buildWeek again after it succeeds.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek with all days and an Exercise role on every exercise. buildWeek applies the Periodization wave; do not call buildWeek again after it succeeds.`,
             };
         },
     });
@@ -674,10 +723,8 @@ export function getTools({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
             'Includes day notes, exercise notes, exercise reason, sets, and structure. ' +
-            'Required before **mutateProgram** on an existing program (indexes from this snapshot, not an earlier turn). ' +
-            'Skip after **buildWeek** in the same turn. ' +
-            'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
-            'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
+            'Required before a live-grid **mutateProgram** (indexes from this snapshot, not an earlier turn). ' +
+            'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex).',
         inputSchema: readProgramInputSchema,
         execute: async () => {
             readProgramCalledThisTurn = true;
@@ -735,7 +782,7 @@ export function getTools({
             'Loads a **public Hevy share link** (`hevy.com/folder/{id}`, `hevy.com/routine/{shortId}`, or `hevy.com/workout/{id}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written; a completed workout becomes a single day carrying the loads that were actually lifted. ' +
             'Two hard requirements: the program grid must be **empty**, and the user must have **explicitly agreed** to load the share (pass `confirmed: true` only then). Pasting a link is not agreement - to just read a share, use **fetchHevyShareFolder**. ' +
             'When you are unsure whether they want it loaded, ask in your reply and wait for their answer instead of calling this tool. ' +
-            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks or periodizing is a separate ask. ' +
+            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks is a separate ask, done later with **planProgram** then **buildWeek** `expandHevyShareSeed`. ' +
             'The questionnaire is not required first; it applies when generating or expanding a program, not when loading a share.',
         inputSchema: importHevyShareFolderInputSchema,
         execute: async ({ url, confirmed }): Promise<TImportHevyShareFolderToolOutput> => {
@@ -762,22 +809,172 @@ export function getTools({
     });
 
     /**
+     * Lands a **First build** from week 1 (ADR 0027 / 04, 06): plate + stamp, then
+     * code week-coverage on mains, then one Jev Case 1 on the whole mesocycle.
+     * Any Soft-fail returns before the stash write and lock, so buildWeek and
+     * planProgram stay open for a retry this turn.
+     *
+     * @param week1 - Week-1 routines (`folder_id` 0): built this call or the share seed
+     * @param exerciseRoles - Exercise role on every week-1 row
+     * @param counts - Summary counts echoed on the successful output
+     * @param extra - Extra fields on the successful output (e.g. the expand flag)
+     */
+    async function landFirstBuild(
+        week1: THevyRoutine[],
+        exerciseRoles: TExerciseRoleAssignment[],
+        counts: { totalDays: number; exerciseCount: number; setCount: number },
+        extra: { expandedHevyShareSeed?: true } = {},
+    ) {
+        const weekCount = resolvePlateWeekCount(programSanityStash?.plan, programLength);
+        const stamped = plateThenStamp(
+            week1,
+            programSanityStash?.plan?.periodizationWave,
+            exerciseRoles,
+            weekCount,
+        );
+        if (!stamped.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: stamped.error,
+                message: stamped.message,
+            });
+        }
+
+        const coverage = evaluateFirstBuildWeekCoverage(
+            stamped.program,
+            exerciseRoles,
+            programSanityStash?.skipSameWeekCoverage === true,
+        );
+        if (!coverage.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: 'weekCoverage',
+                message: formatFirstBuildWeekCoverageMessage(coverage.misses),
+            });
+        }
+
+        const snapshot = buildSanitySnapshot({
+            userMessage: userMessage ?? '',
+            constraintProfile,
+            trainingProfile,
+            plan: programSanityStash?.plan,
+            beforeProgram: plateWeek1Across(week1, weekCount),
+            afterProgram: stamped.program,
+        });
+        const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
+        if (!sanity.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: sanity.misses[0]?.id ?? 'evaluate',
+                message: formatEvaluateMessage(sanity.misses),
+                ...(sanity.debug ? { jev: sanity.debug } : {}),
+            });
+        }
+
+        // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
+        if (programSanityStash) {
+            programSanityStash.buildWeekRoutines = week1;
+            programSanityStash.exerciseRoles = exerciseRoles;
+        }
+
+        if (buildWeekOnceGuard) {
+            buildWeekOnceGuard.locked = true;
+        }
+
+        return {
+            routines: week1,
+            exerciseRoles,
+            totalDays: counts.totalDays,
+            routineCount: week1.length,
+            exerciseCount: counts.exerciseCount,
+            setCount: counts.setCount,
+            ...extra,
+            ...(sanity.debug ? { jev: sanity.debug } : {}),
+        };
+    }
+
+    /**
+     * **Hevy share import** expand (ADR 0027 / 06). The seed is week 1 on the
+     * request-start `hevyProgram`; Andy only tags roles. Structural refusals are
+     * plain Soft-fails (not a **Program stalemate**) and never lock the guard.
+     *
+     * @param exerciseRoles - Andy's Exercise role per seeded row
+     */
+    async function expandHevyShareSeedFirstBuild(exerciseRoles: TExerciseRoleAssignment[]) {
+        const program = hevyProgram ?? [];
+        if (!gridHasExercises) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.emptyGrid',
+                message:
+                    'The program grid is empty, so there is no Hevy share seed to expand. For a new program, call buildWeek with routines.',
+            });
+        }
+        // Only later weeks with rows count: expanding over them would re-stamp an existing program (C6).
+        if (program.some((routine) => (routine.folder_id ?? 0) > 0 && (routine.exercises?.length ?? 0) > 0)) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.alreadyMultiWeek',
+                message:
+                    'The program already has weeks after week 1. Expand only works on a one-week seed. Use mutateProgram for changes to this program.',
+            });
+        }
+        const week1 = program
+            .filter((routine) => (routine.folder_id ?? 0) === 0)
+            .sort((a, b) => Number(a.order) - Number(b.order));
+        const exerciseCount = week1.reduce((sum, routine) => sum + (routine.exercises?.length ?? 0), 0);
+        if (exerciseCount === 0) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.noWeek1',
+                message:
+                    'No week-1 routines reached this request, so the seed cannot be expanded. The grid is unchanged. Ask the user to send the expand request again.',
+            });
+        }
+        if (programSanityStash?.plan?.periodizationWave == null) {
+            return softToolErrorResult('buildWeek', {
+                error: 'periodizationStamp.missingWave',
+                message: 'Periodization wave is missing. Call planProgram with a wave before expanding the seed.',
+            });
+        }
+        if (exerciseRoles.length !== exerciseCount) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.roleCount',
+                message: `Tag every seeded exercise: expected ${exerciseCount} Exercise roles, got ${exerciseRoles.length}. Use readProgram for each day's order and exercise positions.`,
+            });
+        }
+
+        const setCount = week1.reduce(
+            (sum, routine) =>
+                sum + (routine.exercises ?? []).reduce((daySum, exercise) => daySum + (exercise.sets?.length ?? 0), 0),
+            0,
+        );
+        return landFirstBuild(
+            week1,
+            exerciseRoles,
+            { totalDays: week1.length, exerciseCount, setCount },
+            { expandedHevyShareSeed: true },
+        );
+    }
+
+    /**
      * Title: buildWeekTool
      * Description: Tool to build a full week of routines/days for the workout program in a single call.
      * @returns { Tool }
      */
     const buildWeekTool = tool({
         description:
-            'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
-            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **mutateProgram** for any changes (never a second buildWeek to fix or tweak). ' +
-            'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
+            'Builds week 1 of a new program in a SINGLE tool invocation (all training days in one payload, an Exercise role on every exercise). ' +
+            'Code copies week 1 across the program and applies the **Periodization wave** from planProgram; on success the whole program lands. ' +
+            'After it succeeds, do not call buildWeek again; later changes the user asks for use **mutateProgram**. After a Soft-fail, fix the error (or call planProgram again to change the wave) and call buildWeek again. ' +
+            'Provide all days in order (Day 1, Day 2, …). ' +
+            '**Expanding a loaded Hevy share import seed** is also First build: after **planProgram**, call buildWeek with **expandHevyShareSeed** only (no totalDays, no routines) and an Exercise role for every exercise on the seeded week. Code copies the seed across the program and applies the wave. Do not re-author the seeded week in routines. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
             'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
         inputSchema: z.object({
-            totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
+            totalDays: z
+                .number()
+                .min(1)
+                .max(7)
+                .optional()
+                .describe('Total number of days in the program week (1-7). Required unless expandHevyShareSeed is set.'),
             routines: z
                 .array(
                     z.object({
@@ -823,6 +1020,11 @@ export function getTools({
                                                 'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
                                                 'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
                                         ),
+                                    role: z
+                                        .enum(EXERCISE_ROLES)
+                                        .describe(
+                                            'Exercise role for the Periodization wave: main, accessory, or warmup. Warmup *rows* are tagged here; set type "warmup" is a different object.',
+                                        ),
                                     sets: z
                                         .array(
                                             z.object({
@@ -862,19 +1064,63 @@ export function getTools({
                     }),
                 )
                 .min(1)
+                .optional()
                 .describe(
-                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays).',
+                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays). Omit when expandHevyShareSeed is set.',
+                ),
+            expandHevyShareSeed: z
+                .object({
+                    exerciseRoles: z
+                        .array(
+                            z.object({
+                                dayOrder: z
+                                    .number()
+                                    .int()
+                                    .min(1)
+                                    .describe('Seeded day: the routine `order` from readProgram (week 1).'),
+                                exerciseIndex: z
+                                    .number()
+                                    .int()
+                                    .min(0)
+                                    .describe('0-based exercise position on that seeded day.'),
+                                role: z
+                                    .enum(EXERCISE_ROLES)
+                                    .describe('Exercise role for the Periodization wave: main, accessory, or warmup.'),
+                            }),
+                        )
+                        .min(1)
+                        .describe('One Exercise role per exercise on the seeded week, every day. Length must equal the seed exercise count.'),
+                })
+                .optional()
+                .describe(
+                    'Expand the **Hevy share import** seed already on the grid (week 1 only) into the planned program. Omit totalDays and routines when set.',
                 ),
         }),
 
-        execute: async ({ totalDays, routines }) => {
+        execute: async ({ totalDays, routines, expandHevyShareSeed }) => {
             try {
+                const stopped = stalemateStopResult(programSanityStash, userMessage);
+                if (stopped) {
+                    return softToolErrorResult('buildWeek', stopped);
+                }
+
                 if (buildWeekOnceGuard?.locked) {
                     return softToolErrorResult('buildWeek', {
                         error: 'buildWeek already completed',
                         message:
-                            'Week already built in this turn. Use mutateProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
+                            'Week already built in this turn and the Periodization wave is already applied. Use mutateProgram only for further edits. Do not call buildWeek again.',
                     });
+                }
+
+                if (expandHevyShareSeed) {
+                    if (routines?.length) {
+                        return softToolErrorResult('buildWeek', {
+                            error: 'Invalid expand',
+                            message:
+                                'Pass expandHevyShareSeed or routines, not both. To expand the loaded share, omit routines: the seeded week is already on the grid.',
+                        });
+                    }
+                    return await expandHevyShareSeedFirstBuild(expandHevyShareSeed.exerciseRoles);
                 }
 
                 const timestamp = new Date().toISOString();
@@ -883,6 +1129,13 @@ export function getTools({
                     return softToolErrorResult('buildWeek', {
                         error: 'Invalid routines',
                         message: 'At least one routine is required',
+                    });
+                }
+
+                if (totalDays == null) {
+                    return softToolErrorResult('buildWeek', {
+                        error: 'Invalid routines',
+                        message: 'totalDays is required when building week 1 from routines',
                     });
                 }
 
@@ -895,6 +1148,8 @@ export function getTools({
 
                 await ensureExerciseIdToTitleMap();
 
+                const exerciseRoles: TExerciseRoleAssignment[] = [];
+
                 for (const routineInput of routines) {
                     const dayNumber = routineInput.dayNumber;
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
@@ -903,7 +1158,19 @@ export function getTools({
                             message: `At least one exercise is required for day ${dayNumber}`,
                         });
                     }
-                    for (const exercise of routineInput.exercises) {
+                    for (let exerciseIndex = 0; exerciseIndex < routineInput.exercises.length; exerciseIndex++) {
+                        const exercise = routineInput.exercises[exerciseIndex];
+                        if (!isExerciseRole(exercise.role)) {
+                            return softToolErrorResult('buildWeek', {
+                                error: 'Invalid exercise role',
+                                message: `Each exercise needs role "main", "accessory", or "warmup" (day ${dayNumber}, exercise ${exerciseIndex}).`,
+                            });
+                        }
+                        exerciseRoles.push({
+                            dayOrder: dayNumber,
+                            exerciseIndex,
+                            role: exercise.role,
+                        });
                         const templateId = (exercise.exercise_template_id ?? '').trim();
                         if (!templateId) {
                             return softToolErrorResult('buildWeek', {
@@ -998,49 +1265,18 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return softToolErrorResult('buildWeek', {
+                        return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
                             error: 'constraint_violation',
                             message: `Fix these exercises and call buildWeek again:\n${lines}`,
-                        });
+                        }, exerciseMeta);
                     }
                 }
 
-                // Week 1 vs week 1 cannot fail coverage. Evaluate as firstBuild
-                // before lock so a reject leaves the guard unlocked.
-                const snapshot = buildSanitySnapshot({
-                    userMessage: userMessage ?? '',
-                    constraintProfile,
-                    trainingProfile,
-                    plan: programSanityStash?.plan,
-                    beforeProgram: [],
-                    afterProgram: builtRoutines,
-                });
-                const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
-                if (!sanity.ok) {
-                    return softToolErrorResult('buildWeek', {
-                        error: sanity.misses[0]?.id ?? 'evaluate',
-                        message: formatEvaluateMessage(sanity.misses),
-                        ...(sanity.debug ? { jev: sanity.debug } : {}),
-                    });
-                }
-
-                // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
-                if (programSanityStash) {
-                    programSanityStash.buildWeekRoutines = builtRoutines;
-                }
-
-                if (buildWeekOnceGuard) {
-                    buildWeekOnceGuard.locked = true;
-                }
-
-                return {
-                    routines: builtRoutines,
+                return await landFirstBuild(builtRoutines, exerciseRoles, {
                     totalDays,
-                    routineCount: builtRoutines.length,
                     exerciseCount: totalExercises,
                     setCount: totalSets,
-                    ...(sanity.debug ? { jev: sanity.debug } : {}),
-                };
+                });
             } catch (error) {
                 console.error('Error in buildWeekTool:', error);
                 return softToolErrorResult('buildWeek', {
@@ -1051,6 +1287,12 @@ export function getTools({
         },
 
         toModelOutput: async ({ output }) => {
+            if (isStalemateOutput(output)) {
+                return {
+                    type: 'text' as const,
+                    value: STALEMATE_MODEL_STOP,
+                };
+            }
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const message =
                     'message' in output && typeof output.message === 'string'
@@ -1058,7 +1300,7 @@ export function getTools({
                         : undefined;
                 return {
                     type: 'text' as const,
-                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again.`,
+                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again. If the Periodization wave is the problem, call planProgram again with a corrected wave first.`,
                 };
             }
 
@@ -1067,14 +1309,22 @@ export function getTools({
                 totalDays?: number;
                 exerciseCount?: number;
                 setCount?: number;
+                expandedHevyShareSeed?: boolean;
             };
             const titles = Array.isArray(success.routines)
                 ? success.routines.map((r) => r.title).join(', ')
                 : '';
 
+            if (success.expandedHevyShareSeed) {
+                return {
+                    type: 'text' as const,
+                    value: `Seed expanded (${success.totalDays} days): ${titles || 'No routine titles'}. The loaded Hevy share week is week 1, copied across the program with the Periodization wave applied, and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
+                };
+            }
+
             return {
                 type: 'text' as const,
-                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
+                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
             };
         },
     });
@@ -1082,9 +1332,9 @@ export function getTools({
     /**
      * Title: mutateProgramTool
      * Description: Typed registry operation batch with server preflight via applyOperations.
-     * After a successful apply, runs week-coverage (ADR 0025 / 02) then
-     * evaluate (03). A claimed week-day that still matches week 1, or a Jev
-     * reject, Soft-fails and omits `operations`.
+     * After a successful apply, runs Case 2 week-coverage (ADR 0025 / 02) then
+     * evaluate with `firstBuild: false` (ADR 0027 / 04). A claimed week-day that
+     * still matches week 1, or a Jev reject, Soft-fails and omits `operations`.
      * @returns { Tool }
      */
     const mutateProgramTool = tool({
@@ -1092,6 +1342,11 @@ export function getTools({
         inputSchema: mutateProgramInputSchema,
         execute: async ({ operations }) => {
             try {
+                const stopped = stalemateStopResult(programSanityStash, userMessage);
+                if (stopped) {
+                    return softToolErrorResult('mutateProgram', stopped);
+                }
+
                 const afterBuildWeek = Boolean(buildWeekOnceGuard?.locked);
                 if (snapshotHasExercises(hevyProgram) && !afterBuildWeek && !readProgramCalledThisTurn) {
                     return softToolErrorResult('mutateProgram', {
@@ -1167,23 +1422,33 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return softToolErrorResult('mutateProgram', {
+                        return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                             error: 'constraint_violation',
                             message: `Mutation rejected - constraint violations:\n${lines}`,
-                        });
+                        }, incomingExercises);
                     }
                 }
 
                 // After same-turn buildWeek the request hevyProgram has no later weeks.
-                // Plate week 1, apply on that copy, then week-coverage Soft-fail (C1 / C2).
-                // Live-grid mutate keeps applyOperations(hevyProgram) as before.
-                const afterBuildWeekPlate =
-                    afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0
-                        ? plateWeek1Across(
-                            programSanityStash?.buildWeekRoutines ?? [],
-                            resolvePlateWeekCount(programSanityStash?.plan, programLength),
-                        )
-                        : null;
+                // Plate week 1, stamp the Periodization wave, apply on that copy, then
+                // week-coverage Soft-fail (C1 / C2). Live-grid mutate keeps
+                // applyOperations(hevyProgram) as before.
+                let afterBuildWeekPlate: THevyRoutine[] | null = null;
+                if (afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0) {
+                    const stamped = plateThenStamp(
+                        programSanityStash?.buildWeekRoutines ?? [],
+                        programSanityStash?.plan?.periodizationWave,
+                        programSanityStash?.exerciseRoles,
+                        resolvePlateWeekCount(programSanityStash?.plan, programLength),
+                    );
+                    if (!stamped.ok) {
+                        return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
+                            error: stamped.error,
+                            message: stamped.message,
+                        });
+                    }
+                    afterBuildWeekPlate = stamped.program;
+                }
                 const applyBase = afterBuildWeekPlate ?? hevyProgram ?? [];
                 const result = applyOperations(applyBase, resolvedOperations);
                 if (isApplyBatchFailure(result)) {
@@ -1204,17 +1469,19 @@ export function getTools({
                 const coverage = evaluateWeekCoverage(
                     snapshot,
                     constraintProfile?.preferences.deloadWeek,
+                    programSanityStash?.skipSameWeekCoverage === true,
                 );
                 if (!coverage.ok) {
-                    return softToolErrorResult('mutateProgram', {
+                    return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: 'weekCoverage',
                         message: formatWeekCoverageMessage(coverage.misses),
                     });
                 }
 
-                const sanity = await evaluate(snapshot, { firstBuild: afterBuildWeek, debug: debugMode });
+                // Case 2 always, even after a same-turn First build (ADR 0027 / 04).
+                const sanity = await evaluate(snapshot, { firstBuild: false, debug: debugMode });
                 if (!sanity.ok) {
-                    return softToolErrorResult('mutateProgram', {
+                    return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
                         ...(sanity.debug ? { jev: sanity.debug } : {}),
@@ -1240,6 +1507,12 @@ export function getTools({
             }
         },
         toModelOutput: async ({ output }) => {
+            if (isStalemateOutput(output)) {
+                return {
+                    type: 'text' as const,
+                    value: STALEMATE_MODEL_STOP,
+                };
+            }
             if (output && typeof output === 'object' && 'error' in output && output.error) {
                 const o = output as {
                     error: string;

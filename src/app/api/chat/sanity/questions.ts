@@ -7,13 +7,14 @@
  * fail policy; Jev only sees `instructions` / `criteria`.
  *
  * Constraint ids are fail-closed and have no User-stated exception on a
- * first `buildWeek`. That first build is week 1 only, so progression,
- * week-intent, and stimulus questions wait until later weeks are in `matrix`.
- * Later standalone mutations omit whole-program Constraint questions
- * (split / variability / progression / deload / peak) and Training / skill
- * questions so a pre-existing grid cannot lock out every batch. Delta
- * Constraint questions (injury / equipment / warmup) stay only when
- * `changedDays` is non-empty.
+ * **First build**. Case 1 runs once on the plated + stamped mesocycle
+ * (ADR 0027 / 04), so week-intent, stimulus, and periodization questions see
+ * later weeks. `constraint.progressionHonor` is not asked: **Progression** is
+ * not built, and the Periodization wave is not a progression system.
+ * Later standalone mutations (Case 2) omit whole-program Constraint questions
+ * (split / variability / deload / peak) and Training / skill questions so a
+ * pre-existing grid cannot lock out every batch. Delta Constraint questions
+ * (injury / equipment / warmup) stay only when `changedDays` is non-empty.
  * Age / sex / height and `skill.exerciseObjectionReplace` are never asked.
  *
  * Depends on: ./types
@@ -28,7 +29,6 @@ export const CONSTRAINT_QUESTION_IDS = [
     "constraint.equipmentSemantic",
     "constraint.splitHonor",
     "constraint.variabilityHonor",
-    "constraint.progressionHonor",
     "constraint.deloadHonor",
     "constraint.peakHonor",
     "constraint.warmupPolicy",
@@ -72,7 +72,7 @@ export const TRAINING_OR_SKILL_QUESTION_ID_SET: ReadonlySet<string> = new Set([
 /** Options for {@link buildSanityQuestions}. */
 export type TBuildSanityQuestionsOptions = {
     /**
-     * First `buildWeek` or same-turn periodization after that build.
+     * Case 1: the stamped **First build** snapshot from `buildWeek`.
      * Default true so callers that omit it keep the full first-build set.
      */
     firstBuild?: boolean;
@@ -124,7 +124,7 @@ function userRequestedNoul(outcome: string): TNoulQuestion {
  * Applicable Nouls for this snapshot. Keys are question ids. Empty object
  * means evaluate should not call TypeSafe.
  *
- * @param snapshot - Compact result after apply / first `buildWeek`
+ * @param snapshot - Compact result after apply / stamped **First build**
  * @param options.firstBuild - See {@link TBuildSanityQuestionsOptions.firstBuild}
  * @returns Question map; omitted keys are empty-premise skips
  */
@@ -176,13 +176,6 @@ export function buildSanityQuestions(
             "Does `matrix` honor `constraintProfile.preferences.exerciseVariability`?",
             "Exercise variety across days matches the stated variability preference.",
             "Variety is clearly higher or lower than the stated preference.",
-        );
-    }
-    if (askWholeProgramConstraints && hasLaterWeek && hasText(prefs?.progressionSystem)) {
-        questions["constraint.progressionHonor"] = noul(
-            "Does `matrix` honor `constraintProfile.preferences.progressionSystem` across the weeks that are present?",
-            "Later weeks add load or reps in a way that matches the stated system. Target RPE on sets is compatible with linear and double progression. Only judge weeks present in `matrix`.",
-            "Later weeks clearly follow a different progression system than the preference.",
         );
     }
     if (askWholeProgramConstraints && prefs?.deloadWeek === "yes") {

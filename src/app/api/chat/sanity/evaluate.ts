@@ -2,16 +2,18 @@
  * @module chat/sanity/evaluate
  *
  * One AI SDK {@link experimental_evaluate} call over {@link buildSanityQuestions},
- * then the C3–C5 fail policy (ADR 0025 / 03). Constraint misses reject even at
- * low confidence on a first `buildWeek`. Standalone later mutations only
- * ask delta Constraint questions on `changedDays`, so a pre-existing grid
- * cannot lock out every batch. Training / skill misses Soft-fail only on a
- * first build when the user did not ask; low confidence fail-opens.
+ * then the C3–C5 fail policy (ADR 0025 / 03). Case 1 (`firstBuild: true`) is
+ * the plated + stamped **First build** mesocycle, judged once before land
+ * (ADR 0027 / 04, C4). Constraint misses reject even at low confidence there.
+ * Case 2 (`firstBuild: false`, every `mutateProgram`) only asks delta
+ * Constraint questions on `changedDays`, so a pre-existing grid cannot lock
+ * out every batch. Training / skill misses Soft-fail only in Case 1 when the
+ * user did not ask; low confidence fail-opens.
  *
  * Same Gateway style as week suggest: `gateway` + a model id. Jev is an
  * evaluation model, so the call is `experimental_evaluate` rather than
  * `generateText`. Auth is the Gateway OIDC / `AI_GATEWAY_API_KEY` the SDK
- * already uses. A transport error fail-opens Jev so chat stays up. Slice 2
+ * already uses. A transport error fail-opens Jev so chat stays up. Code
  * week-coverage still ran in the caller.
  *
  * Depends on: ai (gateway / experimental_evaluate), ./questions, ./snapshot, ./types
@@ -82,9 +84,10 @@ export type TJevDebugTrace = {
 
 export interface IEvaluateOptions {
     /**
-     * True when this turn locked `buildWeekOnceGuard` (first `buildWeek` or
-     * same-turn periodization). Standalone later **Program mutation batch**s
-     * pass false so Training / skill questions cannot reject.
+     * True only for the stamped **First build** snapshot in `buildWeek`
+     * (Case 1). Not "this turn locked `buildWeekOnceGuard`": every
+     * `mutateProgram`, same-turn or later, passes false (Case 2) so Training /
+     * skill questions cannot reject.
      */
     firstBuild: boolean;
     /** Agent debug mode. Logs the Jev trace and attaches it to the result. */
@@ -240,7 +243,7 @@ export function formatEvaluateMessage(misses: TEvaluateMiss[]): string {
  * Ask applicable Jev questions and apply the fail policy.
  *
  * @param snapshot - Compact result; must already exist (C1 / C6)
- * @param options.firstBuild - First `buildWeek` or same-turn periodization
+ * @param options.firstBuild - Stamped **First build** (Case 1) vs `mutateProgram` (Case 2)
  * @returns Soft-fail payload when any Constraint miss, or a first-build
  *   Training / skill miss without a User-stated exception
  */

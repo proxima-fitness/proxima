@@ -17,7 +17,7 @@ import {
     Crown,
     UserRound,
     Trash2,
-    Shield,
+    Settings,
     LockIcon,
     Link2,
     Sun,
@@ -27,6 +27,7 @@ import {
     LogIn,
     Info,
     Plus,
+    Code2,
 } from "lucide-react";
 import {
     Sidebar,
@@ -96,6 +97,7 @@ const RECENTS_LIMIT = 20;
 const navIdToIcon: Record<string, React.ComponentType<{ className?: string }>> = {
     home: Home,
     programs: Search,
+    developers: Code2,
     about: Info,
     pricing: Crown,
     profile: UserRound,
@@ -339,9 +341,19 @@ export function AppSidebar() {
     };
 
     const sidebarNavLinks = user ? authenticatedNavLinks : navLinks;
-    const sidebarItemsToShow = sidebarNavLinks.filter(
-        (nav) => !(nav.id === "pricing" && isPro) && !(nav.id === "log-in" && user),
-    );
+    const sidebarItemsToShow = (() => {
+        const filtered = sidebarNavLinks.filter(
+            (nav) => !(nav.id === "pricing" && isPro) && !(nav.id === "log-in" && user),
+        );
+        const programsIdx = filtered.findIndex((nav) => nav.id === "programs");
+        const developers = { id: "developers", title: "Developers" };
+        if (programsIdx < 0) return [...filtered, developers];
+        return [
+            ...filtered.slice(0, programsIdx + 1),
+            developers,
+            ...filtered.slice(programsIdx + 1),
+        ];
+    })();
 
     const shouldShowTestUserToggle =
         !isLoading &&
@@ -607,8 +619,8 @@ export function AppSidebar() {
                                                 className="cursor-pointer flex items-center gap-2"
                                                 onClick={closeMobileSidebar}
                                             >
-                                                <Shield className="h-4 w-4" />
-                                                Privacy settings
+                                                <Settings className="h-4 w-4" />
+                                                Settings
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
