@@ -43,6 +43,10 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 | Periodization / deload / peak week plan | **Not** `addInjuries` - wave on **buildProgram** or `preferences.deloadWeek` / `peakWeek` |
 | Taste-only (for example "too boring", "swap this") | **No** profile update - replace only |
 
+Before **`addInjuries`**, read the saved **Injuries & health issues** in the Active Constraint Profile. Do not add an entry that sounds very similar to one already there (for example "Knee pain" next to "knee pain when squatting"). Keep the saved one.
+
+**Not an Exercise objection:** a `Replace this lift:` message from a **Program stalemate** card. Nothing landed, so it is **First build**: load **build-program** and follow **After a Program stalemate** there. Do not call **mutateProgram** for it.
+
 ## Checklist
 
 - [ ] **Persist constraint changes** via **`updateConstraintProfile`** when this turn changes constraints (same turn as mutate - non-blocking backup).

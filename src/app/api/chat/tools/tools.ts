@@ -1753,11 +1753,12 @@ export function getTools({
             'Field map: injury, pain, or movement limits only → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
             'split/variability/progression/deload/peak/warmup → preferences. ' +
             'addInjuries is Injuries & health issues only (pain, surgery, can\'t kneel, no overhead). Never put periodization, deload/peak/unload/taper week plans, mesocycle, or wave notes in addInjuries - those go on the Periodization wave or preferences.deloadWeek / peakWeek. ' +
+            'Do not add an injury that sounds very similar to one already saved in Injuries & health issues (e.g. "Knee pain" next to "knee pain when squatting") - keep the saved one. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
             'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe(
-                'Injuries & health issues only: pain, injury, surgery recovery, or movement limits (can\'t kneel, no overhead, no floor). Not periodization, deload/peak week plans, or other program notes.',
+                'Injuries & health issues only: pain, injury, surgery recovery, or movement limits (can\'t kneel, no overhead, no floor). Not periodization, deload/peak week plans, or other program notes. Skip any entry that sounds very similar to an injury already saved.',
             ),
             removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
             addExcludedEquipment: z.array(z.string()).optional().describe(

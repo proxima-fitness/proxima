@@ -2,11 +2,14 @@
  * @vitest-environment node
  */
 import { describe, it, expect, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import * as path from "node:path";
 
 import { instructions } from "@/app/api/chat/instructions/instructions";
 import { getTools } from "@/app/api/chat/tools/tools";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
+import { REPLACE_LIFT_MESSAGE_PREFIX, replaceLiftMessage } from "@/app/api/chat/sanity/stalemate";
 
 vi.mock("@/api/user-constraints", () => ({
     upsertUserConstraints: vi.fn(async () => {}),
@@ -588,6 +591,80 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("Questionnaire gate active");
             expect(prompt).toContain("finish or dismiss the questions first");
         });
+
+        it("teaches Program stalemate card replies: replace-lift keeps the limit, clear is a User-stated change", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            const clicked = replaceLiftMessage({
+                id: "pair:injuries:knee pain:Squat (Barbell)",
+                field: "injuries",
+                constraint: "Knee Pain",
+                exerciseTitle: "Squat (Barbell)",
+                why: "",
+            });
+
+            expect(clicked.startsWith(REPLACE_LIFT_MESSAGE_PREFIX)).toBe(true);
+            expect(prompt).toContain("**Program stalemate card replies:**");
+            expect(prompt).toContain(`\`${REPLACE_LIFT_MESSAGE_PREFIX} swap <title>`);
+            expect(prompt).toContain("means keep that limit");
+            expect(prompt).toContain("Do **not** remove the limit");
+            expect(prompt).toContain("`I no longer have this constraint: <limit>` is a **User-stated change**");
+            expect(prompt).toContain("call **buildProgram** again with the full input");
+            expect(prompt).toContain("not a **mutateProgram** proposal");
+        });
+
+        it("teaches near-duplicate injury avoidance in the prompt and updateConstraintProfile (C8)", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+            const tools = getTools({
+                constraintProfile: initializeConstraintProfile({}),
+            });
+            const description =
+                (tools.updateConstraintProfile as { description?: string }).description ?? "";
+
+            expect(prompt).toContain("do **not** add an entry that sounds very similar to one already saved");
+            expect(description).toContain("Do not add an injury that sounds very similar to one already saved");
+        });
+    });
+
+    describe("build-program and mutate-program skills (ADR 0030 / 04)", () => {
+        const readSkill = (name: string) =>
+            readFileSync(path.join(process.cwd(), ".agents", "skills", name, "SKILL.md"), "utf8");
+        const buildSkill = readSkill("build-program");
+        const mutateSkill = readSkill("mutate-program");
+
+        it("names no separate plan tool and no week-named land tool", () => {
+            for (const skill of [buildSkill, mutateSkill]) {
+                expect(skill).not.toMatch(/planProgram|buildWeek/);
+            }
+        });
+
+        it("build-program teaches buildProgram once with a required wave that Andy writes", () => {
+            expect(buildSkill).toContain("### buildProgram once");
+            expect(buildSkill).toContain("required `periodizationWave`");
+            expect(buildSkill).toContain("you still write a full wave yourself");
+            expect(buildSkill).toContain("Code never fills in a wave for you");
+            expect(buildSkill).not.toContain("default wave");
+        });
+
+        it("build-program teaches the stalemate card replies and near-duplicate injuries", () => {
+            expect(buildSkill).toContain("### After a Program stalemate");
+            expect(buildSkill).toContain(`**\`${REPLACE_LIFT_MESSAGE_PREFIX} swap <title>`);
+            expect(buildSkill).toContain("Do not remove the limit");
+            expect(buildSkill).toContain("**`I no longer have this constraint: <limit>`** This is a **User-stated change**");
+            expect(buildSkill).toContain("Do not add an entry that sounds very similar to one already there");
+        });
+
+        it("mutate-program keeps replace-lift out of mutateProgram and avoids near-duplicate injuries", () => {
+            expect(mutateSkill).toContain("it is **First build**");
+            expect(mutateSkill).toContain("Do not call **mutateProgram** for it");
+            expect(mutateSkill).toContain("Do not add an entry that sounds very similar to one already there");
+        });
     });
 });
-

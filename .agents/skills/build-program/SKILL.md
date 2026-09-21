@@ -42,6 +42,7 @@ Do not call **buildProgram**.
 If there is something to persist on the first unlock turn after questionnaire submit or "Build my program", call **`updateConstraintProfile` once**.
 Persist non-empty questionnaire fields from the Active Constraint Profile or request context that are not yet written to Agentic memory.
 Map health to `addInjuries` only when it is an **Injuries & health issues** entry (pain, injury, surgery, movement limit).
+Before you add an injury, read the saved **Injuries & health issues** in the Active Constraint Profile. Do not add an entry that sounds very similar to one already there (for example "Knee pain" next to "knee pain when squatting", or "Bad lower back" next to "Lower back pain"). Keep the saved one.
 Periodization, deload / peak / unload / taper week plans, and mesocycle notes go on the **Periodization wave** or `preferences` (`deloadWeek` / `peakWeek`), never `addInjuries`.
 Map exclude equipment to `addExcludedEquipment`.
 Map exclude areas to `addExcludedAreas`.
@@ -69,7 +70,15 @@ The whole program lands in that one step. **Periodization** is the wave, not a f
 
 - **Success:** the program is on the grid. Do not call **buildProgram** again. Changes the user asks for later go through **mutateProgram**.
 - **Soft-fail:** the grid is unchanged. Fix what the error names, then call **buildProgram** again with the full input. If the wave caused it, send a corrected wave on that call.
-- **Program stalemate** (the same miss twice): stop calling tools. Write a short visible reply. The card on screen is the user's move.
+- **Program stalemate** (the same miss twice): stop calling tools. Write a short visible reply. The card on screen is the user's move. For a lift that conflicts with an injury or excluded equipment, the card names the lift and the saved limit, and offers to remove that limit or replace that lift.
+
+### After a Program stalemate
+
+The card sends one of these as the user's next message:
+
+- **`Replace this lift: swap <title> for a lift that works with my injury|excluded equipment "<limit>".`** Keep the limit. Call **getExerciseList** if you need the catalog again, pick a lift that works with that limit, put it where the named lift was, and call **buildProgram** again with the full input. Do not remove the limit. Do not treat the message as a **User-stated exception**.
+- **`I no longer have this constraint: <limit>`** This is a **User-stated change**. Call **updateConstraintProfile** with `removeInjuries` or `removeExcludedEquipment` for that value, then call **buildProgram** again with the full input.
+- **`Fix it.`** Fix what the card named, then call **buildProgram** again with the full input.
 
 ## Checklist
 
@@ -177,7 +186,7 @@ The `periodizationWave` on **buildProgram** is how later weeks differ from week 
 - `mainRepRange`: only on a **Block boundary** (first week of a block after week 1), when the new block changes the rep target.
 - Special weeks are easier or harder work: RPE and sets on the wave. Keep day titles as they are. The block name carries "Deload" or "Peak", not the days.
 
-**Constraint profile preferences** shape the blocks and the wave when set: a yes on `deloadWeek` adds a deload block, and a yes on `peakWeek` adds a peak block before the end. A skipped **Questionnaire advanced** still gets a default wave (for example, a steady RPE or set climb with a deload when the program is long enough).
+**Constraint profile preferences** shape the blocks and the wave when set: a yes on `deloadWeek` adds a deload block, and a yes on `peakWeek` adds a peak block before the end. If **Questionnaire advanced** was skipped, you still write a full wave yourself (for example, a steady RPE or set climb with a deload when the program is long enough). Code never fills in a wave for you.
 
 ## Exercise variability
 
