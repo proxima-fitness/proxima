@@ -544,6 +544,10 @@ describe("chat instructions.ts", () => {
             // Loaded week is already on the grid - no rebuild, and expand is a separate ask.
             expect(prompt).toContain("do **not** call **buildWeek** to recreate that week");
             expect(prompt).toContain("separate ask");
+            // Expand is First build: wave on planProgram, roles-only buildWeek, not mutateProgram.
+            expect(prompt).toContain("expanding is **First build**");
+            expect(prompt).toContain("**expandHevyShareSeed** only");
+            expect(prompt).toContain("Do not periodize the seed with **mutateProgram**");
         });
 
         it("teaches Questionnaire gate not needed vs wait, and Training profile asks", () => {

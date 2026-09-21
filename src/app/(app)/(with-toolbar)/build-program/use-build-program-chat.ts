@@ -199,9 +199,20 @@ interface IMessageContextBodyInput {
     debugMode: boolean;
 }
 
+/**
+ * A grid with rows only in week 1, such as a **Hevy share import** seed. Expanding
+ * it reads week 1 from the request, and "yes, expand it" is not program talk.
+ *
+ * @param hevyProgram - Current builder grid
+ */
+function isOneWeekSeed(hevyProgram: THevyRoutine[]): boolean {
+    return programHasExerciseRows(hevyProgram) &&
+        hevyProgram.every((routine) => (routine.folder_id ?? 0) === 0 || (routine.exercises?.length ?? 0) === 0);
+}
+
 /** Exported for tests - chat request body fields sent with each message. */
 export function buildMessageContextBody(input: IMessageContextBodyInput) {
-    const includeProgram = isMessageAboutProgram(input.messageText);
+    const includeProgram = isMessageAboutProgram(input.messageText) || isOneWeekSeed(input.hevyProgram);
 
     return {
         hevyProgram: includeProgram ? input.hevyProgram : [],

@@ -31,6 +31,8 @@ const DAY_WITH_EXERCISES: THevyRoutine = {
 
 const PLACEHOLDER_DAY: THevyRoutine = { ...DAY_WITH_EXERCISES, exercises: [] };
 
+const WEEK_2_DAY: THevyRoutine = { ...DAY_WITH_EXERCISES, id: "2", folder_id: 1 };
+
 function bodyFor(messageText: string, hevyProgram: THevyRoutine[]) {
     return buildMessageContextBody({
         messageText,
@@ -58,9 +60,16 @@ describe("chat request body grid state", () => {
         // Guard the premise: a bare confirmation is not program talk, so the snapshot is dropped.
         expect(isMessageAboutProgram(confirmation)).toBe(false);
 
-        const body = bodyFor(confirmation, [DAY_WITH_EXERCISES]);
+        const body = bodyFor(confirmation, [DAY_WITH_EXERCISES, WEEK_2_DAY]);
 
         expect(body.hevyProgram).toEqual([]);
+        expect(body.programHasExercises).toBe(true);
+    });
+
+    it("always sends a one-week seed so Hevy share import expand can read week 1", () => {
+        const body = bodyFor("ok", [DAY_WITH_EXERCISES, { ...PLACEHOLDER_DAY, id: "2", folder_id: 1 }]);
+
+        expect(body.hevyProgram).toHaveLength(2);
         expect(body.programHasExercises).toBe(true);
     });
 

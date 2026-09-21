@@ -178,6 +178,10 @@ function asTestTool<TInput, TOutput>(tool: unknown): TToolTestHarness<TInput, TO
     return tool as TToolTestHarness<TInput, TOutput>;
 }
 
+function asInputSchemaTool(tool: unknown): { inputSchema: { safeParse: (value: unknown) => { success: boolean } } } {
+    return tool as { inputSchema: { safeParse: (value: unknown) => { success: boolean } } };
+}
+
 function mockWorkoutHistoryDb(mock: unknown): TWorkoutHistoryDb {
     return mock as TWorkoutHistoryDb;
 }
@@ -946,6 +950,207 @@ describe("chat tools.ts", () => {
                 expect(output.routines).toBeUndefined();
                 expect(buildWeekOnceGuard.locked).toBe(false);
                 expect(programSanityStash.buildWeekRoutines).toBeNull();
+            });
+        });
+
+        describe("Hevy share import expand", () => {
+            const blocks = [
+                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                { name: "Deload", weeks: [4], intent: "Unload" },
+            ];
+
+            function seedSet(index: number, weightKg: number | null): THevySets {
+                return {
+                    index,
+                    type: "normal",
+                    reps: 8,
+                    weight_kg: weightKg,
+                    rpe: 7,
+                    distance_meters: null,
+                    duration_seconds: null,
+                    custom_metric: null,
+                    rep_range: null,
+                };
+            }
+
+            function seedDay(order: number): THevyRoutine {
+                return {
+                    id: `seed-${order}`,
+                    title: `Shared Day ${order}`,
+                    folder_id: 0,
+                    order: String(order),
+                    notes: "",
+                    created_at: "",
+                    updated_at: "",
+                    exercises: [
+                        {
+                            index: 0,
+                            title: "Bench Press (Barbell)",
+                            notes: "",
+                            rest_seconds: "120",
+                            exercise_template_id: "share-bench",
+                            supersets_id: null,
+                            sets: [seedSet(0, 80), seedSet(1, 80)],
+                        },
+                        {
+                            index: 1,
+                            title: "Lateral Raise (Dumbbell)",
+                            notes: "",
+                            rest_seconds: "60",
+                            exercise_template_id: "share-raise",
+                            supersets_id: null,
+                            sets: [seedSet(0, null)],
+                        },
+                    ],
+                };
+            }
+
+            const seed = [seedDay(1), seedDay(2)];
+            const seedRoles = [1, 2].flatMap((dayOrder) => [
+                { dayOrder, exerciseIndex: 0, role: "main" as const },
+                { dayOrder, exerciseIndex: 1, role: "accessory" as const },
+            ]);
+
+            type TExpandInput = {
+                expandHevyShareSeed: { exerciseRoles: typeof seedRoles };
+                routines?: unknown[];
+                totalDays?: number;
+            };
+            type TExpandOutput = {
+                error?: string;
+                message?: string;
+                stalemate?: unknown;
+                routines?: THevyRoutine[];
+                exerciseRoles?: unknown[];
+                expandedHevyShareSeed?: boolean;
+            };
+
+            function setup(hevyProgram: THevyRoutine[] = seed, programHasExercises?: boolean) {
+                const buildWeekOnceGuard = { locked: false };
+                const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+                const tools = getTools({
+                    hevyProgram,
+                    programHasExercises,
+                    programLength: 4,
+                    buildWeekOnceGuard,
+                    programSanityStash,
+                    userMessage: "yes, expand it to 4 weeks",
+                    constraintProfile: initializeConstraintProfile({}),
+                });
+                const planProgram = asTestTool<unknown, unknown>(tools.planProgram);
+                return {
+                    buildWeekOnceGuard,
+                    programSanityStash,
+                    plan: (wave: typeof fourWeekStampedWave | typeof fourWeekDeloadWave) =>
+                        planProgram.execute({
+                            durationWeeks: 4,
+                            goal: "Strength",
+                            daysPerWeek: 2,
+                            blocks,
+                            periodizationWave: wave,
+                        }),
+                    buildWeek: asTestTool<TExpandInput, TExpandOutput>(tools.buildWeek),
+                };
+            }
+
+            it("schema accepts roles-only expand without totalDays or routines", () => {
+                const { inputSchema } = asInputSchemaTool(getTools({}).buildWeek);
+                expect(inputSchema.safeParse({ expandHevyShareSeed: { exerciseRoles: seedRoles } }).success).toBe(true);
+            });
+
+            it("expands the seed as First build: stamped Case 1 once, then locks", async () => {
+                vi.mocked(evaluate).mockClear();
+                const { buildWeekOnceGuard, programSanityStash, plan, buildWeek } = setup();
+                await plan(fourWeekStampedWave);
+
+                const output = await buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } });
+
+                expect(output.error).toBeUndefined();
+                expect(output.expandedHevyShareSeed).toBe(true);
+                expect(output.routines).toEqual(seed);
+                expect(output.exerciseRoles).toEqual(seedRoles);
+                expect(buildWeekOnceGuard.locked).toBe(true);
+                expect(programSanityStash.buildWeekRoutines).toEqual(seed);
+
+                expect(vi.mocked(evaluate)).toHaveBeenCalledOnce();
+                const [snapshot, options] = vi.mocked(evaluate).mock.calls[0];
+                expect(options.firstBuild).toBe(true);
+                expect(new Set(snapshot.matrix.map((row) => row.week))).toEqual(new Set([1, 2, 3, 4]));
+                expect(snapshot.matchingWeek1Days).toEqual([]);
+
+                const modelOutput = await buildWeek.toModelOutput({ output });
+                expect(modelOutput.value).toContain("Seed expanded");
+                expect(modelOutput.value).toContain("already on the grid");
+                expect(modelOutput.value).toContain("not an Accept ask");
+            });
+
+            it("Soft-fails a clone wave on later-week mains, like any First build", async () => {
+                const { buildWeekOnceGuard, plan, buildWeek } = setup();
+                await plan(fourWeekDeloadWave);
+
+                const output = await buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } });
+
+                expect(output.error).toBe("weekCoverage");
+                expect(output.routines).toBeUndefined();
+                expect(buildWeekOnceGuard.locked).toBe(false);
+            });
+
+            it("Soft-fails without a wave and leaves the guard unlocked", async () => {
+                const { buildWeekOnceGuard, buildWeek } = setup();
+
+                const output = await buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } });
+
+                expect(output.error).toBe("periodizationStamp.missingWave");
+                expect(output.routines).toBeUndefined();
+                expect(output.stalemate).toBeUndefined();
+                expect(buildWeekOnceGuard.locked).toBe(false);
+            });
+
+            it("Soft-fails when the role list does not cover every seeded exercise", async () => {
+                const { buildWeekOnceGuard, plan, buildWeek } = setup();
+                await plan(fourWeekStampedWave);
+
+                const output = await buildWeek.execute({
+                    expandHevyShareSeed: { exerciseRoles: seedRoles.slice(0, 3) },
+                });
+
+                expect(output.error).toBe("expandSeed.roleCount");
+                expect(output.message).toContain("expected 4");
+                expect(buildWeekOnceGuard.locked).toBe(false);
+            });
+
+            it("refuses an empty grid, a multi-week program, and a withheld seed", async () => {
+                const empty = setup([], false);
+                await empty.plan(fourWeekStampedWave);
+                expect((await empty.buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } })).error)
+                    .toBe("expandSeed.emptyGrid");
+
+                const multiWeek = setup([...seed, { ...seedDay(1), id: "w2", folder_id: 1 }]);
+                await multiWeek.plan(fourWeekStampedWave);
+                expect((await multiWeek.buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } })).error)
+                    .toBe("expandSeed.alreadyMultiWeek");
+
+                const withheld = setup([], true);
+                await withheld.plan(fourWeekStampedWave);
+                expect((await withheld.buildWeek.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } })).error)
+                    .toBe("expandSeed.noWeek1");
+
+                for (const run of [empty, multiWeek, withheld]) {
+                    expect(run.buildWeekOnceGuard.locked).toBe(false);
+                }
+            });
+
+            it("refuses routines alongside expand so the seed is not re-authored", async () => {
+                const { plan, buildWeek } = setup();
+                await plan(fourWeekStampedWave);
+
+                const output = await buildWeek.execute({
+                    expandHevyShareSeed: { exerciseRoles: seedRoles },
+                    totalDays: 1,
+                    routines: [minimalRoutine],
+                });
+
+                expect(output.error).toBe("Invalid expand");
             });
         });
     });

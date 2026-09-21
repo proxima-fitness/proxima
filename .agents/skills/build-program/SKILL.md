@@ -136,10 +136,25 @@ It is **not** gated behind **getMoreInfoQuestions**.
 After a share is loaded, the week is already on the grid.
 Do **not** call **buildWeek** to recreate it.
 Use **mutateProgram** for edits.
-Expanding that seed to more weeks or adding progression is a **separate ask**.
+Expanding that seed to more weeks is a **separate ask**.
 Offer it and wait for a yes.
-When they accept, plan and periodize with **planProgram** and **mutateProgram** over the loaded week.
-Do not rebuild it.
+
+### Expanding that seed
+
+Expanding a loaded share is **First build**, not an edit.
+The seeded week is week 1.
+Code copies it across the program and applies your **Periodization wave**, same as a new build.
+
+1. Call **readProgram** for each seeded day's `order` and exercise positions.
+2. Call **planProgram** with the length, blocks, and a **Periodization wave**.
+3. Call **buildWeek** with **expandHevyShareSeed** only: one **Exercise role** per seeded exercise, every day. Leave out `totalDays` and `routines`.
+
+Do not re-author the seeded week in `routines`.
+Do not periodize it with **mutateProgram**.
+The same sanity check and **Program stalemate** apply as on any **First build**.
+
+Shared sets often have no RPE.
+`rpeDelta` cannot move a set that has none, so lean on `setCountDelta` (and `mainRepRange` at a **Block boundary**) for those weeks.
 
 ## Warmup exercises vs warmup sets
 

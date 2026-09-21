@@ -782,7 +782,7 @@ export function getTools({
             'Loads a **public Hevy share link** (`hevy.com/folder/{id}`, `hevy.com/routine/{shortId}`, or `hevy.com/workout/{id}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written; a completed workout becomes a single day carrying the loads that were actually lifted. ' +
             'Two hard requirements: the program grid must be **empty**, and the user must have **explicitly agreed** to load the share (pass `confirmed: true` only then). Pasting a link is not agreement - to just read a share, use **fetchHevyShareFolder**. ' +
             'When you are unsure whether they want it loaded, ask in your reply and wait for their answer instead of calling this tool. ' +
-            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks or periodizing is a separate ask. ' +
+            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks is a separate ask, done later with **planProgram** then **buildWeek** `expandHevyShareSeed`. ' +
             'The questionnaire is not required first; it applies when generating or expanding a program, not when loading a share.',
         inputSchema: importHevyShareFolderInputSchema,
         execute: async ({ url, confirmed }): Promise<TImportHevyShareFolderToolOutput> => {
@@ -809,6 +809,149 @@ export function getTools({
     });
 
     /**
+     * Lands a **First build** from week 1 (ADR 0027 / 04, 06): plate + stamp, then
+     * code week-coverage on mains, then one Jev Case 1 on the whole mesocycle.
+     * Any Soft-fail returns before the stash write and lock, so buildWeek and
+     * planProgram stay open for a retry this turn.
+     *
+     * @param week1 - Week-1 routines (`folder_id` 0): built this call or the share seed
+     * @param exerciseRoles - Exercise role on every week-1 row
+     * @param counts - Summary counts echoed on the successful output
+     * @param extra - Extra fields on the successful output (e.g. the expand flag)
+     */
+    async function landFirstBuild(
+        week1: THevyRoutine[],
+        exerciseRoles: TExerciseRoleAssignment[],
+        counts: { totalDays: number; exerciseCount: number; setCount: number },
+        extra: { expandedHevyShareSeed?: true } = {},
+    ) {
+        const weekCount = resolvePlateWeekCount(programSanityStash?.plan, programLength);
+        const stamped = plateThenStamp(
+            week1,
+            programSanityStash?.plan?.periodizationWave,
+            exerciseRoles,
+            weekCount,
+        );
+        if (!stamped.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: stamped.error,
+                message: stamped.message,
+            });
+        }
+
+        const coverage = evaluateFirstBuildWeekCoverage(
+            stamped.program,
+            exerciseRoles,
+            programSanityStash?.skipSameWeekCoverage === true,
+        );
+        if (!coverage.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: 'weekCoverage',
+                message: formatFirstBuildWeekCoverageMessage(coverage.misses),
+            });
+        }
+
+        const snapshot = buildSanitySnapshot({
+            userMessage: userMessage ?? '',
+            constraintProfile,
+            trainingProfile,
+            plan: programSanityStash?.plan,
+            beforeProgram: plateWeek1Across(week1, weekCount),
+            afterProgram: stamped.program,
+        });
+        const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
+        if (!sanity.ok) {
+            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                error: sanity.misses[0]?.id ?? 'evaluate',
+                message: formatEvaluateMessage(sanity.misses),
+                ...(sanity.debug ? { jev: sanity.debug } : {}),
+            });
+        }
+
+        // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
+        if (programSanityStash) {
+            programSanityStash.buildWeekRoutines = week1;
+            programSanityStash.exerciseRoles = exerciseRoles;
+        }
+
+        if (buildWeekOnceGuard) {
+            buildWeekOnceGuard.locked = true;
+        }
+
+        return {
+            routines: week1,
+            exerciseRoles,
+            totalDays: counts.totalDays,
+            routineCount: week1.length,
+            exerciseCount: counts.exerciseCount,
+            setCount: counts.setCount,
+            ...extra,
+            ...(sanity.debug ? { jev: sanity.debug } : {}),
+        };
+    }
+
+    /**
+     * **Hevy share import** expand (ADR 0027 / 06). The seed is week 1 on the
+     * request-start `hevyProgram`; Andy only tags roles. Structural refusals are
+     * plain Soft-fails (not a **Program stalemate**) and never lock the guard.
+     *
+     * @param exerciseRoles - Andy's Exercise role per seeded row
+     */
+    async function expandHevyShareSeedFirstBuild(exerciseRoles: TExerciseRoleAssignment[]) {
+        const program = hevyProgram ?? [];
+        if (!gridHasExercises) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.emptyGrid',
+                message:
+                    'The program grid is empty, so there is no Hevy share seed to expand. For a new program, call buildWeek with routines.',
+            });
+        }
+        // Only later weeks with rows count: expanding over them would re-stamp an existing program (C6).
+        if (program.some((routine) => (routine.folder_id ?? 0) > 0 && (routine.exercises?.length ?? 0) > 0)) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.alreadyMultiWeek',
+                message:
+                    'The program already has weeks after week 1. Expand only works on a one-week seed. Use mutateProgram for changes to this program.',
+            });
+        }
+        const week1 = program
+            .filter((routine) => (routine.folder_id ?? 0) === 0)
+            .sort((a, b) => Number(a.order) - Number(b.order));
+        const exerciseCount = week1.reduce((sum, routine) => sum + (routine.exercises?.length ?? 0), 0);
+        if (exerciseCount === 0) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.noWeek1',
+                message:
+                    'No week-1 routines reached this request, so the seed cannot be expanded. The grid is unchanged. Ask the user to send the expand request again.',
+            });
+        }
+        if (programSanityStash?.plan?.periodizationWave == null) {
+            return softToolErrorResult('buildWeek', {
+                error: 'periodizationStamp.missingWave',
+                message: 'Periodization wave is missing. Call planProgram with a wave before expanding the seed.',
+            });
+        }
+        if (exerciseRoles.length !== exerciseCount) {
+            return softToolErrorResult('buildWeek', {
+                error: 'expandSeed.roleCount',
+                message: `Tag every seeded exercise: expected ${exerciseCount} Exercise roles, got ${exerciseRoles.length}. Use readProgram for each day's order and exercise positions.`,
+            });
+        }
+
+        const setCount = week1.reduce(
+            (sum, routine) =>
+                sum + (routine.exercises ?? []).reduce((daySum, exercise) => daySum + (exercise.sets?.length ?? 0), 0),
+            0,
+        );
+        return landFirstBuild(
+            week1,
+            exerciseRoles,
+            { totalDays: week1.length, exerciseCount, setCount },
+            { expandedHevyShareSeed: true },
+        );
+    }
+
+    /**
      * Title: buildWeekTool
      * Description: Tool to build a full week of routines/days for the workout program in a single call.
      * @returns { Tool }
@@ -819,13 +962,19 @@ export function getTools({
             'Code copies week 1 across the program and applies the **Periodization wave** from planProgram; on success the whole program lands. ' +
             'After it succeeds, do not call buildWeek again; later changes the user asks for use **mutateProgram**. After a Soft-fail, fix the error (or call planProgram again to change the wave) and call buildWeek again. ' +
             'Provide all days in order (Day 1, Day 2, …). ' +
+            '**Expanding a loaded Hevy share import seed** is also First build: after **planProgram**, call buildWeek with **expandHevyShareSeed** only (no totalDays, no routines) and an Exercise role for every exercise on the seeded week. Code copies the seed across the program and applies the wave. Do not re-author the seeded week in routines. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
             'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
         inputSchema: z.object({
-            totalDays: z.number().min(1).max(7).describe('Total number of days in the program week (1-7).'),
+            totalDays: z
+                .number()
+                .min(1)
+                .max(7)
+                .optional()
+                .describe('Total number of days in the program week (1-7). Required unless expandHevyShareSeed is set.'),
             routines: z
                 .array(
                     z.object({
@@ -915,12 +1064,40 @@ export function getTools({
                     }),
                 )
                 .min(1)
+                .optional()
                 .describe(
-                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays).',
+                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays). Omit when expandHevyShareSeed is set.',
+                ),
+            expandHevyShareSeed: z
+                .object({
+                    exerciseRoles: z
+                        .array(
+                            z.object({
+                                dayOrder: z
+                                    .number()
+                                    .int()
+                                    .min(1)
+                                    .describe('Seeded day: the routine `order` from readProgram (week 1).'),
+                                exerciseIndex: z
+                                    .number()
+                                    .int()
+                                    .min(0)
+                                    .describe('0-based exercise position on that seeded day.'),
+                                role: z
+                                    .enum(EXERCISE_ROLES)
+                                    .describe('Exercise role for the Periodization wave: main, accessory, or warmup.'),
+                            }),
+                        )
+                        .min(1)
+                        .describe('One Exercise role per exercise on the seeded week, every day. Length must equal the seed exercise count.'),
+                })
+                .optional()
+                .describe(
+                    'Expand the **Hevy share import** seed already on the grid (week 1 only) into the planned program. Omit totalDays and routines when set.',
                 ),
         }),
 
-        execute: async ({ totalDays, routines }) => {
+        execute: async ({ totalDays, routines, expandHevyShareSeed }) => {
             try {
                 const stopped = stalemateStopResult(programSanityStash, userMessage);
                 if (stopped) {
@@ -935,12 +1112,30 @@ export function getTools({
                     });
                 }
 
+                if (expandHevyShareSeed) {
+                    if (routines?.length) {
+                        return softToolErrorResult('buildWeek', {
+                            error: 'Invalid expand',
+                            message:
+                                'Pass expandHevyShareSeed or routines, not both. To expand the loaded share, omit routines: the seeded week is already on the grid.',
+                        });
+                    }
+                    return await expandHevyShareSeedFirstBuild(expandHevyShareSeed.exerciseRoles);
+                }
+
                 const timestamp = new Date().toISOString();
 
                 if (!Array.isArray(routines) || routines.length === 0) {
                     return softToolErrorResult('buildWeek', {
                         error: 'Invalid routines',
                         message: 'At least one routine is required',
+                    });
+                }
+
+                if (totalDays == null) {
+                    return softToolErrorResult('buildWeek', {
+                        error: 'Invalid routines',
+                        message: 'totalDays is required when building week 1 from routines',
                     });
                 }
 
@@ -1077,72 +1272,11 @@ export function getTools({
                     }
                 }
 
-                // First build (ADR 0027 / 04): plate + stamp, then code week-coverage
-                // on mains, then one Jev Case 1 on the whole mesocycle. Any Soft-fail
-                // returns before the stash write and lock, so buildWeek and
-                // planProgram stay open for a retry this turn.
-                const weekCount = resolvePlateWeekCount(programSanityStash?.plan, programLength);
-                const stamped = plateThenStamp(
-                    builtRoutines,
-                    programSanityStash?.plan?.periodizationWave,
-                    exerciseRoles,
-                    weekCount,
-                );
-                if (!stamped.ok) {
-                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
-                        error: stamped.error,
-                        message: stamped.message,
-                    });
-                }
-
-                const coverage = evaluateFirstBuildWeekCoverage(
-                    stamped.program,
-                    exerciseRoles,
-                    programSanityStash?.skipSameWeekCoverage === true,
-                );
-                if (!coverage.ok) {
-                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
-                        error: 'weekCoverage',
-                        message: formatFirstBuildWeekCoverageMessage(coverage.misses),
-                    });
-                }
-
-                const snapshot = buildSanitySnapshot({
-                    userMessage: userMessage ?? '',
-                    constraintProfile,
-                    trainingProfile,
-                    plan: programSanityStash?.plan,
-                    beforeProgram: plateWeek1Across(builtRoutines, weekCount),
-                    afterProgram: stamped.program,
-                });
-                const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
-                if (!sanity.ok) {
-                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
-                        error: sanity.misses[0]?.id ?? 'evaluate',
-                        message: formatEvaluateMessage(sanity.misses),
-                        ...(sanity.debug ? { jev: sanity.debug } : {}),
-                    });
-                }
-
-                // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
-                if (programSanityStash) {
-                    programSanityStash.buildWeekRoutines = builtRoutines;
-                    programSanityStash.exerciseRoles = exerciseRoles;
-                }
-
-                if (buildWeekOnceGuard) {
-                    buildWeekOnceGuard.locked = true;
-                }
-
-                return {
-                    routines: builtRoutines,
-                    exerciseRoles,
+                return await landFirstBuild(builtRoutines, exerciseRoles, {
                     totalDays,
-                    routineCount: builtRoutines.length,
                     exerciseCount: totalExercises,
                     setCount: totalSets,
-                    ...(sanity.debug ? { jev: sanity.debug } : {}),
-                };
+                });
             } catch (error) {
                 console.error('Error in buildWeekTool:', error);
                 return softToolErrorResult('buildWeek', {
@@ -1175,10 +1309,18 @@ export function getTools({
                 totalDays?: number;
                 exerciseCount?: number;
                 setCount?: number;
+                expandedHevyShareSeed?: boolean;
             };
             const titles = Array.isArray(success.routines)
                 ? success.routines.map((r) => r.title).join(', ')
                 : '';
+
+            if (success.expandedHevyShareSeed) {
+                return {
+                    type: 'text' as const,
+                    value: `Seed expanded (${success.totalDays} days): ${titles || 'No routine titles'}. The loaded Hevy share week is week 1, copied across the program with the Periodization wave applied, and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
+                };
+            }
 
             return {
                 type: 'text' as const,
