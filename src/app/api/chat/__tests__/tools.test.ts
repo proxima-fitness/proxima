@@ -302,6 +302,18 @@ const KNEE_SQUAT_MISS = {
     detail: KNEE_SQUAT_PAIR.why,
     pair: KNEE_SQUAT_PAIR,
 };
+const KNEE_LUNGE_PAIR = {
+    id: "constraint.injury.lunge-dumbbell.knee-pain",
+    field: "injuries" as const,
+    constraint: "Knee Pain",
+    exerciseTitle: "Lunge (Dumbbell)",
+    why: "Can't keep Lunge (Dumbbell) with your saved injury \"Knee Pain\".",
+};
+const KNEE_LUNGE_MISS = {
+    id: KNEE_LUNGE_PAIR.id,
+    detail: KNEE_LUNGE_PAIR.why,
+    pair: KNEE_LUNGE_PAIR,
+};
 
 describe("chat tools.ts", () => {
     it("exposes readProgram and mutateProgram but not modifyProgram or getCurrentProgram", () => {
@@ -713,6 +725,46 @@ describe("chat tools.ts", () => {
             expect(third.error).toBe("program_stalemate");
             expect(third.routines).toBeUndefined();
             expect(buildProgramOnceGuard.locked).toBe(false);
+        });
+
+        it("counts pairs per id and rolls up every pair miss on escalate", async () => {
+            vi.mocked(evaluate)
+                .mockResolvedValueOnce({ ok: false, misses: [KNEE_SQUAT_MISS] })
+                .mockResolvedValueOnce({ ok: false, misses: [KNEE_LUNGE_MISS] })
+                .mockResolvedValueOnce({ ok: false, misses: [KNEE_SQUAT_MISS] });
+
+            const programSanityStash = emptyStash();
+            const tools = getTools({ buildProgramOnceGuard: { locked: false }, programSanityStash });
+            const buildProgram = asBuildProgram(tools.buildProgram);
+            const run = async () => (await buildProgram.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: { key?: string; pairs?: unknown[] } };
+
+            expect((await run()).stalemate).toBeUndefined();
+            expect((await run()).stalemate).toBeUndefined();
+            const third = await run();
+            expect(third.stalemate?.key).toBe(KNEE_SQUAT_PAIR.id);
+            expect(third.stalemate?.pairs).toEqual([KNEE_SQUAT_PAIR, KNEE_LUNGE_PAIR]);
+        });
+
+        it("counts a pair that was not the first miss", async () => {
+            vi.mocked(evaluate)
+                .mockResolvedValueOnce({ ok: false, misses: [KNEE_SQUAT_MISS] })
+                .mockResolvedValueOnce({ ok: false, misses: [KNEE_LUNGE_MISS, KNEE_SQUAT_MISS] });
+
+            const programSanityStash = emptyStash();
+            const tools = getTools({ buildProgramOnceGuard: { locked: false }, programSanityStash });
+            const buildProgram = asBuildProgram(tools.buildProgram);
+
+            await buildProgram.execute({ totalDays: 1, routines: [minimalRoutine] });
+            const second = (await buildProgram.execute({
+                totalDays: 1,
+                routines: [minimalRoutine],
+            })) as { error?: string; stalemate?: { key?: string; pairs?: unknown[] } };
+            expect(second.error).toBe(KNEE_LUNGE_PAIR.id);
+            expect(second.stalemate?.key).toBe(KNEE_SQUAT_PAIR.id);
+            expect(second.stalemate?.pairs).toEqual([KNEE_SQUAT_PAIR, KNEE_LUNGE_PAIR]);
         });
 
         it("does not escalate when two different honor ids fail", async () => {

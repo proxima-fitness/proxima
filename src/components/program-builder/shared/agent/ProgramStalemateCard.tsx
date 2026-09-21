@@ -4,7 +4,9 @@
  * Ordinary-user **Program stalemate** card (ADR 0027 / 01; ADR 0029 / 02). Why
  * it failed, miss-specific chips or buttons, plus type-in-composer. Chip and
  * preference clicks persist a **User-stated change** then send a user message.
- * Not a Mutation proposal.
+ * Injury / equipment pair misses (ADR 0030 / 03, C6) list each named lift ×
+ * saved limit with remove-that-constraint and replace-that-lift. Not a
+ * Mutation proposal.
  *
  * Depends on: stalemate helpers, user-constraints, Button.
  * Used by: MessageBubbles.
@@ -26,12 +28,14 @@ import {
     FIX_IT_MESSAGE,
     MAKE_LATER_WEEKS_DIFFERENT_MESSAGE,
     removeConstraintString,
+    replaceLiftMessage,
     SAME_WEEK_SKIP_MESSAGE,
     STALEMATE_ERROR,
     USER_REQUESTED_EXCEPTION_MESSAGE,
 } from "@/app/api/chat/sanity/stalemate";
 import type {
     IProgramStalematePayload,
+    TConstraintPairMiss,
     TProgramStalemateAction,
     TProgramStalemateChip,
     TStalemateChipField,
@@ -194,10 +198,16 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
     }, [busy, onPreferenceChange, queryClient, sendUserText, user]);
 
     const actions = payload.actions ?? [];
+    const pairs = payload.pairs ?? [];
     const showFixItFallback =
         payload.kind === "constraint" &&
         payload.chips.length === 0 &&
+        pairs.length === 0 &&
         actions.length === 0;
+    const pairChip = (pair: TConstraintPairMiss): TProgramStalemateChip => ({
+        field: pair.field,
+        value: pair.constraint,
+    });
 
     return (
         <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
@@ -210,6 +220,37 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
                         { payload.why }
                     </p>
                 </div>
+                { pairs.length > 0 ? (
+                    <ul className="flex flex-col divide-y divide-border border-t border-border">
+                        { pairs.map((pair) => (
+                            <li key={ pair.id } className="flex flex-col gap-2 px-4 py-3">
+                                { pairs.length > 1 ? (
+                                    <p className="text-[13px] text-foreground">{ pair.why }</p>
+                                ) : null }
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={ busy }
+                                        onClick={ () => void persistChip(pairChip(pair)) }
+                                    >
+                                        { `Remove "${pair.constraint}"` }
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={ busy }
+                                        onClick={ () => sendUserText(replaceLiftMessage(pair)) }
+                                    >
+                                        { `Replace ${pair.exerciseTitle}` }
+                                    </Button>
+                                </div>
+                            </li>
+                        )) }
+                    </ul>
+                ) : null }
                 <div className="flex flex-col gap-2 border-t border-border px-4 py-3">
                     { payload.kind === "constraint" && payload.chips.length > 0 ? (
                         payload.chips.map((chip) => (

@@ -8,6 +8,12 @@
  * skip lives on the stash; the card click's next request sets it from the
  * exact user text.
  *
+ * Injury / equipment pairs (ADR 0030 / 03, C6–C7) count per pair id, so a
+ * different pair can still Soft-fail-retry. The escalate card rolls up every
+ * pair miss this request, each with remove-that-constraint (**User-stated
+ * change**) and replace-that-lift (a coach retry message, not a **User-stated
+ * exception**).
+ *
  * Depends on: ./types, ../constraints/types, ../constraints/initialize
  * Used by: tools.ts, week-coverage.ts, ProgramStalemateCard
  */
@@ -17,6 +23,7 @@ import type { TConstraintProfile } from "../constraints/types";
 import type {
     IProgramSanityStash,
     IProgramStalematePayload,
+    TConstraintPairMiss,
     TProgramStalemateAction,
     TProgramStalemateChip,
     TProgramStalemateKind,
@@ -39,6 +46,29 @@ export const MAKE_LATER_WEEKS_DIFFERENT_MESSAGE = "Make later weeks different.";
 export const USER_REQUESTED_EXCEPTION_MESSAGE = "That's what I asked for";
 
 export const FIX_IT_MESSAGE = "Fix it.";
+
+/** Opening words of every replace-that-lift click (ADR 0030 C6). */
+export const REPLACE_LIFT_MESSAGE_PREFIX = "Replace this lift:";
+
+/**
+ * Exact user message for a pair's replace-that-lift button. Andy swaps the
+ * lift and calls buildProgram again; the saved constraint stays.
+ *
+ * @param pair - Pair miss the card row names
+ */
+export function replaceLiftMessage(pair: TConstraintPairMiss): string {
+    const limit = pair.field === "injuries" ? "injury" : "excluded equipment";
+    return `${REPLACE_LIFT_MESSAGE_PREFIX} swap ${pair.exerciseTitle} for a lift that works with my ${limit} "${pair.constraint}".`;
+}
+
+/**
+ * Card header when more than one pair missed. A single pair shows its own `why`.
+ *
+ * @param count - Rolled-up pair misses
+ */
+export function pairRollupWhy(count: number): string {
+    return `${count} lifts still conflict with your saved limits.`;
+}
 
 const ESCALATE_ERROR_CODES = new Set(["constraint_violation", "weekCoverage"]);
 
@@ -89,13 +119,52 @@ export function shouldEscalate(
     stash: IProgramSanityStash | undefined,
     key: string | null,
 ): boolean {
-    if (!stash || !key) return false;
+    return escalateKey(stash, key ? [key] : []) !== null;
+}
+
+/**
+ * Increment every distinct key from one Soft-fail (the `error` plus each
+ * missed pair id, ADR 0030 C7). Returns the first key that reached two this
+ * request, or null. Keys that did not escalate still keep their count.
+ *
+ * @param stash - Per-request bag; omitted in tests that do not exercise stalemate
+ * @param keys - Counted keys from one Soft-fail
+ */
+export function escalateKey(
+    stash: IProgramSanityStash | undefined,
+    keys: string[],
+): string | null {
+    if (!stash || keys.length === 0) return null;
     if (!stash.softFailCounts) stash.softFailCounts = {};
-    const count = (stash.softFailCounts[key] ?? 0) + 1;
-    stash.softFailCounts[key] = count;
-    if (count < 2) return false;
-    stash.stalemateStopped = true;
-    return true;
+    let escalated: string | null = null;
+    for (const key of new Set(keys)) {
+        const count = (stash.softFailCounts[key] ?? 0) + 1;
+        stash.softFailCounts[key] = count;
+        if (count >= 2 && !escalated) escalated = key;
+    }
+    if (escalated) stash.stalemateStopped = true;
+    return escalated;
+}
+
+/**
+ * Keep each pair miss this request for the rollup card. A repeat id replaces
+ * its row in place so the card shows the latest `why`.
+ *
+ * @param stash - Per-request bag
+ * @param pairs - Pair misses from one Soft-fail
+ */
+export function recordConstraintPairMisses(
+    stash: IProgramSanityStash | undefined,
+    pairs: TConstraintPairMiss[],
+): void {
+    if (!stash || pairs.length === 0) return;
+    const rows = stash.constraintPairMisses ?? [];
+    for (const pair of pairs) {
+        const index = rows.findIndex((row) => row.id === pair.id);
+        if (index === -1) rows.push(pair);
+        else rows[index] = pair;
+    }
+    stash.constraintPairMisses = rows;
 }
 
 /**
@@ -145,18 +214,6 @@ function pushChip(
     chips.push({ field, value });
 }
 
-function chipsFromArray(
-    field: TStalemateChipField,
-    values: string[],
-): TProgramStalemateChip[] {
-    const chips: TProgramStalemateChip[] = [];
-    const seen = new Set<string>();
-    for (const value of values) {
-        pushChip(chips, seen, field, value);
-    }
-    return chips;
-}
-
 /**
  * Exact saved rows the Mutation constraint gate already hit (`matchesAny`).
  *
@@ -200,11 +257,8 @@ function whyForKey(key: string): string {
     if (key === "weekCoverage") {
         return "Later weeks still copy week 1. Same week every week, or make later weeks different?";
     }
-    if (key === "constraint_violation" || key === "constraint.injurySemantic") {
+    if (key === "constraint_violation") {
         return "A saved injury or health limit still conflicts with this program.";
-    }
-    if (key === "constraint.equipmentSemantic") {
-        return "This program still uses equipment you've excluded.";
     }
     if (key === "constraint.peakHonor") {
         return "Your saved peak-week preference still conflicts with this program.";
@@ -238,12 +292,6 @@ function chipsForKey(
     if (!profile) return [];
     if (key === "constraint_violation") {
         return matchedConstraintChips(profile, exercises ?? []);
-    }
-    if (key === "constraint.injurySemantic") {
-        return chipsFromArray("injuries", profile.injuries);
-    }
-    if (key === "constraint.equipmentSemantic") {
-        return chipsFromArray("excludedEquipment", profile.excludedEquipment);
     }
     return [];
 }
@@ -345,17 +393,31 @@ function preferenceActionsForKey(
 
 /**
  * Card payload for an escalated Soft-fail. Chips are exact saved strings.
- * Preference honors and empty-chip constraint misses carry `actions`.
+ * Preference honors and empty-chip constraint misses carry `actions`. When
+ * `key` is a pair id, the card is the pair rollup: every pair this request,
+ * each with its own fork, plus **Fix it.**
  *
  * @param key - Counted honor id or code-gate error
  * @param profile - Active Constraint profile, if any
  * @param exercises - Gate exercises when `key` is `constraint_violation`
+ * @param pairs - Every pair miss this request (stash rollup)
  */
 export function buildStalematePayload(
     key: string,
     profile: TConstraintProfile | null | undefined,
     exercises?: TStalemateExerciseMeta[],
+    pairs: TConstraintPairMiss[] = [],
 ): IProgramStalematePayload {
+    if (pairs.some((pair) => pair.id === key)) {
+        return {
+            chips: [],
+            key,
+            kind: "constraint",
+            why: pairs.length === 1 ? pairs[0].why : pairRollupWhy(pairs.length),
+            actions: [fixItAction()],
+            pairs,
+        };
+    }
     const kind = kindForKey(key);
     const chips = chipsForKey(key, profile, exercises);
     let actions = preferenceActionsForKey(key, profile);
@@ -391,6 +453,21 @@ const PREFERENCE_KEYS = new Set<string>([
     "warmupExercises",
 ]);
 
+function isPairMiss(value: unknown): value is TConstraintPairMiss {
+    if (!value || typeof value !== "object") return false;
+    const record = value as Partial<Record<keyof TConstraintPairMiss, unknown>>;
+    return (
+        (record.field === "injuries" || record.field === "excludedEquipment") &&
+        typeof record.id === "string" &&
+        record.id.length > 0 &&
+        typeof record.constraint === "string" &&
+        record.constraint.length > 0 &&
+        typeof record.exerciseTitle === "string" &&
+        record.exerciseTitle.length > 0 &&
+        typeof record.why === "string"
+    );
+}
+
 function isAction(value: unknown): value is TProgramStalemateAction {
     if (!value || typeof value !== "object") return false;
     const record = value as {
@@ -425,6 +502,7 @@ export function readStalematePayload(output: unknown): IProgramStalematePayload 
         kind?: unknown;
         why?: unknown;
         actions?: unknown;
+        pairs?: unknown;
     };
     if (typeof body.key !== "string" || !body.key) return null;
     if (
@@ -437,12 +515,14 @@ export function readStalematePayload(output: unknown): IProgramStalematePayload 
     if (typeof body.why !== "string") return null;
     const chips = Array.isArray(body.chips) ? body.chips.filter(isChip) : [];
     const actions = Array.isArray(body.actions) ? body.actions.filter(isAction) : undefined;
+    const pairs = Array.isArray(body.pairs) ? body.pairs.filter(isPairMiss) : undefined;
     return {
         chips,
         key: body.key,
         kind: body.kind,
         why: body.why,
         ...(actions && actions.length > 0 ? { actions } : {}),
+        ...(pairs && pairs.length > 0 ? { pairs } : {}),
     };
 }
 

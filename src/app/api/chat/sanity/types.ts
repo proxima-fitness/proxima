@@ -116,7 +116,9 @@ export type TProgramStalemateKind = "constraint" | "weekCoverage" | "training";
 /**
  * Payload the client card needs. Honor `key` is the counted Soft-fail id.
  * `chips` are exact stored strings, never paraphrases. `actions` cover
- * preference honors and empty-chip **Fix it.** (ADR 0029 / 02).
+ * preference honors and empty-chip **Fix it.** (ADR 0029 / 02). `pairs` is
+ * the injury / equipment rollup (ADR 0030 C6–C7): every pair that missed this
+ * request, each with its own remove-that-constraint / replace-that-lift fork.
  */
 export interface IProgramStalematePayload {
     chips: TProgramStalemateChip[];
@@ -124,6 +126,7 @@ export interface IProgramStalematePayload {
     kind: TProgramStalemateKind;
     why: string;
     actions?: TProgramStalemateAction[];
+    pairs?: TConstraintPairMiss[];
 }
 
 /**
@@ -132,6 +135,7 @@ export interface IProgramStalematePayload {
  * `mutateProgram` can plate week 1 and know which weeks were claimed.
  * Slice 1 (ADR 0027) also counts Soft-fail keys and the same-week skip.
  * Slice 2 stashes the Periodization wave on `plan` and week-1 Exercise roles.
+ * ADR 0030 / 03 keeps every pair miss so the escalate card can roll them up.
  */
 export interface IProgramSanityStash {
     plan: TProgramPlan | null;
@@ -139,6 +143,8 @@ export interface IProgramSanityStash {
     exerciseRoles?: TExerciseRoleAssignment[] | null;
     skipSameWeekCoverage?: boolean;
     softFailCounts?: Record<string, number>;
+    /** Every injury / equipment pair miss this request, by first-seen order (ADR 0030 C7). */
+    constraintPairMisses?: TConstraintPairMiss[];
     stalemate?: IProgramStalematePayload | null;
     stalemateStopped?: boolean;
 }

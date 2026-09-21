@@ -11,8 +11,12 @@ import {
     SAME_WEEK_SKIP_MESSAGE,
     USER_REQUESTED_EXCEPTION_MESSAGE,
     buildStalematePayload,
+    replaceLiftMessage,
 } from "@/app/api/chat/sanity/stalemate";
-import type { IProgramStalematePayload } from "@/app/api/chat/sanity/types";
+import type {
+    IProgramStalematePayload,
+    TConstraintPairMiss,
+} from "@/app/api/chat/sanity/types";
 import { resetAiToolErrorCaptureForTests } from "@/lib/capture-ai-tool-error";
 
 vi.mock("next/navigation", () => ({
@@ -72,10 +76,26 @@ function renderWithProviders(ui: ReactNode) {
     );
 }
 
+const SQUAT_KNEE: TConstraintPairMiss = {
+    id: "constraint.injury.squat-barbell.knee-pain",
+    field: "injuries",
+    constraint: "Knee pain",
+    exerciseTitle: "Squat (Barbell)",
+    why: "Can't keep Squat (Barbell) with your saved injury \"Knee pain\".",
+};
+
+const DEADLIFT_BARBELL: TConstraintPairMiss = {
+    id: "constraint.equipment.deadlift-barbell.barbell",
+    field: "excludedEquipment",
+    constraint: "Barbell",
+    exerciseTitle: "Deadlift (Barbell)",
+    why: "Can't keep Deadlift (Barbell): it uses excluded equipment \"Barbell\".",
+};
+
 function constraintPayload(chips: IProgramStalematePayload["chips"]): IProgramStalematePayload {
     return {
         chips,
-        key: "constraint.injurySemantic",
+        key: "constraint_violation",
         kind: "constraint",
         why: "A saved injury or health limit still conflicts with this program.",
     };
@@ -189,6 +209,78 @@ describe("ProgramStalemateCard", () => {
         );
         expect(screen.queryByText("Proposed changes")).toBeNull();
         expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
+    });
+
+    it("names the lift and limit on a pair escalate and offers remove and replace", async () => {
+        userState.user = { id: "user-1" };
+        getUserConstraints.mockResolvedValue({
+            ...emptyUserConstraintProfileRecord(),
+            injuries: ["Knee pain", "bad back"],
+        });
+        saveUserConstraintProfile.mockResolvedValue(undefined);
+        const sendMessage = vi.fn(async () => {});
+        const payload = buildStalematePayload(SQUAT_KNEE.id, null, undefined, [SQUAT_KNEE]);
+
+        renderWithProviders(
+            <ProgramStalemateCard
+                payload={ payload }
+                sendMessage={ sendMessage }
+                healthIssues={ [
+                    { label: "Knee pain", value: "Knee pain" },
+                    { label: "bad back", value: "bad back" },
+                ] }
+                excludeEquipment={ [] }
+                handleHealthIssues={ vi.fn() }
+                handleExcludeEquipment={ vi.fn() }
+            />,
+        );
+
+        expect(screen.getByText(SQUAT_KNEE.why)).toBeTruthy();
+        expect(screen.getByRole("button", { name: FIX_IT_MESSAGE })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "bad back" })).toBeNull();
+
+        fireEvent.click(screen.getByRole("button", { name: "Replace Squat (Barbell)" }));
+        expect(sendMessage).toHaveBeenCalledWith({ text: replaceLiftMessage(SQUAT_KNEE) }, undefined);
+        expect(saveUserConstraintProfile).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole("button", { name: "Remove \"Knee pain\"" }));
+        await waitFor(() => {
+            expect(saveUserConstraintProfile).toHaveBeenCalledTimes(1);
+        });
+        expect(saveUserConstraintProfile.mock.calls[0][1].injuries).toEqual(["bad back"]);
+        expect(sendMessage).toHaveBeenLastCalledWith(
+            { text: "I no longer have this constraint: Knee pain" },
+            { body: { healthIssues: "bad back" } },
+        );
+    });
+
+    it("lists every rolled-up pair with its own fork", () => {
+        const sendMessage = vi.fn(async () => {});
+        const payload = buildStalematePayload(SQUAT_KNEE.id, null, undefined, [
+            SQUAT_KNEE,
+            DEADLIFT_BARBELL,
+        ]);
+
+        renderWithProviders(
+            <ProgramStalemateCard
+                payload={ payload }
+                sendMessage={ sendMessage }
+                healthIssues={ [] }
+                excludeEquipment={ [{ label: "Barbell", value: "Barbell" }] }
+                handleHealthIssues={ vi.fn() }
+                handleExcludeEquipment={ vi.fn() }
+            />,
+        );
+
+        expect(screen.getByText(SQUAT_KNEE.why)).toBeTruthy();
+        expect(screen.getByText(DEADLIFT_BARBELL.why)).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Remove \"Knee pain\"" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Remove \"Barbell\"" })).toBeTruthy();
+        fireEvent.click(screen.getByRole("button", { name: "Replace Deadlift (Barbell)" }));
+        expect(sendMessage).toHaveBeenCalledWith(
+            { text: replaceLiftMessage(DEADLIFT_BARBELL) },
+            undefined,
+        );
     });
 
     it("sends the exact same-week skip and later-weeks messages", () => {
@@ -334,7 +426,7 @@ describe("MessageBubbles program stalemate", () => {
                     toolCallId: "bw1",
                     state: "output-available",
                     input: { totalDays: 3, routines: [] },
-                    output: { error: "constraint.injurySemantic", message: "does not honor" },
+                    output: { error: "constraint_violation", message: "does not honor" },
                 }],
             },
         ] as TChatMessage[];
@@ -353,7 +445,7 @@ describe("MessageBubbles program stalemate", () => {
                     state: "output-available",
                     input: { totalDays: 3, routines: [] },
                     output: {
-                        error: "constraint.injurySemantic",
+                        error: "constraint_violation",
                         message: "does not honor",
                         stalemate: constraintPayload([{ field: "injuries", value: "knee" }]),
                     },

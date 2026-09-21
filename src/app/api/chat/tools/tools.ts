@@ -99,8 +99,9 @@ import {
 import {
     applySameWeekSkipFromUserMessage,
     buildStalematePayload,
+    escalateKey,
     isStalemateOutput,
-    shouldEscalate,
+    recordConstraintPairMisses,
     stalemateKeyForError,
     STALEMATE_ERROR,
     STALEMATE_MODEL_STOP,
@@ -421,20 +422,29 @@ function sanityPairDetail(misses: TEvaluateMiss[]): { constraintPairs?: TConstra
     return constraintPairs.length > 0 ? { constraintPairs } : {};
 }
 
-/** Counted Soft-fail: first miss stays honor retry, second of the same id is a Program stalemate. */
-function countedSoftFail<T extends { error: string }>(
+/**
+ * Counted Soft-fail: first miss stays honor retry, second of the same id is a
+ * Program stalemate. Each missed injury / equipment pair counts on its own id,
+ * and a pair escalate rolls up every pair miss this request (ADR 0030 C7).
+ */
+function countedSoftFail<T extends { error: string; constraintPairs?: TConstraintPairMiss[] }>(
     tool: 'buildProgram' | 'mutateProgram',
     stash: IProgramSanityStash | undefined,
     profile: TConstraintProfile | undefined,
     result: T,
     exercises?: TStalemateExerciseMeta[],
 ): T {
-    const key = stalemateKeyForError(result.error);
-    const escalate = shouldEscalate(stash, key);
-    if (!escalate || !key) {
+    const pairs = result.constraintPairs ?? [];
+    recordConstraintPairMisses(stash, pairs);
+    const errorKey = stalemateKeyForError(result.error);
+    const key = escalateKey(stash, [
+        ...(errorKey ? [errorKey] : []),
+        ...pairs.map((pair) => pair.id),
+    ]);
+    if (!key) {
         return softToolErrorResult(tool, result);
     }
-    const payload = buildStalematePayload(key, profile, exercises);
+    const payload = buildStalematePayload(key, profile, exercises, stash?.constraintPairMisses ?? pairs);
     if (stash) stash.stalemate = payload;
     return softToolErrorResult(tool, { ...result, stalemate: payload });
 }

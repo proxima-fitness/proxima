@@ -3,21 +3,41 @@ import { describe, expect, it } from "vitest";
 import {
     applySameWeekSkipFromUserMessage,
     buildStalematePayload,
+    escalateKey,
     isStalemateOutput,
     matchedConstraintChips,
+    pairRollupWhy,
     readStalematePayload,
+    recordConstraintPairMisses,
     removeConstraintString,
+    replaceLiftMessage,
     SAME_WEEK_SKIP_MESSAGE,
     shouldEscalate,
     stalemateKeyForError,
     STALEMATE_ERROR,
 } from "../stalemate";
-import type { IProgramSanityStash } from "../types";
+import type { IProgramSanityStash, TConstraintPairMiss } from "../types";
 import type { TConstraintProfile } from "../../constraints/types";
 
 function emptyStash(): IProgramSanityStash {
     return { plan: null, buildProgramRoutines: null };
 }
+
+const SQUAT_KNEE: TConstraintPairMiss = {
+    id: "constraint.injury.squat-barbell.knee-pain",
+    field: "injuries",
+    constraint: "Knee pain",
+    exerciseTitle: "Squat (Barbell)",
+    why: "Can't keep Squat (Barbell) with your saved injury \"Knee pain\".",
+};
+
+const DEADLIFT_BARBELL: TConstraintPairMiss = {
+    id: "constraint.equipment.deadlift-barbell.barbell",
+    field: "excludedEquipment",
+    constraint: "Barbell",
+    exerciseTitle: "Deadlift (Barbell)",
+    why: "Can't keep Deadlift (Barbell): it uses excluded equipment \"Barbell\".",
+};
 
 function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfile {
     return {
@@ -40,7 +60,7 @@ describe("stalemateKeyForError", () => {
     it("counts code gates and Jev honor ids", () => {
         expect(stalemateKeyForError("constraint_violation")).toBe("constraint_violation");
         expect(stalemateKeyForError("weekCoverage")).toBe("weekCoverage");
-        expect(stalemateKeyForError("constraint.injurySemantic")).toBe("constraint.injurySemantic");
+        expect(stalemateKeyForError(SQUAT_KNEE.id)).toBe(SQUAT_KNEE.id);
         expect(stalemateKeyForError("skill.sessionShape")).toBe("skill.sessionShape");
         expect(stalemateKeyForError("training.sessionDurationFit")).toBe(
             "training.sessionDurationFit",
@@ -63,19 +83,19 @@ describe("stalemateKeyForError", () => {
 describe("shouldEscalate", () => {
     it("escalates on the second of the same key this request", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.injurySemantic")).toBe(false);
-        expect(stash.softFailCounts?.["constraint.injurySemantic"]).toBe(1);
-        expect(shouldEscalate(stash, "constraint.injurySemantic")).toBe(true);
+        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(false);
+        expect(stash.softFailCounts?.["constraint.peakHonor"]).toBe(1);
+        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(true);
         expect(stash.stalemateStopped).toBe(true);
     });
 
     it("does not increment a different key onto the first", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.injurySemantic")).toBe(false);
+        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(false);
         expect(shouldEscalate(stash, "weekCoverage")).toBe(false);
         expect(stash.stalemateStopped).toBeUndefined();
         expect(stash.softFailCounts).toEqual({
-            "constraint.injurySemantic": 1,
+            "constraint.peakHonor": 1,
             weekCoverage: 1,
         });
     });
@@ -83,6 +103,38 @@ describe("shouldEscalate", () => {
     it("does not count a null key or a missing stash", () => {
         expect(shouldEscalate(undefined, "weekCoverage")).toBe(false);
         expect(shouldEscalate(emptyStash(), null)).toBe(false);
+    });
+});
+
+describe("escalateKey", () => {
+    it("counts each pair id on its own and returns the first to reach two", () => {
+        const stash = emptyStash();
+        expect(escalateKey(stash, [SQUAT_KNEE.id])).toBeNull();
+        expect(escalateKey(stash, [DEADLIFT_BARBELL.id])).toBeNull();
+        expect(stash.stalemateStopped).toBeUndefined();
+        expect(escalateKey(stash, [DEADLIFT_BARBELL.id, SQUAT_KNEE.id])).toBe(DEADLIFT_BARBELL.id);
+        expect(stash.softFailCounts).toEqual({
+            [SQUAT_KNEE.id]: 2,
+            [DEADLIFT_BARBELL.id]: 2,
+        });
+        expect(stash.stalemateStopped).toBe(true);
+    });
+
+    it("counts a key once when the error and a pair id are the same", () => {
+        const stash = emptyStash();
+        expect(escalateKey(stash, [SQUAT_KNEE.id, SQUAT_KNEE.id])).toBeNull();
+        expect(stash.softFailCounts?.[SQUAT_KNEE.id]).toBe(1);
+    });
+});
+
+describe("recordConstraintPairMisses", () => {
+    it("keeps first-seen order and replaces a repeat id in place", () => {
+        const stash = emptyStash();
+        recordConstraintPairMisses(stash, [SQUAT_KNEE]);
+        recordConstraintPairMisses(stash, [DEADLIFT_BARBELL]);
+        const updated = { ...SQUAT_KNEE, why: "updated" };
+        recordConstraintPairMisses(stash, [updated]);
+        expect(stash.constraintPairMisses).toEqual([updated, DEADLIFT_BARBELL]);
     });
 });
 
@@ -130,17 +182,40 @@ describe("matchedConstraintChips", () => {
 });
 
 describe("buildStalematePayload", () => {
-    it("puts every injury chip on a Jev injury miss", () => {
+    it("names the one pair and offers Fix it on a single pair escalate", () => {
         const payload = buildStalematePayload(
-            "constraint.injurySemantic",
-            profile({ injuries: ["can't kneel", "left ankle"] }),
+            SQUAT_KNEE.id,
+            profile({ injuries: ["Knee pain", "left ankle"] }),
+            undefined,
+            [SQUAT_KNEE],
         );
-        expect(payload.kind).toBe("constraint");
-        expect(payload.chips).toEqual([
-            { field: "injuries", value: "can't kneel" },
-            { field: "injuries", value: "left ankle" },
+        expect(payload).toEqual({
+            chips: [],
+            key: SQUAT_KNEE.id,
+            kind: "constraint",
+            why: SQUAT_KNEE.why,
+            actions: [{ label: "Fix it.", message: "Fix it." }],
+            pairs: [SQUAT_KNEE],
+        });
+    });
+
+    it("rolls up every pair miss this request", () => {
+        const payload = buildStalematePayload(SQUAT_KNEE.id, null, undefined, [
+            SQUAT_KNEE,
+            DEADLIFT_BARBELL,
         ]);
-        expect(payload.actions).toBeUndefined();
+        expect(payload.why).toBe(pairRollupWhy(2));
+        expect(payload.pairs).toEqual([SQUAT_KNEE, DEADLIFT_BARBELL]);
+    });
+
+    it("does not offer every saved injury on a pair escalate", () => {
+        const payload = buildStalematePayload(
+            SQUAT_KNEE.id,
+            profile({ injuries: ["Knee pain", "left ankle"] }),
+            undefined,
+            [SQUAT_KNEE],
+        );
+        expect(payload.chips).toEqual([]);
     });
 
     it("uses training kind for skill and training honor ids", () => {
@@ -179,7 +254,28 @@ describe("buildStalematePayload", () => {
     });
 });
 
+describe("replaceLiftMessage", () => {
+    it("names the lift and the saved limit", () => {
+        expect(replaceLiftMessage(SQUAT_KNEE)).toBe(
+            "Replace this lift: swap Squat (Barbell) for a lift that works with my injury \"Knee pain\".",
+        );
+        expect(replaceLiftMessage(DEADLIFT_BARBELL)).toBe(
+            "Replace this lift: swap Deadlift (Barbell) for a lift that works with my excluded equipment \"Barbell\".",
+        );
+    });
+});
+
 describe("readStalematePayload", () => {
+    it("keeps valid pairs and drops malformed ones", () => {
+        const payload = buildStalematePayload(SQUAT_KNEE.id, null, undefined, [SQUAT_KNEE]);
+        expect(readStalematePayload({ stalemate: payload })).toEqual(payload);
+        expect(
+            readStalematePayload({
+                stalemate: { ...payload, pairs: [SQUAT_KNEE, { id: "x", field: "excludedAreas" }] },
+            })?.pairs,
+        ).toEqual([SQUAT_KNEE]);
+    });
+
     it("reads a valid card payload and rejects junk", () => {
         const payload = buildStalematePayload("weekCoverage", null);
         expect(readStalematePayload({ error: "weekCoverage", stalemate: payload })).toEqual(payload);
