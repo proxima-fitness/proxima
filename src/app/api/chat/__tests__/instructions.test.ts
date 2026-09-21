@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import * as path from "node:path";
 
 import { instructions } from "@/app/api/chat/instructions/instructions";
-import { getTools } from "@/app/api/chat/tools/tools";
+import { constraintPreferencesUpdateSchema, getTools } from "@/app/api/chat/tools/tools";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 import { REPLACE_LIFT_MESSAGE_PREFIX, replaceLiftMessage } from "@/app/api/chat/sanity/stalemate";
@@ -149,6 +149,12 @@ describe("chat instructions.ts", () => {
             expect(prompt).toMatch(/never.*preferred split/i);
             expect(prompt).toMatch(/adapt the program/i);
             expect(prompt).toMatch(/do not edit the profile down/i);
+            // ADR 0031 / 03: preference + Training null clears
+            expect(prompt).toContain("preferences: { <key>: null }");
+            expect(prompt).toContain("splitType: null");
+            expect(prompt).toMatch(/never swap to Full Body/);
+            expect(prompt).toContain("passing `null` for that field");
+            expect(prompt).toContain("Program length and days per week are not cleared through these tools");
         });
 
         it("updateConstraintProfile tool description mirrors User-stated change soft policy", () => {
@@ -165,6 +171,40 @@ describe("chat instructions.ts", () => {
             expect(description).toMatch(/do not edit the profile down/i);
             expect(description).toContain("Injuries & health issues");
             expect(description).toMatch(/Never put periodization/i);
+            // ADR 0031 / 03
+            expect(description).toContain("preferences: { splitType: null }");
+            expect(description).toMatch(/Replacing a preference with another catalog id/);
+            expect(description).toMatch(/never "relax" a preference by swapping to Full Body/);
+            expect(description).toContain("Program length and days per week are not cleared through this tool");
+        });
+
+        it("updateTrainingProfile tool description teaches null clears on User-stated change (ADR 0031 / 03)", () => {
+            const tools = getTools({
+                trainingProfile: initializeTrainingProfile({}),
+            });
+            const description =
+                (tools.updateTrainingProfile as { description?: string }).description ?? "";
+
+            expect(description).toContain("pass null for that field");
+            expect(description).toContain("User-stated change");
+            expect(description).toContain("sex: null");
+            expect(description).toContain("age: null");
+            expect(description).toMatch(/Never clear a Training profile field to unlock a program style/);
+            expect(description).toContain("Program length and days per week are not cleared through this tool");
+        });
+
+        it("preference field describe teaches null clear vs replace (ADR 0031 / 03)", () => {
+            expect(constraintPreferencesUpdateSchema.description).toContain("null clears on User-stated change only");
+            expect(constraintPreferencesUpdateSchema.description).toMatch(/Replacing with another id/);
+            expect(constraintPreferencesUpdateSchema.description).toContain("removeInjuries");
+
+            const prefsObject = constraintPreferencesUpdateSchema._def.innerType as {
+                shape: { splitType: { description?: string } };
+            };
+            const splitDescribe = prefsObject.shape.splitType.description ?? "";
+            expect(splitDescribe).toContain("null to clear on User-stated change only");
+            expect(splitDescribe).toMatch(/Replacing with another catalog id is a set, not a clear/);
+            expect(splitDescribe).toMatch(/Never clear to unlock a split or program style/);
         });
 
         it("includes workflow when program is non-empty", () => {
@@ -659,6 +699,18 @@ describe("chat instructions.ts", () => {
             expect(buildSkill).toContain("Do not remove the limit");
             expect(buildSkill).toContain("**`I no longer have this constraint: <limit>`** This is a **User-stated change**");
             expect(buildSkill).toContain("Do not add an entry that sounds very similar to one already there");
+        });
+
+        it("build-program and mutate-program teach preference null clears (ADR 0031 / 03)", () => {
+            expect(buildSkill).toContain("preferences: { splitType: null }");
+            expect(buildSkill).toMatch(/Do not "relax" a preference by swapping to Full Body/);
+            expect(buildSkill).toContain("**`I no longer have a split preference`**");
+            expect(buildSkill).toContain("pass `null` for that field only");
+            expect(buildSkill).toContain("Program length and days per week are not cleared through this tool");
+
+            expect(mutateSkill).toContain("preferences: { <key>: null }");
+            expect(mutateSkill).toMatch(/never swap to Full Body/);
+            expect(mutateSkill).toContain("Program length and days per week are not cleared through this tool");
         });
 
         it("mutate-program keeps replace-lift out of mutateProgram and avoids near-duplicate injuries", () => {
