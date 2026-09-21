@@ -6,9 +6,9 @@
  * *after* apply. This module does not read `hevyProgram` from the request and
  * does not call `readProgram` (that snapshot is stale after same-turn `buildWeek`).
  *
- * After `buildWeek`, the caller must plate week 1 across `plan.durationWeeks`
- * or builder `programLength` first (`plateWeek1Across`), then apply the batch
- * on that plate. Live-grid mutate passes the request-start program as both
+ * After `buildWeek`, the caller plates week 1 (`plateWeek1Across`) then
+ * applies the Periodization wave (`plateThenStamp`) before same-turn
+ * `mutateProgram`. Live-grid mutate passes the request-start program as both
  * before and the `applyOperations` result as after.
  *
  * The returned object is numbers and profiles only. It is safe to hand to Jev
@@ -16,18 +16,30 @@
  * {@link compactSnapshotForEvaluate} / {@link snapshotForStandaloneEvaluate}
  * trim plated clones before the Jev call.
  *
- * Depends on: ./types, ./week-coverage
- * Used by: tools.ts, route.ts
+ * Depends on: ./types, ./week-coverage, ./stamp, mutations/apply
+ * Used by: tools.ts, route.ts, helpers.ts
  */
 
+import { applyOperations } from "@/components/program-builder/mutations/apply";
+import { isApplyBatchFailure } from "@/components/program-builder/mutations/types";
 import type { TConstraintProfile } from "../constraints/types";
+import type { TPeriodizationWave } from "./periodization-wave";
+import {
+    compilePeriodizationStamp,
+    type TStampCompileFailure,
+} from "./stamp";
 import {
     dayExerciseStimuli,
     dayMatchesWeek1Stimulus,
     planWeekIntents,
     stimuliMatch,
 } from "./week-coverage";
-import type { TDayRef, TPlanProgram, TProgramSanitySnapshot } from "./types";
+import type {
+    TDayRef,
+    TExerciseRoleAssignment,
+    TPlanProgram,
+    TProgramSanitySnapshot,
+} from "./types";
 
 /**
  * Coerce builder `programLength` (string or number) to a whole week count.
@@ -92,6 +104,42 @@ export function plateWeek1Across(week1: THevyRoutine[], weekCount: number): THev
         }
     }
     return full;
+}
+
+export type TPlateThenStampResult =
+    | { ok: true; program: THevyRoutine[] }
+    | TStampCompileFailure;
+
+/**
+ * Plate week 1 across `weekCount`, then apply compiled Periodization stamp ops.
+ * Compile Soft-fail does not return a plated clone.
+ *
+ * @param week1 - Successful `buildWeek` routines (`folder_id` 0)
+ * @param wave - Stashed Periodization wave
+ * @param roles - Stashed Exercise role assignments
+ * @param weekCount - Program length in weeks
+ */
+export function plateThenStamp(
+    week1: THevyRoutine[],
+    wave: TPeriodizationWave | null | undefined,
+    roles: TExerciseRoleAssignment[] | null | undefined,
+    weekCount: number,
+): TPlateThenStampResult {
+    const compiled = compilePeriodizationStamp(week1, wave, roles, weekCount);
+    if (!compiled.ok) return compiled;
+    const plated = plateWeek1Across(week1, weekCount);
+    if (compiled.operations.length === 0) {
+        return { ok: true, program: plated };
+    }
+    const applied = applyOperations(plated, compiled.operations);
+    if (isApplyBatchFailure(applied)) {
+        return {
+            ok: false,
+            error: "periodizationStamp.apply",
+            message: applied.failures[0]?.reason ?? "Periodization stamp apply failed.",
+        };
+    }
+    return { ok: true, program: applied.program };
 }
 
 /**

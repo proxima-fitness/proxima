@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createRef } from "react";
+import type { RefObject } from "react";
 
 vi.mock("@/components/program-builder/api/hevy", () => ({
     getHevyExercises: vi.fn(async () => []),
@@ -15,7 +15,17 @@ import {
     resolveEffectiveWeeksForAtomicCommit,
     buildFullProgramFromFirstWeek,
     tryCommitAtomicBuildWeekAndMutations,
+    getAtomicBuildCommitKey,
 } from "../helpers";
+
+/** `createRef` types `current` as `T | null`; the commit helper requires a live Set. */
+function makeAppliedKeysRef(initial = new Set<string>()): RefObject<Set<string>> {
+    return { current: initial };
+}
+
+function makeAtomicKeyRef(initial: string | null = null): RefObject<string | null> {
+    return { current: initial };
+}
 
 const minimalRoutine = (day: number): THevyRoutine => ({
     id: String(day),
@@ -50,7 +60,11 @@ const minimalRoutine = (day: number): THevyRoutine => ({
     ],
 });
 
-const buildWeekPart = (routines: THevyRoutine[]) =>
+const buildWeekPart = (routines: THevyRoutine[], exerciseRoles?: Array<{
+    dayOrder: number;
+    exerciseIndex: number;
+    role: "main" | "accessory" | "warmup";
+}>) =>
     ({
         type: "tool-buildWeek",
         toolCallId: "b1",
@@ -62,6 +76,7 @@ const buildWeekPart = (routines: THevyRoutine[]) =>
             routineCount: routines.length,
             exerciseCount: routines.length,
             setCount: routines.length,
+            ...(exerciseRoles ? { exerciseRoles } : {}),
         },
     }) as UIMessage["parts"][number];
 
@@ -166,10 +181,8 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             },
         ];
 
-        const appliedKeysRef = createRef<Set<string>>();
-        appliedKeysRef.current = new Set();
-        const lastAtomicKeyRef = createRef<string | null>();
-        lastAtomicKeyRef.current = null;
+        const appliedKeysRef = makeAppliedKeysRef();
+        const lastAtomicKeyRef = makeAtomicKeyRef();
         const commitWithUndo = vi.fn();
 
         const result = tryCommitAtomicBuildWeekAndMutations(
@@ -211,10 +224,8 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             },
         ];
 
-        const appliedKeysRef = createRef<Set<string>>();
-        appliedKeysRef.current = new Set();
-        const lastAtomicKeyRef = createRef<string | null>();
-        lastAtomicKeyRef.current = null;
+        const appliedKeysRef = makeAppliedKeysRef();
+        const lastAtomicKeyRef = makeAtomicKeyRef();
         const commitWithUndo = vi.fn();
 
         const result = tryCommitAtomicBuildWeekAndMutations(
@@ -248,12 +259,105 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             "streaming",
             1,
             [],
-            createRef<Set<string>>(),
-            createRef<string | null>(),
+            makeAppliedKeysRef(),
+            makeAtomicKeyRef(),
             commitWithUndo,
         );
 
         expect(result.committed).toBe(false);
         expect(commitWithUndo).not.toHaveBeenCalled();
+    });
+
+    it("stamps later weeks when there is no same-turn mutateProgram", () => {
+        const week = [minimalRoutine(1)];
+        const messages: UIMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                parts: [
+                    {
+                        type: "tool-planProgram",
+                        toolCallId: "p1",
+                        state: "output-available",
+                        input: {},
+                        output: {
+                            plan: {
+                                durationWeeks: 4,
+                                goal: "test",
+                                daysPerWeek: 1,
+                                blocks: [
+                                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                                    { name: "Deload", weeks: [4], intent: "Unload" },
+                                ],
+                                periodizationWave: {
+                                    weeks: [
+                                        { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                                        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+                                        { week: 3, main: { rpeDelta: 1, setCountDelta: 0 } },
+                                        {
+                                            week: 4,
+                                            main: { rpeDelta: -2, setCountDelta: 0 },
+                                            accessory: { rpeDelta: -1, setCountDelta: 0 },
+                                        },
+                                    ],
+                                },
+                            },
+                            summary: "4 wk",
+                        },
+                    } as UIMessage["parts"][number],
+                    buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }]),
+                ],
+            },
+        ];
+
+        const appliedKeysRef = makeAppliedKeysRef();
+        const lastAtomicKeyRef = makeAtomicKeyRef();
+        const commitWithUndo = vi.fn();
+
+        const result = tryCommitAtomicBuildWeekAndMutations(
+            messages,
+            "ready",
+            4,
+            [],
+            appliedKeysRef,
+            lastAtomicKeyRef,
+            commitWithUndo,
+        );
+
+        expect(result.committed).toBe(true);
+        const committed = commitWithUndo.mock.calls[0][0] as THevyRoutine[];
+        expect(committed).toHaveLength(4);
+        const week2 = committed.find((r) => r.folder_id === 1);
+        expect(week2?.exercises[0].sets[0].rpe).toBe(8);
+        const week4 = committed.find((r) => r.folder_id === 3);
+        expect(week4?.exercises[0].sets[0].rpe).toBe(5);
+        expect(week4?.exercises[0].sets[0].weight_kg).toBeNull();
+        expect(week4?.title).toBe("Day 1");
+    });
+
+    it("changes the atomic commit key when only Exercise roles change", () => {
+        const week = [minimalRoutine(1)];
+        const messages: UIMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                parts: [buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }])],
+            },
+        ];
+        const snapMain = getMergedBuildAndMutateSnapshot(messages)!;
+        const messagesAccessory: UIMessage[] = [
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
+            {
+                id: "a1",
+                role: "assistant",
+                parts: [buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "accessory" }])],
+            },
+        ];
+        const snapAccessory = getMergedBuildAndMutateSnapshot(messagesAccessory)!;
+        expect(getAtomicBuildCommitKey(snapMain, messages, 4)).not.toBe(
+            getAtomicBuildCommitKey(snapAccessory, messagesAccessory, 4),
+        );
     });
 });

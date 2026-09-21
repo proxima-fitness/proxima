@@ -34,6 +34,9 @@ import {
     isHevyShareImportSuccess,
     type TImportHevyShareFolderToolOutput,
 } from "@/app/api/chat/tools/hevy-share";
+import { plateThenStamp } from "@/app/api/chat/sanity/snapshot";
+import type { TPeriodizationWave } from "@/app/api/chat/sanity/periodization-wave";
+import type { TExerciseRoleAssignment } from "@/app/api/chat/sanity/types";
 import { assignBuilderExerciseKeys } from "@/components/program-builder/utils/builder-exercise-key";
 import { collectProposalMarkKeys } from "@/components/program-builder/utils/proposal-marks";
 
@@ -841,23 +844,39 @@ export interface IMergedBuildMutateSnapshot {
     mutateKeys: string[];
     /** From the newest successful `tool-planProgram` before the last `tool-buildWeek`, when present. */
     durationWeeksFromPlan?: number;
+    periodizationWave?: TPeriodizationWave;
+    exerciseRoles?: TExerciseRoleAssignment[];
 }
 
 /**
- * Reads `planProgram.durationWeeks` from the latest successful plan tool call strictly before the flattened buildWeek index.
+ * Reads `planProgram.durationWeeks` and the Periodization wave from the latest
+ * successful plan tool call strictly before the flattened buildWeek index.
  */
-function getDurationWeeksFromPlanBeforeBuildWeek(flat: TFlatPart[], lastBuildWeekFlatIndex: number): number | undefined {
+function getPlanBeforeBuildWeek(
+    flat: TFlatPart[],
+    lastBuildWeekFlatIndex: number,
+): { durationWeeks?: number; periodizationWave?: TPeriodizationWave } {
     for (let i = lastBuildWeekFlatIndex - 1; i >= 0; i--) {
         const { part } = flat[i];
         if (part.type !== "tool-planProgram") continue;
-        const out = (part as { output?: { plan?: { durationWeeks?: number }; error?: string } }).output;
+        const out = (
+            part as {
+                output?: {
+                    plan?: { durationWeeks?: number; periodizationWave?: TPeriodizationWave };
+                    error?: string;
+                };
+            }
+        ).output;
         if (!out || out.error) continue;
         const w = out.plan?.durationWeeks;
-        if (typeof w === "number" && Number.isFinite(w) && w >= 1) {
-            return Math.floor(w);
-        }
+        const durationWeeks =
+            typeof w === "number" && Number.isFinite(w) && w >= 1 ? Math.floor(w) : undefined;
+        return {
+            durationWeeks,
+            periodizationWave: out.plan?.periodizationWave,
+        };
     }
-    return undefined;
+    return {};
 }
 
 /** Weeks to duplicate for atomic build: prefer plan so mutate ops stay valid; else UI; else 1. */
@@ -877,21 +896,32 @@ export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedB
     let lastBwIdx = -1;
     let routines: THevyRoutine[] | null = null;
     let totalDays = 0;
+    let exerciseRoles: TExerciseRoleAssignment[] | undefined;
 
     for (let i = 0; i < flat.length; i++) {
         const { part } = flat[i];
         if (part.type !== "tool-buildWeek") continue;
-        const out = (part as { output?: { routines?: THevyRoutine[]; totalDays?: number; error?: string } }).output;
+        const out = (
+            part as {
+                output?: {
+                    routines?: THevyRoutine[];
+                    totalDays?: number;
+                    exerciseRoles?: TExerciseRoleAssignment[];
+                    error?: string;
+                };
+            }
+        ).output;
         if (out?.routines && !out?.error) {
             lastBwIdx = i;
             routines = out.routines;
             totalDays = out.totalDays ?? out.routines.length;
+            exerciseRoles = out.exerciseRoles;
         }
     }
 
     if (lastBwIdx < 0 || !routines?.length) return null;
 
-    const durationWeeksFromPlan = getDurationWeeksFromPlanBeforeBuildWeek(flat, lastBwIdx);
+    const plan = getPlanBeforeBuildWeek(flat, lastBwIdx);
 
     const mergedOperations: TAgentProgramOperation[] = [];
     const mutateKeys: string[] = [];
@@ -911,7 +941,9 @@ export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedB
         totalDays,
         mergedOperations,
         mutateKeys,
-        durationWeeksFromPlan,
+        durationWeeksFromPlan: plan.durationWeeks,
+        periodizationWave: plan.periodizationWave,
+        exerciseRoles,
     };
 };
 
@@ -958,7 +990,21 @@ export const getAtomicBuildCommitKey = (
         }
     }
     const tailIds = messages.slice(lastUserIdx + 1).map((m) => m.id ?? "");
-    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedOperations.length}|${snapshot.mutateKeys.join(",")}|${effectiveWeeks}`;
+    const waveId = (snapshot.periodizationWave?.weeks ?? [])
+        .map((row) => {
+            const accessory = row.accessory
+                ? `${row.accessory.rpeDelta}:${row.accessory.setCountDelta}`
+                : "";
+            const range = row.mainRepRange
+                ? `${row.mainRepRange.start}-${row.mainRepRange.end}`
+                : "";
+            return `${row.week}:${row.main.rpeDelta}:${row.main.setCountDelta}:${accessory}:${range}`;
+        })
+        .join(";");
+    const roleId = (snapshot.exerciseRoles ?? [])
+        .map((row) => `${row.dayOrder}:${row.exerciseIndex}:${row.role}`)
+        .join(";");
+    return `${tailIds.join("|")}|${snapshot.baseWeekRoutines.length}|${snapshot.mergedOperations.length}|${snapshot.mutateKeys.join(",")}|${effectiveWeeks}|${waveId}|${roleId}`;
 };
 
 export type TChatStatusForAtomic = "streaming" | "ready" | (string & {});
@@ -1001,7 +1047,22 @@ export const tryCommitAtomicBuildWeekAndMutations = (
     const commitKey = getAtomicBuildCommitKey(snap, messages, effectiveWeeks);
     if (lastAtomicCommitKeyRef.current === commitKey) return { committed: false };
 
-    let doc = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, effectiveWeeks);
+    let doc: THevyRoutine[];
+    if (snap.periodizationWave && snap.exerciseRoles?.length) {
+        const stamped = plateThenStamp(
+            snap.baseWeekRoutines,
+            snap.periodizationWave,
+            snap.exerciseRoles,
+            effectiveWeeks,
+        );
+        if (!stamped.ok) {
+            toast.error(stamped.message);
+            return { committed: false };
+        }
+        doc = stamped.program;
+    } else {
+        doc = buildFullProgramFromFirstWeek(snap.baseWeekRoutines, snap.totalDays, effectiveWeeks);
+    }
 
     if (snap.mergedOperations.length > 0) {
         const result = applyOperations(doc, snap.mergedOperations);

@@ -85,9 +85,10 @@ import {
 } from '../sanity/evaluate';
 import {
     buildSanitySnapshot,
-    plateWeek1Across,
+    plateThenStamp,
     resolvePlateWeekCount,
 } from '../sanity/snapshot';
+import { compilePeriodizationStamp } from '../sanity/stamp';
 import {
     evaluateWeekCoverage,
     formatWeekCoverageMessage,
@@ -1094,6 +1095,19 @@ export function getTools({
                     });
                 }
 
+                const compiled = compilePeriodizationStamp(
+                    builtRoutines,
+                    programSanityStash?.plan?.periodizationWave,
+                    exerciseRoles,
+                    resolvePlateWeekCount(programSanityStash?.plan, programLength),
+                );
+                if (!compiled.ok) {
+                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                        error: compiled.error,
+                        message: compiled.message,
+                    });
+                }
+
                 // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
                 if (programSanityStash) {
                     programSanityStash.buildWeekRoutines = builtRoutines;
@@ -1106,6 +1120,7 @@ export function getTools({
 
                 return {
                     routines: builtRoutines,
+                    exerciseRoles,
                     totalDays,
                     routineCount: builtRoutines.length,
                     exerciseCount: totalExercises,
@@ -1257,15 +1272,25 @@ export function getTools({
                 }
 
                 // After same-turn buildWeek the request hevyProgram has no later weeks.
-                // Plate week 1, apply on that copy, then week-coverage Soft-fail (C1 / C2).
-                // Live-grid mutate keeps applyOperations(hevyProgram) as before.
-                const afterBuildWeekPlate =
-                    afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0
-                        ? plateWeek1Across(
-                            programSanityStash?.buildWeekRoutines ?? [],
-                            resolvePlateWeekCount(programSanityStash?.plan, programLength),
-                        )
-                        : null;
+                // Plate week 1, stamp the Periodization wave, apply on that copy, then
+                // week-coverage Soft-fail (C1 / C2). Live-grid mutate keeps
+                // applyOperations(hevyProgram) as before.
+                let afterBuildWeekPlate: THevyRoutine[] | null = null;
+                if (afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0) {
+                    const stamped = plateThenStamp(
+                        programSanityStash?.buildWeekRoutines ?? [],
+                        programSanityStash?.plan?.periodizationWave,
+                        programSanityStash?.exerciseRoles,
+                        resolvePlateWeekCount(programSanityStash?.plan, programLength),
+                    );
+                    if (!stamped.ok) {
+                        return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
+                            error: stamped.error,
+                            message: stamped.message,
+                        });
+                    }
+                    afterBuildWeekPlate = stamped.program;
+                }
                 const applyBase = afterBuildWeekPlate ?? hevyProgram ?? [];
                 const result = applyOperations(applyBase, resolvedOperations);
                 if (isApplyBatchFailure(result)) {

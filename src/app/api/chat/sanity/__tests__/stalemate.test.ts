@@ -45,6 +45,9 @@ describe("stalemateKeyForError", () => {
         expect(stalemateKeyForError("training.sessionDurationFit")).toBe(
             "training.sessionDurationFit",
         );
+        expect(stalemateKeyForError("periodizationStamp.missingWave")).toBe(
+            "periodizationStamp.missingWave",
+        );
     });
 
     it("does not count schema, empty-day, bad id, or readProgram_required", () => {

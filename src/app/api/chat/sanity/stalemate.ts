@@ -56,7 +56,8 @@ export function stalemateKeyForError(error: string): string | null {
     if (
         error.startsWith("constraint.") ||
         error.startsWith("training.") ||
-        error.startsWith("skill.")
+        error.startsWith("skill.") ||
+        error.startsWith("periodizationStamp")
     ) {
         return error;
     }
