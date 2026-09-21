@@ -9,11 +9,12 @@
  * Hevy `order`). Stimulus is working-set count plus RPE min/max per exercise title.
  * Full set objects, `reason`, notes, ids, and `builder_exercise_key` do not appear.
  *
- * Depends on: TConstraintProfile
+ * Depends on: TConstraintProfile, ./periodization-wave
  * Used by: snapshot.ts, week-coverage.ts, stalemate.ts, tools.ts
  */
 
 import type { TConstraintProfile } from "../constraints/types";
+import type { TPeriodizationWave } from "./periodization-wave";
 
 /**
  * One mesocycle block from `planProgram`. `weeks` are 1-based indices inside
@@ -25,15 +26,27 @@ export type TPlanBlock = {
     intent: string;
 };
 
+/** Week-1 row tag for the Periodization wave. Not persisted on THevyRoutine. */
+export type TExerciseRole = "main" | "accessory" | "warmup";
+
+/** Parallel stash row for one week-1 exercise. `dayOrder` is 1-based. */
+export type TExerciseRoleAssignment = {
+    dayOrder: number;
+    exerciseIndex: number;
+    role: TExerciseRole;
+};
+
 /**
- * Fields week coverage reads from a successful `planProgram` call. Extra
- * `planProgram` keys (progression table, notes) may exist at runtime and are ignored.
+ * Fields week coverage and the later stamp read from a successful `planProgram`.
+ * Extra keys (notes) may exist at runtime and are ignored. The wave must be
+ * copied on write or slice 3 compiles `undefined`.
  */
 export type TPlanProgram = {
     durationWeeks: number;
     daysPerWeek?: number;
     goal?: string;
     blocks: TPlanBlock[];
+    periodizationWave?: TPeriodizationWave;
 };
 
 /** Constraint-profile array a **Program stalemate** chip names. */
@@ -67,10 +80,12 @@ export interface IProgramStalematePayload {
  * `planProgram` and a successful `buildWeek` write here so same-turn
  * `mutateProgram` can plate week 1 and know which weeks were claimed.
  * Slice 1 (ADR 0027) also counts Soft-fail keys and the same-week skip.
+ * Slice 2 stashes the Periodization wave on `plan` and week-1 Exercise roles.
  */
 export interface IProgramSanityStash {
     plan: TPlanProgram | null;
     buildWeekRoutines: THevyRoutine[] | null;
+    exerciseRoles?: TExerciseRoleAssignment[] | null;
     skipSameWeekCoverage?: boolean;
     softFailCounts?: Record<string, number>;
     stalemate?: IProgramStalematePayload | null;

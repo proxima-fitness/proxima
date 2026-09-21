@@ -278,6 +278,7 @@ describe("chat tools.ts", () => {
                     exercise_template_id: "ex-1",
                     title: "Bench Press (Barbell)",
                     notes: "",
+                    role: "main" as const,
                     sets: [{ type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 8 }],
                 },
             ],
@@ -303,6 +304,7 @@ describe("chat tools.ts", () => {
             expect(routine.title).toBe("Day 1");
             expect(routine.exercises).toHaveLength(1);
             expect(routine.exercises[0].sets).toHaveLength(1);
+            expect("role" in routine.exercises[0]).toBe(false);
 
             const builtSet = routine.exercises[0].sets[0];
             expect(builtSet.rep_range).toEqual({ start: 8, end: 12 });
@@ -681,6 +683,36 @@ describe("chat tools.ts", () => {
             expect(nextFirst.error).toBe("constraint.injurySemantic");
             expect(nextFirst.stalemate).toBeUndefined();
         });
+
+        it("Soft-fails a missing or unknown exercise role and leaves the guard unlocked", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ buildWeekOnceGuard, programSanityStash });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const { role: _role, ...exerciseWithoutRole } = minimalRoutine.exercises[0];
+
+            const missing = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [{ ...minimalRoutine, exercises: [exerciseWithoutRole] }],
+            })) as { error?: string; message?: string; routines?: unknown[] };
+            expect(missing.error).toBe("Invalid exercise role");
+            expect(missing.message).toContain("main");
+            expect(missing.routines).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+            expect(programSanityStash.buildWeekRoutines).toBeNull();
+            expect(programSanityStash.exerciseRoles).toBeUndefined();
+
+            const unknown = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [{
+                    ...minimalRoutine,
+                    exercises: [{ ...minimalRoutine.exercises[0], role: "compound" }],
+                }],
+            })) as { error?: string; routines?: unknown[] };
+            expect(unknown.error).toBe("Invalid exercise role");
+            expect(unknown.routines).toBeUndefined();
+            expect(buildWeekOnceGuard.locked).toBe(false);
+        });
     });
 
     describe("getExerciseList tool", () => {
@@ -899,11 +931,30 @@ describe("chat tools.ts", () => {
                 { name: "Intensification", weeks: [4, 5, 6], intent: "Heavier" },
                 { name: "Peak", weeks: [7, 8], intent: "Taper" },
             ],
-            weekProgression: {
-                squat: {
-                    topSetRpe: [7, 7.5, 8, 8, 8.5, 9, 8, 7],
-                    backoffVolumeMultiplier: [1, 1.05, 1.1, 0.95, 1, 1.05, 0.7, 0.5],
-                },
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 2, main: { rpeDelta: 0, setCountDelta: 1 } },
+                    { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+                    {
+                        week: 4,
+                        main: { rpeDelta: 1, setCountDelta: 0 },
+                        mainRepRange: { start: 5, end: 8 },
+                    },
+                    { week: 5, main: { rpeDelta: 2, setCountDelta: 0 } },
+                    { week: 6, main: { rpeDelta: 2, setCountDelta: 0 } },
+                    {
+                        week: 7,
+                        main: { rpeDelta: 2, setCountDelta: -1 },
+                        accessory: { rpeDelta: -1, setCountDelta: -1 },
+                        mainRepRange: { start: 3, end: 5 },
+                    },
+                    {
+                        week: 8,
+                        main: { rpeDelta: 0, setCountDelta: -2 },
+                        accessory: { rpeDelta: -2, setCountDelta: -2 },
+                    },
+                ],
             },
             notes: ["Keep exercise selection stable within blocks"],
         };
@@ -924,14 +975,66 @@ describe("chat tools.ts", () => {
             expect(output.summary).toContain("Accumulation");
         });
 
-        it("rejects weekProgression arrays whose length does not match durationWeeks", () => {
+        it("requires periodizationWave", () => {
+            const { periodizationWave: _wave, ...withoutWave } = validPlan;
+            expect(planProgramInputSchema.safeParse(withoutWave).success).toBe(false);
+        });
+
+        it("rejects a wave that breaks the week-1 refine", () => {
             const parsed = planProgramInputSchema.safeParse({
                 ...validPlan,
-                weekProgression: {
-                    squat: { topSetRpe: [1, 2, 3] },
+                periodizationWave: {
+                    weeks: validPlan.periodizationWave.weeks.map((row) =>
+                        row.week === 1
+                            ? { ...row, main: { rpeDelta: 1, setCountDelta: 0 } }
+                            : row,
+                    ),
                 },
             });
             expect(parsed.success).toBe(false);
+        });
+
+        it("accepts a plan with a valid Periodization wave", () => {
+            expect(planProgramInputSchema.safeParse(validPlan).success).toBe(true);
+        });
+
+        it("stashes the wave, week-1 routines, and exercise roles after planProgram + buildWeek", async () => {
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({ programSanityStash, buildWeekOnceGuard: { locked: false } });
+            const planProgram = asTestTool<typeof validPlan, unknown>(tools.planProgram);
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+
+            await planProgram.execute(validPlan);
+            expect(programSanityStash.plan?.periodizationWave).toEqual(validPlan.periodizationWave);
+
+            const exercise = {
+                exercise_template_id: "ex-1",
+                title: "Bench Press (Barbell)",
+                notes: "",
+                sets: [{ type: "normal" as const, reps: 12, rep_range: { start: 8, end: 12 }, rpe: 8 }],
+            };
+            const built = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [{
+                    dayNumber: 1,
+                    title: "Day 1",
+                    notes: "",
+                    exercises: [
+                        { ...exercise, role: "warmup" as const },
+                        { ...exercise, role: "main" as const },
+                        { ...exercise, role: "accessory" as const },
+                    ],
+                }],
+            })) as { error?: string; routines?: Array<{ exercises: Array<Record<string, unknown>> }> };
+
+            expect(built.error).toBeUndefined();
+            expect(built.routines?.[0].exercises.every((row) => !("role" in row))).toBe(true);
+            expect(programSanityStash.buildWeekRoutines).toHaveLength(1);
+            expect(programSanityStash.exerciseRoles).toEqual([
+                { dayOrder: 1, exerciseIndex: 0, role: "warmup" },
+                { dayOrder: 1, exerciseIndex: 1, role: "main" },
+                { dayOrder: 1, exerciseIndex: 2, role: "accessory" },
+            ]);
         });
     });
 
@@ -1219,6 +1322,7 @@ describe("chat tools.ts", () => {
                     exercise_template_id: "ex-1",
                     title: "Bench Press (Barbell)",
                     notes: "",
+                    role: "main",
                     sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
                 }],
             });
@@ -1286,6 +1390,7 @@ describe("chat tools.ts", () => {
                     exercise_template_id: "ex-1",
                     title: "Bench Press (Barbell)",
                     notes: "",
+                    role: "main",
                     sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
                 }],
             });

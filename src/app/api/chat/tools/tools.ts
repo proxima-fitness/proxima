@@ -10,7 +10,7 @@
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
  *  - openHevyExportGate - opens the Hevy export gate footer (sign-in / Hevy key prerequisites)
- *  - planProgram - structured multi-week plan (duration, blocks, progression) before buildWeek
+ *  - planProgram - structured multi-week plan (duration, blocks, Periodization wave) before buildWeek
  *  - readProgram - on-demand full program snapshot from the request
  *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
  *  - mutateProgram - stages typed registry operation batches; standalone is a Mutation proposal until Accept
@@ -102,7 +102,16 @@ import {
     STALEMATE_MODEL_STOP,
     type TStalemateExerciseMeta,
 } from '../sanity/stalemate';
-import type { IProgramSanityStash, IProgramStalematePayload } from '../sanity/types';
+import {
+    periodizationWaveSchema,
+    refinePeriodizationWave,
+} from '../sanity/periodization-wave';
+import type {
+    IProgramSanityStash,
+    IProgramStalematePayload,
+    TExerciseRole,
+    TExerciseRoleAssignment,
+} from '../sanity/types';
 
 export type { IProgramSanityStash } from '../sanity/types';
 import {
@@ -208,11 +217,11 @@ const planBlockSchema = z.object({
     intent: z.string().describe('Training focus for this block (volume, intensity, taper, etc.).'),
 });
 
-/** Per-lift or pattern progression: parallel arrays keyed by metric name, length must match durationWeeks when numeric arrays. */
-const weekProgressionEntrySchema = z.record(
-    z.string(),
-    z.union([z.array(z.number()), z.string()]),
-);
+const EXERCISE_ROLES = ['main', 'accessory', 'warmup'] as const;
+
+function isExerciseRole(value: unknown): value is TExerciseRole {
+    return value === 'main' || value === 'accessory' || value === 'warmup';
+}
 
 /** Exported for tests: same schema as planProgram tool input. */
 export const planProgramInputSchema = z
@@ -221,27 +230,13 @@ export const planProgramInputSchema = z
         goal: z.string().min(1).max(500).describe('Primary goal in plain language.'),
         daysPerWeek: z.number().int().min(1).max(7).describe('Training days per week.'),
         blocks: z.array(planBlockSchema).min(1).describe('Mesocycle blocks covering the program.'),
-        weekProgression: z
-            .record(z.string(), weekProgressionEntrySchema)
-            .optional()
-            .describe(
-                'Optional progression table (e.g. squat/bench/deadlift keys) with parallel numeric arrays per metric; each array length must equal durationWeeks.',
-            ),
+        periodizationWave: periodizationWaveSchema.describe(
+            'Required Periodization wave: one row per 1-based week. Main deltas from week 1; accessory only on claimed deload / unload / taper / peak weeks; mainRepRange only on a Block boundary after week 1.',
+        ),
         notes: z.array(z.string()).optional().describe('Programming rules (e.g. swap variations only at block boundaries).'),
     })
     .superRefine((data, ctx) => {
-        const w = data.durationWeeks;
-        for (const [lift, attrs] of Object.entries(data.weekProgression ?? {})) {
-            for (const [metric, val] of Object.entries(attrs)) {
-                if (Array.isArray(val) && val.length !== w) {
-                    ctx.addIssue({
-                        code: 'custom',
-                        message: `weekProgression.${lift}.${metric} must have length ${w} (durationWeeks)`,
-                        path: ['weekProgression', lift, metric],
-                    });
-                }
-            }
-        }
+        refinePeriodizationWave(data, ctx);
     });
 
 /** Expand add/remove args that may contain comma-joined CSV blobs into tokens. */
@@ -675,7 +670,7 @@ export function getTools({
 
     /**
      * Title: planProgramTool
-     * Description: Records a structured multi-week plan before buildWeek (mesocycles, progression table).
+     * Description: Records a structured multi-week plan before buildWeek (mesocycles, Periodization wave).
      * Also writes the plan onto `programSanityStash` so week coverage can see
      * claimed deload / peak / easy weeks in the same turn.
      * @returns { Tool }
@@ -683,13 +678,19 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program only.',
+            'Include a **Periodization wave**. This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program only.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
-            // Coverage needs claimed deload / peak / easy weeks; the model only sees `{ plan, summary }`.
+            // Coverage needs claimed deload / peak / easy weeks; stamp (slice 3) needs the wave.
             if (programSanityStash) {
-                programSanityStash.plan = plan;
+                programSanityStash.plan = {
+                    durationWeeks: plan.durationWeeks,
+                    daysPerWeek: plan.daysPerWeek,
+                    goal: plan.goal,
+                    blocks: plan.blocks,
+                    periodizationWave: plan.periodizationWave,
+                };
             }
             const blockNames = plan.blocks.map((b) => b.name).join(', ');
             const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
@@ -868,6 +869,11 @@ export function getTools({
                                                 'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
                                                 'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
                                         ),
+                                    role: z
+                                        .enum(EXERCISE_ROLES)
+                                        .describe(
+                                            'Exercise role for the Periodization wave: main, accessory, or warmup. Warmup *rows* are tagged here; set type "warmup" is a different object.',
+                                        ),
                                     sets: z
                                         .array(
                                             z.object({
@@ -945,6 +951,8 @@ export function getTools({
 
                 await ensureExerciseIdToTitleMap();
 
+                const exerciseRoles: TExerciseRoleAssignment[] = [];
+
                 for (const routineInput of routines) {
                     const dayNumber = routineInput.dayNumber;
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
@@ -953,7 +961,19 @@ export function getTools({
                             message: `At least one exercise is required for day ${dayNumber}`,
                         });
                     }
-                    for (const exercise of routineInput.exercises) {
+                    for (let exerciseIndex = 0; exerciseIndex < routineInput.exercises.length; exerciseIndex++) {
+                        const exercise = routineInput.exercises[exerciseIndex];
+                        if (!isExerciseRole(exercise.role)) {
+                            return softToolErrorResult('buildWeek', {
+                                error: 'Invalid exercise role',
+                                message: `Each exercise needs role "main", "accessory", or "warmup" (day ${dayNumber}, exercise ${exerciseIndex}).`,
+                            });
+                        }
+                        exerciseRoles.push({
+                            dayOrder: dayNumber,
+                            exerciseIndex,
+                            role: exercise.role,
+                        });
                         const templateId = (exercise.exercise_template_id ?? '').trim();
                         if (!templateId) {
                             return softToolErrorResult('buildWeek', {
@@ -1077,6 +1097,7 @@ export function getTools({
                 // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
                 if (programSanityStash) {
                     programSanityStash.buildWeekRoutines = builtRoutines;
+                    programSanityStash.exerciseRoles = exerciseRoles;
                 }
 
                 if (buildWeekOnceGuard) {
