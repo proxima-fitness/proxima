@@ -19,7 +19,7 @@ allowedTools:
 
 Before **every** **mutateProgram** call:
 
-1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. Skip this step after **buildWeek** in the same turn (periodization).
+1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. After a successful **buildWeek** in the same turn, the snapshot is stale (see **readProgram staleness**).
 2. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`updateConstraintProfile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. Pass `rawStatement` when the user spoke in chat. Call **`updateConstraintProfile`** before **mutateProgram** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
 3. **Empty days:** Empty training days are rejected. An explicit remove is allowed.
 
@@ -47,17 +47,16 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 - [ ] **Persist constraint changes** via **`updateConstraintProfile`** when this turn changes constraints (same turn as mutate - non-blocking backup).
 - [ ] Empty training days are rejected. An explicit remove is allowed.
 - [ ] **Exercise objection:** replace/swap per table above. Lasting limits also update the profile. Taste-only does not.
-- [ ] **readProgram** in this turn before **mutateProgram** on an existing program. Target from that snapshot. `hevyProgram.length` = N total routines (all weeks). Skip after **buildWeek** in the same turn.
+- [ ] **readProgram** in this turn before **mutateProgram** on an existing program. Target from that snapshot. `hevyProgram.length` = N total routines (all weeks).
 - [ ] Build **one operations array** with all registry ops for the requested change.
 - [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`**. Use one op per `from_exercise_template_id`. Omit **folderIds** / **dayOrder** to hit every week and day.
 - [ ] **Positional edits with new sets** (one slot, new prescription): use **`edit_exercise`** with grid payload (same shape as **insert_exercise**).
 - [ ] For other edits that affect every week/day occurrence: include **folderIds** (and matching **dayOrder**) for each week, or one op with multiple **folderIds** when the change is identical.
 - [ ] Call **mutateProgram** once with the full **operations** array.
 
-## Live grid vs post-build periodization
+## Live-grid edit
 
-- **Live-grid edit:** Call **readProgram**, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Indexes come from that snapshot. Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
-- **Periodization right after buildWeek:** Do **not** rely on **readProgram** (snapshot can still be empty). Use builder context, **planProgram**, **buildWeek** output, and the **build-program** skill. Use **one** **mutateProgram** batch via **folderIds**. Same-turn **buildWeek** + **mutateProgram** lands immediately.
+- Call **readProgram**, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Indexes come from that snapshot. Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
 
 ## Targeting (mutateProgram)
 
@@ -128,7 +127,7 @@ Operations run in **array order** (fail-all if any op is invalid):
 
 1. Put **insert_exercise** (especially warmups at **exerciseIndex: 0**) before **update_set** / **edit_exercise** / **delete_exercise** on the same day.
 2. Put **delete_exercise** / inserts at higher **exerciseIndex** before lower-index updates when indices shift.
-3. Use **update_set** and **edit_day_title** for periodization-style tweaks. Use **insert_exercise** / **delete_exercise** only when structure changes.
+3. Use **update_set** and **edit_day_title** for RPE, reps, rest, and title tweaks. Use **insert_exercise** / **delete_exercise** only when structure changes.
 4. Put **swap_exercise_template** before many positional **edit_exercise** calls when only the exercise template (equipment/variation) changes and sets/rest must stay.
 
 ## Template swap vs positional edit
@@ -213,7 +212,7 @@ If the program or the requested changes are **bodybuilding- or hypertrophy-focus
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (for example 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (for example rename all "Push" to "Chest"), include **folderIds** for each week and the same **dayOrder**. You can also use one op with all relevant **folderIds**. Do not edit only the first week.
 - **One batch, one call**: Pass a single **operations** array to **mutateProgram**. Do not split by week or make multiple **mutateProgram** calls for one logical edit.
-- **readProgram staleness**: Snapshot is from **request start**. It does **not** refresh after **buildWeek** in the same turn. For post-**buildWeek** periodization, use the **build-program** skill (**buildWeek** output + **planProgram**), not **readProgram**.
+- **readProgram staleness**: Snapshot is from **request start**. It does **not** refresh after **buildWeek** in the same turn. A same-turn edit after a successful **buildWeek** targets from **buildWeek** output instead.
 
 ## Rep ranges
 

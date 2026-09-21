@@ -78,6 +78,34 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("nothing to persist");
         });
 
+        it("teaches Periodization as the wave: planProgram retry after Soft-fail, summary after First build", () => {
+            const prompt = instructions({
+                hevyProgram: [],
+                daysPerWeek: 4,
+                programLength: 8,
+            });
+
+            expect(prompt).toContain("**Periodization wave**");
+            expect(prompt).toContain("after a **buildWeek** Soft-fail, you may call it again this turn to change the wave");
+            expect(prompt).toContain("not a **mutateProgram** batch");
+            expect(prompt).toContain("short summary of what landed, not an Accept ask");
+            expect(prompt).not.toContain("periodize after buildWeek");
+            expect(prompt).not.toContain("post-build periodization");
+            expect(prompt).not.toContain("optional week-by-week progression");
+        });
+
+        it("planProgram / buildWeek / readProgram descriptions teach the wave, not post-buildWeek mutate", () => {
+            const tools = getTools({});
+            const describe = (name: keyof typeof tools) =>
+                (tools[name] as { description?: string }).description ?? "";
+
+            expect(describe("planProgram")).toContain("call it again only after a buildWeek Soft-fail");
+            expect(describe("buildWeek")).toContain("applies the **Periodization wave**");
+            expect(describe("buildWeek")).toContain("call planProgram again to change the wave");
+            expect(describe("readProgram")).not.toMatch(/periodiz/i);
+            expect(describe("readProgram")).toContain("live-grid **mutateProgram**");
+        });
+
         it("keeps thin Before-mutate and User-stated change; drops cut essays", () => {
             const prompt = instructions({
                 hevyProgram: [],

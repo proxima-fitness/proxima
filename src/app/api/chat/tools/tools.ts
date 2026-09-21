@@ -723,10 +723,8 @@ export function getTools({
         description:
             'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
             'Includes day notes, exercise notes, exercise reason, sets, and structure. ' +
-            'Required before **mutateProgram** on an existing program (indexes from this snapshot, not an earlier turn). ' +
-            'Skip after **buildWeek** in the same turn. ' +
-            'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex). ' +
-            'For **post-buildWeek periodization**, do not use this for targeting; use **buildWeek** output, **planProgram**, and **folderIds** + **dayOrder**.',
+            'Required before a live-grid **mutateProgram** (indexes from this snapshot, not an earlier turn). ' +
+            'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex).',
         inputSchema: readProgramInputSchema,
         execute: async () => {
             readProgramCalledThisTurn = true;
@@ -817,9 +815,10 @@ export function getTools({
      */
     const buildWeekTool = tool({
         description:
-            'Builds an entire week of routines/days for the workout program in a SINGLE tool invocation (all training days in one payload). ' +
-            'Call **buildWeek at most once** per user request to generate that week; after it succeeds, use **mutateProgram** for any changes (never a second buildWeek to fix or tweak). ' +
-            'Provide all days in order (Day 1, Day 2, …) so the UI can duplicate the first week across the remaining weeks. ' +
+            'Builds week 1 of a new program in a SINGLE tool invocation (all training days in one payload, an Exercise role on every exercise). ' +
+            'Code copies week 1 across the program and applies the **Periodization wave** from planProgram; on success the whole program lands. ' +
+            'After it succeeds, do not call buildWeek again; later changes the user asks for use **mutateProgram**. After a Soft-fail, fix the error (or call planProgram again to change the wave) and call buildWeek again. ' +
+            'Provide all days in order (Day 1, Day 2, …). ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
@@ -1183,7 +1182,7 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
+                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
             };
         },
     });

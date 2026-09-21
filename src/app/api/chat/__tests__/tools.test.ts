@@ -879,6 +879,9 @@ describe("chat tools.ts", () => {
                 const modelOutput = await buildWeek.toModelOutput({ output });
                 expect(modelOutput.value).toContain("Periodization wave");
                 expect(modelOutput.value).not.toMatch(/mutateProgram[^.]*periodiz/i);
+                expect(modelOutput.value).toContain("already on the grid");
+                expect(modelOutput.value).toContain("short summary");
+                expect(modelOutput.value).toContain("not an Accept ask");
             });
 
             it("Soft-fails later-week main clones before Jev and leaves buildWeek and planProgram open", async () => {
