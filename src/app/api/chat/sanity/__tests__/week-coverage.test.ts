@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { buildSanitySnapshot, plateWeek1Across } from "../snapshot";
+import type { TPeriodizationWave } from "../periodization-wave";
+import { buildSanitySnapshot, plateThenStamp, plateWeek1Across } from "../snapshot";
 import {
     claimedWeekNumbers,
+    evaluateFirstBuildWeekCoverage,
     evaluateWeekCoverage,
+    formatFirstBuildWeekCoverageMessage,
     formatWeekCoverageMessage,
     planWeekIntents,
 } from "../week-coverage";
-import type { TPlanProgram, TProgramSanitySnapshot } from "../types";
+import type { TExerciseRoleAssignment, TPlanProgram, TProgramSanitySnapshot } from "../types";
 
 function makeSet(rpe: number | null = 8): THevySets {
     return {
@@ -131,5 +134,101 @@ describe("evaluateWeekCoverage", () => {
         const result = evaluateWeekCoverage(snapshotFrom(cloned), "", true);
         expect(result.ok).toBe(true);
         expect(result.misses).toEqual([]);
+    });
+});
+
+function makeExercise(title: string, rpe: number, setCount: number): THevyExercise {
+    return {
+        index: 0,
+        title,
+        notes: "",
+        rest_seconds: "90",
+        exercise_template_id: title,
+        supersets_id: null,
+        sets: Array.from({ length: setCount }, () => makeSet(rpe)),
+    };
+}
+
+/** Week-1 day: warmup row, main row, accessory row. */
+function makeRoleDay(order: string): THevyRoutine {
+    return {
+        id: order,
+        title: `Day ${order}`,
+        folder_id: 0,
+        order,
+        notes: "",
+        exercises: [
+            makeExercise("Bike", 5, 1),
+            makeExercise("Squat", 8, 3),
+            makeExercise("Curl", 8, 3),
+        ],
+    };
+}
+
+function rolesFor(orders: number[]): TExerciseRoleAssignment[] {
+    return orders.flatMap((dayOrder) => [
+        { dayOrder, exerciseIndex: 0, role: "warmup" as const },
+        { dayOrder, exerciseIndex: 1, role: "main" as const },
+        { dayOrder, exerciseIndex: 2, role: "accessory" as const },
+    ]);
+}
+
+function wave(rows: TPeriodizationWave["weeks"]): TPeriodizationWave {
+    return { weeks: rows };
+}
+
+function stampedProgram(waveRows: TPeriodizationWave["weeks"], weekCount: number): THevyRoutine[] {
+    const result = plateThenStamp([makeRoleDay("1"), makeRoleDay("2")], wave(waveRows), rolesFor([1, 2]), weekCount);
+    if (!result.ok) throw new Error(result.message);
+    return result.program;
+}
+
+describe("evaluateFirstBuildWeekCoverage", () => {
+    it("passes stamped later-week mains that differ from week 1", () => {
+        const program = stampedProgram([
+            { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+            { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+            { week: 3, main: { rpeDelta: 0, setCountDelta: 1 } },
+        ], 3);
+        const result = evaluateFirstBuildWeekCoverage(program, rolesFor([1, 2]));
+        expect(result).toEqual({ ok: true, misses: [] });
+    });
+
+    it("fails later-week mains that still match week 1 even with no claimed week", () => {
+        const program = stampedProgram([
+            { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+            { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+            { week: 3, main: { rpeDelta: 0, setCountDelta: 0 } },
+        ], 3);
+        const result = evaluateFirstBuildWeekCoverage(program, rolesFor([1, 2]));
+        expect(result.ok).toBe(false);
+        expect(result.misses).toEqual([
+            { week: 3, day: 1 },
+            { week: 3, day: 2 },
+        ]);
+        expect(formatFirstBuildWeekCoverageMessage(result.misses)).toBe(
+            "weekCoverage: week 3 day 1 mains match week 1 set count and RPE\nweekCoverage: week 3 day 2 mains match week 1 set count and RPE",
+        );
+    });
+
+    it("ignores accessories and warmup rows that match week 1", () => {
+        const program = stampedProgram([
+            { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+            { week: 2, main: { rpeDelta: -1, setCountDelta: 0 } },
+        ], 2);
+        const week2 = program.filter((day) => day.folder_id === 1);
+        expect(week2.every((day) => day.exercises[2].sets.every((set) => set.rpe === 8))).toBe(true);
+        expect(evaluateFirstBuildWeekCoverage(program, rolesFor([1, 2])).ok).toBe(true);
+    });
+
+    it("passes main clones when the Program stalemate same-week skip is set", () => {
+        const program = plateWeek1Across([makeRoleDay("1")], 4);
+        const result = evaluateFirstBuildWeekCoverage(program, rolesFor([1]), true);
+        expect(result).toEqual({ ok: true, misses: [] });
+    });
+
+    it("is a pass for a one-week program", () => {
+        const program = plateWeek1Across([makeRoleDay("1")], 1);
+        expect(evaluateFirstBuildWeekCoverage(program, rolesFor([1])).ok).toBe(true);
     });
 });

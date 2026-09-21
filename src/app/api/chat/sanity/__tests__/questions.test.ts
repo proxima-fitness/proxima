@@ -178,7 +178,7 @@ describe("buildSanityQuestions", () => {
         expect(questions[userRequestedId("skill.periodizationCoverage")]).toBeDefined();
     });
 
-    it("omits multi-week honor questions from a week-1-only first build", () => {
+    it("omits multi-week honor questions when the matrix is week 1 only", () => {
         const questions = buildSanityQuestions(emptySnapshot({
             constraintProfile: initializeConstraintProfile({
                 healthIssues: "left ankle, bad knee pain",
@@ -207,17 +207,53 @@ describe("buildSanityQuestions", () => {
         expect(questions["skill.periodizationCoverage"]).toBeUndefined();
     });
 
-    it("asks progression and week-intent only when later weeks are in the matrix", () => {
+    it("asks week-intent only when later weeks are in the matrix", () => {
         const questions = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({ progressionSystem: "linear" }),
             weekIntents: [{ week: 2, name: "Build", intent: "Add load" }],
             changedDays: [{ week: 2, day: 1 }],
             matrix: [dayRow(1, 1), dayRow(2, 1)],
         }));
 
-        expect(questions["constraint.progressionHonor"]).toBeDefined();
         expect(questions["skill.weekIntentHonor"]).toBeDefined();
         expect(questions["skill.stimulusHonor"]).toBeDefined();
+    });
+
+    it("never asks constraint.progressionHonor on a stamped First build", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ progressionSystem: "linear" }),
+            weekIntents: [{ week: 2, name: "Build", intent: "Add load" }],
+            changedDays: [{ week: 2, day: 1 }],
+            matrix: [dayRow(1, 1), dayRow(2, 1)],
+        }), { firstBuild: true });
+
+        expect(questions["constraint.progressionHonor"]).toBeUndefined();
+    });
+
+    it("keeps deload / peak / warmup / week-intent / stimulus / periodization questions on a stamped First build", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({
+                progressionSystem: "linear",
+                deloadWeek: "yes",
+                peakWeek: "yes",
+                warmupExercises: "yes",
+            }),
+            weekIntents: [
+                { week: 1, name: "Accumulation", intent: "Volume" },
+                { week: 2, name: "Peak", intent: "Heavy" },
+                { week: 3, name: "Deload", intent: "Unload" },
+            ],
+            changedDays: [{ week: 2, day: 1 }, { week: 3, day: 1 }],
+            matrix: [dayRow(1, 1), dayRow(2, 1), dayRow(3, 1)],
+        }), { firstBuild: true });
+
+        expect(questions["constraint.deloadHonor"]).toBeDefined();
+        expect(questions["constraint.peakHonor"]).toBeDefined();
+        expect(questions["constraint.warmupPolicy"]).toBeDefined();
+        expect(questions["skill.weekIntentHonor"]).toBeDefined();
+        expect(questions["skill.stimulusHonor"]).toBeDefined();
+        expect(questions["skill.periodizationCoverage"]).toBeDefined();
+        expect(questions["constraint.progressionHonor"]).toBeUndefined();
+        expect(Object.keys(questions).some((id) => id.includes("sameWeekProgram"))).toBe(false);
     });
 
     it("treats joint-friendly substitutions as injury honor", () => {

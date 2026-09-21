@@ -1,17 +1,19 @@
 /**
  * @module chat/sanity/week-coverage
  *
- * Code half of Program sanity check C2 (ADR 0025 / 02). After a batch applies,
- * decide whether a *claimed* later week still has days identical to week 1 on
- * working-set count and RPE min/max per exercise title.
+ * Code half of Program sanity check C2 (ADR 0025 / 02, amended by ADR 0027 / 04).
+ * Two paths, both comparing working-set count and RPE min/max per exercise title:
  *
- * A claim is a plan block whose name or intent matches deload / peak / easy /
- * taper (or unload / recovery), or `deloadWeek === "yes"` when the plan has no
- * such block. In the latter case the last week is the claimed deload. Week 1
- * is never claimed, so a first `buildWeek` that only has week 1 cannot fail.
+ * - **First build** ({@link evaluateFirstBuildWeekCoverage}): on the stamped
+ *   program, any later-week day whose `main` rows still match week 1 is a miss.
+ * - **Case 2** ({@link evaluateWeekCoverage}): after a `mutateProgram` batch,
+ *   only *claimed* later weeks are checked. A claim is a plan block whose name
+ *   or intent matches deload / peak / easy / taper (or unload / recovery), or
+ *   `deloadWeek === "yes"` when the plan has no such block (last week).
  *
- * This module does not judge whether a numeric change is "enough" of a deload.
- * That is slice 3 (`constraint.deloadHonor`).
+ * Both pass when the **Program stalemate** same-week skip is set. This module
+ * does not judge whether a numeric change is "enough" of a deload. That is
+ * Jev (`constraint.deloadHonor`).
  *
  * Depends on: ./types
  * Used by: snapshot.ts, tools.ts
@@ -19,9 +21,11 @@
 
 import type {
     TDayMatrixRow,
+    TExerciseRoleAssignment,
     TExerciseStimulus,
     TPlanProgram,
     TProgramSanitySnapshot,
+    TWeekCoverageMiss,
     TWeekCoverageResult,
     TWeekIntent,
 } from "./types";
@@ -200,5 +204,79 @@ export function evaluateWeekCoverage(
 export function formatWeekCoverageMessage(misses: Array<{ week: number; day: number }>): string {
     return misses
         .map((miss) => `weekCoverage: week ${miss.week} day ${miss.day} matches week 1 set count and RPE`)
+        .join("\n");
+}
+
+/** 0-based exercise indexes tagged `main`, keyed by 1-based day order. */
+function mainIndexesByDay(roles: TExerciseRoleAssignment[]): Map<number, Set<number>> {
+    const byDay = new Map<number, Set<number>>();
+    for (const assignment of roles) {
+        if (assignment.role !== "main") continue;
+        const indexes = byDay.get(assignment.dayOrder) ?? new Set<number>();
+        indexes.add(assignment.exerciseIndex);
+        byDay.set(assignment.dayOrder, indexes);
+    }
+    return byDay;
+}
+
+function mainStimuli(day: THevyRoutine, mainIndexes: Set<number>): TExerciseStimulus[] {
+    return dayExerciseStimuli(day).filter((_, index) => mainIndexes.has(index));
+}
+
+/**
+ * **First build** week-coverage (ADR 0027 / 04, C1). On the plated + stamped
+ * program, every later-week day whose **Exercise role** `main` rows still match
+ * week 1 on working-set count and RPE min/max (by title) is a miss, claimed
+ * week or not. Accessories and warmup rows are ignored. Days with no main are
+ * not judged. Only the **Program stalemate** same-week skip passes clones;
+ * empty **Questionnaire advanced** is not a skip.
+ *
+ * Case 2 (`mutateProgram`) keeps {@link evaluateWeekCoverage}.
+ *
+ * @param program - `plateThenStamp` result (all weeks)
+ * @param roles - Stashed week-1 Exercise roles (positions are stable through the stamp)
+ * @param skipSameWeekCoverage - Stash flag from the stalemate same-week click
+ */
+export function evaluateFirstBuildWeekCoverage(
+    program: THevyRoutine[],
+    roles: TExerciseRoleAssignment[],
+    skipSameWeekCoverage = false,
+): TWeekCoverageResult {
+    if (skipSameWeekCoverage) {
+        return { ok: true, misses: [] };
+    }
+    const mainsByDay = mainIndexesByDay(roles);
+    const week1ByDay = new Map<number, THevyRoutine>();
+    for (const routine of program) {
+        if ((routine.folder_id ?? 0) === 0) {
+            week1ByDay.set(Number(routine.order), routine);
+        }
+    }
+    const misses = program
+        .filter((routine) => (routine.folder_id ?? 0) > 0)
+        .flatMap((routine) => {
+            const day = Number(routine.order);
+            const mainIndexes = mainsByDay.get(day);
+            const week1Day = week1ByDay.get(day);
+            if (!mainIndexes?.size || !week1Day) return [];
+            const clone = stimuliMatch(
+                mainStimuli(routine, mainIndexes),
+                mainStimuli(week1Day, mainIndexes),
+            );
+            return clone ? [{ week: (routine.folder_id ?? 0) + 1, day }] : [];
+        })
+        .sort((a, b) => a.week - b.week || a.day - b.day);
+    return { ok: misses.length === 0, misses };
+}
+
+/**
+ * {@link evaluateFirstBuildWeekCoverage} misses as Soft-fail lines. Same
+ * `weekCoverage:` prefix so **Program stalemate** counting is unchanged.
+ *
+ * @param misses - Later-week days whose mains still match week 1
+ */
+export function formatFirstBuildWeekCoverageMessage(misses: TWeekCoverageMiss[]): string {
+    return misses
+        .map((miss) => `weekCoverage: week ${miss.week} day ${miss.day} mains match week 1 set count and RPE`)
         .join("\n");
 }

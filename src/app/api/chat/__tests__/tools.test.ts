@@ -160,6 +160,20 @@ const fourWeekDeloadWave = {
     ],
 };
 
+/** Mains move every later week; week 4 is a real deload. */
+const fourWeekStampedWave = {
+    weeks: [
+        { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+        { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+        {
+            week: 4,
+            main: { rpeDelta: -2, setCountDelta: 0 },
+            accessory: { rpeDelta: -1, setCountDelta: 0 },
+        },
+    ],
+};
+
 function asTestTool<TInput, TOutput>(tool: unknown): TToolTestHarness<TInput, TOutput> {
     return tool as TToolTestHarness<TInput, TOutput>;
 }
@@ -550,7 +564,7 @@ describe("chat tools.ts", () => {
             });
 
             const buildWeekOnceGuard = { locked: false };
-            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const programSanityStash = oneWeekPlanStash();
             const tools = getTools({ buildWeekOnceGuard, programSanityStash });
             const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
@@ -582,7 +596,7 @@ describe("chat tools.ts", () => {
                 });
 
             const buildWeekOnceGuard = { locked: false };
-            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const programSanityStash = oneWeekPlanStash();
             const tools = getTools({ buildWeekOnceGuard, programSanityStash });
             const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
@@ -629,7 +643,7 @@ describe("chat tools.ts", () => {
                     misses: [{ id: "skill.sessionShape", detail: "does not honor skill.sessionShape" }],
                 });
 
-            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const programSanityStash = oneWeekPlanStash();
             const tools = getTools({ programSanityStash, buildWeekOnceGuard: { locked: false } });
             const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
 
@@ -649,7 +663,7 @@ describe("chat tools.ts", () => {
         });
 
         it("never escalates empty-day or bad id Soft-fails", async () => {
-            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const programSanityStash = oneWeekPlanStash();
             const tools = getTools({ programSanityStash });
             const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
             const emptyDay = { ...minimalRoutine, exercises: [] };
@@ -701,7 +715,7 @@ describe("chat tools.ts", () => {
                     misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
                 });
 
-            const firstTurn = { plan: null, buildWeekRoutines: null };
+            const firstTurn = oneWeekPlanStash();
             const firstTools = getTools({ programSanityStash: firstTurn });
             const firstBuild = asTestTool<TBuildWeekInput, unknown>(firstTools.buildWeek);
             await firstBuild.execute({ totalDays: 1, routines: [minimalRoutine] });
@@ -711,7 +725,7 @@ describe("chat tools.ts", () => {
             })) as { stalemate?: unknown };
             expect(firstEscalate.stalemate).toBeDefined();
 
-            const nextTurn = { plan: null, buildWeekRoutines: null };
+            const nextTurn = oneWeekPlanStash();
             const nextTools = getTools({ programSanityStash: nextTurn });
             const nextBuild = asTestTool<TBuildWeekInput, unknown>(nextTools.buildWeek);
             const nextFirst = (await nextBuild.execute({
@@ -790,6 +804,146 @@ describe("chat tools.ts", () => {
             expect(output.error).toBe("periodizationStamp.emptyMains");
             expect(output.routines).toBeUndefined();
             expect(buildWeekOnceGuard.locked).toBe(false);
+        });
+
+        describe("First build sanity on the stamped snapshot", () => {
+            const fourWeekBlocks = [
+                { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                { name: "Deload", weeks: [4], intent: "Unload" },
+            ];
+
+            type TPlanInput = {
+                durationWeeks: number;
+                goal: string;
+                daysPerWeek: number;
+                blocks: typeof fourWeekBlocks;
+                periodizationWave: typeof fourWeekDeloadWave | typeof fourWeekStampedWave;
+            };
+
+            function planInput(wave: TPlanInput["periodizationWave"]): TPlanInput {
+                return {
+                    durationWeeks: 4,
+                    goal: "Strength",
+                    daysPerWeek: 2,
+                    blocks: fourWeekBlocks,
+                    periodizationWave: wave,
+                };
+            }
+
+            const twoDays = [1, 2].map((dayNumber) => ({
+                ...minimalRoutine,
+                dayNumber,
+                title: `Day ${dayNumber}`,
+            }));
+
+            function setup(userMessage = "Build me a 4 week program") {
+                const buildWeekOnceGuard = { locked: false };
+                const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+                const tools = getTools({
+                    hevyProgram: [],
+                    programLength: 4,
+                    buildWeekOnceGuard,
+                    programSanityStash,
+                    userMessage,
+                    constraintProfile: initializeConstraintProfile({}),
+                });
+                return {
+                    buildWeekOnceGuard,
+                    programSanityStash,
+                    planProgram: asTestTool<TPlanInput, unknown>(tools.planProgram),
+                    buildWeek: asTestTool<TBuildWeekInput, unknown>(tools.buildWeek),
+                };
+            }
+
+            it("runs one Case 1 evaluate on the stamped mesocycle, then locks", async () => {
+                vi.mocked(evaluate).mockClear();
+                const { buildWeekOnceGuard, programSanityStash, planProgram, buildWeek } = setup();
+                await planProgram.execute(planInput(fourWeekStampedWave));
+
+                const output = (await buildWeek.execute({ totalDays: 2, routines: twoDays })) as {
+                    error?: string;
+                    routines?: THevyRoutine[];
+                };
+
+                expect(output.error).toBeUndefined();
+                expect(output.routines?.every((routine) => routine.folder_id === 0)).toBe(true);
+                expect(buildWeekOnceGuard.locked).toBe(true);
+                expect(programSanityStash.buildWeekRoutines).toHaveLength(2);
+
+                expect(vi.mocked(evaluate)).toHaveBeenCalledOnce();
+                const [snapshot, options] = vi.mocked(evaluate).mock.calls[0];
+                expect(options.firstBuild).toBe(true);
+                expect(new Set(snapshot.matrix.map((row) => row.week))).toEqual(new Set([1, 2, 3, 4]));
+                expect(snapshot.matchingWeek1Days).toEqual([]);
+
+                const modelOutput = await buildWeek.toModelOutput({ output });
+                expect(modelOutput.value).toContain("Periodization wave");
+                expect(modelOutput.value).not.toMatch(/mutateProgram[^.]*periodiz/i);
+            });
+
+            it("Soft-fails later-week main clones before Jev and leaves buildWeek and planProgram open", async () => {
+                vi.mocked(evaluate).mockClear();
+                const { buildWeekOnceGuard, programSanityStash, planProgram, buildWeek } = setup();
+                await planProgram.execute(planInput(fourWeekDeloadWave));
+
+                const output = (await buildWeek.execute({ totalDays: 2, routines: twoDays })) as {
+                    error?: string;
+                    message?: string;
+                    routines?: unknown[];
+                    stalemate?: unknown;
+                };
+
+                // Skipped Questionnaire advanced (empty preferences) is not the same-week skip.
+                expect(output.error).toBe("weekCoverage");
+                expect(output.message).toContain("weekCoverage: week 2 day 1 mains match week 1");
+                expect(output.routines).toBeUndefined();
+                expect(output.stalemate).toBeUndefined();
+                expect(buildWeekOnceGuard.locked).toBe(false);
+                expect(programSanityStash.buildWeekRoutines).toBeNull();
+                expect(vi.mocked(evaluate)).not.toHaveBeenCalled();
+
+                const modelOutput = await buildWeek.toModelOutput({ output });
+                expect(modelOutput.value).toContain("planProgram");
+                expect(modelOutput.value).toContain("buildWeek again");
+
+                // A second planProgram this turn replaces the wave; the rebuild lands.
+                await planProgram.execute(planInput(fourWeekStampedWave));
+                expect(programSanityStash.plan?.periodizationWave).toEqual(fourWeekStampedWave);
+
+                const retry = (await buildWeek.execute({ totalDays: 2, routines: twoDays })) as { error?: string };
+                expect(retry.error).toBeUndefined();
+                expect(buildWeekOnceGuard.locked).toBe(true);
+            });
+
+            it("lands main clones when the Program stalemate same-week skip is this turn's user text", async () => {
+                const { buildWeekOnceGuard, programSanityStash, planProgram, buildWeek } = setup(SAME_WEEK_SKIP_MESSAGE);
+                await planProgram.execute(planInput(fourWeekDeloadWave));
+
+                const output = (await buildWeek.execute({ totalDays: 2, routines: twoDays })) as { error?: string };
+
+                expect(output.error).toBeUndefined();
+                expect(programSanityStash.skipSameWeekCoverage).toBe(true);
+                expect(buildWeekOnceGuard.locked).toBe(true);
+            });
+
+            it("leaves the guard unlocked when Jev rejects the stamped program", async () => {
+                vi.mocked(evaluate).mockResolvedValueOnce({
+                    ok: false,
+                    misses: [{ id: "constraint.deloadHonor", detail: "does not honor constraint.deloadHonor" }],
+                });
+                const { buildWeekOnceGuard, programSanityStash, planProgram, buildWeek } = setup();
+                await planProgram.execute(planInput(fourWeekStampedWave));
+
+                const output = (await buildWeek.execute({ totalDays: 2, routines: twoDays })) as {
+                    error?: string;
+                    routines?: unknown[];
+                };
+
+                expect(output.error).toBe("constraint.deloadHonor");
+                expect(output.routines).toBeUndefined();
+                expect(buildWeekOnceGuard.locked).toBe(false);
+                expect(programSanityStash.buildWeekRoutines).toBeNull();
+            });
         });
     });
 
@@ -1378,15 +1532,16 @@ describe("chat tools.ts", () => {
             expect(modelOutput.value).not.toContain("Unknown validation error");
         });
 
-        it("Soft-fails same-turn periodization that leaves a claimed week day matching week 1", async () => {
+        it("Case 2: a same-turn mutate that puts a claimed deload day back to week 1 Soft-fails", async () => {
+            vi.mocked(evaluate).mockClear();
             const buildWeekOnceGuard = { locked: false };
-            const programSanityStash = { plan: null, buildWeekRoutines: null };
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
             const tools = getTools({
                 hevyProgram: [],
                 programLength: 4,
                 buildWeekOnceGuard,
                 programSanityStash,
-                userMessage: "Add a deload in week 4",
+                userMessage: "Make week 4 day 2 as hard as week 1",
             });
 
             const planProgram = asTestTool<{
@@ -1394,7 +1549,7 @@ describe("chat tools.ts", () => {
                 goal: string;
                 daysPerWeek: number;
                 blocks: Array<{ name: string; weeks: number[]; intent: string }>;
-                periodizationWave: typeof fourWeekDeloadWave;
+                periodizationWave: typeof fourWeekStampedWave;
             }, unknown>(tools.planProgram);
             await planProgram.execute({
                 durationWeeks: 4,
@@ -1404,7 +1559,7 @@ describe("chat tools.ts", () => {
                     { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
                     { name: "Deload", weeks: [4], intent: "Unload" },
                 ],
-                periodizationWave: fourWeekDeloadWave,
+                periodizationWave: fourWeekStampedWave,
             });
 
             const dayRoutine = (dayNumber: number, title: string) => ({
@@ -1426,16 +1581,17 @@ describe("chat tools.ts", () => {
                 routines: [dayRoutine(1, "Push"), dayRoutine(2, "Pull")],
             })) as { error?: string };
             expect(built.error).toBeUndefined();
+            expect(vi.mocked(evaluate).mock.calls[0]?.[1].firstBuild).toBe(true);
 
             const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
             const output = (await mutateProgram.execute({
                 operations: [{
                     op: "update_set",
                     folderIds: [3],
-                    dayOrder: 1,
+                    dayOrder: 2,
                     exerciseIndex: 0,
                     setIndex: 0,
-                    set: { rpe: 5 },
+                    set: { rpe: 8 },
                 }],
             })) as { error?: string; message?: string; operations?: unknown[] };
 
@@ -1446,6 +1602,63 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("week 4 day 2 matches week 1 set count and RPE");
+        });
+
+        it("judges same-turn mutateProgram after a stamped build as Case 2 (firstBuild false)", async () => {
+            const buildWeekOnceGuard = { locked: false };
+            const programSanityStash: IProgramSanityStash = { plan: null, buildWeekRoutines: null };
+            const tools = getTools({
+                hevyProgram: [],
+                programLength: 4,
+                buildWeekOnceGuard,
+                programSanityStash,
+                userMessage: "Rename day 1",
+            });
+            const planProgram = asTestTool<{
+                durationWeeks: number;
+                goal: string;
+                daysPerWeek: number;
+                blocks: Array<{ name: string; weeks: number[]; intent: string }>;
+                periodizationWave: typeof fourWeekStampedWave;
+            }, unknown>(tools.planProgram);
+            await planProgram.execute({
+                durationWeeks: 4,
+                goal: "Strength",
+                daysPerWeek: 1,
+                blocks: [
+                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                    { name: "Deload", weeks: [4], intent: "Unload" },
+                ],
+                periodizationWave: fourWeekStampedWave,
+            });
+            const buildWeek = asTestTool<TBuildWeekInput, unknown>(tools.buildWeek);
+            const built = (await buildWeek.execute({
+                totalDays: 1,
+                routines: [{
+                    dayNumber: 1,
+                    title: "Push",
+                    notes: "",
+                    exercises: [{
+                        exercise_template_id: "ex-1",
+                        title: "Bench Press (Barbell)",
+                        notes: "",
+                        role: "main",
+                        sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
+                    }],
+                }],
+            })) as { error?: string };
+            expect(built.error).toBeUndefined();
+
+            vi.mocked(evaluate).mockClear();
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await mutateProgram.execute({
+                operations: [{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "Upper Push" }],
+            })) as { error?: string; operations?: unknown[] };
+
+            expect(output.error).toBeUndefined();
+            expect(output.operations).toHaveLength(1);
+            expect(vi.mocked(evaluate)).toHaveBeenCalledOnce();
+            expect(vi.mocked(evaluate).mock.calls[0]?.[1].firstBuild).toBe(false);
         });
 
         it("passes claimed-week clones when the same-week skip message is this turn's user text", async () => {

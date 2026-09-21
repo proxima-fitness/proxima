@@ -86,11 +86,13 @@ import {
 import {
     buildSanitySnapshot,
     plateThenStamp,
+    plateWeek1Across,
     resolvePlateWeekCount,
 } from '../sanity/snapshot';
-import { compilePeriodizationStamp } from '../sanity/stamp';
 import {
+    evaluateFirstBuildWeekCoverage,
     evaluateWeekCoverage,
+    formatFirstBuildWeekCoverageMessage,
     formatWeekCoverageMessage,
 } from '../sanity/week-coverage';
 import {
@@ -679,7 +681,7 @@ export function getTools({
     const planProgramTool = tool({
         description:
             'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'Include a **Periodization wave**. This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program only.',
+            'Include a **Periodization wave**. This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program; call it again only after a buildWeek Soft-fail, to change the wave.',
         inputSchema: planProgramInputSchema,
         execute: async (input) => {
             const plan = input;
@@ -708,7 +710,7 @@ export function getTools({
             const o = output as { summary?: string };
             return {
                 type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek exactly once (all days in that call), then apply periodization with mutateProgram; do not call buildWeek again after it succeeds.`,
+                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek with all days and an Exercise role on every exercise. buildWeek applies the Periodization wave; do not call buildWeek again after it succeeds.`,
             };
         },
     });
@@ -930,7 +932,7 @@ export function getTools({
                     return softToolErrorResult('buildWeek', {
                         error: 'buildWeek already completed',
                         message:
-                            'Week already built in this turn. Use mutateProgram for all edits (reps, RPE, rest, titles, periodization). Do not call buildWeek again.',
+                            'Week already built in this turn and the Periodization wave is already applied. Use mutateProgram only for further edits. Do not call buildWeek again.',
                     });
                 }
 
@@ -1076,15 +1078,43 @@ export function getTools({
                     }
                 }
 
-                // Week 1 vs week 1 cannot fail coverage. Evaluate as firstBuild
-                // before lock so a reject leaves the guard unlocked.
+                // First build (ADR 0027 / 04): plate + stamp, then code week-coverage
+                // on mains, then one Jev Case 1 on the whole mesocycle. Any Soft-fail
+                // returns before the stash write and lock, so buildWeek and
+                // planProgram stay open for a retry this turn.
+                const weekCount = resolvePlateWeekCount(programSanityStash?.plan, programLength);
+                const stamped = plateThenStamp(
+                    builtRoutines,
+                    programSanityStash?.plan?.periodizationWave,
+                    exerciseRoles,
+                    weekCount,
+                );
+                if (!stamped.ok) {
+                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                        error: stamped.error,
+                        message: stamped.message,
+                    });
+                }
+
+                const coverage = evaluateFirstBuildWeekCoverage(
+                    stamped.program,
+                    exerciseRoles,
+                    programSanityStash?.skipSameWeekCoverage === true,
+                );
+                if (!coverage.ok) {
+                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                        error: 'weekCoverage',
+                        message: formatFirstBuildWeekCoverageMessage(coverage.misses),
+                    });
+                }
+
                 const snapshot = buildSanitySnapshot({
                     userMessage: userMessage ?? '',
                     constraintProfile,
                     trainingProfile,
                     plan: programSanityStash?.plan,
-                    beforeProgram: [],
-                    afterProgram: builtRoutines,
+                    beforeProgram: plateWeek1Across(builtRoutines, weekCount),
+                    afterProgram: stamped.program,
                 });
                 const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
                 if (!sanity.ok) {
@@ -1092,19 +1122,6 @@ export function getTools({
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
                         ...(sanity.debug ? { jev: sanity.debug } : {}),
-                    });
-                }
-
-                const compiled = compilePeriodizationStamp(
-                    builtRoutines,
-                    programSanityStash?.plan?.periodizationWave,
-                    exerciseRoles,
-                    resolvePlateWeekCount(programSanityStash?.plan, programLength),
-                );
-                if (!compiled.ok) {
-                    return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
-                        error: compiled.error,
-                        message: compiled.message,
                     });
                 }
 
@@ -1150,7 +1167,7 @@ export function getTools({
                         : undefined;
                 return {
                     type: 'text' as const,
-                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again.`,
+                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again. If the Periodization wave is the problem, call planProgram again with a corrected wave first.`,
                 };
             }
 
@@ -1166,7 +1183,7 @@ export function getTools({
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). Do not call buildWeek again; use mutateProgram for any changes.`,
+                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
             };
         },
     });
@@ -1174,9 +1191,9 @@ export function getTools({
     /**
      * Title: mutateProgramTool
      * Description: Typed registry operation batch with server preflight via applyOperations.
-     * After a successful apply, runs week-coverage (ADR 0025 / 02) then
-     * evaluate (03). A claimed week-day that still matches week 1, or a Jev
-     * reject, Soft-fails and omits `operations`.
+     * After a successful apply, runs Case 2 week-coverage (ADR 0025 / 02) then
+     * evaluate with `firstBuild: false` (ADR 0027 / 04). A claimed week-day that
+     * still matches week 1, or a Jev reject, Soft-fails and omits `operations`.
      * @returns { Tool }
      */
     const mutateProgramTool = tool({
@@ -1320,7 +1337,8 @@ export function getTools({
                     });
                 }
 
-                const sanity = await evaluate(snapshot, { firstBuild: afterBuildWeek, debug: debugMode });
+                // Case 2 always, even after a same-turn First build (ADR 0027 / 04).
+                const sanity = await evaluate(snapshot, { firstBuild: false, debug: debugMode });
                 if (!sanity.ok) {
                     return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: sanity.misses[0]?.id ?? 'evaluate',
