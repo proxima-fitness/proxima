@@ -31,12 +31,12 @@ const steps: IHowItWorksStep[] = [
     },
     {
         id: "andy",
-        title: "Andy plans the week",
+        title: "Andy plans your Program",
         body: "Andy is the planner. He figures out what you need and brainstorms the program for you based on your constraints and workout logs.",
     },
     {
         id: "critique",
-        title: "Then the week has to pass review",
+        title: "Your Program gets reviewed",
         body: (
             <>
                 After Andy writes the plan, a separate
@@ -57,12 +57,12 @@ const steps: IHowItWorksStep[] = [
     },
     {
         id: "train",
-        title: "Train where you already log",
+        title: "Train with your Program in your favourite app",
         body: "Export a week to Hevy in one click and keep logging sets in the app you already use.",
     },
     {
         id: "adapt",
-        title: "Program adapts with you",
+        title: "Your Program adapts with you",
         body: "As you train, Proxima reads your Hevy history, flags stalls, and suggests the next week's progression so the plan keeps matching how you are actually lifting.",
     },
 ];
