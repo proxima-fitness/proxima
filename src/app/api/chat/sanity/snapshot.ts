@@ -14,10 +14,11 @@
  * The returned object is numbers and profiles only. It is safe to hand to Jev
  * in slice 3 without leftover `reason` text or full set objects.
  * {@link compactSnapshotForEvaluate} / {@link snapshotForStandaloneEvaluate}
- * trim plated clones before the Jev call.
+ * trim plated clones before the Jev call. {@link uniqueExerciseTitles} is the
+ * title set for injury / equipment pair questions (ADR 0030 / 02).
  *
  * Depends on: ./types, ./week-coverage, ./stamp, mutations/apply
- * Used by: tools.ts, route.ts, helpers.ts
+ * Used by: tools.ts, route.ts, helpers.ts, questions.ts
  */
 
 import { applyOperations } from "@/components/program-builder/mutations/apply";
@@ -329,4 +330,32 @@ export function snapshotForStandaloneEvaluate(snapshot: TProgramSanitySnapshot):
         ...snapshot,
         matrix: snapshot.matrix.filter((row) => changed.has(dayRefKey(row))),
     };
+}
+
+/**
+ * Distinct exercise titles on the matrix, first-seen order (ADR 0030 C4).
+ * Plated repeats of the same title collapse to one. Block-boundary swaps on
+ * later weeks add their own title. Pass `days` to limit to a **Case 2** delta.
+ *
+ * @param matrix - Full stamped matrix from {@link buildSanitySnapshot}
+ * @param days - Optional 1-based days to read; omitted means every row
+ * @returns Trimmed, non-empty titles, exact spelling of the first occurrence
+ */
+export function uniqueExerciseTitles(
+    matrix: TProgramSanitySnapshot["matrix"],
+    days?: TDayRef[],
+): string[] {
+    const only = days ? new Set(days.map(dayRefKey)) : null;
+    const titles: string[] = [];
+    const seen = new Set<string>();
+    for (const row of matrix) {
+        if (only && !only.has(dayRefKey(row))) continue;
+        for (const exercise of row.exercises) {
+            const title = exercise.title?.trim();
+            if (!title || seen.has(title)) continue;
+            seen.add(title);
+            titles.push(title);
+        }
+    }
+    return titles;
 }

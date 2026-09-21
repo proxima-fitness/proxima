@@ -17,16 +17,24 @@
  * (injury / equipment / warmup) stay only when `changedDays` is non-empty.
  * Age / sex / height and `skill.exerciseObjectionReplace` are never asked.
  *
- * Depends on: ./types
+ * Injury and equipment are asked per pair (ADR 0030 / 02, C4): one question
+ * per unique exercise title × each saved injury or excluded-equipment string.
+ * First build reads titles from the full stamped mesocycle; Case 2 reads only
+ * `changedDays`. No pair cap. Pair ids are fail-closed Constraint ids.
+ *
+ * Depends on: ./types, ./snapshot
  * Used by: evaluate.ts
  */
 
-import type { TProgramSanitySnapshot } from "./types";
+import { uniqueExerciseTitles } from "./snapshot";
+import type {
+    TConstraintPair,
+    TConstraintPairField,
+    TProgramSanitySnapshot,
+} from "./types";
 
-/** Constraint-profile question ids. Fail-any, fail-closed, no User-stated exception. */
+/** Whole-profile Constraint question ids. Fail-any, fail-closed, no User-stated exception. */
 export const CONSTRAINT_QUESTION_IDS = [
-    "constraint.injurySemantic",
-    "constraint.equipmentSemantic",
     "constraint.splitHonor",
     "constraint.variabilityHonor",
     "constraint.deloadHonor",
@@ -64,6 +72,59 @@ export type THonorQuestionId =
     | TSkillQuestionId;
 
 export const CONSTRAINT_QUESTION_ID_SET: ReadonlySet<string> = new Set(CONSTRAINT_QUESTION_IDS);
+
+/** Pair id family per Constraint profile array (ADR 0030 C4). */
+export const CONSTRAINT_PAIR_ID_PREFIX: Record<TConstraintPairField, string> = {
+    injuries: "constraint.injury.",
+    excludedEquipment: "constraint.equipment.",
+};
+
+/**
+ * True for an injury / equipment pair id.
+ *
+ * @param id - Honor question id or Soft-fail `error`
+ */
+export function isConstraintPairId(id: string): boolean {
+    return (
+        id.startsWith(CONSTRAINT_PAIR_ID_PREFIX.injuries) ||
+        id.startsWith(CONSTRAINT_PAIR_ID_PREFIX.excludedEquipment)
+    );
+}
+
+/**
+ * Fail-closed Constraint id: whole-profile honor or pair.
+ *
+ * @param id - Honor question id
+ */
+export function isConstraintQuestionId(id: string): boolean {
+    return CONSTRAINT_QUESTION_ID_SET.has(id) || isConstraintPairId(id);
+}
+
+function pairSlug(value: string): string {
+    const slug = value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    return slug || "x";
+}
+
+/**
+ * Stable pair id for one exercise title × one saved string. Same inputs give
+ * the same id on every retry, so Soft-fail counts per pair (C7).
+ *
+ * @param field - `injuries` or `excludedEquipment`
+ * @param exerciseTitle - Exercise title on the matrix
+ * @param constraint - Exact saved Constraint profile string
+ * @returns e.g. `constraint.injury.squat-barbell.knee-pain`
+ */
+export function constraintPairId(
+    field: TConstraintPairField,
+    exerciseTitle: string,
+    constraint: string,
+): string {
+    return `${CONSTRAINT_PAIR_ID_PREFIX[field]}${pairSlug(exerciseTitle)}.${pairSlug(constraint)}`;
+}
 export const TRAINING_OR_SKILL_QUESTION_ID_SET: ReadonlySet<string> = new Set([
     ...TRAINING_QUESTION_IDS,
     ...SKILL_QUESTION_IDS,
@@ -78,7 +139,11 @@ export type TBuildSanityQuestionsOptions = {
     firstBuild?: boolean;
 };
 
-/** TypeSafe Noul body. `criteria` pins yes / no so Jev 1.13 does not invent a spectrum. */
+/**
+ * TypeSafe Noul body. `criteria` pins yes / no so Jev 1.13 does not invent a spectrum.
+ * `pair` is ours only (the evaluate call strips it) so a miss can carry
+ * structured Soft-fail detail.
+ */
 export type TNoulQuestion = {
     type: "noul";
     instructions: string;
@@ -86,6 +151,7 @@ export type TNoulQuestion = {
         true: string;
         false: string;
     };
+    pair?: TConstraintPair;
 };
 
 export type TSanityQuestions = Record<string, TNoulQuestion>;
@@ -110,6 +176,52 @@ function noul(instructions: string, yes: string, no: string): TNoulQuestion {
         instructions,
         criteria: { true: yes, false: no },
     };
+}
+
+function injuryPairNoul(pair: TConstraintPair): TNoulQuestion {
+    return {
+        ...noul(
+            `Does the exercise ${JSON.stringify(pair.exerciseTitle)} in \`matrix\` honor the saved injury ${JSON.stringify(pair.constraint)} from \`constraintProfile.injuries\`?`,
+            "That exercise does not aggravate that injury, or it is already a joint-friendly variation (machine, seated, limited ROM, supported). Rehab-appropriate work for that joint counts as honor. An exercise that does not load the injured area is honor.",
+            "That exercise clearly loads an aggravating pattern for that injury (for example a deep loaded squat or lunge with a knee or ankle limit) with no accommodation.",
+        ),
+        pair,
+    };
+}
+
+function equipmentPairNoul(pair: TConstraintPair): TNoulQuestion {
+    return {
+        ...noul(
+            `Does the exercise ${JSON.stringify(pair.exerciseTitle)} in \`matrix\` avoid the excluded equipment ${JSON.stringify(pair.constraint)} from \`constraintProfile.excludedEquipment\`?`,
+            "That exercise does not require that excluded equipment type. Catalog types are distinct: a barbell is not `plate`, a cable is not `band`, and a machine is not `other` (sled/box/rope).",
+            "That exercise requires excluded equipment of that same catalog type.",
+        ),
+        pair,
+    };
+}
+
+/**
+ * One pair question per title × saved string (C4). No cap.
+ *
+ * @param questions - Map to add to
+ * @param field - Constraint profile array
+ * @param titles - Unique exercise titles in scope
+ * @param constraints - Non-empty saved strings
+ */
+function addPairQuestions(
+    questions: TSanityQuestions,
+    field: TConstraintPairField,
+    titles: string[],
+    constraints: string[],
+): void {
+    for (const exerciseTitle of titles) {
+        for (const constraint of constraints) {
+            const id = constraintPairId(field, exerciseTitle, constraint);
+            if (questions[id]) continue;
+            const pair: TConstraintPair = { id, field, constraint, exerciseTitle };
+            questions[id] = field === "injuries" ? injuryPairNoul(pair) : equipmentPairNoul(pair);
+        }
+    }
 }
 
 function userRequestedNoul(outcome: string): TNoulQuestion {
@@ -150,19 +262,14 @@ export function buildSanityQuestions(
     const hasExercises = snapshot.matrix.some((row) => row.exercises.length > 0);
     const hasProgramType = hasText(training?.trainingFocus) || hasWeekIntents;
 
-    if (askDeltaConstraints && injuries.length > 0) {
-        questions["constraint.injurySemantic"] = noul(
-            "Does `matrix` honor every limit in `constraintProfile.injuries`?",
-            "Listed injuries are accommodated: aggravating patterns are absent or replaced with joint-friendly variations (machine, seated, limited ROM, supported). Rehab-appropriate work for a listed joint counts as honor.",
-            "The week clearly loads an aggravating pattern for a listed injury (for example a deep loaded squat or lunge with knee or ankle limits) with no accommodation.",
+    if (askDeltaConstraints && (injuries.length > 0 || excludedEquipment.length > 0)) {
+        // First build: every title on the stamped mesocycle. Case 2: changed days only.
+        const titles = uniqueExerciseTitles(
+            snapshot.matrix,
+            firstBuild ? undefined : snapshot.changedDays,
         );
-    }
-    if (askDeltaConstraints && excludedEquipment.length > 0) {
-        questions["constraint.equipmentSemantic"] = noul(
-            "Does `matrix` honor `constraintProfile.excludedEquipment`?",
-            "No listed exercise requires an excluded equipment type. Catalog types are distinct: a barbell is not `plate`, a cable is not `band`, and a machine is not `other` (sled/box/rope).",
-            "At least one exercise requires excluded equipment of that same catalog type.",
-        );
+        addPairQuestions(questions, "injuries", titles, injuries);
+        addPairQuestions(questions, "excludedEquipment", titles, excludedEquipment);
     }
     if (askWholeProgramConstraints && hasText(prefs?.splitType)) {
         questions["constraint.splitHonor"] = noul(

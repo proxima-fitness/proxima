@@ -6,6 +6,8 @@ import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 import {
     applyEvaluatePolicy,
     CONSTRAINT_HONOR_MIN,
+    constraintPairMisses,
+    constraintPairWhy,
     evaluate,
     formatEvaluateMessage,
     JEV_MODEL,
@@ -14,8 +16,11 @@ import {
     TRAINING_MISS_MAX,
     USER_REQUESTED_YES_MIN,
 } from "../evaluate";
-import { userRequestedId } from "../questions";
+import { constraintPairId, userRequestedId } from "../questions";
 import type { TProgramSanitySnapshot } from "../types";
+
+const KNEEL_PAIR = constraintPairId("injuries", "Kneeling lunge", "can't kneel");
+const KNEEL_WHY = "Can't keep Kneeling lunge with your saved injury \"can't kneel\".";
 
 function snapshotWithInjury(): TProgramSanitySnapshot {
     return {
@@ -57,15 +62,15 @@ describe("applyEvaluatePolicy", () => {
     it("rejects a Constraint miss (fail-any, fail-closed, no User-stated exception)", () => {
         const misses = applyEvaluatePolicy(
             {
-                "constraint.injurySemantic": 0.1,
-                [userRequestedId("constraint.injurySemantic")]: 0.99,
+                [KNEEL_PAIR]: 0.1,
+                [userRequestedId(KNEEL_PAIR)]: 0.99,
             },
-            ["constraint.injurySemantic"],
+            [KNEEL_PAIR],
             true,
         );
 
         expect(misses).toEqual([
-            { id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" },
+            { id: KNEEL_PAIR, detail: `does not honor ${KNEEL_PAIR}` },
         ]);
     });
 
@@ -75,13 +80,13 @@ describe("applyEvaluatePolicy", () => {
         expect(noul).toBeLessThan(CONSTRAINT_HONOR_MIN);
 
         const misses = applyEvaluatePolicy(
-            { "constraint.injurySemantic": noul },
-            ["constraint.injurySemantic"],
+            { [KNEEL_PAIR]: noul },
+            [KNEEL_PAIR],
             true,
         );
 
         expect(misses).toHaveLength(1);
-        expect(misses[0].id).toBe("constraint.injurySemantic");
+        expect(misses[0].id).toBe(KNEEL_PAIR);
     });
 
     it("passes a user-asked thin day", () => {
@@ -129,14 +134,14 @@ describe("JEV_MODEL", () => {
 describe("toEvaluateQuestions", () => {
     it("maps noul questions onto AI SDK boolean questions", () => {
         const mapped = toEvaluateQuestions({
-            "constraint.injurySemantic": {
+            [KNEEL_PAIR]: {
                 type: "noul",
                 instructions: "Does matrix honor injuries?",
                 criteria: { true: "yes", false: "no" },
             },
         });
 
-        expect(mapped["constraint.injurySemantic"]).toEqual({
+        expect(mapped[KNEEL_PAIR]).toEqual({
             type: "boolean",
             instructions: "Does matrix honor injuries?",
             criteria: { true: "yes", false: "no" },
@@ -147,24 +152,24 @@ describe("toEvaluateQuestions", () => {
 describe("noulsFromEvaluateAnswers", () => {
     it("reads probability as the honor noul", () => {
         expect(noulsFromEvaluateAnswers({
-            "constraint.injurySemantic": { probability: 0.12 },
+            [KNEEL_PAIR]: { probability: 0.12 },
             skipped: { probability: "nope" },
-        })).toEqual({ "constraint.injurySemantic": 0.12 });
+        })).toEqual({ [KNEEL_PAIR]: 0.12 });
     });
 });
 
 describe("formatEvaluateMessage", () => {
     it("puts the question id on each line", () => {
         expect(formatEvaluateMessage([
-            { id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" },
-        ])).toBe("constraint.injurySemantic: does not honor constraint.injurySemantic");
+            { id: KNEEL_PAIR, detail: `does not honor ${KNEEL_PAIR}` },
+        ])).toBe(`${KNEEL_PAIR}: does not honor ${KNEEL_PAIR}`);
     });
 });
 
 describe("evaluate", () => {
     it("rejects a Constraint miss from the mocked client", async () => {
         const postSystemOne = vi.fn(async () => ({
-            "constraint.injurySemantic": 0.12,
+            [KNEEL_PAIR]: 0.12,
         }));
 
         const result = await evaluate(snapshotWithInjury(), {
@@ -174,7 +179,7 @@ describe("evaluate", () => {
 
         expect(postSystemOne).toHaveBeenCalledOnce();
         expect(result.ok).toBe(false);
-        expect(result.misses[0]?.id).toBe("constraint.injurySemantic");
+        expect(result.misses[0]?.id).toBe(KNEEL_PAIR);
     });
 
     it("passes a user-asked thin day from the mocked client", async () => {
@@ -210,7 +215,7 @@ describe("evaluate", () => {
     it("logs a Jev trace when debug is on", async () => {
         const log = vi.spyOn(console, "log").mockImplementation(() => {});
         const postSystemOne = vi.fn(async () => ({
-            "constraint.injurySemantic": 0.12,
+            [KNEEL_PAIR]: 0.12,
         }));
 
         const result = await evaluate(snapshotWithInjury(), {
@@ -225,13 +230,13 @@ describe("evaluate", () => {
             expect.objectContaining({
                 ok: false,
                 firstBuild: true,
-                nouls: { "constraint.injurySemantic": 0.12 },
+                nouls: { [KNEEL_PAIR]: 0.12 },
                 misses: [
-                    { id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" },
+                    expect.objectContaining({ id: KNEEL_PAIR, detail: KNEEL_WHY }),
                 ],
             }),
         );
-        expect(result.debug?.questionIds).toContain("constraint.injurySemantic");
+        expect(result.debug?.questionIds).toContain(KNEEL_PAIR);
         log.mockRestore();
     });
 
@@ -240,7 +245,7 @@ describe("evaluate", () => {
 
         await evaluate(snapshotWithInjury(), {
             firstBuild: true,
-            postSystemOne: async () => ({ "constraint.injurySemantic": 0.99 }),
+            postSystemOne: async () => ({ [KNEEL_PAIR]: 0.99 }),
         });
 
         expect(log).not.toHaveBeenCalled();
@@ -323,11 +328,11 @@ describe("evaluate", () => {
     it("still rejects a standalone mutation that introduces a Constraint miss on a changed day", async () => {
         const result = await evaluate(snapshotWithInjury(), {
             firstBuild: false,
-            postSystemOne: async () => ({ "constraint.injurySemantic": 0.06 }),
+            postSystemOne: async () => ({ [KNEEL_PAIR]: 0.06 }),
         });
 
         expect(result.ok).toBe(false);
-        expect(result.misses[0]?.id).toBe("constraint.injurySemantic");
+        expect(result.misses[0]?.id).toBe(KNEEL_PAIR);
     });
 
     it("sends Jev only the changed days on a standalone later mutation", async () => {
@@ -335,7 +340,7 @@ describe("evaluate", () => {
             expect(state.matrix).toEqual([
                 expect.objectContaining({ week: 1, day: 1, title: "Lower" }),
             ]);
-            return { "constraint.injurySemantic": 0.99 };
+            return { [KNEEL_PAIR]: 0.99 };
         });
 
         const result = await evaluate({
@@ -400,5 +405,78 @@ describe("evaluate", () => {
         });
 
         expect(result).toEqual({ ok: true, misses: [] });
+    });
+});
+
+describe("injury / equipment pair Soft-fail detail (ADR 0030 C5)", () => {
+    it("carries the structured pair and a why naming title and saved string", async () => {
+        const result = await evaluate(snapshotWithInjury(), {
+            firstBuild: true,
+            postSystemOne: async () => ({ [KNEEL_PAIR]: 0.1 }),
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.misses).toEqual([{
+            id: KNEEL_PAIR,
+            detail: KNEEL_WHY,
+            pair: {
+                id: KNEEL_PAIR,
+                field: "injuries",
+                constraint: "can't kneel",
+                exerciseTitle: "Kneeling lunge",
+                why: KNEEL_WHY,
+            },
+        }]);
+        expect(formatEvaluateMessage(result.misses)).toBe(`${KNEEL_PAIR}: ${KNEEL_WHY}`);
+    });
+
+    it("reports only the pairs that missed, each with its own id", async () => {
+        const snapshot = snapshotWithInjury();
+        snapshot.matrix[0].exercises.push({
+            title: "Leg Press (Machine)",
+            workingSetCount: 3,
+            rpeMin: 8,
+            rpeMax: 8,
+        });
+        const pressPair = constraintPairId("injuries", "Leg Press (Machine)", "can't kneel");
+
+        const result = await evaluate(snapshot, {
+            firstBuild: true,
+            postSystemOne: async () => ({ [KNEEL_PAIR]: 0.1, [pressPair]: 0.95 }),
+        });
+
+        expect(result.misses.map((miss) => miss.id)).toEqual([KNEEL_PAIR]);
+    });
+
+    it("fails closed on an unanswered pair", async () => {
+        const result = await evaluate(snapshotWithInjury(), {
+            firstBuild: true,
+            postSystemOne: async () => ({}),
+        });
+
+        expect(result.misses[0]?.id).toBe(KNEEL_PAIR);
+    });
+
+    it("words an equipment pair why", () => {
+        expect(constraintPairWhy({
+            id: constraintPairId("excludedEquipment", "Squat (Barbell)", "barbell"),
+            field: "excludedEquipment",
+            constraint: "barbell",
+            exerciseTitle: "Squat (Barbell)",
+        })).toBe("Can't keep Squat (Barbell): it uses excluded equipment \"barbell\".");
+    });
+
+    it("collects only pair misses for the Soft-fail payload", () => {
+        const pair = {
+            id: KNEEL_PAIR,
+            field: "injuries" as const,
+            constraint: "can't kneel",
+            exerciseTitle: "Kneeling lunge",
+            why: KNEEL_WHY,
+        };
+        expect(constraintPairMisses([
+            { id: "constraint.splitHonor", detail: "does not honor constraint.splitHonor" },
+            { id: KNEEL_PAIR, detail: KNEEL_WHY, pair },
+        ])).toEqual([pair]);
     });
 });

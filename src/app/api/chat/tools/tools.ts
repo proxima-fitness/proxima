@@ -79,8 +79,10 @@ import {
 } from '@/api/workout-history-read';
 import { softToolErrorResult } from './soft-tool-fail-log';
 import {
+    constraintPairMisses,
     evaluate,
     formatEvaluateMessage,
+    type TEvaluateMiss,
 } from '../sanity/evaluate';
 import {
     buildSanitySnapshot,
@@ -111,6 +113,7 @@ import {
 import type {
     IProgramSanityStash,
     IProgramStalematePayload,
+    TConstraintPairMiss,
     TExerciseRole,
     TExerciseRoleAssignment,
     TProgramPlan,
@@ -407,6 +410,15 @@ function patchStringArray(arr: string[], add?: string[], remove?: string[]): str
         ...arr.filter(s => !removeSet.has(s.toLowerCase())),
         ...addFlat.filter(s => !existing.has(s.toLowerCase()) && !removeSet.has(s.toLowerCase())),
     ];
+}
+
+/**
+ * Structured injury / equipment pair misses for a Jev Soft-fail (ADR 0030 C5).
+ * Omitted when no pair missed so other Soft-fail shapes are unchanged.
+ */
+function sanityPairDetail(misses: TEvaluateMiss[]): { constraintPairs?: TConstraintPairMiss[] } {
+    const constraintPairs = constraintPairMisses(misses);
+    return constraintPairs.length > 0 ? { constraintPairs } : {};
 }
 
 /** Counted Soft-fail: first miss stays honor retry, second of the same id is a Program stalemate. */
@@ -971,6 +983,7 @@ export function getTools({
             return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                 error: sanity.misses[0]?.id ?? 'evaluate',
                 message: formatEvaluateMessage(sanity.misses),
+                ...sanityPairDetail(sanity.misses),
                 ...(sanity.debug ? { jev: sanity.debug } : {}),
             });
         }
@@ -1465,6 +1478,7 @@ export function getTools({
                     return countedSoftFail('mutateProgram', programSanityStash, constraintProfile, {
                         error: sanity.misses[0]?.id ?? 'evaluate',
                         message: formatEvaluateMessage(sanity.misses),
+                        ...sanityPairDetail(sanity.misses),
                         ...(sanity.debug ? { jev: sanity.debug } : {}),
                     });
                 }

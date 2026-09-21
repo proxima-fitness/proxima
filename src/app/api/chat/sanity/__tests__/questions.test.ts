@@ -3,7 +3,12 @@ import { describe, expect, it } from "vitest";
 import { initializeConstraintProfile } from "@/app/api/chat/constraints/initialize";
 import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 
-import { buildSanityQuestions, userRequestedId } from "../questions";
+import {
+    buildSanityQuestions,
+    constraintPairId,
+    isConstraintPairId,
+    userRequestedId,
+} from "../questions";
 import type { TProgramSanitySnapshot } from "../types";
 
 function emptySnapshot(overrides: Partial<TProgramSanitySnapshot> = {}): TProgramSanitySnapshot {
@@ -19,14 +24,18 @@ function emptySnapshot(overrides: Partial<TProgramSanitySnapshot> = {}): TProgra
     };
 }
 
-function dayRow(week: number, day: number) {
+function dayRow(week: number, day: number, titles: string[] = ["Squat"]) {
     return {
         week,
         day,
         title: `Day ${day}`,
-        exercises: [{ title: "Squat", workingSetCount: 3, rpeMin: 7, rpeMax: 8 }],
+        exercises: titles.map((title) => ({ title, workingSetCount: 3, rpeMin: 7, rpeMax: 8 })),
         matchesWeek1Stimulus: week > 1,
     };
+}
+
+function pairIds(questions: ReturnType<typeof buildSanityQuestions>): string[] {
+    return Object.keys(questions).filter(isConstraintPairId);
 }
 
 describe("buildSanityQuestions", () => {
@@ -37,13 +46,14 @@ describe("buildSanityQuestions", () => {
                 splitType: "",
                 deloadWeek: "no",
             }),
+            matrix: [dayRow(1, 1)],
         }));
 
-        expect(questions["constraint.injurySemantic"]).toBeDefined();
+        expect(questions[constraintPairId("injuries", "Squat", "can't kneel")]).toBeDefined();
         expect(questions["constraint.splitHonor"]).toBeUndefined();
         expect(questions["constraint.deloadHonor"]).toBeUndefined();
         expect(questions["constraint.peakHonor"]).toBeUndefined();
-        expect(questions["constraint.equipmentSemantic"]).toBeUndefined();
+        expect(pairIds(questions).some((id) => id.startsWith("constraint.equipment."))).toBe(false);
         expect(questions["constraint.variabilityHonor"]).toBeUndefined();
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
         expect(questions["constraint.warmupPolicy"]).toBeUndefined();
@@ -114,8 +124,8 @@ describe("buildSanityQuestions", () => {
             matrix: [dayRow(1, 3)],
         }), { firstBuild: false });
 
-        expect(questions["constraint.injurySemantic"]).toBeDefined();
-        expect(questions["constraint.equipmentSemantic"]).toBeDefined();
+        expect(questions[constraintPairId("injuries", "Squat", "left ankle")]).toBeDefined();
+        expect(questions[constraintPairId("excludedEquipment", "Squat", "band")]).toBeDefined();
         expect(questions["constraint.warmupPolicy"]).toBeDefined();
         expect(questions["constraint.splitHonor"]).toBeUndefined();
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
@@ -135,7 +145,9 @@ describe("buildSanityQuestions", () => {
         expect(questions[userRequestedId("training.sessionDurationFit")]).toBeDefined();
         expect(questions["skill.sessionShape"]).toBeDefined();
         expect(questions[userRequestedId("skill.sessionShape")]).toBeDefined();
-        expect(questions[userRequestedId("constraint.injurySemantic")]).toBeUndefined();
+        const injuryPair = constraintPairId("injuries", "Squat", "knee");
+        expect(questions[injuryPair]).toBeDefined();
+        expect(questions[userRequestedId(injuryPair)]).toBeUndefined();
     });
 
     it("never asks age, sex, height, or skill.exerciseObjectionReplace", () => {
@@ -199,7 +211,7 @@ describe("buildSanityQuestions", () => {
             matrix: [dayRow(1, 1), dayRow(1, 2), dayRow(1, 3)],
         }));
 
-        expect(questions["constraint.injurySemantic"]).toBeDefined();
+        expect(pairIds(questions).length).toBeGreaterThan(0);
         expect(questions["constraint.splitHonor"]).toBeDefined();
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
         expect(questions["skill.weekIntentHonor"]).toBeUndefined();
@@ -262,7 +274,122 @@ describe("buildSanityQuestions", () => {
             matrix: [dayRow(1, 1)],
         }));
 
-        expect(questions["constraint.injurySemantic"]?.criteria.true).toMatch(/joint-friendly|accommodat/i);
+        expect(questions[constraintPairId("injuries", "Squat", "left ankle")]?.criteria.true)
+            .toMatch(/joint-friendly|accommodat/i);
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
+    });
+
+    it("never asks the retired blob injury / equipment ids", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "knee",
+                excludeEquipment: "band",
+            }),
+            matrix: [dayRow(1, 1)],
+        }));
+
+        expect(Object.keys(questions).some((id) => /Semantic$/.test(id))).toBe(false);
+    });
+});
+
+describe("buildSanityQuestions injury / equipment pairs (ADR 0030 C4)", () => {
+    it("asks one question per unique title × injury: two injuries × two titles → four", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain, Left Ankle" }),
+            matrix: [dayRow(1, 1, ["Squat (Barbell)", "Leg Press (Machine)"])],
+        }));
+
+        expect(pairIds(questions).sort()).toEqual([
+            constraintPairId("injuries", "Leg Press (Machine)", "Knee Pain"),
+            constraintPairId("injuries", "Leg Press (Machine)", "Left Ankle"),
+            constraintPairId("injuries", "Squat (Barbell)", "Knee Pain"),
+            constraintPairId("injuries", "Squat (Barbell)", "Left Ankle"),
+        ].sort());
+    });
+
+    it("collapses the same title plated across weeks to one pair", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain" }),
+            matrix: [
+                dayRow(1, 1, ["Squat (Barbell)"]),
+                dayRow(2, 1, ["Squat (Barbell)"]),
+                dayRow(3, 1, ["Squat (Barbell)"]),
+            ],
+        }));
+
+        expect(pairIds(questions)).toEqual([
+            constraintPairId("injuries", "Squat (Barbell)", "Knee Pain"),
+        ]);
+    });
+
+    it("includes a block-boundary swap title from a later week on First build", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain" }),
+            matrix: [
+                dayRow(1, 1, ["Squat (Barbell)"]),
+                dayRow(5, 1, ["Front Squat (Barbell)"]),
+            ],
+        }), { firstBuild: true });
+
+        expect(pairIds(questions)).toContain(
+            constraintPairId("injuries", "Front Squat (Barbell)", "Knee Pain"),
+        );
+    });
+
+    it("pairs each title with each excluded-equipment string", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ excludeEquipment: "band,plate" }),
+            matrix: [dayRow(1, 1, ["Squat (Barbell)", "Leg Press (Machine)"])],
+        }));
+
+        expect(pairIds(questions)).toHaveLength(4);
+        expect(questions[constraintPairId("excludedEquipment", "Squat (Barbell)", "band")]?.pair)
+            .toEqual({
+                id: constraintPairId("excludedEquipment", "Squat (Barbell)", "band"),
+                field: "excludedEquipment",
+                constraint: "band",
+                exerciseTitle: "Squat (Barbell)",
+            });
+    });
+
+    it("names the title and saved string in the Jev instructions", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain" }),
+            matrix: [dayRow(1, 1, ["Squat (Barbell)"])],
+        }));
+        const question = questions[constraintPairId("injuries", "Squat (Barbell)", "Knee Pain")];
+
+        expect(question?.instructions).toContain("\"Squat (Barbell)\"");
+        expect(question?.instructions).toContain("\"Knee Pain\"");
+    });
+
+    it("only pairs changed-day titles on a standalone later mutation", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain" }),
+            changedDays: [{ week: 1, day: 2 }],
+            matrix: [
+                dayRow(1, 1, ["Squat (Barbell)"]),
+                dayRow(1, 2, ["Leg Extension (Machine)"]),
+            ],
+        }), { firstBuild: false });
+
+        expect(pairIds(questions)).toEqual([
+            constraintPairId("injuries", "Leg Extension (Machine)", "Knee Pain"),
+        ]);
+    });
+
+    it("asks no pair when the matrix has no exercises", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ healthIssues: "Knee Pain" }),
+        }));
+
+        expect(pairIds(questions)).toEqual([]);
+    });
+
+    it("builds a stable pair id from title and saved string", () => {
+        expect(constraintPairId("injuries", "Squat (Barbell)", "Knee Pain"))
+            .toBe("constraint.injury.squat-barbell.knee-pain");
+        expect(constraintPairId("excludedEquipment", " Cable Fly ", "band"))
+            .toBe("constraint.equipment.cable-fly.band");
     });
 });

@@ -8,9 +8,10 @@
  * Week and day numbers on these types are 1-based (week 1 = `folder_id` 0, day =
  * Hevy `order`). Stimulus is working-set count plus RPE min/max per exercise title.
  * Full set objects, `reason`, notes, ids, and `builder_exercise_key` do not appear.
+ * Injury / equipment pair shapes are ADR 0030 / 02 (C4–C5).
  *
  * Depends on: TConstraintProfile, ./periodization-wave
- * Used by: snapshot.ts, week-coverage.ts, stalemate.ts, tools.ts
+ * Used by: snapshot.ts, week-coverage.ts, stalemate.ts, questions.ts, evaluate.ts, tools.ts
  */
 
 import type { TConstraintProfile } from "../constraints/types";
@@ -47,6 +48,30 @@ export type TProgramPlan = {
     goal?: string;
     blocks: TPlanBlock[];
     periodizationWave?: TPeriodizationWave;
+};
+
+/** Constraint-profile array a Program sanity pair question is asked for (ADR 0030 / 02). */
+export type TConstraintPairField = "injuries" | "excludedEquipment";
+
+/**
+ * One exercise title × one saved injury or excluded-equipment string
+ * (ADR 0030 C4). `id` is the stable honor question id Soft-fail counts on.
+ * `constraint` and `exerciseTitle` are exact stored / matrix strings.
+ */
+export type TConstraintPair = {
+    id: string;
+    field: TConstraintPairField;
+    constraint: string;
+    exerciseTitle: string;
+};
+
+/**
+ * A pair Jev said the program does not honor (ADR 0030 C5). `why` is the
+ * human-readable line the stalemate card shows; it is built from the pair
+ * fields, never parsed back out of prose.
+ */
+export type TConstraintPairMiss = TConstraintPair & {
+    why: string;
 };
 
 /** Constraint-profile array a **Program stalemate** chip names. */

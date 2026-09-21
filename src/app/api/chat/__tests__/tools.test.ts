@@ -290,6 +290,19 @@ const minimalHevyProgram = [
     },
 ] as THevyRoutine[];
 
+const KNEE_SQUAT_PAIR = {
+    id: "constraint.injury.squat-barbell.knee-pain",
+    field: "injuries" as const,
+    constraint: "Knee Pain",
+    exerciseTitle: "Squat (Barbell)",
+    why: "Can't keep Squat (Barbell) with your saved injury \"Knee Pain\".",
+};
+const KNEE_SQUAT_MISS = {
+    id: KNEE_SQUAT_PAIR.id,
+    detail: KNEE_SQUAT_PAIR.why,
+    pair: KNEE_SQUAT_PAIR,
+};
+
 describe("chat tools.ts", () => {
     it("exposes readProgram and mutateProgram but not modifyProgram or getCurrentProgram", () => {
         const tools = getTools({});
@@ -622,7 +635,7 @@ describe("chat tools.ts", () => {
         it("does not return the built week when evaluate rejects", async () => {
             vi.mocked(evaluate).mockResolvedValueOnce({
                 ok: false,
-                misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                misses: [KNEE_SQUAT_MISS],
             });
 
             const buildProgramOnceGuard = { locked: false };
@@ -633,16 +646,24 @@ describe("chat tools.ts", () => {
             const output = (await buildProgram.execute({
                 totalDays: 1,
                 routines: [minimalRoutine],
-            })) as { error?: string; message?: string; routines?: unknown[] };
+            })) as {
+                error?: string;
+                message?: string;
+                routines?: unknown[];
+                constraintPairs?: unknown[];
+            };
 
-            expect(output.error).toBe("constraint.injurySemantic");
+            expect(output.error).toBe(KNEE_SQUAT_MISS.id);
             expect(output.routines).toBeUndefined();
-            expect(output.message).toContain("constraint.injurySemantic");
+            expect(output.message).toContain(KNEE_SQUAT_MISS.id);
+            expect(output.constraintPairs).toEqual([KNEE_SQUAT_PAIR]);
             expect(buildProgramOnceGuard.locked).toBe(false);
             expect(programSanityStash.buildProgramRoutines).toBeNull();
 
             const modelOutput = await buildProgram.toModelOutput({ output });
-            expect(modelOutput.value).toContain("constraint.injurySemantic");
+            expect(modelOutput.value).toContain(KNEE_SQUAT_MISS.id);
+            expect(modelOutput.value).toContain("Squat (Barbell)");
+            expect(modelOutput.value).toContain("Knee Pain");
             expect(modelOutput.value).toContain("The program grid is unchanged");
         });
 
@@ -650,11 +671,11 @@ describe("chat tools.ts", () => {
             vi.mocked(evaluate)
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 });
 
             const buildProgramOnceGuard = { locked: false };
@@ -666,7 +687,7 @@ describe("chat tools.ts", () => {
                 totalDays: 1,
                 routines: [minimalRoutine],
             })) as { error?: string; stalemate?: unknown; routines?: unknown[] };
-            expect(first.error).toBe("constraint.injurySemantic");
+            expect(first.error).toBe(KNEE_SQUAT_MISS.id);
             expect(first.stalemate).toBeUndefined();
             expect(first.routines).toBeUndefined();
             expect(buildProgramOnceGuard.locked).toBe(false);
@@ -675,8 +696,8 @@ describe("chat tools.ts", () => {
                 totalDays: 1,
                 routines: [minimalRoutine],
             })) as { error?: string; stalemate?: { key?: string }; routines?: unknown[] };
-            expect(second.error).toBe("constraint.injurySemantic");
-            expect(second.stalemate?.key).toBe("constraint.injurySemantic");
+            expect(second.error).toBe(KNEE_SQUAT_MISS.id);
+            expect(second.stalemate?.key).toBe(KNEE_SQUAT_MISS.id);
             expect(second.routines).toBeUndefined();
             expect(buildProgramOnceGuard.locked).toBe(false);
             expect(programSanityStash.buildProgramRoutines).toBeNull();
@@ -698,7 +719,7 @@ describe("chat tools.ts", () => {
             vi.mocked(evaluate)
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 })
                 .mockResolvedValueOnce({
                     ok: false,
@@ -718,7 +739,7 @@ describe("chat tools.ts", () => {
                 routines: [minimalRoutine],
             })) as { error?: string; stalemate?: unknown };
 
-            expect(first.error).toBe("constraint.injurySemantic");
+            expect(first.error).toBe(KNEE_SQUAT_MISS.id);
             expect(second.error).toBe("skill.sessionShape");
             expect(first.stalemate).toBeUndefined();
             expect(second.stalemate).toBeUndefined();
@@ -766,15 +787,15 @@ describe("chat tools.ts", () => {
             vi.mocked(evaluate)
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.injurySemantic", detail: "does not honor constraint.injurySemantic" }],
+                    misses: [KNEE_SQUAT_MISS],
                 });
 
             const firstTurn = emptyStash();
@@ -794,7 +815,7 @@ describe("chat tools.ts", () => {
                 totalDays: 1,
                 routines: [minimalRoutine],
             })) as { error?: string; stalemate?: unknown };
-            expect(nextFirst.error).toBe("constraint.injurySemantic");
+            expect(nextFirst.error).toBe(KNEE_SQUAT_MISS.id);
             expect(nextFirst.stalemate).toBeUndefined();
         });
 
@@ -2047,6 +2068,32 @@ describe("chat tools.ts", () => {
 
             const modelOutput = await mutateProgram.toModelOutput({ output });
             expect(modelOutput.value).toContain("skill.sessionShape");
+            expect(output).not.toHaveProperty("constraintPairs");
+        });
+
+        it("carries structured injury pair detail when evaluate rejects a pair", async () => {
+            vi.mocked(evaluate).mockResolvedValueOnce({
+                ok: false,
+                misses: [KNEE_SQUAT_MISS],
+            });
+
+            const tools = getTools({ hevyProgram: minimalHevyProgram });
+            const mutateProgram = asTestTool<{ operations: unknown[] }, unknown>(tools.mutateProgram);
+            const output = (await readThenMutate(tools, [{
+                op: "update_set",
+                folderIds: [0],
+                dayOrder: 1,
+                exerciseIndex: 0,
+                setIndex: 0,
+                set: { rpe: 9 },
+            }])) as { error?: string; constraintPairs?: unknown[]; operations?: unknown[] };
+
+            expect(output.error).toBe(KNEE_SQUAT_PAIR.id);
+            expect(output.operations).toBeUndefined();
+            expect(output.constraintPairs).toEqual([KNEE_SQUAT_PAIR]);
+
+            const modelOutput = await mutateProgram.toModelOutput({ output });
+            expect(modelOutput.value).toContain(KNEE_SQUAT_PAIR.why);
         });
     });
 

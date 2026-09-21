@@ -10,6 +10,9 @@
  * out every batch. Training / skill misses Soft-fail only in Case 1 when the
  * user did not ask; low confidence fail-opens.
  *
+ * Injury / equipment pair misses (ADR 0030 / 02, C5) carry the structured
+ * pair plus a human-readable `why` built from its title and saved string.
+ *
  * Same Gateway style as week suggest: `gateway` + a model id. Jev is an
  * evaluation model, so the call is `experimental_evaluate` rather than
  * `generateText`. Auth is the Gateway OIDC / `AI_GATEWAY_API_KEY` the SDK
@@ -24,13 +27,17 @@ import { experimental_evaluate, gateway } from "ai";
 
 import {
     buildSanityQuestions,
-    CONSTRAINT_QUESTION_ID_SET,
+    isConstraintQuestionId,
     TRAINING_OR_SKILL_QUESTION_ID_SET,
     userRequestedId,
     type TSanityQuestions,
 } from "./questions";
 import { compactSnapshotForEvaluate, snapshotForStandaloneEvaluate } from "./snapshot";
-import type { TProgramSanitySnapshot } from "./types";
+import type {
+    TConstraintPair,
+    TConstraintPairMiss,
+    TProgramSanitySnapshot,
+} from "./types";
 
 /** Same Gateway catalog id as week suggest's `gateway(model)` style. */
 export const JEV_MODEL = "typesafe-ai/jev";
@@ -50,10 +57,14 @@ export const TRAINING_MISS_MAX = 0.35;
 /** Skip a Training / skill reject only when the User-stated exception Noul is clearly yes. */
 export const USER_REQUESTED_YES_MIN = 0.65;
 
-/** One labeled Soft-fail line. `id` is the honor question id Andy should retry against. */
+/**
+ * One labeled Soft-fail line. `id` is the honor question id Andy should retry
+ * against. `pair` is set on injury / equipment misses; `detail` is then its `why`.
+ */
 export type TEvaluateMiss = {
     id: string;
     detail: string;
+    pair?: TConstraintPairMiss;
 };
 
 /**
@@ -189,17 +200,48 @@ function honorDetail(id: string): string {
 }
 
 /**
+ * Card-ready line for one pair miss (C5). Built from the pair fields only.
+ *
+ * @param pair - Title × saved string Jev did not clear
+ * @returns e.g. `Can't keep Squat (Barbell) with your saved injury "Knee Pain".`
+ */
+export function constraintPairWhy(pair: TConstraintPair): string {
+    const quoted = JSON.stringify(pair.constraint);
+    return pair.field === "injuries"
+        ? `Can't keep ${pair.exerciseTitle} with your saved injury ${quoted}.`
+        : `Can't keep ${pair.exerciseTitle}: it uses excluded equipment ${quoted}.`;
+}
+
+function missFor(id: string, questions: TSanityQuestions): TEvaluateMiss {
+    const pair = questions[id]?.pair;
+    if (!pair) return { id, detail: honorDetail(id) };
+    const why = constraintPairWhy(pair);
+    return { id, detail: why, pair: { ...pair, why } };
+}
+
+/**
+ * Structured pair misses for the Soft-fail payload. Empty when none.
+ *
+ * @param misses - From {@link applyEvaluatePolicy}
+ */
+export function constraintPairMisses(misses: TEvaluateMiss[]): TConstraintPairMiss[] {
+    return misses.flatMap((miss) => (miss.pair ? [miss.pair] : []));
+}
+
+/**
  * Combine TypeSafe nouls with C3–C5. Pure; no network.
  *
  * @param nouls - Answered honor + `userRequested.*` Nouls
  * @param questionIds - Keys that were actually sent (so empty premises stay omitted)
  * @param firstBuild - See {@link IEvaluateOptions.firstBuild}
+ * @param questions - Sent questions; pair questions attach structured detail
  * @returns Misses to Soft-fail; empty when the snapshot passes
  */
 export function applyEvaluatePolicy(
     nouls: TSystemOneNouls,
     questionIds: string[],
     firstBuild: boolean,
+    questions: TSanityQuestions = {},
 ): TEvaluateMiss[] {
     const misses: TEvaluateMiss[] = [];
 
@@ -207,10 +249,10 @@ export function applyEvaluatePolicy(
         if (id.startsWith("userRequested.")) continue;
 
         const noul = nouls[id];
-        if (CONSTRAINT_QUESTION_ID_SET.has(id)) {
+        if (isConstraintQuestionId(id)) {
             // Unanswered or not clearly yes → reject (fail-closed, C5).
             if (!isFiniteNoul(noul) || noul < CONSTRAINT_HONOR_MIN) {
-                misses.push({ id, detail: honorDetail(id) });
+                misses.push(missFor(id, questions));
             }
             continue;
         }
@@ -223,7 +265,7 @@ export function applyEvaluatePolicy(
         const asked = nouls[userRequestedId(id)];
         if (isFiniteNoul(asked) && asked >= USER_REQUESTED_YES_MIN) continue;
 
-        misses.push({ id, detail: honorDetail(id) });
+        misses.push(missFor(id, questions));
     }
 
     return misses;
@@ -284,7 +326,7 @@ export async function evaluate(
         });
     }
 
-    const misses = applyEvaluatePolicy(nouls, questionIds, options.firstBuild);
+    const misses = applyEvaluatePolicy(nouls, questionIds, options.firstBuild, questions);
     const ok = misses.length === 0;
     return finishEvaluate({ ok, misses }, options, {
         firstBuild: options.firstBuild,

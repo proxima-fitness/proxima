@@ -10,6 +10,7 @@ import {
     readLastUserMessage,
     resolvePlateWeekCount,
     snapshotForStandaloneEvaluate,
+    uniqueExerciseTitles,
 } from "../snapshot";
 import type { TProgramPlan } from "../types";
 
@@ -214,5 +215,36 @@ describe("snapshotForStandaloneEvaluate", () => {
         expect(snapshotForStandaloneEvaluate(snapshot).matrix).toEqual([
             expect.objectContaining({ week: 1, day: 1, title: "Push" }),
         ]);
+    });
+});
+
+describe("uniqueExerciseTitles", () => {
+    function row(week: number, day: number, titles: string[]) {
+        return {
+            week,
+            day,
+            title: `Day ${day}`,
+            exercises: titles.map((title) => ({ title, workingSetCount: 3, rpeMin: 7, rpeMax: 8 })),
+            matchesWeek1Stimulus: false,
+        };
+    }
+
+    it("collapses plated repeats and keeps later-week swaps in first-seen order", () => {
+        expect(uniqueExerciseTitles([
+            row(1, 1, ["Squat (Barbell)", "Leg Curl (Machine)"]),
+            row(2, 1, ["Squat (Barbell)", "Leg Curl (Machine)"]),
+            row(5, 1, ["Front Squat (Barbell)", "Leg Curl (Machine)"]),
+        ])).toEqual(["Squat (Barbell)", "Leg Curl (Machine)", "Front Squat (Barbell)"]);
+    });
+
+    it("limits to the given days", () => {
+        expect(uniqueExerciseTitles(
+            [row(1, 1, ["Squat (Barbell)"]), row(1, 2, ["Bench Press (Barbell)"])],
+            [{ week: 1, day: 2 }],
+        )).toEqual(["Bench Press (Barbell)"]);
+    });
+
+    it("skips blank titles", () => {
+        expect(uniqueExerciseTitles([row(1, 1, ["  ", "Row (Cable)"])])).toEqual(["Row (Cable)"]);
     });
 });
