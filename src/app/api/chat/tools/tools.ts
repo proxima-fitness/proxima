@@ -141,8 +141,12 @@ function preferenceEnumField(key: TConstraintPreferenceKey) {
     const values = constraintPreferenceEnumValues(key);
     return z
         .enum(values)
+        .nullable()
         .optional()
-        .describe(`Canonical questionnaire option id. Allowed: ${values.join(', ')}`);
+        .describe(
+            `Canonical questionnaire option id (${values.join(', ')}), or null to clear on User-stated change only. ` +
+            'Replacing with another catalog id is a set, not a clear. Never clear to unlock a split or program style.',
+        );
 }
 
 /** Exported for tests: preference patch schema for updateConstraintProfile. */
@@ -156,7 +160,10 @@ export const constraintPreferencesUpdateSchema = z
         warmupExercises: preferenceEnumField('warmupExercises'),
     })
     .optional()
-    .describe('Preference fields to update (only provided keys are changed; values must be catalog option ids)');
+    .describe(
+        'Preference fields to update (only provided keys are changed). Catalog option id sets; null clears on User-stated change only. ' +
+        'Replacing with another id (e.g. ppl → fb) is not a clear. Arrays stay on removeInjuries / removeExcludedEquipment / removeExcludedAreas.',
+    );
 
 /** Request-scoped flag: set after first successful buildProgram so the agent cannot call buildProgram twice in one chat turn. */
 export interface IBuildProgramOnceGuard {
@@ -1749,13 +1756,15 @@ export function getTools({
             'Do not block getExerciseList or buildProgram waiting on it. ' +
             'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
-            'Never call removeExcludedEquipment, removeInjuries, or removeExcludedAreas to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
+            'Never call removeExcludedEquipment, removeInjuries, removeExcludedAreas, or preferences.<key>: null to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
             'Field map: injury, pain, or movement limits only → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
-            'split/variability/progression/deload/peak/warmup → preferences. ' +
+            'split/variability/progression/deload/peak/warmup → preferences (catalog id to set; null to clear on User-stated change only - e.g. preferences: { splitType: null }). ' +
+            'Replacing a preference with another catalog id (e.g. ppl → fb / Full Body) is a set, not a clear - never "relax" a preference by swapping to Full Body. ' +
+            'Array clears stay on removeInjuries / removeExcludedEquipment / removeExcludedAreas. Program length and days per week are not cleared through this tool. ' +
             'addInjuries is Injuries & health issues only (pain, surgery, can\'t kneel, no overhead). Never put periodization, deload/peak/unload/taper week plans, mesocycle, or wave notes in addInjuries - those go on the Periodization wave or preferences.deloadWeek / peakWeek. ' +
             'Do not add an injury that sounds very similar to one already saved in Injuries & health issues (e.g. "Knee pain" next to "knee pain when squatting") - keep the saved one. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
-            'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
+            'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I no longer have a split preference" (User-stated change → preferences: { splitType: null }); "I got a new barbell".',
         inputSchema: z.object({
             addInjuries: z.array(z.string()).optional().describe(
                 'Injuries & health issues only: pain, injury, surgery recovery, or movement limits (can\'t kneel, no overhead, no floor). Not periodization, deload/peak week plans, or other program notes. Skip any entry that sounds very similar to an injury already saved.',
@@ -1784,7 +1793,7 @@ export function getTools({
                 removeExcludedAreas,
             ].some((arr) => (arr?.length ?? 0) > 0);
             const hasPreferenceChange = Boolean(
-                preferences && Object.values(preferences).some((v) => typeof v === 'string' && v.trim() !== ''),
+                preferences && Object.values(preferences).some((v) => v === null || (typeof v === 'string' && v.trim() !== '')),
             );
             const hasRawStatement = Boolean(rawStatement?.trim());
 
@@ -1806,13 +1815,14 @@ export function getTools({
             );
 
             if (preferences) {
+                // null clears to "" (Edit profile / stalemate convention); omitted keys stay unchanged.
                 const canonicalEntries = (
-                    Object.entries(preferences) as Array<[TConstraintPreferenceKey, string | undefined]>
+                    Object.entries(preferences) as Array<[TConstraintPreferenceKey, string | null | undefined]>
                 )
-                    .filter(([, v]) => typeof v === 'string' && v.trim() !== '')
+                    .filter(([, v]) => v === null || (typeof v === 'string' && v.trim() !== ''))
                     .map(([key, v]) => [
                         key,
-                        canonicalizeConstraintPreferenceValue(key, v as string),
+                        v === null ? '' : canonicalizeConstraintPreferenceValue(key, v as string),
                     ] as const);
                 Object.assign(
                     constraintProfile.preferences,
@@ -1854,8 +1864,9 @@ export function getTools({
             'Call after questionnaire unlock only when Questionnaire advanced / Training profile fields are non-empty; skip entirely when empty - do not make empty updates. ' +
             'Do not block getExerciseList or buildProgram waiting on it. ' +
             'Set freely when the user states a person fact. Clear a field only on a User-stated change (pass null for that field) or direct the user to Edit profile. ' +
+            'Never clear a Training profile field to unlock a program style - adapt the program instead. Program length and days per week are not cleared through this tool. ' +
             'Not the Mutation constraint gate - use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
-            'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: null).',
+            'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: null); "clear my age" (age: null).',
         inputSchema: z.object({
             age: z.number().int().min(14).max(100).nullable().optional()
                 .describe('Age in years (14-100). null clears on User-stated change only.'),

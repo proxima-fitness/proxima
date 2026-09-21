@@ -1,5 +1,6 @@
 /**
- * updateConstraintProfile preferences must use questionnaire option-id enums.
+ * updateConstraintProfile preferences must use questionnaire option-id enums;
+ * null clears a key to "" (ADR 0031 sub-plan 01).
  *
  * @vitest-environment node
  */
@@ -91,6 +92,118 @@ describe("constraint preference canonical enums", () => {
             }),
             undefined,
         );
+    });
+
+    it("accepts null on every preference key (clear)", () => {
+        const result = constraintPreferencesUpdateSchema.safeParse({
+            splitType: null,
+            exerciseVariability: null,
+            progressionSystem: null,
+            deloadWeek: null,
+            peakWeek: null,
+            warmupExercises: null,
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it("rejects empty string as a preference value (null is the only clear)", () => {
+        const result = constraintPreferencesUpdateSchema.safeParse({ splitType: "" });
+        expect(result.success).toBe(false);
+    });
+
+    describe("updateConstraintProfile preference clears (ADR 0031)", () => {
+        type TPreferencePatch = Partial<Record<
+            "splitType" | "exerciseVariability" | "progressionSystem" | "deloadWeek" | "peakWeek" | "warmupExercises",
+            string | null
+        >>;
+
+        function setup() {
+            const profile = initializeConstraintProfile({
+                splitType: "ppl",
+                exerciseVariability: "little",
+                progressionSystem: "double",
+                deloadWeek: "no",
+                peakWeek: "no",
+                warmupExercises: "no",
+            });
+            const db = {} as TWorkoutHistoryDb;
+            const tools = getTools({
+                userId: "user-1",
+                workoutHistoryDb: db,
+                constraintProfile: profile,
+            });
+            const update = asTestTool<{ preferences?: TPreferencePatch }>(tools.updateConstraintProfile);
+            return { profile, db, update };
+        }
+
+        it("splitType: null clears to \"\" and persists", async () => {
+            const { profile, db, update } = setup();
+
+            await update.execute({ preferences: { splitType: null } });
+
+            expect(profile.preferences.splitType).toBe("");
+            expect(upsertUserConstraintsMock).toHaveBeenCalledWith(
+                db,
+                "user-1",
+                expect.objectContaining({
+                    preferences: expect.objectContaining({ splitType: "" }),
+                }),
+                undefined,
+            );
+        });
+
+        it("clears all six preference keys via null", async () => {
+            const { profile, update } = setup();
+
+            await update.execute({
+                preferences: {
+                    splitType: null,
+                    exerciseVariability: null,
+                    progressionSystem: null,
+                    deloadWeek: null,
+                    peakWeek: null,
+                    warmupExercises: null,
+                },
+            });
+
+            expect(profile.preferences).toEqual({
+                splitType: "",
+                exerciseVariability: "",
+                progressionSystem: "",
+                deloadWeek: "",
+                peakWeek: "",
+                warmupExercises: "",
+            });
+            expect(upsertUserConstraintsMock).toHaveBeenCalledTimes(1);
+        });
+
+        it("omitted keys stay unchanged when another key is cleared", async () => {
+            const { profile, update } = setup();
+
+            await update.execute({ preferences: { splitType: null } });
+
+            expect(profile.preferences.progressionSystem).toBe("double");
+            expect(profile.preferences.exerciseVariability).toBe("little");
+        });
+
+        it("replacing with another catalog id is a set, not a clear", async () => {
+            const { profile, update } = setup();
+
+            await update.execute({ preferences: { splitType: "fb" } });
+
+            expect(profile.preferences.splitType).toBe("fb");
+            expect(profile.preferences.splitType).not.toBe("");
+        });
+
+        it("preferences: {} alone still skips as an empty update", async () => {
+            const { profile, update } = setup();
+
+            const result = await update.execute({ preferences: {} });
+
+            expect(result).toEqual(expect.objectContaining({ skipped: true }));
+            expect(profile.preferences.splitType).toBe("ppl");
+            expect(upsertUserConstraintsMock).not.toHaveBeenCalled();
+        });
     });
 
     it("initializeConstraintProfile canonicalizes preference params", () => {
