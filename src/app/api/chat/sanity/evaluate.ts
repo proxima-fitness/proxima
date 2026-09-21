@@ -84,8 +84,8 @@ export type TJevDebugTrace = {
 
 export interface IEvaluateOptions {
     /**
-     * True only for the stamped **First build** snapshot in `buildWeek`
-     * (Case 1). Not "this turn locked `buildWeekOnceGuard`": every
+     * True only for the stamped **First build** snapshot in `buildProgram`
+     * (Case 1). Not "this turn locked `buildProgramOnceGuard`": every
      * `mutateProgram`, same-turn or later, passes false (Case 2) so Training /
      * skill questions cannot reject.
      */

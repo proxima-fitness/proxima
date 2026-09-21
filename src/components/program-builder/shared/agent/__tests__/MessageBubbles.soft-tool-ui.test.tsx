@@ -110,10 +110,10 @@ describe("MessageBubbles soft tool UI", () => {
         resetAiToolErrorCaptureForTests();
     });
 
-    it("non-debug: soft fail on buildWeek shows Recalculating only", () => {
+    it("non-debug: soft fail on buildProgram shows Recalculating only", () => {
         debugModeState.debugMode = false;
         const messages = assistantWithPart({
-            type: "tool-buildWeek",
+            type: "tool-buildProgram",
             toolCallId: "bw1",
             state: "output-available",
             input: { totalDays: 3, routines: [] },
@@ -128,7 +128,7 @@ describe("MessageBubbles soft tool UI", () => {
         expect(posthogCapture).toHaveBeenCalledWith(
             "ai_tool_error",
             expect.objectContaining({
-                tool: "buildWeek",
+                tool: "buildProgram",
                 errorCode: "Invalid routines",
             }),
         );
@@ -226,7 +226,7 @@ describe("MessageBubbles soft tool UI", () => {
         expect(screen.queryByText(/Call readProgram/i)).toBeNull();
     });
 
-    it("debug mode: soft fail shows ToolErrorPanel for buildWeek and mutateProgram", () => {
+    it("debug mode: soft fail shows ToolErrorPanel for buildProgram and mutateProgram", () => {
         debugModeState.debugMode = true;
         testUserState.isTestUser = true;
         const messages: TChatMessage[] = [
@@ -235,7 +235,7 @@ describe("MessageBubbles soft tool UI", () => {
                 role: "assistant",
                 parts: [
                     {
-                        type: "tool-buildWeek",
+                        type: "tool-buildProgram",
                         toolCallId: "bw2",
                         state: "output-available",
                         input: { totalDays: 3, routines: [] },
@@ -257,7 +257,7 @@ describe("MessageBubbles soft tool UI", () => {
         expect(screen.queryByText("Recalculating…")).toBeNull();
         expect(screen.queryByText("Reading...")).toBeNull();
         expect(screen.getAllByText("Send to Developer").length).toBeGreaterThanOrEqual(2);
-        expect(screen.getByText("Build week")).toBeTruthy();
+        expect(screen.getByText("Build program")).toBeTruthy();
         expect(screen.getByText("Mutate program")).toBeTruthy();
     });
 });

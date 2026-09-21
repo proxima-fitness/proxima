@@ -56,7 +56,7 @@ export interface IProgramStalemateCardProps {
     onPreferenceChange?: (key: TStalematePreferenceKey, value: string) => void;
     payload: IProgramStalematePayload;
     sendMessage: TSendMessageWithContext;
-    tool?: "buildWeek" | "mutateProgram";
+    tool?: "buildProgram" | "mutateProgram";
     toolCallId?: string;
     toolOutput?: unknown;
 }
@@ -79,7 +79,7 @@ export const ProgramStalemateCard: React.FC<IProgramStalemateCardProps> = ({
     onPreferenceChange,
     payload,
     sendMessage,
-    tool = "buildWeek",
+    tool = "buildProgram",
     toolCallId,
     toolOutput,
 }) => {

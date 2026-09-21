@@ -14,7 +14,7 @@ import {
     getMergedBuildAndMutateSnapshot,
     resolveEffectiveWeeksForAtomicCommit,
     buildFullProgramFromFirstWeek,
-    tryCommitAtomicBuildWeekAndMutations,
+    tryCommitAtomicBuildProgramAndMutations,
     getAtomicBuildCommitKey,
 } from "../helpers";
 
@@ -60,13 +60,17 @@ const minimalRoutine = (day: number): THevyRoutine => ({
     ],
 });
 
-const buildWeekPart = (routines: THevyRoutine[], exerciseRoles?: Array<{
-    dayOrder: number;
-    exerciseIndex: number;
-    role: "main" | "accessory" | "warmup";
-}>) =>
+const buildProgramPart = (
+    routines: THevyRoutine[],
+    exerciseRoles?: Array<{
+        dayOrder: number;
+        exerciseIndex: number;
+        role: "main" | "accessory" | "warmup";
+    }>,
+    plan?: Record<string, unknown>,
+) =>
     ({
-        type: "tool-buildWeek",
+        type: "tool-buildProgram",
         toolCallId: "b1",
         state: "output-available",
         input: {},
@@ -77,6 +81,7 @@ const buildWeekPart = (routines: THevyRoutine[], exerciseRoles?: Array<{
             exerciseCount: routines.length,
             setCount: routines.length,
             ...(exerciseRoles ? { exerciseRoles } : {}),
+            ...(plan ? { plan } : {}),
         },
     }) as UIMessage["parts"][number];
 
@@ -89,30 +94,20 @@ const mutatePart = (operations: Array<Record<string, unknown>>) =>
         output: { operations },
     }) as UIMessage["parts"][number];
 
-describe("atomic commit / planProgram duration alignment", () => {
-    it("reads durationWeeks from tool-planProgram before last buildWeek (e.g. 11 vs UI 8)", () => {
+describe("atomic commit / buildProgram plan duration alignment", () => {
+    it("reads durationWeeks from the plan on the last tool-buildProgram (e.g. 11 vs UI 8)", () => {
         const messages: UIMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
             {
                 id: "a1",
                 role: "assistant",
                 parts: [
-                    {
-                        type: "tool-planProgram",
-                        toolCallId: "p1",
-                        state: "output-available",
-                        input: {},
-                        output: {
-                            plan: {
-                                durationWeeks: 11,
-                                goal: "test",
-                                daysPerWeek: 3,
-                                blocks: [{ name: "A", weeks: [1], intent: "x" }],
-                            },
-                            summary: "11 wk",
-                        },
-                    } as UIMessage["parts"][number],
-                    buildWeekPart([minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)]),
+                    buildProgramPart([minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)], undefined, {
+                        durationWeeks: 11,
+                        goal: "test",
+                        daysPerWeek: 3,
+                        blocks: [{ name: "A", weeks: [1], intent: "x" }],
+                    }),
                 ],
             },
         ];
@@ -131,7 +126,7 @@ describe("atomic commit / planProgram duration alignment", () => {
             {
                 id: "a1",
                 role: "assistant",
-                parts: [buildWeekPart([minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)])],
+                parts: [buildProgramPart([minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)])],
             },
         ];
 
@@ -143,7 +138,7 @@ describe("atomic commit / planProgram duration alignment", () => {
 });
 
 describe("getMergedBuildAndMutateSnapshot", () => {
-    it("merges mutateProgram ops after buildWeek in message order", () => {
+    it("merges mutateProgram ops after buildProgram in message order", () => {
         const week = [minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)];
         const messages: UIMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
@@ -151,7 +146,7 @@ describe("getMergedBuildAndMutateSnapshot", () => {
                 id: "a1",
                 role: "assistant",
                 parts: [
-                    buildWeekPart(week),
+                    buildProgramPart(week),
                     mutatePart([{ op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "A" }]),
                     mutatePart([{ op: "add_day_notes", folderIds: [0], dayOrder: 1, notes: "Focus" }]),
                 ],
@@ -164,8 +159,8 @@ describe("getMergedBuildAndMutateSnapshot", () => {
     });
 });
 
-describe("tryCommitAtomicBuildWeekAndMutations", () => {
-    it("duplicates week and applies post-buildWeek mutate batch in one commit", () => {
+describe("tryCommitAtomicBuildProgramAndMutations", () => {
+    it("duplicates week and applies post-buildProgram mutate batch in one commit", () => {
         const week = [minimalRoutine(1), minimalRoutine(2), minimalRoutine(3)];
         const messages: UIMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
@@ -173,7 +168,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
                 id: "a1",
                 role: "assistant",
                 parts: [
-                    buildWeekPart(week),
+                    buildProgramPart(week),
                     mutatePart([
                         { op: "edit_day_title", folderIds: [1], dayOrder: 2, title: "Week 2 Day 2" },
                     ]),
@@ -185,7 +180,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
         const lastAtomicKeyRef = makeAtomicKeyRef();
         const commitWithUndo = vi.fn();
 
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             messages,
             "ready",
             3,
@@ -215,7 +210,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
                 id: "a1",
                 role: "assistant",
                 parts: [
-                    buildWeekPart(week),
+                    buildProgramPart(week),
                     mutatePart([
                         { op: "edit_day_title", folderIds: [0], dayOrder: 1, title: "OK" },
                         { op: "edit_day_title", folderIds: [0], dayOrder: 0, title: "Bad" },
@@ -228,7 +223,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
         const lastAtomicKeyRef = makeAtomicKeyRef();
         const commitWithUndo = vi.fn();
 
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             messages,
             "ready",
             2,
@@ -249,12 +244,12 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             {
                 id: "a1",
                 role: "assistant",
-                parts: [buildWeekPart([minimalRoutine(1)])],
+                parts: [buildProgramPart([minimalRoutine(1)])],
             },
         ];
 
         const commitWithUndo = vi.fn();
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             messages,
             "streaming",
             1,
@@ -276,37 +271,27 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
                 id: "a1",
                 role: "assistant",
                 parts: [
-                    {
-                        type: "tool-planProgram",
-                        toolCallId: "p1",
-                        state: "output-available",
-                        input: {},
-                        output: {
-                            plan: {
-                                durationWeeks: 4,
-                                goal: "test",
-                                daysPerWeek: 1,
-                                blocks: [
-                                    { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
-                                    { name: "Deload", weeks: [4], intent: "Unload" },
-                                ],
-                                periodizationWave: {
-                                    weeks: [
-                                        { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
-                                        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
-                                        { week: 3, main: { rpeDelta: 1, setCountDelta: 0 } },
-                                        {
-                                            week: 4,
-                                            main: { rpeDelta: -2, setCountDelta: 0 },
-                                            accessory: { rpeDelta: -1, setCountDelta: 0 },
-                                        },
-                                    ],
+                    buildProgramPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }], {
+                        durationWeeks: 4,
+                        goal: "test",
+                        daysPerWeek: 1,
+                        blocks: [
+                            { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
+                            { name: "Deload", weeks: [4], intent: "Unload" },
+                        ],
+                        periodizationWave: {
+                            weeks: [
+                                { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                                { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+                                { week: 3, main: { rpeDelta: 1, setCountDelta: 0 } },
+                                {
+                                    week: 4,
+                                    main: { rpeDelta: -2, setCountDelta: 0 },
+                                    accessory: { rpeDelta: -1, setCountDelta: 0 },
                                 },
-                            },
-                            summary: "4 wk",
+                            ],
                         },
-                    } as UIMessage["parts"][number],
-                    buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }]),
+                    }),
                 ],
             },
         ];
@@ -315,7 +300,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
         const lastAtomicKeyRef = makeAtomicKeyRef();
         const commitWithUndo = vi.fn();
 
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             messages,
             "ready",
             4,
@@ -343,7 +328,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             {
                 id: "a1",
                 role: "assistant",
-                parts: [buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }])],
+                parts: [buildProgramPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "main" }])],
             },
         ];
         const snapMain = getMergedBuildAndMutateSnapshot(messages)!;
@@ -352,7 +337,7 @@ describe("tryCommitAtomicBuildWeekAndMutations", () => {
             {
                 id: "a1",
                 role: "assistant",
-                parts: [buildWeekPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "accessory" }])],
+                parts: [buildProgramPart(week, [{ dayOrder: 1, exerciseIndex: 0, role: "accessory" }])],
             },
         ];
         const snapAccessory = getMergedBuildAndMutateSnapshot(messagesAccessory)!;

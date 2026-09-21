@@ -19,7 +19,7 @@ allowedTools:
 
 Before **every** **mutateProgram** call:
 
-1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. After a successful **buildWeek** in the same turn, the snapshot is stale (see **readProgram staleness**).
+1. **readProgram (live-grid edits):** Call **`readProgram`** in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. After a successful **buildProgram** in the same turn, the snapshot is stale (see **readProgram staleness**).
 2. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`updateConstraintProfile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. Pass `rawStatement` when the user spoke in chat. Call **`updateConstraintProfile`** before **mutateProgram** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
 3. **Empty days:** Empty training days are rejected. An explicit remove is allowed.
 
@@ -40,7 +40,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 | Injury / pain (for example "hurts my knee") | **`addInjuries`** + `rawStatement` |
 | Missing equipment (for example "don't have cables") | **`addExcludedEquipment`** + `rawStatement` |
 | Movement restriction (for example "no overhead", "can't kneel") | **`addInjuries`** + `rawStatement` |
-| Periodization / deload / peak week plan | **Not** `addInjuries` - wave on **planProgram** or `preferences.deloadWeek` / `peakWeek` |
+| Periodization / deload / peak week plan | **Not** `addInjuries` - wave on **buildProgram** or `preferences.deloadWeek` / `peakWeek` |
 | Taste-only (for example "too boring", "swap this") | **No** profile update - replace only |
 
 ## Checklist
@@ -57,7 +57,7 @@ User pushback on one programmed movement (pain, equipment mismatch, cannot perfo
 
 ## Live-grid edit
 
-- Call **readProgram**, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Indexes come from that snapshot. Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **planProgram** or **buildWeek** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
+- Call **readProgram**, then **mutateProgram** with **folderIds** (0-based week) and **dayOrder** (1-based day). Indexes come from that snapshot. Shorten or lengthen week count on an existing program with **delete_week** (highest week index first). Do **not** call **buildProgram** for that. The batch is a **Mutation proposal** until the user Accepts. Visible reply is the ask (what you want to change), not a confirmation. Do **not** write "I've updated", "Your program is now", or that the grid already changed.
 
 ## Targeting (mutateProgram)
 
@@ -197,7 +197,7 @@ If the program or the requested changes are **bodybuilding- or hypertrophy-focus
 
 ## Change program length (weeks)
 
-**Existing program on the grid:** use **readProgram** + **mutateProgram** only. Do **not** call **planProgram** or **buildWeek**. Those tools are for **new** program creation, not for trim or lengthen of a live program.
+**Existing program on the grid:** use **readProgram** + **mutateProgram** only. Do **not** call **buildProgram**. That tool is for **new** program creation, not for trim or lengthen of a live program.
 
 - **Shorter program:** one **delete_week** per removed week. Use **folderIds: [weekIndex]** (0-based, same as routine `folder_id`). Emit one op per week. Delete **highest index first** so reindexing stays correct. Example for 8→2 weeks: `[7]`, `[6]`, `[5]`, `[4]`, `[3]`, `[2]` - keeps weeks 0 and 1.
 - **Longer program:** agent cannot add whole weeks via **mutateProgram** (no **duplicate_week**). Tell the user to increase program length in the builder UI, then rebuild or duplicate weeks manually.
@@ -213,7 +213,7 @@ If the program or the requested changes are **bodybuilding- or hypertrophy-focus
 - **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (for example 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
 - **Program-wide changes**: To change every occurrence (for example rename all "Push" to "Chest"), include **folderIds** for each week and the same **dayOrder**. You can also use one op with all relevant **folderIds**. Do not edit only the first week.
 - **One batch, one call**: Pass a single **operations** array to **mutateProgram**. Do not split by week or make multiple **mutateProgram** calls for one logical edit.
-- **readProgram staleness**: Snapshot is from **request start**. It does **not** refresh after **buildWeek** in the same turn. A same-turn edit after a successful **buildWeek** targets from **buildWeek** output instead.
+- **readProgram staleness**: Snapshot is from **request start**. It does **not** refresh after **buildProgram** in the same turn. A same-turn edit after a successful **buildProgram** targets from **buildProgram** output instead.
 
 ## Rep ranges
 

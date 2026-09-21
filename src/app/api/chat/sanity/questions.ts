@@ -72,7 +72,7 @@ export const TRAINING_OR_SKILL_QUESTION_ID_SET: ReadonlySet<string> = new Set([
 /** Options for {@link buildSanityQuestions}. */
 export type TBuildSanityQuestionsOptions = {
     /**
-     * Case 1: the stamped **First build** snapshot from `buildWeek`.
+     * Case 1: the stamped **First build** snapshot from `buildProgram`.
      * Default true so callers that omit it keep the full first-build set.
      */
     firstBuild?: boolean;

@@ -16,7 +16,7 @@ import type { IProgramSanityStash } from "../types";
 import type { TConstraintProfile } from "../../constraints/types";
 
 function emptyStash(): IProgramSanityStash {
-    return { plan: null, buildWeekRoutines: null };
+    return { plan: null, buildProgramRoutines: null };
 }
 
 function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfile {

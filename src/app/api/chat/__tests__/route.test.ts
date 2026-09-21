@@ -20,7 +20,7 @@ describe("sanitizeMessagesWithUnresolvedToolCalls", () => {
             { role: "user", content: "Build a program" },
             {
                 role: "assistant",
-                parts: [{ type: "tool-buildWeek", state: "input-streaming" }],
+                parts: [{ type: "tool-buildProgram", state: "input-streaming" }],
             },
         ];
 
@@ -37,7 +37,7 @@ describe("sanitizeMessagesWithUnresolvedToolCalls", () => {
     });
 
     it("returns as-is when last message has only resolved or non-tool parts", () => {
-        const messages = [{ role: "assistant", parts: [{ type: "tool-buildWeek", state: "result" }] }];
+        const messages = [{ role: "assistant", parts: [{ type: "tool-buildProgram", state: "result" }] }];
         expect(sanitizeMessagesWithUnresolvedToolCalls(messages)).toBe(messages);
 
         const textOnly = [{ role: "assistant", parts: [{ type: "text", text: "Done" }] }];

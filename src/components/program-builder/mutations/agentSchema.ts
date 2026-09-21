@@ -69,8 +69,8 @@ export function buildMutateProgramToolDescription(): string {
         "Stage typed mutations to the workout program. Send an **operations** array; ops run in order. " +
         "**Fail-all:** if any operation is invalid, the entire batch is rejected and nothing is proposed. " +
         "On an existing program a standalone batch is a **Mutation proposal** until the user Accepts — it does **not** change the grid by itself. " +
-        "Call **readProgram** in this turn first (indexes from that snapshot). Skip after **buildWeek** in the same turn. " +
-        "Same-turn after **buildWeek** still lands immediately. " +
+        "Call **readProgram** in this turn first (indexes from that snapshot). Skip after **buildProgram** in the same turn. " +
+        "Same-turn after **buildProgram** still lands immediately. " +
         "Target days with **folderIds** (0-based week index, always an array e.g. `[0]`) and **dayOrder** (1-based day within week). " +
         "readProgram shows `folder_id` on each routine - map to **folderIds: [folder_id]**, not `folderId`.\n\n" +
         MUTATE_PROGRAM_INDEXING_GUIDE +

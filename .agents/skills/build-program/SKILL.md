@@ -6,12 +6,11 @@ description: >-
   or exercise routine from scratch. Do not use for shortening/lengthening an
   existing program on the grid - use mutate-program instead.
 allowedTools:
-  - planProgram
   - getExerciseList
   - getMoreInfoQuestions
   - updateConstraintProfile
   - updateTrainingProfile
-  - buildWeek
+  - buildProgram
   - mutateProgram
 ---
 
@@ -19,15 +18,15 @@ allowedTools:
 
 Vocabulary: use **make sure** for the check / verify / confirm / validate concept. Do not use those other verbs for that concept.
 
-## Program generation (buildWeek and mutateProgram)
+## Program generation (buildProgram and mutateProgram)
 
 ### Questionnaire first (new program)
 
 If the user wants to **create** a new workout program, send a short **visible** reply first.
 This includes the **first** message in a new chat.
-Then call **getMoreInfoQuestions** before **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram**.
+Then call **getMoreInfoQuestions** before **getExerciseList**, **buildProgram**, or **mutateProgram**.
 Read the tool result:
-- **No questions / gate not needed:** continue this turn with persist (if anything to write), then **planProgram**, **getExerciseList**, **buildWeek**.
+- **No questions / gate not needed:** continue this turn with persist (if anything to write), then **getExerciseList**, **buildProgram**.
 - **Questions opened:** stop and wait until they finish the questionnaire or send an explicit go-ahead (for example, "Build my program").
 Do not invent extra questions. The tool already picked the subset.
 
@@ -36,7 +35,7 @@ Do not invent extra questions. The tool already picked the subset.
 If they ask to fill or edit **Training profile**, including "update my profile" or "edit my info", and they are **not** asking to build a new program, call **getMoreInfoQuestions**.
 Wait for submit.
 After they submit, call **updateTrainingProfile** if there are fields.
-Do not call **planProgram** or **buildWeek**.
+Do not call **buildProgram**.
 
 ### Persist Constraint Profile (same turn, non-blocking)
 
@@ -48,7 +47,7 @@ Map exclude equipment to `addExcludedEquipment`.
 Map exclude areas to `addExcludedAreas`.
 Map split, variability, progression, deload, peak, and warmup to `preferences`.
 This call is a background backup.
-Do not delay or block **planProgram**, **getExerciseList**, or **buildWeek** while you wait for it.
+Do not delay or block **getExerciseList** or **buildProgram** while you wait for it.
 Constraints in the Active Constraint Profile are not always persisted.
 If those fields are non-empty and not yet written, call the tool.
 If every field is empty (for example, the user skipped the questionnaire with no answers), do not call `updateConstraintProfile`.
@@ -62,14 +61,14 @@ This call is also a background backup.
 Do not block plan, list, or build for it.
 If every Training profile field is empty, do not call `updateTrainingProfile`.
 
-### buildWeek once
+### buildProgram once
 
-After **getExerciseList**, call **buildWeek** once, for week 1 only, with an **Exercise role** on every exercise row.
-Code copies week 1 across the program length and applies the **Periodization wave** from **planProgram**.
+After **getExerciseList**, call **buildProgram** once with the plan (`durationWeeks`, `daysPerWeek`, `goal`, `blocks`, required `periodizationWave`, optional `notes`) and week 1 only, with an **Exercise role** on every exercise row.
+Code copies week 1 across the program length and applies the **Periodization wave** from that same call.
 The whole program lands in that one step. **Periodization** is the wave, not a follow-up edit.
 
-- **Success:** the program is on the grid. Do not call **buildWeek** again. Changes the user asks for later go through **mutateProgram**.
-- **Soft-fail:** the grid is unchanged. Fix what the error names, then call **buildWeek** again. If the wave caused it, call **planProgram** again this turn with a corrected wave first.
+- **Success:** the program is on the grid. Do not call **buildProgram** again. Changes the user asks for later go through **mutateProgram**.
+- **Soft-fail:** the grid is unchanged. Fix what the error names, then call **buildProgram** again with the full input. If the wave caused it, send a corrected wave on that call.
 - **Program stalemate** (the same miss twice): stop calling tools. Write a short visible reply. The card on screen is the user's move.
 
 ## Checklist
@@ -79,26 +78,26 @@ If this is a new program request, call **getMoreInfoQuestions**.
 If the tool returns no questions, continue.
 If questions opened, terminate your response and wait.
 Do not reason about exercise selection before the user provides the data when questions are open.
-Do not call **getExerciseList** or **planProgram** before that data arrives, unless the gate was not needed.
+Do not call **getExerciseList** or **buildProgram** before that data arrives, unless the gate was not needed.
 Treat an open questionnaire as a **gate**.
 A fresh user message must unlock an open gate.
 
 - [ ] **New program:** Send a brief visible message. Then call **getMoreInfoQuestions** immediately.
-- [ ] If questions opened, do **not** call **planProgram**, **getExerciseList**, **buildWeek**, or **mutateProgram** yet. If the questionnaire is done, the gate was not needed, or the user clearly continues (for example, "Build my program"), continue with the steps below.
+- [ ] If questions opened, do **not** call **getExerciseList**, **buildProgram**, or **mutateProgram** yet. If the questionnaire is done, the gate was not needed, or the user clearly continues (for example, "Build my program"), continue with the steps below.
 - [ ] **Persist Constraint Profile:** If there are non-empty fields to persist on the unlock turn, call **`updateConstraintProfile` once**. Keep this on the same turn as plan, list, and build. Do not block those tools. If every field is empty, skip the call.
 - [ ] **Persist Training Profile:** If Questionnaire advanced or Training profile fields are non-empty on the unlock turn, call **`updateTrainingProfile` once**. Keep this on the same turn. Do not block plan, list, or build. If every field is empty, skip the call.
-- [ ] **planProgram:** duration, blocks, and the **Periodization wave** (see **Periodization wave** below). Use questionnaire answers and program builder context (days per week, weeks). If powerlifting, bodybuilding, hyrox, crossfit, or weight-loss resources are loaded, use them.
+- [ ] **Plan:** decide duration, blocks, and the **Periodization wave** (see **Periodization wave** below). They go on the **buildProgram** call. Use questionnaire answers and program builder context (days per week, weeks). If powerlifting, bodybuilding, hyrox, crossfit, or weight-loss resources are loaded, use them.
 - [ ] Call **getExerciseList** with the user requirements. If program builder context has days per week or program length, obey that context.
 - [ ] Select exercises from the returned list (`id: title`). Use only IDs that appear in the list.
-- [ ] Call **buildWeek** once for week 1 only. Set `routines.length` to totalDays. Set `dayNumber` from 1 to N in order. Put a `role` on every exercise. Align the structure with **planProgram**.
+- [ ] Call **buildProgram** once for week 1 only. Set `routines.length` to totalDays. Set `dayNumber` from 1 to N in order. Put a `role` on every exercise. Send the plan fields and `periodizationWave` on the same call, aligned with the week.
 - [ ] Empty training days are rejected.
-- [ ] **Soft-fail:** follow **buildWeek once** above (fix, optionally **planProgram** again, then **buildWeek**).
+- [ ] **Soft-fail:** follow **buildProgram once** above (fix week 1, the wave, or both, then a full **buildProgram** again).
 - [ ] **Exercise variability `lots`:** see **Exercise variability** below for the **Block boundary** swaps.
 - [ ] After success: write a short summary (max 5 bullets) of the program that is now on the grid. It already landed, so this is not a **Mutation proposal** and there is nothing to Accept.
 
 ## Tool dependency rule
 
-**getExerciseList** and **planProgram** depend on the questionnaire output.
+**getExerciseList** and **buildProgram** depend on the questionnaire output.
 Do not call them before the questionnaire is answered.
 That wastes context and violates the workflow.
 Do not pre-fetch the exercise list.
@@ -121,7 +120,7 @@ Reading a share gathers context.
 You can call it on the questionnaire-gate turn with **getMoreInfoQuestions**.
 It is not building.
 
-Then use the normal workflow: **planProgram** → **getExerciseList** → **buildWeek**.
+Then use the normal workflow: **getExerciseList** → **buildProgram**.
 The share is a reference, not the program.
 Never treat **fetchHevyShareFolder** output as days already on the grid.
 Never claim that you loaded the share onto the grid.
@@ -135,7 +134,7 @@ That path is not this workflow.
 It needs an **empty** grid and their explicit yes.
 It is **not** gated behind **getMoreInfoQuestions**.
 After a share is loaded, the week is already on the grid.
-Do **not** call **buildWeek** to recreate it.
+Do **not** call **buildProgram** to recreate it.
 Use **mutateProgram** for edits.
 Expanding that seed to more weeks is a **separate ask**.
 Offer it and wait for a yes.
@@ -147,8 +146,7 @@ The seeded week is week 1.
 Code copies it across the program and applies your **Periodization wave**, same as a new build.
 
 1. Call **readProgram** for each seeded day's `order` and exercise positions.
-2. Call **planProgram** with the length, blocks, and a **Periodization wave**.
-3. Call **buildWeek** with **expandHevyShareSeed** only: one **Exercise role** per seeded exercise, every day. Leave out `totalDays` and `routines`.
+2. Call **buildProgram** with the plan fields (length, blocks, and a **Periodization wave**) plus **expandHevyShareSeed** only: one **Exercise role** per seeded exercise, every day. Leave out `totalDays` and `routines`.
 
 Do not re-author the seeded week in `routines`.
 Do not periodize it with **mutateProgram**.
@@ -164,13 +162,13 @@ A **warmup set** is a lighter set on a working lift; use set type `"warmup"` onl
 
 ## Target RPE and stimulus (hypertrophy programs)
 
-- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildWeek**. For warmup exercises and intentional easy work, use **~3-5 RPE**. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
+- On bodybuilding or hypertrophy programs, put a **numeric target `rpe`** on **every working set** row in **buildProgram**. For warmup exercises and intentional easy work, use **~3-5 RPE**. Numeric RPE makes prescriptions auditable and powers program **stimulus** checks in the scorecard.
 - Do **not** imply that “more sets always equals more growth” without effort context. When it fits, tie weekly set choices in **`reason`** text to **hard-set quality** and to the user’s phase. Examples: primary compounds ~1-2 RIR / ~7-8.5 RPE. Isolations can be somewhat harder.
 - **Deload or easy weeks:** Reduce stimulus on the **Periodization wave** with **fewer working sets**, **lower target RPE**, or both. Name the block for what it is (for example "Deload", intent "reduce fatigue") so the lower stimulus reads as **intentional**. See `.agents/skills/build-program/resources/stimulus-and-volume.md` for the shared vocabulary.
 
 ## Periodization wave
 
-The wave on **planProgram** is how later weeks differ from week 1. Code applies it at **buildWeek**. See the **planProgram** schema for field details.
+The `periodizationWave` on **buildProgram** is how later weeks differ from week 1. It is required. Code applies it on that same call. See the **buildProgram** schema for field details.
 
 - One row per week, `1..durationWeeks`. Week 1 is the baseline: `main` deltas both `0`, no `accessory`, no `mainRepRange`.
 - `main`: `rpeDelta` and `setCountDelta` from week 1, applied to every `main` row. Every week after week 1 needs a non-zero main delta, or its mains are a copy of week 1 and the build Soft-fails.
@@ -217,13 +215,13 @@ If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasi
 
 ## Gotchas
 
-- **Program length on existing grid:** If the user already has routines and asks to change duration (for example, "make it 2 weeks", "8 weeks → 2 weeks"), load **mutate-program** and use **delete_week**. Never use **planProgram** or **buildWeek** for that. **planProgram.durationWeeks** and builder **programLength** describe the plan or template. They do not remove weeks from the live grid.
-- **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildWeek** to return an error.
+- **Program length on existing grid:** If the user already has routines and asks to change duration (for example, "make it 2 weeks", "8 weeks → 2 weeks"), load **mutate-program** and use **delete_week**. Never use **buildProgram** for that. **buildProgram** `durationWeeks` and builder **programLength** describe the plan or template. They do not remove weeks from the live grid.
+- **exercise_template_id**: Must be an exact ID from the getExerciseList result (must exist in `hevy_exercise_templates`). Invented or unknown IDs cause **buildProgram** to return an error.
 - **Exercise title (per exercise)**: Must be the **same title** as in getExerciseList for that ID. If you pass `exercise_template_id`, the server **auto-corrects** the title from the database. Mismatches do not break the build. Still copy **id** and **title** exactly from the list for clarity and to avoid invalid IDs.
-- **Tool input**: buildWeek expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
+- **Tool input**: buildProgram expects a JSON object, not a string. Pass the structured object to the tool, not a stringified JSON.
 - **routines.length**: Must exactly equal totalDays. Mismatches return a validation error from the tool.
-- **First week only**: Code copies week 1 across all weeks and applies the wave. Build only one week in a single buildWeek call. Do not emit multiple weeks in buildWeek.
-- **readProgram after buildWeek**: The **readProgram** snapshot is from request start, so it does not show a program built this turn. Target a same-turn **mutateProgram** from **buildWeek** output with **folderIds** (0-based week) and **dayOrder** (1-based day).
+- **First week only**: Code copies week 1 across all weeks and applies the wave. Build only one week in a single buildProgram call. Do not emit multiple weeks in buildProgram.
+- **readProgram after buildProgram**: The **readProgram** snapshot is from request start, so it does not show a program built this turn. Target a same-turn **mutateProgram** from **buildProgram** output with **folderIds** (0-based week) and **dayOrder** (1-based day).
 
 ## Rep ranges
 
@@ -234,7 +232,7 @@ If they also want **bodybuilding**, **powerlifting**, or **weight-loss** emphasi
 - **Fixed-rep rule:** When the prescription is a single fixed rep count (for example, 5x5, triples, doubles, singles, AMRAP-style sets), set `rep_range` to **null** and only use `reps`. **NEVER** emit a degenerate `rep_range` where `start === end` (for example, `{start: 5, end: 5}`). That displays as "5-5" in the UI, which is incorrect. Use `rep_range: null, reps: 5` instead.
 - When editing rep ranges via **mutateProgram**, use **update_set** with the full `{start, end}` **rep_range** object. Do not send only `start` or only `end`. To change from a range to fixed reps, set **rep_range** to **null** and **reps** to the fixed value in the same or follow-up **update_set** op.
 
-## buildWeek shape
+## buildProgram shape
 
 Use this structure.
 Set type must be one of "normal", "warmup", "dropset", "failure".
@@ -250,10 +248,25 @@ Name real facts (stated limitation, equipment, sessions per week, goal, experien
 No bullet labels are required.
 
 This is example JSON.
-Do not use the example values to influence the real **buildWeek** tool response.
+Do not use the example values to influence the real **buildProgram** tool response.
 
 ```json
 {
+  "durationWeeks": 4,
+  "daysPerWeek": 3,
+  "goal": "<primary goal in plain language>",
+  "blocks": [
+    { "name": "Accumulation", "weeks": [1, 2, 3], "intent": "Build volume" },
+    { "name": "Deload", "weeks": [4], "intent": "Reduce fatigue" }
+  ],
+  "periodizationWave": {
+    "weeks": [
+      { "week": 1, "main": { "rpeDelta": 0, "setCountDelta": 0 } },
+      { "week": 2, "main": { "rpeDelta": 1, "setCountDelta": 0 } },
+      { "week": 3, "main": { "rpeDelta": 1, "setCountDelta": 1 } },
+      { "week": 4, "main": { "rpeDelta": -2, "setCountDelta": -1 }, "accessory": { "rpeDelta": -2, "setCountDelta": -1 } }
+    ]
+  },
   "totalDays": 3,
   "routines": [
     {

@@ -46,7 +46,7 @@ describe("buildDeveloperToolErrorFeedback", () => {
     });
 
     it("uses unknown when chatId is empty", () => {
-        const feedback = buildDeveloperToolErrorFeedback("buildWeek", { errorText: "timeout" }, "  ");
+        const feedback = buildDeveloperToolErrorFeedback("buildProgram", { errorText: "timeout" }, "  ");
 
         expect(feedback).toContain("Chat ID: unknown");
     });
@@ -96,8 +96,8 @@ describe("getMutateProgramFailureSeverity", () => {
 });
 
 describe("summarizeToolError", () => {
-    it("prefers output.message for buildWeek-style errors", () => {
-        const summary = summarizeToolError("buildWeek", {
+    it("prefers output.message for buildProgram-style errors", () => {
+        const summary = summarizeToolError("buildProgram", {
             output: {
                 error: "Invalid exercise_template_id",
                 message: 'exercise_template_id "bad-id" (day 1) is not in hevy_exercise_templates.',
@@ -119,8 +119,8 @@ describe("summarizeToolError", () => {
     });
 
     it("maps known output.error codes to friendly copy", () => {
-        const summary = summarizeToolError("buildWeek", {
-            output: { error: "Failed to build week" },
+        const summary = summarizeToolError("buildProgram", {
+            output: { error: "Failed to build program" },
         });
 
         expect(summary).toBe("Something went wrong while building your program.");
@@ -200,7 +200,7 @@ describe("summarizeToolError", () => {
 
     it("falls back to tool-specific default", () => {
         expect(summarizeToolError("rateProgram", {})).toBe("Could not rate this program.");
-        expect(summarizeToolError("buildWeek", {})).toBe("Something went wrong while building your program.");
+        expect(summarizeToolError("buildProgram", {})).toBe("Something went wrong while building your program.");
         expect(summarizeToolError("unknownTool", {})).toBe("Something went wrong. Try again or rephrase your request.");
     });
 });

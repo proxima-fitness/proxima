@@ -13,7 +13,7 @@
  *    (TScheduleWorkouts) and the Hevy routine format (THevyRoutine), including
  *    set generation with support for reps, ranges, time, RPE, and AMRAP.
  * 4. **Program mutation helpers** - Human-readable operation summaries, **Mutation proposal**
- *    collect / Accept / lock / stale expire, and atomic buildWeek apply of agent mutateProgram tool results.
+ *    collect / Accept / lock / stale expire, and atomic buildProgram apply of agent mutateProgram tool results.
  * 5. **Hevy share import hydrate** - client-side apply of a confirmed importHevyShareFolder
  *    tool result onto an empty grid (week 0 seed).
  *
@@ -60,7 +60,7 @@ export const getMaxFolderId = (routines: THevyRoutine[]): number => {
 };
 
 /**
- * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildWeek fills it.
+ * Builds empty THevyRoutine[] with one routine per week/day; folder_id = week index, order = day. Used to initialize program before buildProgram fills it.
  */
 export const generateEmptyHevyProgram = (weeksValue: string, daysValue: string): THevyRoutine[] => {
     const weeks = weeksValue ? Number(weeksValue) : 0;
@@ -685,13 +685,13 @@ export function getMutateProgramObjectives(
     ];
 }
 
-function getLastSuccessfulBuildWeekFlatIndex(messages: UIMessage[]): number {
+function getLastSuccessfulBuildProgramFlatIndex(messages: UIMessage[]): number {
     const segment = getAssistantMessagesSinceLastUser(messages);
     const flat = flattenAssistantParts(segment);
     let lastBwIdx = -1;
     for (let i = 0; i < flat.length; i++) {
         const { part } = flat[i];
-        if (part.type !== "tool-buildWeek") continue;
+        if (part.type !== "tool-buildProgram") continue;
         const out = (part as { output?: { routines?: THevyRoutine[]; error?: string } }).output;
         if (out?.routines && !out?.error) lastBwIdx = i;
     }
@@ -836,47 +836,34 @@ const flattenAssistantParts = (segment: UIMessage[]): TFlatPart[] => {
     return out;
 };
 
-/** Snapshot of the last successful buildWeek in the current turn plus merged mutateProgram ops after it. */
+/** Snapshot of the last successful buildProgram in the current turn plus merged mutateProgram ops after it. */
 export interface IMergedBuildMutateSnapshot {
     baseWeekRoutines: THevyRoutine[];
     totalDays: number;
     mergedOperations: TAgentProgramOperation[];
     mutateKeys: string[];
-    /** From the newest successful `tool-planProgram` before the last `tool-buildWeek`, when present. */
+    /** `plan.durationWeeks` echoed on the last successful `tool-buildProgram`, when present. */
     durationWeeksFromPlan?: number;
     periodizationWave?: TPeriodizationWave;
     exerciseRoles?: TExerciseRoleAssignment[];
 }
 
 /**
- * Reads `planProgram.durationWeeks` and the Periodization wave from the latest
- * successful plan tool call strictly before the flattened buildWeek index.
+ * Reads `durationWeeks` and the Periodization wave from the plan a successful
+ * `buildProgram` echoes on its output (ADR 0030 / 01: plan rides on the land call).
+ *
+ * @param plan - `output.plan` from the last successful `tool-buildProgram`
  */
-function getPlanBeforeBuildWeek(
-    flat: TFlatPart[],
-    lastBuildWeekFlatIndex: number,
+function readBuildProgramPlan(
+    plan: { durationWeeks?: number; periodizationWave?: TPeriodizationWave } | undefined,
 ): { durationWeeks?: number; periodizationWave?: TPeriodizationWave } {
-    for (let i = lastBuildWeekFlatIndex - 1; i >= 0; i--) {
-        const { part } = flat[i];
-        if (part.type !== "tool-planProgram") continue;
-        const out = (
-            part as {
-                output?: {
-                    plan?: { durationWeeks?: number; periodizationWave?: TPeriodizationWave };
-                    error?: string;
-                };
-            }
-        ).output;
-        if (!out || out.error) continue;
-        const w = out.plan?.durationWeeks;
-        const durationWeeks =
-            typeof w === "number" && Number.isFinite(w) && w >= 1 ? Math.floor(w) : undefined;
-        return {
-            durationWeeks,
-            periodizationWave: out.plan?.periodizationWave,
-        };
-    }
-    return {};
+    const w = plan?.durationWeeks;
+    const durationWeeks =
+        typeof w === "number" && Number.isFinite(w) && w >= 1 ? Math.floor(w) : undefined;
+    return {
+        durationWeeks,
+        periodizationWave: plan?.periodizationWave,
+    };
 }
 
 /** Weeks to duplicate for atomic build: prefer plan so mutate ops stay valid; else UI; else 1. */
@@ -886,7 +873,7 @@ export const resolveEffectiveWeeksForAtomicCommit = (
 ): number => Math.max(1, snap.durationWeeksFromPlan ?? programLengthFromUi ?? 1);
 
 /**
- * Finds the last successful buildWeek in the current assistant turn and concatenates
+ * Finds the last successful buildProgram in the current assistant turn and concatenates
  * all mutateProgram operations that appear after it (one batch for periodization).
  * Ops apply in message order; client does not reorder.
  */
@@ -897,16 +884,18 @@ export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedB
     let routines: THevyRoutine[] | null = null;
     let totalDays = 0;
     let exerciseRoles: TExerciseRoleAssignment[] | undefined;
+    let landedPlan: { durationWeeks?: number; periodizationWave?: TPeriodizationWave } | undefined;
 
     for (let i = 0; i < flat.length; i++) {
         const { part } = flat[i];
-        if (part.type !== "tool-buildWeek") continue;
+        if (part.type !== "tool-buildProgram") continue;
         const out = (
             part as {
                 output?: {
                     routines?: THevyRoutine[];
                     totalDays?: number;
                     exerciseRoles?: TExerciseRoleAssignment[];
+                    plan?: { durationWeeks?: number; periodizationWave?: TPeriodizationWave };
                     error?: string;
                 };
             }
@@ -916,12 +905,13 @@ export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedB
             routines = out.routines;
             totalDays = out.totalDays ?? out.routines.length;
             exerciseRoles = out.exerciseRoles;
+            landedPlan = out.plan;
         }
     }
 
     if (lastBwIdx < 0 || !routines?.length) return null;
 
-    const plan = getPlanBeforeBuildWeek(flat, lastBwIdx);
+    const plan = readBuildProgramPlan(landedPlan);
 
     const mergedOperations: TAgentProgramOperation[] = [];
     const mutateKeys: string[] = [];
@@ -948,7 +938,7 @@ export const getMergedBuildAndMutateSnapshot = (messages: UIMessage[]): IMergedB
 };
 
 /**
- * Duplicates the first week across programLength weeks (same rules as MessageBubbles buildWeek effect).
+ * Duplicates the first week across programLength weeks (same rules as MessageBubbles buildProgram effect).
  */
 export const buildFullProgramFromFirstWeek = (
     weekRoutines: THevyRoutine[],
@@ -1010,14 +1000,14 @@ export const getAtomicBuildCommitKey = (
 export type TChatStatusForAtomic = "streaming" | "ready" | (string & {});
 
 /**
- * When the assistant turn includes a successful buildWeek, duplicates week 1 across all weeks,
- * applies all mutateProgram operations after that buildWeek in one shot, and commits.
+ * When the assistant turn includes a successful buildProgram, duplicates week 1 across all weeks,
+ * applies all mutateProgram operations after that buildProgram in one shot, and commits.
  * Only runs when status is ready (stream finished).
  * When the program was empty, commits with `recordUndo: false` so the user cannot undo back to an empty grid.
  *
- * Duplication week count prefers **planProgram.durationWeeks** from the same turn, then **programLengthFromUi**.
+ * Duplication week count prefers the landed `buildProgram` plan's **durationWeeks**, then **programLengthFromUi**.
  */
-export const tryCommitAtomicBuildWeekAndMutations = (
+export const tryCommitAtomicBuildProgramAndMutations = (
     messages: UIMessage[],
     status: TChatStatusForAtomic | undefined,
     programLengthFromUi: number | undefined,
@@ -1037,7 +1027,7 @@ export const tryCommitAtomicBuildWeekAndMutations = (
         programLengthFromUi != null &&
         snap.durationWeeksFromPlan !== programLengthFromUi
     ) {
-        console.warn("[tryCommitAtomicBuildWeekAndMutations] planProgram.durationWeeks differs from UI programLength", {
+        console.warn("[tryCommitAtomicBuildProgramAndMutations] buildProgram plan.durationWeeks differs from UI programLength", {
             durationWeeksFromPlan: snap.durationWeeksFromPlan,
             programLengthFromUi,
             effectiveWeeks,
@@ -1084,7 +1074,7 @@ export const tryCommitAtomicBuildWeekAndMutations = (
 /** Persisted **Mutation proposal** decision on chat message metadata (ADR 0024). */
 export type TMutationProposalDecision = "accepted" | "pending" | "rejected";
 
-/** Standalone mutateProgram batch waiting on Accept (skips same-turn post-buildWeek ops). */
+/** Standalone mutateProgram batch waiting on Accept (skips same-turn post-buildProgram ops). */
 export interface IMutationProposal {
     keys: string[];
     messageIds: string[];
@@ -1174,7 +1164,7 @@ export function withMutationProposalDecision(
 
 /**
  * Collects a standalone **Mutation proposal** from mutateProgram tool parts.
- * Does not commit. Skips parts after buildWeek in the same turn, decided cards,
+ * Does not commit. Skips parts after buildProgram in the same turn, decided cards,
  * and implicit Reject (a later user message).
  *
  * @param messages - Chat thread
@@ -1191,7 +1181,7 @@ export const collectMutationProposal = (
     if (status === "streaming") return null;
     if (!hevyProgram?.length) return null;
 
-    const lastBuildWeekIdx = getLastSuccessfulBuildWeekFlatIndex(messages);
+    const lastBuildProgramIdx = getLastSuccessfulBuildProgramFlatIndex(messages);
     const flatIndexByKey = buildFlatPartIndexByKey(messages);
     const appliedKeys = appliedKeysRef.current;
 
@@ -1214,7 +1204,7 @@ export const collectMutationProposal = (
             if (appliedKeys?.has(key)) continue;
 
             const flatIdx = flatIndexByKey.get(key);
-            if (flatIdx != null && lastBuildWeekIdx >= 0 && flatIdx > lastBuildWeekIdx) {
+            if (flatIdx != null && lastBuildProgramIdx >= 0 && flatIdx > lastBuildProgramIdx) {
                 continue;
             }
 
@@ -1276,22 +1266,22 @@ export function isAgentMutationLockActive(
 }
 
 /**
- * True when this mutateProgram part sits after a successful buildWeek in the
+ * True when this mutateProgram part sits after a successful buildProgram in the
  * current turn (atomic commit owns it; not a **Mutation proposal**).
  *
  * @param messages - Chat thread
  * @param messageId - Assistant message id
  * @param partIndex - Index of the tool part on that message
  */
-export function isMutateProgramPartAfterBuildWeek(
+export function isMutateProgramPartAfterBuildProgram(
     messages: UIMessage[],
     messageId: string,
     partIndex: number,
 ): boolean {
-    const lastBuildWeekIdx = getLastSuccessfulBuildWeekFlatIndex(messages);
-    if (lastBuildWeekIdx < 0) return false;
+    const lastBuildProgramIdx = getLastSuccessfulBuildProgramFlatIndex(messages);
+    if (lastBuildProgramIdx < 0) return false;
     const flatIdx = buildFlatPartIndexByKey(messages).get(`${messageId}-${partIndex}`);
-    return flatIdx != null && flatIdx > lastBuildWeekIdx;
+    return flatIdx != null && flatIdx > lastBuildProgramIdx;
 }
 
 /**

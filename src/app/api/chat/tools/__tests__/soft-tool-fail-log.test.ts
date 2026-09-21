@@ -56,7 +56,7 @@ describe("soft-tool-fail-log", () => {
             message: "bad id",
         };
 
-        expect(softToolErrorResult("buildWeek", payload)).toBe(payload);
+        expect(softToolErrorResult("buildProgram", payload)).toBe(payload);
         expect(startObservation).toHaveBeenCalled();
     });
 });

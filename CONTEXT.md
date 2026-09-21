@@ -469,7 +469,7 @@ _Avoid_: Using it as this-week SoT after Export, treating last week's Hevy diver
 Creating a multi-week **Program prescription** on the **New path** (empty grid or a one-week seed such as **Hevy share import** expand). Week 1 is authored, copied across program length, then the **Periodization wave** is applied. The result lands immediately. Distinct from a **Mutation proposal** on an existing program.
 
 
-_Avoid_: First chat turn, first `buildWeek` payload alone (week 1 without the wave), treating plated clones as a finished **Proxima program**
+_Avoid_: First chat turn, week-1-only land without the **Periodization wave**, treating plated clones as a finished **Proxima program**, separate `planProgram` before land
 
 
 
@@ -499,10 +499,10 @@ _Avoid_: Periodization, applying the questionnaire progression system at **First
 ### Periodization wave
 
 
-Andy-authored week-by-week **Periodization** targets on the **First build** plan. Deltas from week 1 on **Exercise role** mains (RPE and set count). Absolute rep range only at a **Block boundary**. Accessory RPE/set line only on claimed deload or peak weeks. Code applies it before the grid may land. Distinct from **Progression**.
+Andy-authored week-by-week **Periodization** targets on the **First build** land call (`buildProgram`). Required with week 1 (or share-expand roles). Deltas from week 1 on **Exercise role** mains (RPE and set count). Absolute rep range only at a **Block boundary**. Accessory RPE/set line only on claimed deload or peak weeks. Code applies it before the grid may land. Distinct from **Progression**.
 
 
-_Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays, Andy emitting per-week `mutateProgram` `update_set` as the apply path
+_Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays, Andy emitting per-week `mutateProgram` `update_set` as the apply path, code-invented default wave, a separate plan tool that only stores the wave
 
 
 
@@ -1050,7 +1050,7 @@ _Avoid_: Jump after Save/Sync, jump on historical cards, jump with no row, jump 
 ### Soft tool failure
 
 
-A coach tool (`buildWeek`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue. The model gets fix text and may retry in-turn. The first miss of an honor id this turn is calm in-progress copy for ordinary users. The second of the same id is a **Program stalemate**, not a third hidden retry. Full raw tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn and from **Hard agent failure**.
+A coach tool (`buildProgram`, `mutateProgram`, etc.) returns a structured error while the chat stream can continue. The model gets fix text and may retry in-turn. The first miss of an honor id this turn is calm in-progress copy for ordinary users. The second of the same id is a **Program stalemate**, not a third hidden retry. Full raw tool error UI is **Agent debug mode** only. Client always emits PostHog `ai_tool_error` (even when UI is calm). Distinct from a dead turn and from **Hard agent failure**.
 
 
 _Avoid_: Tool crash (implies hard fail), validation error shown to user, treating soft reject as generation failure, Workout generation failed on a Soft tool failure
@@ -1237,10 +1237,10 @@ _Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-
 ### Program sanity check
 
 
-Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build** unless a **Program stalemate** same-week skip this build). Semantic Constraint profile, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry until a **Program stalemate**. Does not run on manual grid edits or Sync.
+Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build** unless a **Program stalemate** same-week skip this build). Injury and excluded-equipment semantic checks are per unique exercise title × each saved string on that snapshot. Other Constraint profile preferences, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry until a **Program stalemate**. Does not run on manual grid edits or Sync.
 
 
-_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only `buildWeek` payload, `constraint.progressionHonor` as a **First build** question
+_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only land without the wave, one blob injury/equipment question for the whole grid, `constraint.progressionHonor` as a **First build** question
 
 
 
@@ -1248,10 +1248,10 @@ _Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation con
 ### Program stalemate
 
 
-Andy and a **Program sanity check**, **Mutation constraint gate**, or week-coverage miss disagreed twice on the same honor id or error code this turn. Nothing lands. The user chooses (exact Constraint profile chip, same-week skip this **First build**, or a different program). Distinct from a hidden Soft tool failure retry and from **Hard agent failure**.
+Andy and a **Program sanity check**, **Mutation constraint gate**, or week-coverage miss disagreed twice on the same honor id or error code this turn. Nothing lands. Injury and equipment pair misses name the lift and the saved limit; the user may remove that Constraint profile string (**User-stated change**) or ask Andy to replace the lift. Preference honors offer clear-preference actions. Week-coverage and Training/skill misses keep their existing choices (same-week skip this **First build**, **User-stated exception**, or a different ask). Distinct from a hidden Soft tool failure retry and from **Hard agent failure**.
 
 
-_Avoid_: Workout generation failed, Jev popup, retry dialog, Soft-fail escalation, honor check (the question ids), landing a rejected week to dodge a timer
+_Avoid_: Workout generation failed, Jev popup, retry dialog, Soft-fail escalation, honor check (the question ids), landing a rejected week to dodge a timer, asking the user to drop body limits without naming the conflicting lift
 
 
 
@@ -1270,10 +1270,10 @@ _Avoid_: User-stated change (that term is for removing a saved constraint), tast
 ### Injuries & health issues
 
 
-Constraint profile list for injuries, pain, and how or where the user can train (can't kneel, no overhead, no floor). **Questionnaire core** health issues and mid-chat health limits write here. Edit profile caption.
+Constraint profile list for injuries, pain, and how or where the user can train (can't kneel, no overhead, no floor). **Questionnaire core** health issues and mid-chat health limits write here. Edit profile caption. New chat writes must not add an entry that merely restates an existing one in different words.
 
 
-_Avoid_: Chat refinements, Restriction tag, a second movement-restriction list, Injuries (label without health)
+_Avoid_: Chat refinements, Restriction tag, a second movement-restriction list, Injuries (label without health), stacking near-duplicate strings for the same limit
 
 
 
@@ -1391,10 +1391,10 @@ _Avoid_: Always-visible (first-time only), primary questions, required questions
 ### Questionnaire advanced
 
 
-Collapsed-by-default on the first-time **Questionnaire gate**. Programming style prefs (excluded areas, preferred split, exercise variability, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). Progression system is stored with those style prefs but is **Progression**, not **First build** **Periodization**. Empty advanced is still a **First build** with a default wave, not a same-week program. First-time users can ignore and still build. Prefill person facts from an existing Training profile when present. A Training-profile ask opens the person-fact subset alone, not style prefs and not **Questionnaire core**.
+Collapsed-by-default on the first-time **Questionnaire gate**. Programming style prefs (excluded areas, preferred split, exercise variability, deload week, peak week, warmup exercises → **Constraint profile**) plus person facts (age, sex, height, experience, physique phase, training focus, activity level, session duration → **Training profile**). Progression system is stored with those style prefs but is **Progression**, not **First build** **Periodization**. Empty advanced is still a **First build**: Andy still authors a **Periodization wave** on `buildProgram` (required), not a same-week program and not a code-invented wave. First-time users can ignore and still build. Prefill person facts from an existing Training profile when present. A Training-profile ask opens the person-fact subset alone, not style prefs and not **Questionnaire core**.
 
 
-_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile, opening advanced because the agent wants person facts, treating skipped advanced as no **Periodization**, treating progression system as the **Periodization wave**
+_Avoid_: Extra questions, optional questionnaire (implies skip-all), advanced settings (app-settings shaped), stuffing Training profile answers into Constraint profile, opening advanced because the agent wants person facts, treating skipped advanced as no **Periodization**, treating progression system as the **Periodization wave**, server default wave when advanced is empty
 
 
 

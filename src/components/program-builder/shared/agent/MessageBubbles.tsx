@@ -1,6 +1,6 @@
 /**
  * @module MessageBubbles
- * Renders chat messages (user + assistant), tool outputs (buildWeek, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildWeek mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. A **Program stalemate** card replaces the empty-grid timeout banner.
+ * Renders chat messages (user + assistant), tool outputs (buildProgram, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildProgram mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. A **Program stalemate** card replaces the empty-grid timeout banner.
  * Depends on: message, tool, reasoning, attachments, ModifyProgramProgress, MutationProposalCard, ProgramStalemateCard, helpers. Used by: Agent.
  */
 /* eslint-disable @next/next/no-img-element */
@@ -25,12 +25,12 @@ import {
     acceptMutationProposal,
     collectMutationProposal,
     getMutateProgramObjectives,
-    isMutateProgramPartAfterBuildWeek,
+    isMutateProgramPartAfterBuildProgram,
     mutationProposalApplies,
     readStoredMutationProposalRecipe,
     resolveMutationProposalDecision,
     tryApplyHevyShareImport,
-    tryCommitAtomicBuildWeekAndMutations,
+    tryCommitAtomicBuildProgramAndMutations,
     withMutationProposalDecision,
     type IMutationProposal,
 } from "@/components/program-builder/utils/helpers";
@@ -169,7 +169,7 @@ function resolveStandaloneProposalCard(input: {
         if (candidate.type !== "tool-mutateProgram") {
             return;
         }
-        if (isMutateProgramPartAfterBuildWeek(
+        if (isMutateProgramPartAfterBuildProgram(
             input.messages,
             input.message.id ?? "",
             candidateIndex,
@@ -271,15 +271,15 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState("");
 
-    // Collect buildWeek output from messages (single call expected)
+    // Collect buildProgram output from messages (single call expected)
     const { totalDays, allRoutines } = useMemo(() => {
         let routines: THevyRoutine[] = [];
         let maxTotalDays = 0;
 
         for (const message of messages) {
             for (const part of message.parts) {
-                if (part.type === "tool-buildWeek") {
-                    const toolOutput = (part as { output?: IBuildWeekOutput }).output;
+                if (part.type === "tool-buildProgram") {
+                    const toolOutput = (part as { output?: IBuildProgramOutput }).output;
 
                     if (toolOutput?.routines && !toolOutput?.error) {
                         routines = toolOutput.routines;
@@ -304,10 +304,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
     }, [messages, daysPerWeek]);
 
     useEffect(() => {
-        // After stream finishes: duplicate week 1, merge post-buildWeek mutateProgram ops, one commit
+        // After stream finishes: duplicate week 1, merge post-buildProgram mutateProgram ops, one commit
         const programLengthFromUi = programLength ? Number(programLength) : undefined;
         const weeksFallback = programLengthFromUi ?? 1;
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             messages,
             status,
             programLengthFromUi,
@@ -819,10 +819,10 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 </Tool>
                                             );
                                         }
-                                        case "tool-buildWeek": {
+                                        case "tool-buildProgram": {
                                             const buildPart = part as {
                                                 input?: { totalDays?: number; routines?: Array<{ title?: string; exercises?: Array<{ title?: string }> }> };
-                                                output?: IBuildWeekOutput;
+                                                output?: IBuildProgramOutput;
                                                 state?: TToolPart["state"];
                                                 errorText?: string;
                                             };
@@ -843,7 +843,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <div key={`${message.id}-${index}-build-stalemate`}>
                                                             {showStalemateDebug ? (
                                                                 <SoftToolFailure
-                                                                    tool="buildWeek"
+                                                                    tool="buildProgram"
                                                                     debugMode={debugMode}
                                                                     errorCtx={{
                                                                         errorText: buildPart.errorText,
@@ -862,7 +862,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                                 handleExcludeEquipment={handleExcludeEquipment}
                                                                 onPreferenceChange={onPreferenceChange}
                                                                 getChatId={resolvePersistChatId}
-                                                                tool="buildWeek"
+                                                                tool="buildProgram"
                                                                 toolCallId={toolCallId}
                                                                 toolOutput={toolOutput}
                                                             />
@@ -872,7 +872,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                 return (
                                                     <SoftToolFailure
                                                         key={`${message.id}-${index}-build-error`}
-                                                        tool="buildWeek"
+                                                        tool="buildProgram"
                                                         debugMode={debugMode}
                                                         errorCtx={{
                                                             errorText: buildPart.errorText,
@@ -889,7 +889,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
 
                                             return (
                                                 <Tool key={`${message.id}-${index}-build`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
-                                                    <ToolHeader type="tool-buildWeek" state={toolState} title="Build week" />
+                                                    <ToolHeader type="tool-buildProgram" state={toolState} title="Build program" />
                                                     <ToolContent>
                                                         {isInFlight && buildInput?.routines?.length ? (
                                                             <div className="space-y-1.5 px-3 pb-3">
@@ -1001,7 +1001,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             }
 
                                             const mutateInFlight = !isComplete;
-                                            const afterBuildWeek = isMutateProgramPartAfterBuildWeek(
+                                            const afterBuildProgram = isMutateProgramPartAfterBuildProgram(
                                                 messages,
                                                 message.id ?? "",
                                                 index,
@@ -1009,8 +1009,8 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                             const thisTurnStreaming = isLastMessage && status === "streaming";
                                             const showStreamProgress = mutateInFlight || thisTurnStreaming;
 
-                                            if (showStreamProgress || afterBuildWeek) {
-                                                const progressMode = afterBuildWeek ? "apply" : "proposal";
+                                            if (showStreamProgress || afterBuildProgram) {
+                                                const progressMode = afterBuildProgram ? "apply" : "proposal";
                                                 const operationCount = operations?.length ?? 0;
                                                 return (
                                                     <Tool key={`${message.id}-${index}-mutate`} defaultOpen className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-2">
@@ -1018,7 +1018,7 @@ export const MessageBubbles: React.FC<IProps> = (props) => {
                                                         <ToolContent>
                                                             { mutateInFlight && operationCount > 0 ? (
                                                                 <p className="text-sm text-muted-foreground px-3 pb-1">
-                                                                    { afterBuildWeek
+                                                                    { afterBuildProgram
                                                                         ? `Applying ${operationCount} operation${operationCount === 1 ? "" : "s"}…`
                                                                         : `Preparing ${operationCount} operation${operationCount === 1 ? "" : "s"}…` }
                                                                 </p>

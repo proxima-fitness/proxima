@@ -336,7 +336,7 @@ export function formatHevyShareImportForModel(output: TImportHevyShareFolderTool
         'The builder grid now holds these days as its first week, exactly as the share had them - call it week 1 when you talk to the user. ' +
         workoutNote +
         'Nothing was pushed or synced to Hevy, the shared folder was not touched, and no Hevy account was connected. ' +
-        'Do not call buildWeek to recreate this week - it is already on the grid; use mutateProgram for any edits. ' +
+        'Do not call buildProgram to recreate this week - it is already on the grid; use mutateProgram for any edits. ' +
         'Confirm what landed in one or two lines, then offer expanding it to more weeks or periodizing it as a separate step - ask first, do not start.\n\n' +
         JSON.stringify(routinesForModel(output.routines))
     );

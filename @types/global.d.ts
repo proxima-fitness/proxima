@@ -88,9 +88,9 @@ type TTextToJsonRequest = {
     search: string; // goes into AI Prompt
     sex: string; // goes into AI Prompt
     age: string; // goes into AI Prompt
-    daysPerWeek: string; // used in the buildWeek function
+    daysPerWeek: string; // builder days per week
     specificDays: string; // Ignore for now
-    programLength: string; // used in the buildWeek function
+    programLength: string; // builder program length
     workoutDuration: string; // Ignore for now
     activityLevel: string;  // goes into AI Prompt
     goals: string; // goes into AI Prompt
@@ -843,9 +843,11 @@ type TCard = {
     weekOrder: string,
 }
 
-/** buildWeek tool result shape: full week of routines plus aggregate counts, optional error. */
-interface IBuildWeekOutput {
+/** buildProgram tool result shape: week-1 routines, the plan it landed with, aggregate counts, optional error. */
+interface IBuildProgramOutput {
     routines?: THevyRoutine[];
+    /** Plan fields + Periodization wave from the same call (ADR 0030 / 01). */
+    plan?: { durationWeeks?: number; periodizationWave?: unknown };
     totalDays?: number;
     routineCount?: number;
     exerciseCount?: number;

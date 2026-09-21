@@ -41,12 +41,13 @@ describe("chat instructions.ts", () => {
 
             expect(prompt).toContain("4");
             expect(prompt).toContain("8");
-            expect(prompt).toContain("planProgram");
+            // ADR 0030 / 01: no separate plan tool and no week-named land tool.
+            expect(prompt).not.toMatch(/\bplan[A-Z]\w*|\bbuild[A-Z]*Week\b/);
             expect(prompt).toContain("readProgram");
             expect(prompt).not.toContain('purpose "edit"');
             expect(prompt).not.toContain('purpose "analyze"');
             expect(prompt).not.toContain("getCurrentProgram");
-            expect(prompt).toContain("buildWeek");
+            expect(prompt).toContain("buildProgram");
             expect(prompt).toContain("mutateProgram");
             expect(prompt).not.toContain("modifyProgram");
             expect(prompt).toContain("getMoreInfoQuestions");
@@ -57,7 +58,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("mutate-program");
             expect(prompt).toContain("first message");
             expect(prompt).not.toContain("two flows");
-            expect(prompt).not.toContain("Periodization after buildWeek");
+            expect(prompt).not.toContain("Periodization after buildProgram");
             expect(prompt).not.toContain("mutateProgram payloads");
             expect(prompt).not.toContain("list every active constraint");
             expect(prompt).toContain("Before mutateProgram (mandatory)");
@@ -78,7 +79,7 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("nothing to persist");
         });
 
-        it("teaches Periodization as the wave: planProgram retry after Soft-fail, summary after First build", () => {
+        it("teaches Periodization as the wave on buildProgram: full retry after Soft-fail, summary after First build", () => {
             const prompt = instructions({
                 hevyProgram: [],
                 daysPerWeek: 4,
@@ -86,22 +87,23 @@ describe("chat instructions.ts", () => {
             });
 
             expect(prompt).toContain("**Periodization wave**");
-            expect(prompt).toContain("after a **buildWeek** Soft-fail, you may call it again this turn to change the wave");
+            expect(prompt).toContain("required **Periodization wave**");
+            expect(prompt).toContain("call **buildProgram** again with the full input (a corrected wave goes on that same call)");
             expect(prompt).toContain("not a **mutateProgram** batch");
             expect(prompt).toContain("short summary of what landed, not an Accept ask");
-            expect(prompt).not.toContain("periodize after buildWeek");
+            expect(prompt).not.toContain("periodize after buildProgram");
             expect(prompt).not.toContain("post-build periodization");
             expect(prompt).not.toContain("optional week-by-week progression");
         });
 
-        it("planProgram / buildWeek / readProgram descriptions teach the wave, not post-buildWeek mutate", () => {
+        it("buildProgram / readProgram descriptions teach the wave on the land call, not post-buildProgram mutate", () => {
             const tools = getTools({});
             const describe = (name: keyof typeof tools) =>
                 (tools[name] as { description?: string }).description ?? "";
 
-            expect(describe("planProgram")).toContain("call it again only after a buildWeek Soft-fail");
-            expect(describe("buildWeek")).toContain("applies the **Periodization wave**");
-            expect(describe("buildWeek")).toContain("call planProgram again to change the wave");
+            expect(describe("buildProgram")).toContain("required **Periodization wave**");
+            expect(describe("buildProgram")).toContain("applies the wave from this same call");
+            expect(describe("buildProgram")).toContain("call buildProgram again with the full input");
             expect(describe("readProgram")).not.toMatch(/periodiz/i);
             expect(describe("readProgram")).toContain("live-grid **mutateProgram**");
         });
@@ -171,12 +173,13 @@ describe("chat instructions.ts", () => {
                 programLength: 4,
             });
 
-            expect(prompt).toContain("planProgram");
+            // ADR 0030 / 01: no separate plan tool and no week-named land tool.
+            expect(prompt).not.toMatch(/\bplan[A-Z]\w*|\bbuild[A-Z]*Week\b/);
             expect(prompt).toContain("readProgram");
             expect(prompt).not.toContain('purpose "edit"');
             expect(prompt).not.toContain('purpose "analyze"');
             expect(prompt).not.toContain("getCurrentProgram");
-            expect(prompt).toContain("buildWeek");
+            expect(prompt).toContain("buildProgram");
             expect(prompt).toContain("3");
             expect(prompt).toContain("4");
         });
@@ -546,9 +549,9 @@ describe("chat instructions.ts", () => {
             expect(prompt).toContain("questionnaire is not required");
             expect(prompt).toContain("never gated behind the questionnaire");
             // Loaded week is already on the grid - no rebuild, and expand is a separate ask.
-            expect(prompt).toContain("do **not** call **buildWeek** to recreate that week");
+            expect(prompt).toContain("do **not** call **buildProgram** to recreate that week");
             expect(prompt).toContain("separate ask");
-            // Expand is First build: wave on planProgram, roles-only buildWeek, not mutateProgram.
+            // Expand is First build: plan + wave + roles-only on one buildProgram, not mutateProgram.
             expect(prompt).toContain("expanding is **First build**");
             expect(prompt).toContain("**expandHevyShareSeed** only");
             expect(prompt).toContain("Do not periodize the seed with **mutateProgram**");

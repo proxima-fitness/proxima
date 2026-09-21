@@ -10,7 +10,7 @@ import {
     formatWeekCoverageMessage,
     planWeekIntents,
 } from "../week-coverage";
-import type { TExerciseRoleAssignment, TPlanProgram, TProgramSanitySnapshot } from "../types";
+import type { TExerciseRoleAssignment, TProgramPlan, TProgramSanitySnapshot } from "../types";
 
 function makeSet(rpe: number | null = 8): THevySets {
     return {
@@ -47,7 +47,7 @@ function makeDay(folderId: number, order: string, rpe: number | null = 8): THevy
     };
 }
 
-const deloadPlan: TPlanProgram = {
+const deloadPlan: TProgramPlan = {
     durationWeeks: 4,
     blocks: [
         { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
@@ -55,7 +55,7 @@ const deloadPlan: TPlanProgram = {
     ],
 };
 
-function snapshotFrom(program: THevyRoutine[], plan: TPlanProgram | null = deloadPlan): TProgramSanitySnapshot {
+function snapshotFrom(program: THevyRoutine[], plan: TProgramPlan | null = deloadPlan): TProgramSanitySnapshot {
     return buildSanitySnapshot({
         userMessage: "periodize",
         plan,

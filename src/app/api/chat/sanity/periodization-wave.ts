@@ -1,17 +1,17 @@
 /**
  * @module chat/sanity/periodization-wave
  *
- * Zod for the **Periodization wave** Andy submits on `planProgram` (ADR 0027 / 02).
+ * Zod for the **Periodization wave** Andy submits on `buildProgram` (ADR 0027 / 02, ADR 0030 / 01).
  * Shape lives here; refine needs `durationWeeks` and `blocks` so it runs from
- * `planProgramInputSchema.superRefine`. Slice 3 compiles this stash. No stamp.
+ * `buildProgramInputSchema.superRefine`. Slice 3 compiles this stash. No stamp.
  *
  * Depends on: zod
- * Used by: tools.ts planProgramInputSchema, types.ts, periodization-wave tests
+ * Used by: tools.ts buildProgramInputSchema, types.ts, periodization-wave tests
  */
 
 import { z } from "zod";
 
-/** Mesocycle block shape from `planProgram`. Kept local so this file does not import `./types`. */
+/** Mesocycle block shape from `buildProgram`. Kept local so this file does not import `./types`. */
 type TWaveBlock = {
     name: string;
     weeks: number[];
@@ -46,7 +46,7 @@ const periodizationWeekSchema = z.object({
         .describe("Absolute main-lift rep range. Only on a Block boundary after week 1."),
 });
 
-/** Wave shape without duration/block refine. `planProgram` adds those. */
+/** Wave shape without duration/block refine. `buildProgram` adds those. */
 export const periodizationWaveSchema = z.object({
     weeks: z
         .array(periodizationWeekSchema)
@@ -91,7 +91,7 @@ function hasMainRepRange(
  * First week of each block whose start is after week 1. Later blocks that
  * start on the same week still count as one boundary.
  *
- * @param blocks - `planProgram` mesocycle blocks
+ * @param blocks - `buildProgram` mesocycle blocks
  */
 export function blockBoundaryWeeks(blocks: TWaveBlock[]): Set<number> {
     const boundaries = new Set<number>();

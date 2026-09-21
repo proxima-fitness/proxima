@@ -1,7 +1,7 @@
 /**
  * @module ModifyProgramProgress
  * Compact progress list for mutateProgram: objectives with expand/collapse.
- * Standalone batches use proposal copy (ADR 0024); same-turn after buildWeek
+ * Standalone batches use proposal copy (ADR 0024); same-turn after buildProgram
  * still applies and keeps apply copy.
  * Depends on: TModifyProgramRoutineObjective. Used by: MessageBubbles (mutateProgram tool UI).
  */
@@ -21,7 +21,7 @@ export interface IProps {
     objectivesByRoutine: TModifyProgramRoutineObjective[];
     /** Whether the batch is still streaming or the apply path finished. */
     status: "processing" | "complete";
-    /** Proposal voice vs auto-apply after buildWeek. */
+    /** Proposal voice vs auto-apply after buildProgram. */
     mode: TModifyProgramProgressMode;
 }
 

@@ -72,7 +72,7 @@ export function logSoftToolFailure(payload: TSoftToolFailPayload): void {
 
 /**
  * Log then return a soft-fail tool result unchanged.
- * Use at every `{ error }` return in buildWeek / mutateProgram.
+ * Use at every `{ error }` return in buildProgram / mutateProgram.
  */
 export function softToolErrorResult<T extends { error: string }>(
     tool: string,

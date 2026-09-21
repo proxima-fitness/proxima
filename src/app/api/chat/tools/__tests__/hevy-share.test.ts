@@ -494,7 +494,7 @@ describe("importHevyShareFolder tool", () => {
         const { value } = await tool.toModelOutput({ output });
 
         expect(value).toContain("Push Pull Legs · 2 days · 3 exercises");
-        expect(value).toContain("Do not call buildWeek");
+        expect(value).toContain("Do not call buildProgram");
         expect(value).toContain("TEMPLATE_BENCH");
         expect(value).not.toContain("Nothing was added to the program grid");
     });

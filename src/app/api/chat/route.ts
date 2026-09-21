@@ -23,7 +23,7 @@ import {
     usageCapResponse,
 } from '@/lib/server-feature-limits';
 import { instructions } from './instructions/instructions';
-import { getTools, type IBuildWeekOnceGuard, type IProgramSanityStash } from './tools/tools';
+import { getTools, type IBuildProgramOnceGuard, type IProgramSanityStash } from './tools/tools';
 import { readLastUserMessage } from './sanity/snapshot';
 import { initializeConstraintProfile } from './constraints';
 import { mergeConstraintProfiles } from './constraints/merge';
@@ -241,16 +241,16 @@ async function handleChatPost(req: Request) {
                     isAuthenticated: Boolean(user),
                     hasHevyApiKey: hevyKeyOnFile,
                 });
-                const buildWeekOnceGuard: IBuildWeekOnceGuard = { locked: false };
-                // Same request lifetime as buildWeekOnceGuard: planProgram + buildWeek write, mutateProgram reads.
+                const buildProgramOnceGuard: IBuildProgramOnceGuard = { locked: false };
+                // Same request lifetime as buildProgramOnceGuard: a successful buildProgram writes, mutateProgram reads.
                 const programSanityStash: IProgramSanityStash = {
                     plan: null,
-                    buildWeekRoutines: null,
+                    buildProgramRoutines: null,
                     exerciseRoles: null,
                 };
                 const tools = getTools({
                     hevyProgram,
-                    buildWeekOnceGuard,
+                    buildProgramOnceGuard,
                     programSanityStash,
                     userMessage: readLastUserMessage(sanitizedMessages),
                     hasActiveSubscription,

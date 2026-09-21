@@ -18,7 +18,7 @@ vi.mock("sonner", () => ({
 import {
     getHevyShareImportSeed,
     tryApplyHevyShareImport,
-    tryCommitAtomicBuildWeekAndMutations,
+    tryCommitAtomicBuildProgramAndMutations,
 } from "../helpers";
 
 const makeShareDay = (dayNumber: number, title: string): THevyRoutine => ({
@@ -234,20 +234,14 @@ describe("Hevy share import expand commit", () => {
                 role: "assistant",
                 parts: [
                     {
-                        type: "tool-planProgram",
-                        toolCallId: "p1",
-                        state: "output-available",
-                        input: {},
-                        output: { plan: { durationWeeks: 3, periodizationWave: wave } },
-                    },
-                    {
-                        type: "tool-buildWeek",
+                        type: "tool-buildProgram",
                         toolCallId: "b1",
                         state: "output-available",
                         input: { expandHevyShareSeed: { exerciseRoles: roles } },
                         output: {
                             routines: rpeSeed,
                             exerciseRoles: roles,
+                            plan: { durationWeeks: 3, periodizationWave: wave },
                             totalDays: 2,
                             expandedHevyShareSeed: true,
                         },
@@ -263,7 +257,7 @@ describe("Hevy share import expand commit", () => {
         const lastCommitKey = newImportKeyRef();
         const commitWithUndo = vi.fn();
 
-        const result = tryCommitAtomicBuildWeekAndMutations(
+        const result = tryCommitAtomicBuildProgramAndMutations(
             expandThread(),
             "ready",
             3,

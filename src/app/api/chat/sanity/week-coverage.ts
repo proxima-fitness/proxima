@@ -23,7 +23,7 @@ import type {
     TDayMatrixRow,
     TExerciseRoleAssignment,
     TExerciseStimulus,
-    TPlanProgram,
+    TProgramPlan,
     TProgramSanitySnapshot,
     TWeekCoverageMiss,
     TWeekCoverageResult,
@@ -111,9 +111,9 @@ export function dayMatchesWeek1Stimulus(
  * One intent per 1-based week from `plan.blocks`. Empty plan or empty blocks
  * yield `[]`. If two blocks list the same week, the later block wins.
  *
- * @param plan - Stashed `planProgram` output, or null when the turn never planned
+ * @param plan - Plan from this turn's `buildProgram`, or null when there is none
  */
-export function planWeekIntents(plan: TPlanProgram | null | undefined): TWeekIntent[] {
+export function planWeekIntents(plan: TProgramPlan | null | undefined): TWeekIntent[] {
     if (!plan?.blocks?.length) return [];
     const byWeek = new Map<number, TWeekIntent>();
     for (const block of plan.blocks) {
@@ -159,7 +159,7 @@ export function claimedWeekNumbers(
 
 /**
  * Highest 1-based week in the matrix. Empty matrix is treated as week 1 so a
- * first `buildWeek` cannot invent a later claimed week.
+ * first `buildProgram` cannot invent a later claimed week.
  *
  * @param matrix - Compact day rows from the snapshot matrix
  */

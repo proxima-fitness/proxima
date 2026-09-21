@@ -28,7 +28,7 @@ import {
 
 /** Tools that surface Soft tool failure UI in chat. */
 export type TSoftFailTool =
-    | "buildWeek"
+    | "buildProgram"
     | "mutateProgram"
     | "getWorkoutHistory"
     | "rateProgram"
@@ -49,11 +49,11 @@ type TCalmCopy = {
 
 /** Calm progress titles + copy per tool (ADR 01). */
 export const SOFT_FAIL_CALM: Record<TSoftFailTool, TCalmCopy> = {
-    buildWeek: {
+    buildProgram: {
         title: "Recalculating",
         copy: "Recalculating…",
-        toolType: "tool-buildWeek",
-        debugTitle: "Build week",
+        toolType: "tool-buildProgram",
+        debugTitle: "Build program",
     },
     mutateProgram: {
         title: "Reading",

@@ -330,7 +330,7 @@ describe("MessageBubbles program stalemate", () => {
                 id: "a-try1",
                 role: "assistant" as const,
                 parts: [{
-                    type: "tool-buildWeek",
+                    type: "tool-buildProgram",
                     toolCallId: "bw1",
                     state: "output-available",
                     input: { totalDays: 3, routines: [] },
@@ -348,7 +348,7 @@ describe("MessageBubbles program stalemate", () => {
                 id: "a-try2",
                 role: "assistant" as const,
                 parts: [{
-                    type: "tool-buildWeek",
+                    type: "tool-buildProgram",
                     toolCallId: "bw2",
                     state: "output-available",
                     input: { totalDays: 3, routines: [] },

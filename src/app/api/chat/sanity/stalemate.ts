@@ -2,7 +2,7 @@
  * @module chat/sanity/stalemate
  *
  * Request-scoped **Program stalemate** (ADR 0027 / 01, C8; ADR 0029 / 02).
- * The same honor id or code-gate error twice this turn stops `buildWeek` /
+ * The same honor id or code-gate error twice this turn stops `buildProgram` /
  * `mutateProgram`. Schema, empty days, bad ids, and structural stamp Soft-fails
  * (`missingWave` / `missingRoles` / `emptyMains`) are not counted. Same-week
  * skip lives on the stash; the card click's next request sets it from the
@@ -27,9 +27,9 @@ import type {
 /** Tool `error` on a stop after escalate, and on later calls this request. */
 export const STALEMATE_ERROR = "program_stalemate";
 
-/** `toModelOutput` on escalate. Must not tell Andy to call buildWeek again. */
+/** `toModelOutput` on escalate. Must not tell Andy to call buildProgram again. */
 export const STALEMATE_MODEL_STOP =
-    "Program stalemate. The program grid is unchanged. Do not call buildWeek or mutateProgram again this turn. Wait for the user.";
+    "Program stalemate. The program grid is unchanged. Do not call buildProgram or mutateProgram again this turn. Wait for the user.";
 
 /** Card click / typed exact string that sets stash same-week skip this request. */
 export const SAME_WEEK_SKIP_MESSAGE = "Same week every week is what I want";
@@ -412,7 +412,7 @@ function isAction(value: unknown): value is TProgramStalemateAction {
 /**
  * Read a card payload off a tool output. Null when this miss is not a stalemate.
  *
- * @param output - buildWeek / mutateProgram tool output
+ * @param output - buildProgram / mutateProgram tool output
  */
 export function readStalematePayload(output: unknown): IProgramStalematePayload | null {
     if (!output || typeof output !== "object") return null;

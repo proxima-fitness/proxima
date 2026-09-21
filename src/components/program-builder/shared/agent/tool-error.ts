@@ -14,11 +14,11 @@ export type TSubmitToolErrorResult =
     | { ok: false; message: string };
 
 const FRIENDLY_ERROR_CODES: Record<string, string> = {
-    "Failed to build week": "Something went wrong while building your program.",
+    "Failed to build program": "Something went wrong while building your program.",
     "Failed to rate program": "Could not rate this program.",
     "Failed to validate mutation batch": "We couldn't apply that change.",
     "Program mutation batch failed": "We couldn't apply that change.",
-    "buildWeek already completed": "Your program week was already built.",
+    "buildProgram already completed": "Your program was already built.",
     "Invalid routines": "The workout days couldn't be built. Check that each day has exercises.",
     "Invalid exercises": "At least one training day is missing exercises.",
     "Invalid exercise_template_id": "One or more exercises couldn't be matched. Try asking to rebuild with different exercises.",
@@ -292,7 +292,7 @@ export function summarizeToolError(tool: string, ctx: TToolErrorContext): string
         return "Could not rate this program.";
     }
 
-    if (tool === "buildWeek") {
+    if (tool === "buildProgram") {
         return "Something went wrong while building your program.";
     }
 

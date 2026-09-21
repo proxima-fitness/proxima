@@ -2,7 +2,7 @@
  * @module lib/hevy-share/share-adapter
  *
  * Turns Hevy web-share JSON into builder-ready `THevyRoutine[]` for **Hevy share fetch**
- * and **Hevy share import**. Direct hydrate, not a `buildWeek` rebuild - titles, exercises,
+ * and **Hevy share import**. Direct hydrate, not a `buildProgram` rebuild - titles, exercises,
  * sets, supersets and notes come across as written.
  *
  * Two entry points, one per link family: {@link adaptHevyShareToRoutines} for a shared folder
@@ -113,7 +113,7 @@ function readFiniteNumber(value: unknown): number | null {
  * Reads a metric Hevy zero-fills when it does not apply.
  *
  * Share sets carry `distance_meters: 0`, `duration_seconds: 0` and `custom_metric: 0` on
- * ordinary weight/rep work. `buildWeek` writes `null` for the same "not prescribed" state
+ * ordinary weight/rep work. `buildProgram` writes `null` for the same "not prescribed" state
  * and the grid treats `<= 0` as unset, so collapse the sentinel rather than seed zeroes.
  */
 function readOptionalMetric(value: unknown): number | null {
@@ -220,7 +220,7 @@ function adaptShareSet(raw: unknown, index: number): THevySets {
     const repRange = readRepRange(source.rep_range);
     const reps = readFiniteNumber(source.reps);
 
-    // Mirror buildWeek: a start === end range renders as "5-5", so keep it as a fixed rep count.
+    // Mirror buildProgram: a start === end range renders as "5-5", so keep it as a fixed rep count.
     const isDegenerateRange = repRange !== null && repRange.start === repRange.end;
 
     return {

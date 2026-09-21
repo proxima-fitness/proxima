@@ -100,7 +100,7 @@ If the gym **lacks** SkiErg or sled, use **closest available stimuli** (e.g. row
 ## When applying
 
 - **Primary frame:** Hyrox = **run + eight stations in order**; programming should **reflect** that mix, not a **pure powerlifting** or **pure bodybuilding** split unless the user explicitly asks for that as secondary work.
-- **`buildWeek`:** Use **session titles** that reflect intent (e.g. “Run + posterior chain”, “Threshold + row intervals”, “Hyrox brick - farmers & wall balls”). Put **run prescriptions** in **`notes`** / **`reason`** when not represented as an exercise.
+- **`buildProgram`:** Use **session titles** that reflect intent (e.g. “Run + posterior chain”, “Threshold + row intervals”, “Hyrox brick - farmers & wall balls”). Put **run prescriptions** in **`notes`** / **`reason`** when not represented as an exercise.
 - **`reason`:** Name **which station or limiter** the work supports (e.g. weak sled pull, grip, wall-ball pacing) and **how many days/week** they train-same standard as other program types.
 - **Optional cross-load:** If the user also wants **fat loss** or **muscle balance**, you may load [`weight-loss/`](./weight-loss/) or [`bodybuilding.md`](./bodybuilding.md) **secondarily**-Hyrox **specificity** still drives exercise choice and weekly layout.
 - Use **only** exercise template IDs returned by **getExerciseList**; never invent IDs.

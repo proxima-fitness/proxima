@@ -10,9 +10,8 @@
  *  - getExerciseList - fetches and filters available Hevy exercises
  *  - getMoreInfoQuestions - opens the pre-build questionnaire UI
  *  - openHevyExportGate - opens the Hevy export gate footer (sign-in / Hevy key prerequisites)
- *  - planProgram - structured multi-week plan (duration, blocks, Periodization wave) before buildWeek
  *  - readProgram - on-demand full program snapshot from the request
- *  - buildWeek - constructs a full week of THevyRoutine days in one call (titles resolved from hevy_exercise_templates by ID)
+ *  - buildProgram - First build land: plan fields + Periodization wave + week 1 (or share-expand roles) in one call (ADR 0030)
  *  - mutateProgram - stages typed registry operation batches; standalone is a Mutation proposal until Accept
  *  - rateProgram - scores the current bodybuilding program (heuristic report card)
  *  - getWorkoutHistory - Pro-only backed-up workout history from Supabase (no live Hevy)
@@ -114,6 +113,7 @@ import type {
     IProgramStalematePayload,
     TExerciseRole,
     TExerciseRoleAssignment,
+    TProgramPlan,
 } from '../sanity/types';
 
 export type { IProgramSanityStash } from '../sanity/types';
@@ -154,16 +154,16 @@ export const constraintPreferencesUpdateSchema = z
     .optional()
     .describe('Preference fields to update (only provided keys are changed; values must be catalog option ids)');
 
-/** Request-scoped flag: set after first successful buildWeek so the agent cannot call buildWeek twice in one chat turn. */
-export interface IBuildWeekOnceGuard {
+/** Request-scoped flag: set after first successful buildProgram so the agent cannot call buildProgram twice in one chat turn. */
+export interface IBuildProgramOnceGuard {
     locked: boolean;
 }
 
 interface IProps {
     hevyProgram?: THevyRoutine[];
-    buildWeekOnceGuard?: IBuildWeekOnceGuard;
+    buildProgramOnceGuard?: IBuildProgramOnceGuard;
     /**
-     * Request-scoped plan + last successful buildWeek (ADR 0025 / 02).
+     * Request-scoped plan + last successful buildProgram (ADR 0025 / 02).
      * The route allocates one object per turn. Tools write in place so
      * same-turn mutateProgram can plate week 1. Omit in tests that do not
      * exercise week coverage.
@@ -226,8 +226,13 @@ function isExerciseRole(value: unknown): value is TExerciseRole {
     return value === 'main' || value === 'accessory' || value === 'warmup';
 }
 
-/** Exported for tests: same schema as planProgram tool input. */
-export const planProgramInputSchema = z
+/**
+ * Exported for tests: `buildProgram` input. Plan fields and the Zod-required
+ * **Periodization wave** ride on the same call as week 1 (ADR 0030 / 01), so a
+ * First build cannot land without a wave and a Soft-fail retry is always a
+ * full `buildProgram`.
+ */
+export const buildProgramInputSchema = z
     .object({
         durationWeeks: z.number().int().min(1).max(52).describe('Total program length in weeks.'),
         goal: z.string().min(1).max(500).describe('Primary goal in plain language.'),
@@ -237,10 +242,155 @@ export const planProgramInputSchema = z
             'Required Periodization wave: one row per 1-based week. Main deltas from week 1; accessory only on claimed deload / unload / taper / peak weeks; mainRepRange only on a Block boundary after week 1.',
         ),
         notes: z.array(z.string()).optional().describe('Programming rules (e.g. swap variations only at block boundaries).'),
+        totalDays: z
+            .number()
+            .min(1)
+            .max(7)
+            .optional()
+            .describe('Total number of days in the program week (1-7). Required unless expandHevyShareSeed is set.'),
+        routines: z
+            .array(
+                z.object({
+                    dayNumber: z
+                        .number()
+                        .min(1)
+                        .describe('The day number within the week (1, 2, 3, etc.) - must be unique per routine'),
+                    title: z
+                        .string()
+                        .describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
+                    notes: z.string().default('').describe('Notes for the routine (optional)'),
+                    exercises: z
+                        .array(
+                            z.object({
+                                exercise_template_id: z
+                                    .string()
+                                    .describe(
+                                        'The exercise ID from the getExerciseList results - MUST be an exact match',
+                                    ),
+                                title: z
+                                    .string()
+                                    .describe(
+                                        'Display title: must match getExerciseList for this ID; server replaces it with the canonical hevy_exercise_templates title.',
+                                    ),
+                                notes: z.string().default('').describe('Notes for the exercise (optional)'),
+                                rest_seconds: z
+                                    .string()
+                                    .default('90')
+                                    .describe('Rest time in seconds between sets'),
+                                supersets_id: z
+                                    .number()
+                                    .nullable()
+                                    .default(null)
+                                    .describe(
+                                        '0-indexed superset group: use the same number for all exercises in one superset (0 = first superset, 1 = second, etc.); null or omit = not in a superset',
+                                    ),
+                                reason: z
+                                    .string()
+                                    .max(500)
+                                    .optional()
+                                    .describe(
+                                        'Short prose (2-4 sentences) explaining why this exercise is here - shown in the UI under "Why this exercise?", not exported to Hevy. ' +
+                                            'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
+                                            'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
+                                    ),
+                                role: z
+                                    .enum(EXERCISE_ROLES)
+                                    .describe(
+                                        'Exercise role for the Periodization wave: main, accessory, or warmup. Warmup *rows* are tagged here; set type "warmup" is a different object.',
+                                    ),
+                                sets: z
+                                    .array(
+                                        z.object({
+                                            type: z
+                                                .enum(['normal', 'warmup', 'dropset', 'failure'])
+                                                .describe('The type of set'),
+                                            reps: z.number().nullable().describe(
+                                                'Fixed rep count. When rep_range is set, provide as fallback (typically the upper bound). When rep_range is null, this is the sole prescription. For fixed-rep work (5x5, singles, doubles, triples), set rep_range to null and use only reps.',
+                                            ),
+                                            rep_range: z
+                                                .object({
+                                                    start: z.number().int().min(1).describe('Lower bound of the rep range (e.g. 8 in 8-12)'),
+                                                    end: z.number().int().min(1).describe('Upper bound of the rep range (e.g. 12 in 8-12)'),
+                                                })
+                                                .nullable()
+                                                .describe(
+                                                    'Rep range for this set (e.g. {start:8, end:12}). Use for hypertrophy/bodybuilding sets where a range is intended. When provided, reps serves as a fallback only. Set to **null** for fixed-rep prescriptions (5x5, singles, doubles, triples). NEVER use a degenerate range where start === end (e.g. {start:5, end:5}); use null and set reps instead.',
+                                                ),
+                                            rpe: z
+                                                .number()
+                                                .min(1)
+                                                .max(10)
+                                                .describe(
+                                                    'RPE (Rate of Perceived Exertion) 1-10; required',
+                                                ),
+                                            weight_kg: z.number().optional().describe(
+                                                'Weight in kg (storage unit). When the user speaks in lbs or asks about display decimals, convert from their UI unit first (lbs × 0.453592).',
+                                            ),
+                                        }),
+                                    )
+                                    .min(1)
+                                    .describe('Array of sets for this exercise - at least 1 set required'),
+                            }),
+                        )
+                        .min(1)
+                        .describe('Array of exercises for this routine - at least 1 exercise required'),
+                }),
+            )
+            .min(1)
+            .optional()
+            .describe(
+                'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays). Omit when expandHevyShareSeed is set.',
+            ),
+        expandHevyShareSeed: z
+            .object({
+                exerciseRoles: z
+                    .array(
+                        z.object({
+                            dayOrder: z
+                                .number()
+                                .int()
+                                .min(1)
+                                .describe('Seeded day: the routine `order` from readProgram (week 1).'),
+                            exerciseIndex: z
+                                .number()
+                                .int()
+                                .min(0)
+                                .describe('0-based exercise position on that seeded day.'),
+                            role: z
+                                .enum(EXERCISE_ROLES)
+                                .describe('Exercise role for the Periodization wave: main, accessory, or warmup.'),
+                        }),
+                    )
+                    .min(1)
+                    .describe('One Exercise role per exercise on the seeded week, every day. Length must equal the seed exercise count.'),
+            })
+            .optional()
+            .describe(
+                'Expand the **Hevy share import** seed already on the grid (week 1 only) into the planned program. Omit totalDays and routines when set.',
+            ),
     })
     .superRefine((data, ctx) => {
         refinePeriodizationWave(data, ctx);
     });
+
+/**
+ * Plan fields from a `buildProgram` call, copied for stamp, coverage, and the
+ * stash. The wave is copied explicitly so the stash never holds `undefined`.
+ *
+ * @param input - Parsed `buildProgram` plan fields
+ */
+function toProgramPlan(input: Pick<
+    z.infer<typeof buildProgramInputSchema>,
+    'durationWeeks' | 'daysPerWeek' | 'goal' | 'blocks' | 'periodizationWave'
+>): TProgramPlan {
+    return {
+        durationWeeks: input.durationWeeks,
+        daysPerWeek: input.daysPerWeek,
+        goal: input.goal,
+        blocks: input.blocks,
+        periodizationWave: input.periodizationWave,
+    };
+}
 
 /** Expand add/remove args that may contain comma-joined CSV blobs into tokens. */
 function flattenConstraintTokens(values?: string[]): string[] {
@@ -261,7 +411,7 @@ function patchStringArray(arr: string[], add?: string[], remove?: string[]): str
 
 /** Counted Soft-fail: first miss stays honor retry, second of the same id is a Program stalemate. */
 function countedSoftFail<T extends { error: string }>(
-    tool: 'buildWeek' | 'mutateProgram',
+    tool: 'buildProgram' | 'mutateProgram',
     stash: IProgramSanityStash | undefined,
     profile: TConstraintProfile | undefined,
     result: T,
@@ -318,11 +468,10 @@ export type TChatTools = {
     getExerciseList: Tool;
     getMoreInfoQuestions: Tool;
     openHevyExportGate: Tool;
-    planProgram: Tool;
     readProgram: Tool;
     fetchHevyShareFolder: Tool;
     importHevyShareFolder: Tool;
-    buildWeek: Tool;
+    buildProgram: Tool;
     mutateProgram: Tool;
     rateProgram: Tool;
     loadSkill: Tool<unknown, unknown, TLoadSkillToolContext>;
@@ -340,14 +489,14 @@ export type TChatTools = {
  * reference them without extra round-trips.
  *
  * @param props.hevyProgram - The user's current Hevy routines (request-body snapshot for readProgram).
- * @param props.programSanityStash - Request-scoped plan + last successful buildWeek for week coverage.
+ * @param props.programSanityStash - Request-scoped plan + last successful buildProgram for week coverage.
  * @param props.userMessage - This turn's last user text for the compact sanity snapshot.
  * @param props.constraintProfile - In-request Constraint profile; drives getExerciseList filters.
  * @returns An object mapping tool names to Vercel AI SDK tool descriptors.
  */
 export function getTools({
     hevyProgram,
-    buildWeekOnceGuard,
+    buildProgramOnceGuard,
     programSanityStash,
     userMessage,
     hasActiveSubscription = false,
@@ -368,7 +517,7 @@ export function getTools({
     /** Grid-state gate for **Hevy share import**; an Edit-path chat always trips it. */
     const gridHasExercises = programHasExercises ?? snapshotHasExercises(hevyProgram);
 
-    /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildWeek uses it or refetches). */
+    /** Request-scoped id → canonical title from hevy_exercise_templates (populated by getExerciseList; buildProgram uses it or refetches). */
     const exerciseIdToTitle = new Map<string, string>();
 
     /** Cached result of getHevyExercises() to avoid redundant Supabase queries within a single request. */
@@ -377,7 +526,7 @@ export function getTools({
     /** Live-grid mutateProgram must see this turn's readProgram, not last turn's indexes. */
     let readProgramCalledThisTurn = false;
 
-    /** When getExerciseList has not run this turn, load all templates so buildWeek can still validate IDs. */
+    /** When getExerciseList has not run this turn, load all templates so buildProgram can still validate IDs. */
     async function ensureExerciseIdToTitleMap(): Promise<void> {
         if (exerciseIdToTitle.size > 0 && cachedHevyExercises) return;
         const all = await getHevyExercises();
@@ -576,7 +725,7 @@ export function getTools({
             'Opens the Questionnaire gate with the app-chosen question subset (ADR 0023). ' +
             'Call on a new-program request, and when the user asks to fill or edit Training profile ' +
             '("update my profile", "edit my info"). Do not invent extra questions — the tool picks the list. ' +
-            'If it returns no questions, the gate is not needed; continue to planProgram / getExerciseList / buildWeek.',
+            'If it returns no questions, the gate is not needed; continue to getExerciseList / buildProgram.',
         inputSchema: z.object({
             userRequest: z.string().optional().describe('The user\'s original request for context'),
         }),
@@ -623,7 +772,7 @@ export function getTools({
             if (output.reason === "none") {
                 return {
                     type: "text" as const,
-                    value: "Questionnaire gate not needed. Proceed now with planProgram, getExerciseList, and buildWeek.",
+                    value: "Questionnaire gate not needed. Proceed now with getExerciseList and buildProgram.",
                 };
             }
             if (output.reason === "training-profile") {
@@ -631,7 +780,7 @@ export function getTools({
                     type: "text" as const,
                     value:
                         "Training profile questions are open. Wait for the user to submit. " +
-                        "After they submit, call updateTrainingProfile if there are fields; do not planProgram or buildWeek.",
+                        "After they submit, call updateTrainingProfile if there are fields; do not call buildProgram.",
                 };
             }
             return {
@@ -672,56 +821,12 @@ export function getTools({
     });
 
     /**
-     * Title: planProgramTool
-     * Description: Records a structured multi-week plan before buildWeek (mesocycles, Periodization wave).
-     * Also writes the plan onto `programSanityStash` so week coverage can see
-     * claimed deload / peak / easy weeks in the same turn.
-     * @returns { Tool }
-     */
-    const planProgramTool = tool({
-        description:
-            'Submit a structured multi-week training plan before calling buildWeek on a **new** program. Use questionnaire answers, program builder context (days/week, length), and your judgment. ' +
-            'Include a **Periodization wave**. This does not create routines and does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. Call once per new program; call it again only after a buildWeek Soft-fail, to change the wave.',
-        inputSchema: planProgramInputSchema,
-        execute: async (input) => {
-            const plan = input;
-            // Coverage needs claimed deload / peak / easy weeks; stamp (slice 3) needs the wave.
-            if (programSanityStash) {
-                programSanityStash.plan = {
-                    durationWeeks: plan.durationWeeks,
-                    daysPerWeek: plan.daysPerWeek,
-                    goal: plan.goal,
-                    blocks: plan.blocks,
-                    periodizationWave: plan.periodizationWave,
-                };
-            }
-            const blockNames = plan.blocks.map((b) => b.name).join(', ');
-            const summary = `${plan.durationWeeks} wk · ${plan.daysPerWeek} d/wk · blocks: ${blockNames} · ${plan.goal.slice(0, 80)}${plan.goal.length > 80 ? '…' : ''}`;
-            return { plan, summary };
-        },
-        toModelOutput: async ({ output }) => {
-            if (output && typeof output === 'object' && 'error' in output && output.error) {
-                const o = output as { message?: string };
-                return {
-                    type: 'text' as const,
-                    value: `Error: ${o.message ?? 'Invalid plan'}`,
-                };
-            }
-            const o = output as { summary?: string };
-            return {
-                type: 'text' as const,
-                value: `Plan recorded: ${o.summary ?? 'OK'}. Proceed with getExerciseList, then call buildWeek with all days and an Exercise role on every exercise. buildWeek applies the Periodization wave; do not call buildWeek again after it succeeds.`,
-            };
-        },
-    });
-
-    /**
      * Title: readProgramTool
      * Description: On-demand read of the program snapshot from request start.
      */
     const readProgramTool = tool({
         description:
-            'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildWeek** in the same turn). ' +
+            'Returns the full **hevyProgram** snapshot from the **start of this request** (does not refresh after **buildProgram** in the same turn). ' +
             'Includes day notes, exercise notes, exercise reason, sets, and structure. ' +
             'Required before a live-grid **mutateProgram** (indexes from this snapshot, not an earlier turn). ' +
             'Sorted by folder_id (week, 0-based) then order (day number 1-7). For **mutateProgram**: folderIds: [folder_id], dayOrder: order. Target exercises/sets by 0-based array position (exerciseIndex, setIndex).',
@@ -782,7 +887,7 @@ export function getTools({
             'Loads a **public Hevy share link** (`hevy.com/folder/{id}`, `hevy.com/routine/{shortId}`, or `hevy.com/workout/{id}`) onto the program grid as a one-week seed - the shared routines become the days of week 1, exactly as written; a completed workout becomes a single day carrying the loads that were actually lifted. ' +
             'Two hard requirements: the program grid must be **empty**, and the user must have **explicitly agreed** to load the share (pass `confirmed: true` only then). Pasting a link is not agreement - to just read a share, use **fetchHevyShareFolder**. ' +
             'When you are unsure whether they want it loaded, ask in your reply and wait for their answer instead of calling this tool. ' +
-            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks is a separate ask, done later with **planProgram** then **buildWeek** `expandHevyShareSeed`. ' +
+            'This does not push or sync anything to Hevy, does not touch the shared folder, does not link the program to that folder, and does not need the user\'s Hevy API key. It loads week 1 only - expanding to more weeks is a separate ask, done later with **buildProgram** `expandHevyShareSeed` (plan fields and wave on the same call). ' +
             'The questionnaire is not required first; it applies when generating or expanding a program, not when loading a share.',
         inputSchema: importHevyShareFolderInputSchema,
         execute: async ({ url, confirmed }): Promise<TImportHevyShareFolderToolOutput> => {
@@ -811,29 +916,31 @@ export function getTools({
     /**
      * Lands a **First build** from week 1 (ADR 0027 / 04, 06): plate + stamp, then
      * code week-coverage on mains, then one Jev Case 1 on the whole mesocycle.
-     * Any Soft-fail returns before the stash write and lock, so buildWeek and
-     * planProgram stay open for a retry this turn.
+     * Stamps from this call's `plan` wave (ADR 0030 / 01). Any Soft-fail returns
+     * before the stash write and lock, so a full `buildProgram` retry stays open.
      *
+     * @param plan - Plan fields + Periodization wave from this `buildProgram` call
      * @param week1 - Week-1 routines (`folder_id` 0): built this call or the share seed
      * @param exerciseRoles - Exercise role on every week-1 row
      * @param counts - Summary counts echoed on the successful output
      * @param extra - Extra fields on the successful output (e.g. the expand flag)
      */
     async function landFirstBuild(
+        plan: TProgramPlan,
         week1: THevyRoutine[],
         exerciseRoles: TExerciseRoleAssignment[],
         counts: { totalDays: number; exerciseCount: number; setCount: number },
         extra: { expandedHevyShareSeed?: true } = {},
     ) {
-        const weekCount = resolvePlateWeekCount(programSanityStash?.plan, programLength);
+        const weekCount = resolvePlateWeekCount(plan, programLength);
         const stamped = plateThenStamp(
             week1,
-            programSanityStash?.plan?.periodizationWave,
+            plan.periodizationWave,
             exerciseRoles,
             weekCount,
         );
         if (!stamped.ok) {
-            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+            return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                 error: stamped.error,
                 message: stamped.message,
             });
@@ -845,7 +952,7 @@ export function getTools({
             programSanityStash?.skipSameWeekCoverage === true,
         );
         if (!coverage.ok) {
-            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+            return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                 error: 'weekCoverage',
                 message: formatFirstBuildWeekCoverageMessage(coverage.misses),
             });
@@ -855,32 +962,35 @@ export function getTools({
             userMessage: userMessage ?? '',
             constraintProfile,
             trainingProfile,
-            plan: programSanityStash?.plan,
+            plan,
             beforeProgram: plateWeek1Across(week1, weekCount),
             afterProgram: stamped.program,
         });
         const sanity = await evaluate(snapshot, { firstBuild: true, debug: debugMode });
         if (!sanity.ok) {
-            return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+            return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                 error: sanity.misses[0]?.id ?? 'evaluate',
                 message: formatEvaluateMessage(sanity.misses),
                 ...(sanity.debug ? { jev: sanity.debug } : {}),
             });
         }
 
-        // Request-start hevyProgram is stale after this return; mutateProgram plates these routines.
+        // Request-start hevyProgram is stale after this return; same-turn mutateProgram
+        // plates these routines and re-stamps with this call's wave.
         if (programSanityStash) {
-            programSanityStash.buildWeekRoutines = week1;
+            programSanityStash.plan = plan;
+            programSanityStash.buildProgramRoutines = week1;
             programSanityStash.exerciseRoles = exerciseRoles;
         }
 
-        if (buildWeekOnceGuard) {
-            buildWeekOnceGuard.locked = true;
+        if (buildProgramOnceGuard) {
+            buildProgramOnceGuard.locked = true;
         }
 
         return {
             routines: week1,
             exerciseRoles,
+            plan,
             totalDays: counts.totalDays,
             routineCount: week1.length,
             exerciseCount: counts.exerciseCount,
@@ -895,20 +1005,21 @@ export function getTools({
      * request-start `hevyProgram`; Andy only tags roles. Structural refusals are
      * plain Soft-fails (not a **Program stalemate**) and never lock the guard.
      *
+     * @param plan - Plan fields + Periodization wave from this `buildProgram` call
      * @param exerciseRoles - Andy's Exercise role per seeded row
      */
-    async function expandHevyShareSeedFirstBuild(exerciseRoles: TExerciseRoleAssignment[]) {
+    async function expandHevyShareSeedFirstBuild(plan: TProgramPlan, exerciseRoles: TExerciseRoleAssignment[]) {
         const program = hevyProgram ?? [];
         if (!gridHasExercises) {
-            return softToolErrorResult('buildWeek', {
+            return softToolErrorResult('buildProgram', {
                 error: 'expandSeed.emptyGrid',
                 message:
-                    'The program grid is empty, so there is no Hevy share seed to expand. For a new program, call buildWeek with routines.',
+                    'The program grid is empty, so there is no Hevy share seed to expand. For a new program, call buildProgram with routines.',
             });
         }
         // Only later weeks with rows count: expanding over them would re-stamp an existing program (C6).
         if (program.some((routine) => (routine.folder_id ?? 0) > 0 && (routine.exercises?.length ?? 0) > 0)) {
-            return softToolErrorResult('buildWeek', {
+            return softToolErrorResult('buildProgram', {
                 error: 'expandSeed.alreadyMultiWeek',
                 message:
                     'The program already has weeks after week 1. Expand only works on a one-week seed. Use mutateProgram for changes to this program.',
@@ -919,20 +1030,14 @@ export function getTools({
             .sort((a, b) => Number(a.order) - Number(b.order));
         const exerciseCount = week1.reduce((sum, routine) => sum + (routine.exercises?.length ?? 0), 0);
         if (exerciseCount === 0) {
-            return softToolErrorResult('buildWeek', {
+            return softToolErrorResult('buildProgram', {
                 error: 'expandSeed.noWeek1',
                 message:
                     'No week-1 routines reached this request, so the seed cannot be expanded. The grid is unchanged. Ask the user to send the expand request again.',
             });
         }
-        if (programSanityStash?.plan?.periodizationWave == null) {
-            return softToolErrorResult('buildWeek', {
-                error: 'periodizationStamp.missingWave',
-                message: 'Periodization wave is missing. Call planProgram with a wave before expanding the seed.',
-            });
-        }
         if (exerciseRoles.length !== exerciseCount) {
-            return softToolErrorResult('buildWeek', {
+            return softToolErrorResult('buildProgram', {
                 error: 'expandSeed.roleCount',
                 message: `Tag every seeded exercise: expected ${exerciseCount} Exercise roles, got ${exerciseRoles.length}. Use readProgram for each day's order and exercise positions.`,
             });
@@ -944,6 +1049,7 @@ export function getTools({
             0,
         );
         return landFirstBuild(
+            plan,
             week1,
             exerciseRoles,
             { totalDays: week1.length, exerciseCount, setCount },
@@ -952,195 +1058,70 @@ export function getTools({
     }
 
     /**
-     * Title: buildWeekTool
-     * Description: Tool to build a full week of routines/days for the workout program in a single call.
+     * Title: buildProgramTool
+     * Description: **First build** land tool (ADR 0030 / 01): plan fields, the Zod-required
+     * Periodization wave, and week 1 (or share-expand roles) in a single call.
      * @returns { Tool }
      */
-    const buildWeekTool = tool({
+    const buildProgramTool = tool({
         description:
-            'Builds week 1 of a new program in a SINGLE tool invocation (all training days in one payload, an Exercise role on every exercise). ' +
-            'Code copies week 1 across the program and applies the **Periodization wave** from planProgram; on success the whole program lands. ' +
-            'After it succeeds, do not call buildWeek again; later changes the user asks for use **mutateProgram**. After a Soft-fail, fix the error (or call planProgram again to change the wave) and call buildWeek again. ' +
+            'Builds a **new** program in a SINGLE tool invocation: the plan (durationWeeks, daysPerWeek, goal, blocks, required **Periodization wave**, optional notes) plus week 1 (all training days in one payload, an Exercise role on every exercise). ' +
+            'Code copies week 1 across the program and applies the wave from this same call; on success the whole program lands. ' +
+            'After it succeeds, do not call buildProgram again; later changes the user asks for use **mutateProgram**. After a Soft-fail, fix the error (week 1, the wave, or both) and call buildProgram again with the full input. ' +
+            'Does **not** shorten an existing program on the grid - for that use **mutateProgram** **delete_week**. ' +
             'Provide all days in order (Day 1, Day 2, …). ' +
-            '**Expanding a loaded Hevy share import seed** is also First build: after **planProgram**, call buildWeek with **expandHevyShareSeed** only (no totalDays, no routines) and an Exercise role for every exercise on the seeded week. Code copies the seed across the program and applies the wave. Do not re-author the seeded week in routines. ' +
+            '**Expanding a loaded Hevy share import seed** is also First build: call buildProgram with the plan fields and wave plus **expandHevyShareSeed** only (no totalDays, no routines) and an Exercise role for every exercise on the seeded week. Code copies the seed across the program and applies the wave. Do not re-author the seeded week in routines. ' +
             'IMPORTANT: Always provide a valid JSON object with the required fields. ' +
             'For rep-based exercises, **prefer rep_range** (e.g. {start:8, end:12}) over a fixed reps value. Set reps as a fallback alongside rep_range. ' +
             '**Fixed-rep rule:** When the prescription is a single fixed rep count (e.g. 5x5, triples, singles), set `rep_range` to **null** and only use `reps`. ' +
             'NEVER emit a degenerate rep_range where start === end (e.g. {start:5, end:5}); that must be rep_range: null, reps: 5 instead. ' +
             'rep_range supersedes reps in the UI, so a {start:5, end:5} range will display as "5-5" which is wrong.',
-        inputSchema: z.object({
-            totalDays: z
-                .number()
-                .min(1)
-                .max(7)
-                .optional()
-                .describe('Total number of days in the program week (1-7). Required unless expandHevyShareSeed is set.'),
-            routines: z
-                .array(
-                    z.object({
-                        dayNumber: z
-                            .number()
-                            .min(1)
-                            .describe('The day number within the week (1, 2, 3, etc.) - must be unique per routine'),
-                        title: z
-                            .string()
-                            .describe('The routine/day title (e.g., "Push Day", "Upper Body")'),
-                        notes: z.string().default('').describe('Notes for the routine (optional)'),
-                        exercises: z
-                            .array(
-                                z.object({
-                                    exercise_template_id: z
-                                        .string()
-                                        .describe(
-                                            'The exercise ID from the getExerciseList results - MUST be an exact match',
-                                        ),
-                                    title: z
-                                        .string()
-                                        .describe(
-                                            'Display title: must match getExerciseList for this ID; server replaces it with the canonical hevy_exercise_templates title.',
-                                        ),
-                                    notes: z.string().default('').describe('Notes for the exercise (optional)'),
-                                    rest_seconds: z
-                                        .string()
-                                        .default('90')
-                                        .describe('Rest time in seconds between sets'),
-                                    supersets_id: z
-                                        .number()
-                                        .nullable()
-                                        .default(null)
-                                        .describe(
-                                            '0-indexed superset group: use the same number for all exercises in one superset (0 = first superset, 1 = second, etc.); null or omit = not in a superset',
-                                        ),
-                                    reason: z
-                                        .string()
-                                        .max(500)
-                                        .optional()
-                                        .describe(
-                                            'Short prose (2-4 sentences) explaining why this exercise is here - shown in the UI under "Why this exercise?", not exported to Hevy. ' +
-                                                'Cover: what the movement does, where it sits in the day/split, and how it fits this person\'s plan or questionnaire answers. ' +
-                                                'Be concrete: name real facts (stated limitation, equipment, sessions/week, goal, experience). Do not use bullet labels. Max 500 characters.',
-                                        ),
-                                    role: z
-                                        .enum(EXERCISE_ROLES)
-                                        .describe(
-                                            'Exercise role for the Periodization wave: main, accessory, or warmup. Warmup *rows* are tagged here; set type "warmup" is a different object.',
-                                        ),
-                                    sets: z
-                                        .array(
-                                            z.object({
-                                                type: z
-                                                    .enum(['normal', 'warmup', 'dropset', 'failure'])
-                                                    .describe('The type of set'),
-                                                reps: z.number().nullable().describe(
-                                                    'Fixed rep count. When rep_range is set, provide as fallback (typically the upper bound). When rep_range is null, this is the sole prescription. For fixed-rep work (5x5, singles, doubles, triples), set rep_range to null and use only reps.',
-                                                ),
-                                                rep_range: z
-                                                    .object({
-                                                        start: z.number().int().min(1).describe('Lower bound of the rep range (e.g. 8 in 8-12)'),
-                                                        end: z.number().int().min(1).describe('Upper bound of the rep range (e.g. 12 in 8-12)'),
-                                                    })
-                                                    .nullable()
-                                                    .describe(
-                                                        'Rep range for this set (e.g. {start:8, end:12}). Use for hypertrophy/bodybuilding sets where a range is intended. When provided, reps serves as a fallback only. Set to **null** for fixed-rep prescriptions (5x5, singles, doubles, triples). NEVER use a degenerate range where start === end (e.g. {start:5, end:5}); use null and set reps instead.',
-                                                    ),
-                                                rpe: z
-                                                    .number()
-                                                    .min(1)
-                                                    .max(10)
-                                                    .describe(
-                                                        'RPE (Rate of Perceived Exertion) 1-10; required',
-                                                    ),
-                                                weight_kg: z.number().optional().describe(
-                                                    'Weight in kg (storage unit). When the user speaks in lbs or asks about display decimals, convert from their UI unit first (lbs × 0.453592).',
-                                                ),
-                                            }),
-                                        )
-                                        .min(1)
-                                        .describe('Array of sets for this exercise - at least 1 set required'),
-                                }),
-                            )
-                            .min(1)
-                            .describe('Array of exercises for this routine - at least 1 exercise required'),
-                    }),
-                )
-                .min(1)
-                .optional()
-                .describe(
-                    'Array of routine definitions for the week. Provide one entry per training day (length should equal totalDays). Omit when expandHevyShareSeed is set.',
-                ),
-            expandHevyShareSeed: z
-                .object({
-                    exerciseRoles: z
-                        .array(
-                            z.object({
-                                dayOrder: z
-                                    .number()
-                                    .int()
-                                    .min(1)
-                                    .describe('Seeded day: the routine `order` from readProgram (week 1).'),
-                                exerciseIndex: z
-                                    .number()
-                                    .int()
-                                    .min(0)
-                                    .describe('0-based exercise position on that seeded day.'),
-                                role: z
-                                    .enum(EXERCISE_ROLES)
-                                    .describe('Exercise role for the Periodization wave: main, accessory, or warmup.'),
-                            }),
-                        )
-                        .min(1)
-                        .describe('One Exercise role per exercise on the seeded week, every day. Length must equal the seed exercise count.'),
-                })
-                .optional()
-                .describe(
-                    'Expand the **Hevy share import** seed already on the grid (week 1 only) into the planned program. Omit totalDays and routines when set.',
-                ),
-        }),
+        inputSchema: buildProgramInputSchema,
 
-        execute: async ({ totalDays, routines, expandHevyShareSeed }) => {
+        execute: async ({ totalDays, routines, expandHevyShareSeed, ...planInput }) => {
             try {
                 const stopped = stalemateStopResult(programSanityStash, userMessage);
                 if (stopped) {
-                    return softToolErrorResult('buildWeek', stopped);
+                    return softToolErrorResult('buildProgram', stopped);
                 }
 
-                if (buildWeekOnceGuard?.locked) {
-                    return softToolErrorResult('buildWeek', {
-                        error: 'buildWeek already completed',
+                if (buildProgramOnceGuard?.locked) {
+                    return softToolErrorResult('buildProgram', {
+                        error: 'buildProgram already completed',
                         message:
-                            'Week already built in this turn and the Periodization wave is already applied. Use mutateProgram only for further edits. Do not call buildWeek again.',
+                            'Week already built in this turn and the Periodization wave is already applied. Use mutateProgram only for further edits. Do not call buildProgram again.',
                     });
                 }
 
                 if (expandHevyShareSeed) {
                     if (routines?.length) {
-                        return softToolErrorResult('buildWeek', {
+                        return softToolErrorResult('buildProgram', {
                             error: 'Invalid expand',
                             message:
                                 'Pass expandHevyShareSeed or routines, not both. To expand the loaded share, omit routines: the seeded week is already on the grid.',
                         });
                     }
-                    return await expandHevyShareSeedFirstBuild(expandHevyShareSeed.exerciseRoles);
+                    return await expandHevyShareSeedFirstBuild(toProgramPlan(planInput), expandHevyShareSeed.exerciseRoles);
                 }
 
                 const timestamp = new Date().toISOString();
 
                 if (!Array.isArray(routines) || routines.length === 0) {
-                    return softToolErrorResult('buildWeek', {
+                    return softToolErrorResult('buildProgram', {
                         error: 'Invalid routines',
                         message: 'At least one routine is required',
                     });
                 }
 
                 if (totalDays == null) {
-                    return softToolErrorResult('buildWeek', {
+                    return softToolErrorResult('buildProgram', {
                         error: 'Invalid routines',
                         message: 'totalDays is required when building week 1 from routines',
                     });
                 }
 
                 if (routines.length !== totalDays) {
-                    return softToolErrorResult('buildWeek', {
+                    return softToolErrorResult('buildProgram', {
                         error: 'Invalid routines',
                         message: 'The number of routines must match totalDays',
                     });
@@ -1153,7 +1134,7 @@ export function getTools({
                 for (const routineInput of routines) {
                     const dayNumber = routineInput.dayNumber;
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
-                        return softToolErrorResult('buildWeek', {
+                        return softToolErrorResult('buildProgram', {
                             error: 'Invalid exercises',
                             message: `At least one exercise is required for day ${dayNumber}`,
                         });
@@ -1161,7 +1142,7 @@ export function getTools({
                     for (let exerciseIndex = 0; exerciseIndex < routineInput.exercises.length; exerciseIndex++) {
                         const exercise = routineInput.exercises[exerciseIndex];
                         if (!isExerciseRole(exercise.role)) {
-                            return softToolErrorResult('buildWeek', {
+                            return softToolErrorResult('buildProgram', {
                                 error: 'Invalid exercise role',
                                 message: `Each exercise needs role "main", "accessory", or "warmup" (day ${dayNumber}, exercise ${exerciseIndex}).`,
                             });
@@ -1173,13 +1154,13 @@ export function getTools({
                         });
                         const templateId = (exercise.exercise_template_id ?? '').trim();
                         if (!templateId) {
-                            return softToolErrorResult('buildWeek', {
+                            return softToolErrorResult('buildProgram', {
                                 error: 'Invalid exercise_template_id',
                                 message: `Missing or empty exercise_template_id for day ${dayNumber}. Use getExerciseList and pass a valid ID.`,
                             });
                         }
                         if (!exerciseIdToTitle.has(templateId)) {
-                            return softToolErrorResult('buildWeek', {
+                            return softToolErrorResult('buildProgram', {
                                 error: 'Invalid exercise_template_id',
                                 message: `exercise_template_id "${templateId}" (day ${dayNumber}) is not in hevy_exercise_templates. Call getExerciseList and use only IDs from that list.`,
                             });
@@ -1195,7 +1176,7 @@ export function getTools({
                     const dayNumber = routineInput.dayNumber;
 
                     if (!Array.isArray(routineInput.exercises) || routineInput.exercises.length === 0) {
-                        return softToolErrorResult('buildWeek', {
+                        return softToolErrorResult('buildProgram', {
                             error: 'Invalid exercises',
                             message: `At least one exercise is required for day ${dayNumber}`,
                         });
@@ -1265,22 +1246,22 @@ export function getTools({
                         const lines = validation.violations
                             .map(({ exerciseTitle, reason }) => `- ${exerciseTitle}: ${reason}`)
                             .join('\n');
-                        return countedSoftFail('buildWeek', programSanityStash, constraintProfile, {
+                        return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                             error: 'constraint_violation',
-                            message: `Fix these exercises and call buildWeek again:\n${lines}`,
+                            message: `Fix these exercises and call buildProgram again:\n${lines}`,
                         }, exerciseMeta);
                     }
                 }
 
-                return await landFirstBuild(builtRoutines, exerciseRoles, {
+                return await landFirstBuild(toProgramPlan(planInput), builtRoutines, exerciseRoles, {
                     totalDays,
                     exerciseCount: totalExercises,
                     setCount: totalSets,
                 });
             } catch (error) {
-                console.error('Error in buildWeekTool:', error);
-                return softToolErrorResult('buildWeek', {
-                    error: 'Failed to build week',
+                console.error('Error in buildProgramTool:', error);
+                return softToolErrorResult('buildProgram', {
+                    error: 'Failed to build program',
                     message: error instanceof Error ? error.message : 'Unknown error',
                 });
             }
@@ -1300,7 +1281,7 @@ export function getTools({
                         : undefined;
                 return {
                     type: 'text' as const,
-                    value: `Error: ${message || 'Failed to build week'}. The program grid is unchanged. Do not present a week as built. Fix the listed honor gaps and call buildWeek again. If the Periodization wave is the problem, call planProgram again with a corrected wave first.`,
+                    value: `Error: ${message || 'Failed to build program'}. The program grid is unchanged. Do not present the program as built. Fix the listed honor gaps and call buildProgram again with the full input. If the Periodization wave is the problem, send a corrected wave on that call.`,
                 };
             }
 
@@ -1318,13 +1299,13 @@ export function getTools({
             if (success.expandedHevyShareSeed) {
                 return {
                     type: 'text' as const,
-                    value: `Seed expanded (${success.totalDays} days): ${titles || 'No routine titles'}. The loaded Hevy share week is week 1, copied across the program with the Periodization wave applied, and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
+                    value: `Seed expanded (${success.totalDays} days): ${titles || 'No routine titles'}. The loaded Hevy share week is week 1, copied across the program with the Periodization wave applied, and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildProgram again. Use mutateProgram only if the user asks for further edits.`,
                 };
             }
 
             return {
                 type: 'text' as const,
-                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildWeek again. Use mutateProgram only if the user asks for further edits.`,
+                value: `Week complete (${success.totalDays} days): ${titles || 'No routine titles'} (${success.exerciseCount} exercises, ${success.setCount} sets). The Periodization wave is applied to the later weeks and the program passed the sanity check. The whole program is already on the grid: reply with a short summary of what landed, not an Accept ask. Do not call buildProgram again. Use mutateProgram only if the user asks for further edits.`,
             };
         },
     });
@@ -1347,8 +1328,8 @@ export function getTools({
                     return softToolErrorResult('mutateProgram', stopped);
                 }
 
-                const afterBuildWeek = Boolean(buildWeekOnceGuard?.locked);
-                if (snapshotHasExercises(hevyProgram) && !afterBuildWeek && !readProgramCalledThisTurn) {
+                const afterBuildProgram = Boolean(buildProgramOnceGuard?.locked);
+                if (snapshotHasExercises(hevyProgram) && !afterBuildProgram && !readProgramCalledThisTurn) {
                     return softToolErrorResult('mutateProgram', {
                         error: 'readProgram_required',
                         message:
@@ -1429,14 +1410,14 @@ export function getTools({
                     }
                 }
 
-                // After same-turn buildWeek the request hevyProgram has no later weeks.
+                // After same-turn buildProgram the request hevyProgram has no later weeks.
                 // Plate week 1, stamp the Periodization wave, apply on that copy, then
                 // week-coverage Soft-fail (C1 / C2). Live-grid mutate keeps
                 // applyOperations(hevyProgram) as before.
-                let afterBuildWeekPlate: THevyRoutine[] | null = null;
-                if (afterBuildWeek && (programSanityStash?.buildWeekRoutines?.length ?? 0) > 0) {
+                let afterBuildProgramPlate: THevyRoutine[] | null = null;
+                if (afterBuildProgram && (programSanityStash?.buildProgramRoutines?.length ?? 0) > 0) {
                     const stamped = plateThenStamp(
-                        programSanityStash?.buildWeekRoutines ?? [],
+                        programSanityStash?.buildProgramRoutines ?? [],
                         programSanityStash?.plan?.periodizationWave,
                         programSanityStash?.exerciseRoles,
                         resolvePlateWeekCount(programSanityStash?.plan, programLength),
@@ -1447,9 +1428,9 @@ export function getTools({
                             message: stamped.message,
                         });
                     }
-                    afterBuildWeekPlate = stamped.program;
+                    afterBuildProgramPlate = stamped.program;
                 }
-                const applyBase = afterBuildWeekPlate ?? hevyProgram ?? [];
+                const applyBase = afterBuildProgramPlate ?? hevyProgram ?? [];
                 const result = applyOperations(applyBase, resolvedOperations);
                 if (isApplyBatchFailure(result)) {
                     return softToolErrorResult('mutateProgram', {
@@ -1543,7 +1524,7 @@ export function getTools({
                     'In your visible reply, describe what you want to change. ' +
                     'Do not say the program was updated, modified, applied, or is now different. ' +
                     'Do not write "I\'ve updated" or "Your program is now". ' +
-                    'Same-turn after buildWeek still lands immediately.',
+                    'Same-turn after buildProgram still lands immediately.',
             };
         },
     });
@@ -1741,7 +1722,7 @@ export function getTools({
         description:
             'Persist and update the active Constraint profile (Agentic memory). ' +
             'Call after questionnaire unlock only when there are non-empty fields to persist; skip entirely when the user skipped and nothing changed - do not make empty updates. ' +
-            'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
+            'Do not block getExerciseList or buildProgram waiting on it. ' +
             'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
             'Never call removeExcludedEquipment, removeInjuries, or removeExcludedAreas to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
@@ -1846,7 +1827,7 @@ export function getTools({
         description:
             'Persist and update the active Training profile (Agentic memory person facts: age, sex, height, experience, physique phase, training focus, activity level, session duration). ' +
             'Call after questionnaire unlock only when Questionnaire advanced / Training profile fields are non-empty; skip entirely when empty - do not make empty updates. ' +
-            'Do not block planProgram, getExerciseList, or buildWeek waiting on it. ' +
+            'Do not block getExerciseList or buildProgram waiting on it. ' +
             'Set freely when the user states a person fact. Clear a field only on a User-stated change (pass null for that field) or direct the user to Edit profile. ' +
             'Not the Mutation constraint gate - use updateConstraintProfile for injuries, exclusions, and training preferences. ' +
             'Examples: questionnaire advanced submit; "I\'m 32"; "I\'m cutting"; "session cap 45 minutes"; "prefer not to say sex" (sex: null).',
@@ -1961,11 +1942,10 @@ export function getTools({
         getExerciseList: getExerciseListTool,
         getMoreInfoQuestions: getMoreInfoQuestionsTool,
         openHevyExportGate: openHevyExportGateTool,
-        planProgram: planProgramTool,
         readProgram: readProgramTool,
         fetchHevyShareFolder: fetchHevyShareFolderTool,
         importHevyShareFolder: importHevyShareFolderTool,
-        buildWeek: buildWeekTool,
+        buildProgram: buildProgramTool,
         mutateProgram: mutateProgramTool,
         rateProgram: rateProgramTool,
         loadSkill: loadSkillTool,

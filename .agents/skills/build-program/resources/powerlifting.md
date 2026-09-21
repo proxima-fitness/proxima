@@ -111,9 +111,9 @@ Space the same lift type on non-consecutive days. If the user wants more or less
 
 ## When applying
 
-- Before **buildWeek**, or when you build **mutateProgram** operations, make sure that **each powerlifting training routine** has **at least two compound exercises** that fit the main + secondary definition. If the user asked for something different, follow that request. **Do not** use Romanian Deadlift as a secondary compound. If the user requested RDL, you can use RDL. Use **Deadlift (Barbell)** for hinge compounds.
+- Before **buildProgram**, or when you build **mutateProgram** operations, make sure that **each powerlifting training routine** has **at least two compound exercises** that fit the main + secondary definition. If the user asked for something different, follow that request. **Do not** use Romanian Deadlift as a secondary compound. If the user requested RDL, you can use RDL. Use **Deadlift (Barbell)** for hinge compounds.
 - Do **not** reduce a day to a single compound in a powerlifting program without clear user intent.
 - Keep squat, bench, and deadlift emphasis and recovery (frequency and placement) in mind.
 - Match day names to the split (for example "Squat", "Bench", "Lower", "Upper").
 - If the user says "like 5/3/1" or "like Starting Strength", mirror that style. Still satisfy **two compounds per day** where those templates use a main lift plus a second barbell compound or clearly prescribed secondary work (for example FSL, supplemental lift). Use only exercise IDs from the exercise list. Do not invent IDs.
-- In **buildWeek** and **mutateProgram** output, reflect **undulating** accessory load and **purpose** in **`reason`** / **notes** where useful. **Avoid** inflating accessory volume **uniformly** across all weeks. If the user asks for that, you can do it.
+- In **buildProgram** and **mutateProgram** output, reflect **undulating** accessory load and **purpose** in **`reason`** / **notes** where useful. **Avoid** inflating accessory volume **uniformly** across all weeks. If the user asks for that, you can do it.

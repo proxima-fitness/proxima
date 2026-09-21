@@ -4,9 +4,9 @@
  * Builds the compact Program sanity check result (ADR 0025 / 02, C6) after a
  * batch has a concrete program to judge. Callers pass the program *before* and
  * *after* apply. This module does not read `hevyProgram` from the request and
- * does not call `readProgram` (that snapshot is stale after same-turn `buildWeek`).
+ * does not call `readProgram` (that snapshot is stale after same-turn `buildProgram`).
  *
- * After `buildWeek`, the caller plates week 1 (`plateWeek1Across`) then
+ * After `buildProgram`, the caller plates week 1 (`plateWeek1Across`) then
  * applies the Periodization wave (`plateThenStamp`) before same-turn
  * `mutateProgram`. Live-grid mutate passes the request-start program as both
  * before and the `applyOperations` result as after.
@@ -37,7 +37,7 @@ import {
 import type {
     TDayRef,
     TExerciseRoleAssignment,
-    TPlanProgram,
+    TProgramPlan,
     TProgramSanitySnapshot,
 } from "./types";
 
@@ -65,11 +65,11 @@ export function parseWeekCount(value: string | number | null | undefined): numbe
  * How many weeks to duplicate week 1 across. Same precedence as the client's
  * atomic commit: plan `durationWeeks`, then UI `programLength`, then 1.
  *
- * @param plan - Stashed `planProgram` output, if this turn planned
+ * @param plan - Plan from this turn's `buildProgram`, if any
  * @param programLength - Builder length from the request body
  */
 export function resolvePlateWeekCount(
-    plan: TPlanProgram | null | undefined,
+    plan: TProgramPlan | null | undefined,
     programLength: string | number | null | undefined,
 ): number {
     return Math.max(1, plan?.durationWeeks ?? parseWeekCount(programLength) ?? 1);
@@ -82,7 +82,7 @@ export function resolvePlateWeekCount(
  * This is the server copy of `buildFullProgramFromFirstWeek`. It lives here so
  * chat tools never import `program-builder/utils/helpers.ts` (client + sonner).
  *
- * @param week1 - Successful `buildWeek` routines (`folder_id` 0)
+ * @param week1 - Successful `buildProgram` routines (`folder_id` 0)
  * @param weekCount - From {@link resolvePlateWeekCount}; values below 1 become 1
  */
 export function plateWeek1Across(week1: THevyRoutine[], weekCount: number): THevyRoutine[] {
@@ -114,7 +114,7 @@ export type TPlateThenStampResult =
  * Plate week 1 across `weekCount`, then apply compiled Periodization stamp ops.
  * Compile Soft-fail does not return a plated clone.
  *
- * @param week1 - Successful `buildWeek` routines (`folder_id` 0)
+ * @param week1 - Successful `buildProgram` routines (`folder_id` 0)
  * @param wave - Stashed Periodization wave
  * @param roles - Stashed Exercise role assignments
  * @param weekCount - Program length in weeks
@@ -243,7 +243,7 @@ function changedDaysAfterApply(
  * @param input.userMessage - Last user text this turn (`""` if the route found none)
  * @param input.constraintProfile - In-request Constraint profile, or omitted
  * @param input.trainingProfile - In-request Training profile, or omitted
- * @param input.plan - Stashed plan, or omitted when the turn never called `planProgram`
+ * @param input.plan - Plan from `buildProgram`, or omitted when this turn has none
  * @param input.beforeProgram - Program the batch applied to (plate or live grid)
  * @param input.afterProgram - Program after `applyOperations`
  */
@@ -251,7 +251,7 @@ export function buildSanitySnapshot(input: {
     userMessage: string;
     constraintProfile?: TConstraintProfile | null;
     trainingProfile?: TTrainingProfile | null;
-    plan?: TPlanProgram | null;
+    plan?: TProgramPlan | null;
     beforeProgram: THevyRoutine[];
     afterProgram: THevyRoutine[];
 }): TProgramSanitySnapshot {

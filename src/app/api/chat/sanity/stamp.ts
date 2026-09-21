@@ -7,7 +7,7 @@
  * stamped. weight_kg is never invented.
  *
  * Depends on: ./periodization-wave, ./types, mutations/agentSchema
- * Used by: snapshot.ts plateThenStamp, tools.ts buildWeek, helpers.ts commit
+ * Used by: snapshot.ts plateThenStamp, tools.ts buildProgram, helpers.ts commit
  */
 
 import type { TAgentProgramOperation } from "@/components/program-builder/mutations/agentSchema";
@@ -109,7 +109,7 @@ function rpeForSet(set: THevySets, delta: number): number | null {
  * Compile week-1 + wave into `update_set` / `edit_exercise` ops for weeks 2..N.
  * Does not read later-week cells. Does not emit `add_set` or `edit_day_title`.
  *
- * @param week1 - Successful `buildWeek` routines (`folder_id` 0)
+ * @param week1 - Successful `buildProgram` routines (`folder_id` 0)
  * @param wave - Stashed Periodization wave
  * @param roles - Stashed Exercise role assignments (day 1-based, index 0-based)
  * @param weekCount - Program length in weeks
@@ -123,7 +123,7 @@ export function compilePeriodizationStamp(
     if (wave == null || !Array.isArray(wave.weeks) || wave.weeks.length === 0) {
         return fail(
             "periodizationStamp.missingWave",
-            "Periodization wave is missing. Call planProgram with a wave before buildWeek.",
+            "Periodization wave is missing. Call buildProgram with a periodizationWave.",
         );
     }
     if (!Array.isArray(roles) || roles.length === 0) {

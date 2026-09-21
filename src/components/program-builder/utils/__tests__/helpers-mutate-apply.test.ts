@@ -149,7 +149,7 @@ describe("collectMutationProposal", () => {
         expect(collectMutationProposal(messages, "ready", [makeDay()], appliedKeysRef())).toBeNull();
     });
 
-    it("skips mutateProgram parts after buildWeek in the same turn", () => {
+    it("skips mutateProgram parts after buildProgram in the same turn", () => {
         const messages: UIMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
             {
@@ -157,7 +157,7 @@ describe("collectMutationProposal", () => {
                 role: "assistant",
                 parts: [
                     {
-                        type: "tool-buildWeek",
+                        type: "tool-buildProgram",
                         toolCallId: "b1",
                         state: "output-available",
                         input: {},
@@ -466,7 +466,7 @@ describe("isAgentMutationLockActive", () => {
                 role: "assistant",
                 parts: [
                     {
-                        type: "tool-buildWeek",
+                        type: "tool-buildProgram",
                         toolCallId: "b1",
                         state: "output-available",
                         input: {},

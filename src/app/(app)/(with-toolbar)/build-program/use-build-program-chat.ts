@@ -240,7 +240,7 @@ function logJevDebugFromLatestTurn(messages: TChatMessage[]): void {
     const lastAssistant = [...messages].reverse().find((message) => message.role === "assistant");
     if (!lastAssistant) return;
     for (const part of lastAssistant.parts ?? []) {
-        if (part.type !== "tool-buildWeek" && part.type !== "tool-mutateProgram") continue;
+        if (part.type !== "tool-buildProgram" && part.type !== "tool-mutateProgram") continue;
         if (!("output" in part) || part.output == null || typeof part.output !== "object") continue;
         const jev = (part.output as { jev?: unknown }).jev;
         if (jev) console.log("[jev]", jev);

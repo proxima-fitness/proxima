@@ -217,7 +217,7 @@ describe("MessageBubbles mutation proposal", () => {
         expect(screen.queryByRole("button", { name: "Accept" })).toBeNull();
     });
 
-    it("does not open a proposal for mutateProgram after buildWeek in the same turn", () => {
+    it("does not open a proposal for mutateProgram after buildProgram in the same turn", () => {
         const day = makeDay();
         const messages: TChatMessage[] = [
             { id: "u1", role: "user", parts: [{ type: "text", text: "Build" }] },
@@ -226,7 +226,7 @@ describe("MessageBubbles mutation proposal", () => {
                 role: "assistant",
                 parts: [
                     {
-                        type: "tool-buildWeek",
+                        type: "tool-buildProgram",
                         toolCallId: "b1",
                         state: "output-available",
                         input: {},

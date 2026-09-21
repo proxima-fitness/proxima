@@ -17,7 +17,7 @@ import type { TConstraintProfile } from "../constraints/types";
 import type { TPeriodizationWave } from "./periodization-wave";
 
 /**
- * One mesocycle block from `planProgram`. `weeks` are 1-based indices inside
+ * One mesocycle block from `buildProgram`. `weeks` are 1-based indices inside
  * `durationWeeks`. Coverage treats name + intent as the claim text.
  */
 export type TPlanBlock = {
@@ -37,11 +37,11 @@ export type TExerciseRoleAssignment = {
 };
 
 /**
- * Fields week coverage and the later stamp read from a successful `planProgram`.
+ * Plan fields week coverage and the stamp read from a `buildProgram` call.
  * Extra keys (notes) may exist at runtime and are ignored. The wave must be
  * copied on write or slice 3 compiles `undefined`.
  */
-export type TPlanProgram = {
+export type TProgramPlan = {
     durationWeeks: number;
     daysPerWeek?: number;
     goal?: string;
@@ -102,15 +102,15 @@ export interface IProgramStalematePayload {
 }
 
 /**
- * Mutable per-request bag, same lifetime as `IBuildWeekOnceGuard`.
- * `planProgram` and a successful `buildWeek` write here so same-turn
+ * Mutable per-request bag, same lifetime as `IBuildProgramOnceGuard`.
+ * A successful `buildProgram` writes its plan and week 1 here so same-turn
  * `mutateProgram` can plate week 1 and know which weeks were claimed.
  * Slice 1 (ADR 0027) also counts Soft-fail keys and the same-week skip.
  * Slice 2 stashes the Periodization wave on `plan` and week-1 Exercise roles.
  */
 export interface IProgramSanityStash {
-    plan: TPlanProgram | null;
-    buildWeekRoutines: THevyRoutine[] | null;
+    plan: TProgramPlan | null;
+    buildProgramRoutines: THevyRoutine[] | null;
     exerciseRoles?: TExerciseRoleAssignment[] | null;
     skipSameWeekCoverage?: boolean;
     softFailCounts?: Record<string, number>;
@@ -157,7 +157,7 @@ export type TDayMatrixRow = {
 };
 
 /**
- * Compact delta for one `buildWeek` / `mutateProgram` success path.
+ * Compact delta for one `buildProgram` / `mutateProgram` success path.
  * `changedDays` are days whose title or stimulus moved during this apply.
  * `matchingWeek1Days` are later-week days that still match week 1 stimulus.
  */

@@ -11,7 +11,7 @@ import {
     resolvePlateWeekCount,
     snapshotForStandaloneEvaluate,
 } from "../snapshot";
-import type { TPlanProgram } from "../types";
+import type { TProgramPlan } from "../types";
 
 function makeSet(overrides: Partial<THevySets> = {}): THevySets {
     return {
@@ -57,7 +57,7 @@ function makeDay(overrides: Partial<THevyRoutine> = {}): THevyRoutine {
     };
 }
 
-const deloadPlan: TPlanProgram = {
+const deloadPlan: TProgramPlan = {
     durationWeeks: 4,
     daysPerWeek: 2,
     goal: "Get stronger",
