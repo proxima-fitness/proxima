@@ -1745,12 +1745,15 @@ export function getTools({
             'REQUIRED on any mid-chat add of injuries, excluded equipment, excluded areas, movement restrictions, or training preferences - call in the same turn (prefer before mutateProgram when both apply). ' +
             'Add freely when you recognize a new constraint. Remove/relax only on a User-stated change (user asserts the rule no longer applies) or direct the user to Edit profile. ' +
             'Never call removeExcludedEquipment, removeInjuries, or removeExcludedAreas to make a preferred split, template, or exercise set feasible - if profile conflicts with a requested style, adapt the program to the profile; do not edit the profile down. ' +
-            'Field map: health/injury → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
+            'Field map: injury, pain, or movement limits only → addInjuries; exclude equipment → addExcludedEquipment; exclude areas → addExcludedAreas; ' +
             'split/variability/progression/deload/peak/warmup → preferences. ' +
+            'addInjuries is Injuries & health issues only (pain, surgery, can\'t kneel, no overhead). Never put periodization, deload/peak/unload/taper week plans, mesocycle, or wave notes in addInjuries - those go on the Periodization wave or preferences.deloadWeek / peakWeek. ' +
             'Always pass rawStatement when the user spoke the constraint in chat. ' +
             'Examples: questionnaire submit with answers; "my shoulder hurts"; "I don\'t have access to cables"; "no more lunges"; "knee\'s fine now" (User-stated change → removeInjuries); "I got a new barbell".',
         inputSchema: z.object({
-            addInjuries: z.array(z.string()).optional().describe('New injury or health issues to add'),
+            addInjuries: z.array(z.string()).optional().describe(
+                'Injuries & health issues only: pain, injury, surgery recovery, or movement limits (can\'t kneel, no overhead, no floor). Not periodization, deload/peak week plans, or other program notes.',
+            ),
             removeInjuries: z.array(z.string()).optional().describe('Injuries resolved per User-stated change only - never remove to make a program style feasible'),
             addExcludedEquipment: z.array(z.string()).optional().describe(
                 'Equipment to exclude (Hevy values: barbell, dumbbell, kettlebell, machine, plate, resistance_band, suspension, other).',

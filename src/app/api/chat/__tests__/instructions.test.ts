@@ -136,6 +136,8 @@ describe("chat instructions.ts", () => {
             expect(prompt).not.toContain("removeChatRefinements");
             expect(prompt).not.toContain("addChatRefinements");
             expect(prompt).toContain("addInjuries");
+            expect(prompt).toContain("Injuries & health issues");
+            expect(prompt).toMatch(/never periodization/i);
             expect(prompt).toMatch(/can't kneel/);
             expect(prompt).toMatch(/no overhead/);
             expect(prompt).toMatch(/do not strip "can't kneel"/);
@@ -156,6 +158,8 @@ describe("chat instructions.ts", () => {
             expect(description).toMatch(/Never call removeExcludedEquipment/i);
             expect(description).toMatch(/adapt the program to the profile/i);
             expect(description).toMatch(/do not edit the profile down/i);
+            expect(description).toContain("Injuries & health issues");
+            expect(description).toMatch(/Never put periodization/i);
         });
 
         it("includes workflow when program is non-empty", () => {

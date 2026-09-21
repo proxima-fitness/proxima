@@ -42,7 +42,8 @@ Do not call **planProgram** or **buildWeek**.
 
 If there is something to persist on the first unlock turn after questionnaire submit or "Build my program", call **`updateConstraintProfile` once**.
 Persist non-empty questionnaire fields from the Active Constraint Profile or request context that are not yet written to Agentic memory.
-Map health to `addInjuries`.
+Map health to `addInjuries` only when it is an **Injuries & health issues** entry (pain, injury, surgery, movement limit).
+Periodization, deload / peak / unload / taper week plans, and mesocycle notes go on the **Periodization wave** or `preferences` (`deloadWeek` / `peakWeek`), never `addInjuries`.
 Map exclude equipment to `addExcludedEquipment`.
 Map exclude areas to `addExcludedAreas`.
 Map split, variability, progression, deload, peak, and warmup to `preferences`.
