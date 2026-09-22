@@ -192,6 +192,19 @@ The `periodizationWave` on **buildProgram** is how later weeks differ from week 
 - `accessory`: only on weeks whose block is a deload, unload, taper, or peak, and required there.
 - `mainRepRange`: only on a **Block boundary** (first week of a block after week 1), when the new block changes the rep target.
 - Special weeks are easier or harder work: RPE and sets on the wave. Keep day titles as they are. The block name carries "Deload" or "Peak", not the days.
+- Code checks the claim against the week before the block. A deload / unload / taper / recovery week needs lower main `rpeDelta` and/or `setCountDelta` than that week's row, and raises neither. A peak week needs a higher main `rpeDelta` than that week's row, or more sets with no lower RPE. Never copy the deload row onto a peak.
+
+Peak before a deload (6 weeks; rows only). Week 5 is harder than week 4; week 6 is easier than week 5:
+
+```json
+[
+  { "week": 4, "main": { "rpeDelta": 1, "setCountDelta": 1 } },
+  { "week": 5, "main": { "rpeDelta": 2, "setCountDelta": 0 }, "accessory": { "rpeDelta": 0, "setCountDelta": -1 } },
+  { "week": 6, "main": { "rpeDelta": -2, "setCountDelta": -1 }, "accessory": { "rpeDelta": -2, "setCountDelta": -1 } }
+]
+```
+
+When mains have no RPE, `rpeDelta` cannot make a peak harder; raise `setCountDelta` above the prior week instead.
 
 **Constraint profile preferences** shape the blocks and the wave when set: a yes on `deloadWeek` adds a deload block, and a yes on `peakWeek` adds a peak block before the end. If **Questionnaire advanced** was skipped, you still write a full wave yourself (for example, a steady RPE or set climb with a deload when the program is long enough). Code never fills in a wave for you.
 

@@ -4,7 +4,9 @@
  * Request-scoped **Program stalemate** (ADR 0027 / 01, C8; ADR 0029 / 02).
  * The same honor id or code-gate error twice this turn stops `buildProgram` /
  * `mutateProgram`. Schema, empty days, bad ids, and structural stamp Soft-fails
- * (`missingWave` / `missingRoles` / `emptyMains`) are not counted. Same-week
+ * (`missingWave` / `missingRoles` / `emptyMains`) are not counted. Code
+ * deload / peak hardness misses (`phaseHardness.*`, ADR 0032 C2) count and
+ * keep the clear-preference + **Fix it.** actions. Same-week
  * skip lives on the stash; the card click's next request sets it from the
  * exact user text.
  *
@@ -100,6 +102,7 @@ export function stalemateKeyForError(error: string): string | null {
         error.startsWith("constraint.") ||
         error.startsWith("training.") ||
         error.startsWith("skill.") ||
+        error.startsWith("phaseHardness.") ||
         error.startsWith("periodizationStamp")
     ) {
         return error;
@@ -260,11 +263,11 @@ function whyForKey(key: string): string {
     if (key === "constraint_violation") {
         return "A saved injury or health limit still conflicts with this program.";
     }
-    if (key === "constraint.peakHonor") {
-        return "Your saved peak-week preference still conflicts with this program.";
+    if (key === "phaseHardness.peak") {
+        return "The peak week still isn't harder than the week before it.";
     }
-    if (key === "constraint.deloadHonor") {
-        return "Your saved deload-week preference still conflicts with this program.";
+    if (key === "phaseHardness.deload") {
+        return "The deload week still isn't easier than the week before it.";
     }
     if (key === "constraint.splitHonor") {
         return "Your saved split preference still conflicts with this program.";
@@ -325,7 +328,7 @@ function preferenceActionsForKey(
 ): TProgramStalemateAction[] {
     const prefs = profile?.preferences;
     switch (key) {
-        case "constraint.peakHonor":
+        case "phaseHardness.peak":
             return [
                 preferenceClearAction(
                     "peakWeek",
@@ -334,7 +337,7 @@ function preferenceActionsForKey(
                 ),
                 fixItAction(),
             ];
-        case "constraint.deloadHonor":
+        case "phaseHardness.deload":
             return [
                 preferenceClearAction(
                     "deloadWeek",

@@ -385,11 +385,11 @@ describe("evaluate", () => {
         const postSystemOne = vi.fn(async (state: TProgramSanitySnapshot, questions: Record<string, unknown>) => {
             expect(state.matrix.map((row) => row.week)).toEqual([1, 2, 3]);
             expect(questions).not.toHaveProperty("constraint.progressionHonor");
-            expect(questions).toHaveProperty("constraint.deloadHonor");
+            expect(questions).not.toHaveProperty("constraint.deloadHonor");
             expect(questions).not.toHaveProperty("skill.periodizationCoverage");
             expect(questions).not.toHaveProperty("skill.weekIntentHonor");
             expect(questions).not.toHaveProperty("skill.stimulusHonor");
-            return { "constraint.deloadHonor": 0.9 };
+            return { "skill.sessionShape": 0.9 };
         });
 
         const result = await evaluate(stamped, { firstBuild: true, postSystemOne });

@@ -1041,6 +1041,48 @@ describe("chat tools.ts", () => {
                 expect(programSanityStash.plan?.periodizationWave).toEqual(fourWeekStampedWave);
             });
 
+            it("Soft-fails a Peak week carrying deload deltas before Jev, with the week, claim, and wave fix (ADR 0032 C2)", async () => {
+                vi.mocked(evaluate).mockClear();
+                const { buildProgramOnceGuard, buildProgram } = setup();
+                const fakePeakWave = {
+                    weeks: [
+                        { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+                        {
+                            week: 3,
+                            main: { rpeDelta: -2, setCountDelta: 0 },
+                            accessory: { rpeDelta: -1, setCountDelta: 0 },
+                        },
+                        {
+                            week: 4,
+                            main: { rpeDelta: -2, setCountDelta: 0 },
+                            accessory: { rpeDelta: -1, setCountDelta: 0 },
+                        },
+                    ],
+                };
+                const peakBlocks = [
+                    { name: "Accumulation", weeks: [1, 2], intent: "Volume" },
+                    { name: "Peak", weeks: [3], intent: "Heavy" },
+                    { name: "Deload", weeks: [4], intent: "Unload" },
+                ];
+
+                const output = (await buildProgram.execute({
+                    ...fourWeekPlan(fakePeakWave),
+                    blocks: peakBlocks,
+                    totalDays: 2,
+                    routines: twoDays,
+                })) as { error?: string; message?: string; routines?: unknown[] };
+
+                expect(output.error).toBe("phaseHardness.peak");
+                expect(output.message).toContain(
+                    "week 3 is labeled Peak but mains are not harder than week 2 (days 1, 2) — raise week 3 main rpeDelta and/or setCountDelta above week 2's row (do not copy the deload row).",
+                );
+                expect(output.message).not.toContain("does not honor");
+                expect(output.routines).toBeUndefined();
+                expect(buildProgramOnceGuard.locked).toBe(false);
+                expect(vi.mocked(evaluate)).not.toHaveBeenCalled();
+            });
+
             it("lands main clones when the Program stalemate same-week skip is this turn's user text", async () => {
                 const { buildProgramOnceGuard, programSanityStash, buildProgram } = setup(SAME_WEEK_SKIP_MESSAGE);
                 const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekDeloadWave), totalDays: 2, routines: twoDays })) as { error?: string };
@@ -1053,7 +1095,7 @@ describe("chat tools.ts", () => {
             it("leaves the guard unlocked when Jev rejects the stamped program", async () => {
                 vi.mocked(evaluate).mockResolvedValueOnce({
                     ok: false,
-                    misses: [{ id: "constraint.deloadHonor", detail: "does not honor constraint.deloadHonor" }],
+                    misses: [{ id: "constraint.splitHonor", detail: "does not honor constraint.splitHonor" }],
                 });
                 const { buildProgramOnceGuard, programSanityStash, buildProgram } = setup();
                 const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekStampedWave), totalDays: 2, routines: twoDays })) as {
@@ -1061,7 +1103,7 @@ describe("chat tools.ts", () => {
                     routines?: unknown[];
                 };
 
-                expect(output.error).toBe("constraint.deloadHonor");
+                expect(output.error).toBe("constraint.splitHonor");
                 expect(output.routines).toBeUndefined();
                 expect(buildProgramOnceGuard.locked).toBe(false);
                 expect(programSanityStash.buildProgramRoutines).toBeNull();
@@ -1521,7 +1563,8 @@ describe("chat tools.ts", () => {
             blocks: [
                 { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume, RPE 6-8" },
                 { name: "Intensification", weeks: [4, 5, 6], intent: "Heavier" },
-                { name: "Peak", weeks: [7, 8], intent: "Taper" },
+                { name: "Peak", weeks: [7], intent: "Heavy triples" },
+                { name: "Deload", weeks: [8], intent: "Taper" },
             ],
             periodizationWave: {
                 weeks: [
@@ -1533,8 +1576,8 @@ describe("chat tools.ts", () => {
                         main: { rpeDelta: 1, setCountDelta: 0 },
                         mainRepRange: { start: 5, end: 8 },
                     },
-                    { week: 5, main: { rpeDelta: 2, setCountDelta: 0 } },
-                    { week: 6, main: { rpeDelta: 2, setCountDelta: 0 } },
+                    { week: 5, main: { rpeDelta: 1, setCountDelta: 1 } },
+                    { week: 6, main: { rpeDelta: 1, setCountDelta: 1 } },
                     {
                         week: 7,
                         main: { rpeDelta: 2, setCountDelta: -1 },
@@ -1543,7 +1586,7 @@ describe("chat tools.ts", () => {
                     },
                     {
                         week: 8,
-                        main: { rpeDelta: 0, setCountDelta: -2 },
+                        main: { rpeDelta: -1, setCountDelta: -2 },
                         accessory: { rpeDelta: -2, setCountDelta: -2 },
                     },
                 ],

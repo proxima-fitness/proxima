@@ -91,10 +91,13 @@ import {
     resolvePlateWeekCount,
 } from '../sanity/snapshot';
 import {
+    evaluateFirstBuildPhaseHardness,
     evaluateFirstBuildWeekCoverage,
     evaluateWeekCoverage,
     formatFirstBuildWeekCoverageMessage,
+    formatPhaseHardnessMessage,
     formatWeekCoverageMessage,
+    planWeekIntents,
 } from '../sanity/week-coverage';
 import {
     applySameWeekSkipFromUserMessage,
@@ -944,7 +947,8 @@ export function getTools({
 
     /**
      * Lands a **First build** from week 1 (ADR 0027 / 04, 06): plate + stamp, then
-     * code week-coverage on mains, then one Jev Case 1 on the whole mesocycle.
+     * code week-coverage and deload / peak hardness on mains (ADR 0032 / 02), then
+     * one Jev Case 1 on the whole mesocycle.
      * Stamps from this call's `plan` wave (ADR 0030 / 01). Any Soft-fail returns
      * before the stash write and lock, so a full `buildProgram` retry stays open.
      *
@@ -984,6 +988,20 @@ export function getTools({
             return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
                 error: 'weekCoverage',
                 message: formatFirstBuildWeekCoverageMessage(coverage.misses),
+            });
+        }
+
+        const hardness = evaluateFirstBuildPhaseHardness(
+            stamped.program,
+            exerciseRoles,
+            planWeekIntents(plan),
+            constraintProfile?.preferences,
+            programSanityStash?.skipSameWeekCoverage === true,
+        );
+        if (!hardness.ok) {
+            return countedSoftFail('buildProgram', programSanityStash, constraintProfile, {
+                error: hardness.error,
+                message: formatPhaseHardnessMessage(hardness.misses),
             });
         }
 

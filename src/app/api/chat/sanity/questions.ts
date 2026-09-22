@@ -12,9 +12,11 @@
  * is not built, and the Periodization wave is not a progression system.
  * Skill phase honors (week intent, stimulus, periodization coverage) are not
  * asked (ADR 0032 C1): the matrix of title + set count + RPE cannot prove
- * Accumulation / Intensification / Peak semantics.
+ * Accumulation / Intensification / Peak semantics. Deload / peak hardness is
+ * code (`week-coverage.ts`, ADR 0032 C2–C3), so `constraint.deloadHonor` and
+ * `constraint.peakHonor` are not asked either.
  * Later standalone mutations (Case 2) omit whole-program Constraint questions
- * (split / variability / deload / peak) and Training / skill questions so a
+ * (split / variability) and Training / skill questions so a
  * pre-existing grid cannot lock out every batch. Delta Constraint questions
  * (injury / equipment / warmup) stay only when `changedDays` is non-empty.
  * Age / sex / height and `skill.exerciseObjectionReplace` are never asked.
@@ -39,8 +41,6 @@ import type {
 export const CONSTRAINT_QUESTION_IDS = [
     "constraint.splitHonor",
     "constraint.variabilityHonor",
-    "constraint.deloadHonor",
-    "constraint.peakHonor",
     "constraint.warmupPolicy",
 ] as const;
 
@@ -280,20 +280,6 @@ export function buildSanityQuestions(
             "Does `matrix` honor `constraintProfile.preferences.exerciseVariability`?",
             "Exercise variety across days matches the stated variability preference.",
             "Variety is clearly higher or lower than the stated preference.",
-        );
-    }
-    if (askWholeProgramConstraints && prefs?.deloadWeek === "yes") {
-        questions["constraint.deloadHonor"] = noul(
-            "Do the deload days in `matrix` honor a real deload given `weekIntents` and `constraintProfile.preferences.deloadWeek`?",
-            "Claimed deload days are meaningfully easier in working-set count or RPE than week 1. `matchesWeek1Stimulus` is already computed; do not count.",
-            "Claimed deload days still train hard, or the easier week is missing.",
-        );
-    }
-    if (askWholeProgramConstraints && prefs?.peakWeek === "yes") {
-        questions["constraint.peakHonor"] = noul(
-            "Does `matrix` honor `constraintProfile.preferences.peakWeek` given `weekIntents`?",
-            "A peak week is present and harder than surrounding weeks in a way that matches the preference.",
-            "The stated peak-week preference is ignored.",
         );
     }
     if (askDeltaConstraints && hasText(prefs?.warmupExercises)) {

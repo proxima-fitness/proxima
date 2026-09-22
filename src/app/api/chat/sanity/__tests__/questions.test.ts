@@ -59,32 +59,13 @@ describe("buildSanityQuestions", () => {
         expect(questions["constraint.warmupPolicy"]).toBeUndefined();
     });
 
-    it("includes constraint.deloadHonor only when deloadWeek is yes", () => {
-        const withDeload = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({ deloadWeek: "yes" }),
-        }));
-        const withoutDeload = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({ deloadWeek: "no" }),
-        }));
+    it("never asks constraint.deloadHonor / constraint.peakHonor, even when both preferences are yes (ADR 0032 C3)", () => {
+        const questions = buildSanityQuestions(emptySnapshot({
+            constraintProfile: initializeConstraintProfile({ deloadWeek: "yes", peakWeek: "yes" }),
+        }), { firstBuild: true });
 
-        expect(withDeload["constraint.deloadHonor"]).toBeDefined();
-        expect(withoutDeload["constraint.deloadHonor"]).toBeUndefined();
-    });
-
-    it("includes constraint.peakHonor only when peakWeek is yes", () => {
-        const withPeak = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({ peakWeek: "yes" }),
-        }));
-        const peakNo = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({ peakWeek: "no" }),
-        }));
-        const withoutPeak = buildSanityQuestions(emptySnapshot({
-            constraintProfile: initializeConstraintProfile({}),
-        }));
-
-        expect(withPeak["constraint.peakHonor"]).toBeDefined();
-        expect(peakNo["constraint.peakHonor"]).toBeUndefined();
-        expect(withoutPeak["constraint.peakHonor"]).toBeUndefined();
+        expect(questions["constraint.deloadHonor"]).toBeUndefined();
+        expect(questions["constraint.peakHonor"]).toBeUndefined();
     });
 
     it("omits whole-program Constraint and Training / skill on a standalone later mutation", () => {
@@ -204,7 +185,7 @@ describe("buildSanityQuestions", () => {
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
     });
 
-    it("keeps deload / peak / warmup questions on a stamped First build", () => {
+    it("keeps warmup but not deload / peak questions on a stamped First build", () => {
         const questions = buildSanityQuestions(emptySnapshot({
             constraintProfile: initializeConstraintProfile({
                 progressionSystem: "linear",
@@ -221,8 +202,8 @@ describe("buildSanityQuestions", () => {
             matrix: [dayRow(1, 1), dayRow(2, 1), dayRow(3, 1)],
         }), { firstBuild: true });
 
-        expect(questions["constraint.deloadHonor"]).toBeDefined();
-        expect(questions["constraint.peakHonor"]).toBeDefined();
+        expect(questions["constraint.deloadHonor"]).toBeUndefined();
+        expect(questions["constraint.peakHonor"]).toBeUndefined();
         expect(questions["constraint.warmupPolicy"]).toBeDefined();
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
         expect(Object.keys(questions).some((id) => id.includes("sameWeekProgram"))).toBe(false);

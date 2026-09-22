@@ -11,9 +11,12 @@
  *   or intent matches deload / peak / easy / taper (or unload / recovery), or
  *   `deloadWeek === "yes"` when the plan has no such block (last week).
  *
- * Both pass when the **Program stalemate** same-week skip is set. This module
- * does not judge whether a numeric change is "enough" of a deload. That is
- * Jev (`constraint.deloadHonor`).
+ * Both pass when the **Program stalemate** same-week skip is set.
+ *
+ * **First build** phase hardness ({@link evaluateFirstBuildPhaseHardness},
+ * ADR 0032 / 02, C2–C3): a claimed deload-class **Mesocycle block** week must
+ * have easier mains than the week before the claim, and a claimed peak must
+ * have harder mains. Code owns this; Jev is not asked `deloadHonor` / `peakHonor`.
  *
  * Depends on: ./types
  * Used by: snapshot.ts, tools.ts
@@ -279,4 +282,266 @@ export function formatFirstBuildWeekCoverageMessage(misses: TWeekCoverageMiss[])
     return misses
         .map((miss) => `weekCoverage: week ${miss.week} day ${miss.day} mains match week 1 set count and RPE`)
         .join("\n");
+}
+
+/** Phase a **Mesocycle block** claims for a week. `deload` covers unload / taper / recovery / easy. */
+export type TClaimedPhase = "deload" | "peak";
+
+/** Stamp clamps RPE here, so a peak cannot climb past a baseline already at it. */
+const MAX_RPE = 10;
+
+/** Deload-class and peak tokens. The first token in the text decides the phase. */
+const PHASE_TOKEN_RE = /\b(deload|unload|taper|recovery|easy|peak)\b/i;
+
+/** One claimed week: the phase, and the words the Soft-fail uses for the claim. */
+export type TPhaseClaim = {
+    week: number;
+    phase: TClaimedPhase;
+    claim: string;
+};
+
+/**
+ * One phase-hardness Soft-fail line. `notEasier` / `notHarder` compare mains
+ * with `baselineWeek` on `days`. `missingPeak` is `peakWeek: yes` with no
+ * block claiming a peak (`week` / `baselineWeek` are null, `days` empty).
+ * `mainsLackRpe` is true when RPE could not be compared on some missed day;
+ * `baselineAtRpeCap` when a missed peak day's baseline mains are already RPE 10.
+ */
+export type TPhaseHardnessMiss = {
+    kind: "notEasier" | "notHarder" | "missingPeak";
+    phase: TClaimedPhase;
+    week: number | null;
+    claim: string;
+    baselineWeek: number | null;
+    days: number[];
+    mainsLackRpe: boolean;
+    baselineAtRpeCap: boolean;
+};
+
+/** Code-gate result. `error` is the counted Soft-fail id of the first miss. */
+export type TPhaseHardnessResult =
+    | { ok: true; misses: [] }
+    | { ok: false; error: string; misses: TPhaseHardnessMiss[] };
+
+/** Constraint profile preferences the phase claims read. */
+type TPhasePreferences = {
+    deloadWeek?: string;
+    peakWeek?: string;
+};
+
+function phaseFromText(text: string): TClaimedPhase | null {
+    const match = PHASE_TOKEN_RE.exec(text);
+    if (!match) return null;
+    return match[1].toLowerCase() === "peak" ? "peak" : "deload";
+}
+
+/**
+ * Block name decides; intent is read only when the name names no phase, so a
+ * "Deload" block whose intent says "recover from the peak" stays a deload.
+ */
+function phaseForIntent(intent: TWeekIntent): TClaimedPhase | null {
+    return phaseFromText(intent.name) ?? phaseFromText(intent.intent);
+}
+
+/**
+ * Claimed deload-class and peak weeks after week 1. **Mesocycle block** claims
+ * win. When no block claims a deload and `deloadWeek === "yes"`, the last week
+ * is the claimed deload (same convention as {@link claimedWeekNumbers}) unless
+ * a block already claims it. `peakWeek === "yes"` never invents a week: the
+ * blocks must claim the peak ({@link evaluateFirstBuildPhaseHardness} Soft-fails
+ * `missingPeak` otherwise).
+ *
+ * @param weekIntents - From {@link planWeekIntents}
+ * @param preferences - Constraint profile preferences, if any
+ * @param lastWeek - Highest 1-based week on the stamped program
+ */
+export function claimedPhaseWeeks(
+    weekIntents: TWeekIntent[],
+    preferences: TPhasePreferences | undefined,
+    lastWeek: number,
+): TPhaseClaim[] {
+    const claims: TPhaseClaim[] = [];
+    for (const intent of weekIntents) {
+        if (intent.week <= 1) continue;
+        const phase = phaseForIntent(intent);
+        if (phase) claims.push({ week: intent.week, phase, claim: `labeled ${intent.name}` });
+    }
+    const hasDeloadClaim = claims.some((claim) => claim.phase === "deload");
+    const lastWeekClaimed = claims.some((claim) => claim.week === lastWeek);
+    if (!hasDeloadClaim && !lastWeekClaimed && preferences?.deloadWeek === "yes" && lastWeek > 1) {
+        claims.push({ week: lastWeek, phase: "deload", claim: "the deloadWeek: yes deload" });
+    }
+    return claims.sort((a, b) => a.week - b.week);
+}
+
+/**
+ * The week a claim is judged against: the latest earlier week not claimed
+ * with the same phase. A two-week deload block compares both weeks with the
+ * week before the block, not week 2 of the deload with week 1 of it.
+ */
+function baselineWeekFor(claim: TPhaseClaim, claims: TPhaseClaim[]): number {
+    const samePhase = new Set(
+        claims.filter((other) => other.phase === claim.phase).map((other) => other.week),
+    );
+    let week = claim.week - 1;
+    while (week > 1 && samePhase.has(week)) week -= 1;
+    return week;
+}
+
+/** Total working sets and top RPE across a day's `main` rows. */
+type TMainLoad = {
+    sets: number;
+    rpe: number | null;
+};
+
+function mainLoad(day: THevyRoutine, mainIndexes: Set<number>): TMainLoad {
+    return mainStimuli(day, mainIndexes).reduce<TMainLoad>(
+        (load, row) => ({
+            sets: load.sets + row.workingSetCount,
+            rpe: row.rpeMax == null ? load.rpe : Math.max(load.rpe ?? row.rpeMax, row.rpeMax),
+        }),
+        { sets: 0, rpe: null },
+    );
+}
+
+/** -1 / 0 / 1 when top main RPE went down / held / went up; 0 when either side has none. */
+function rpeDirection(current: TMainLoad, baseline: TMainLoad): number {
+    if (current.rpe == null || baseline.rpe == null) return 0;
+    return Math.sign(current.rpe - baseline.rpe);
+}
+
+/**
+ * Deload-class: fewer sets or lower RPE, and neither goes up. A set count
+ * floored at 1 (ADR 0029) still passes on lower RPE.
+ */
+function isEasier(current: TMainLoad, baseline: TMainLoad): boolean {
+    const rpe = rpeDirection(current, baseline);
+    return (current.sets < baseline.sets || rpe < 0) && current.sets <= baseline.sets && rpe <= 0;
+}
+
+/**
+ * Peak: higher RPE (an intensity peak may cut sets), or more sets without a
+ * lower RPE.
+ */
+function isHarder(current: TMainLoad, baseline: TMainLoad): boolean {
+    const rpe = rpeDirection(current, baseline);
+    return rpe > 0 || (current.sets > baseline.sets && rpe === 0);
+}
+
+/**
+ * Soft-fail id for a phase-hardness miss. Counted toward a **Program
+ * stalemate** like any honor id.
+ *
+ * @param phase - Claimed phase that missed
+ */
+export function phaseHardnessErrorId(phase: TClaimedPhase): string {
+    return `phaseHardness.${phase}`;
+}
+
+/**
+ * **First build** deload / peak hardness (ADR 0032 C2). On the stamped
+ * program, every day with mains on a claimed week is compared with the same
+ * `order` on its baseline week ({@link baselineWeekFor}). Deload-class must
+ * be easier, peak must be harder, on **Exercise role** mains only
+ * (accessories cannot satisfy it). `peakWeek === "yes"` with no peak claim is
+ * a miss. The **Program stalemate** same-week skip passes, like week-coverage.
+ *
+ * @param program - `plateThenStamp` result (all weeks)
+ * @param roles - Stashed week-1 Exercise roles
+ * @param weekIntents - From {@link planWeekIntents} on this call's plan
+ * @param preferences - Constraint profile preferences, if any
+ * @param skipSameWeekCoverage - Stash flag from the stalemate same-week click
+ */
+export function evaluateFirstBuildPhaseHardness(
+    program: THevyRoutine[],
+    roles: TExerciseRoleAssignment[],
+    weekIntents: TWeekIntent[],
+    preferences: TPhasePreferences | undefined,
+    skipSameWeekCoverage = false,
+): TPhaseHardnessResult {
+    if (skipSameWeekCoverage) return { ok: true, misses: [] };
+
+    const lastWeek = program.reduce((max, routine) => Math.max(max, (routine.folder_id ?? 0) + 1), 1);
+    const claims = claimedPhaseWeeks(weekIntents, preferences, lastWeek);
+    const mainsByDay = mainIndexesByDay(roles);
+    const dayAt = new Map<string, THevyRoutine>();
+    for (const routine of program) {
+        dayAt.set(`${(routine.folder_id ?? 0) + 1}:${Number(routine.order)}`, routine);
+    }
+
+    const misses: TPhaseHardnessMiss[] = [];
+    if (preferences?.peakWeek === "yes" && lastWeek > 1 && !claims.some((claim) => claim.phase === "peak")) {
+        misses.push({
+            kind: "missingPeak",
+            phase: "peak",
+            week: null,
+            claim: "peakWeek: yes",
+            baselineWeek: null,
+            days: [],
+            mainsLackRpe: false,
+            baselineAtRpeCap: false,
+        });
+    }
+
+    for (const claim of claims) {
+        const baselineWeek = baselineWeekFor(claim, claims);
+        const days: number[] = [];
+        let mainsLackRpe = false;
+        let baselineAtRpeCap = false;
+        for (const [day, mainIndexes] of mainsByDay) {
+            const current = dayAt.get(`${claim.week}:${day}`);
+            const baseline = dayAt.get(`${baselineWeek}:${day}`);
+            if (!current || !baseline || mainIndexes.size === 0) continue;
+            const currentLoad = mainLoad(current, mainIndexes);
+            const baselineLoad = mainLoad(baseline, mainIndexes);
+            const ok = claim.phase === "deload"
+                ? isEasier(currentLoad, baselineLoad)
+                : isHarder(currentLoad, baselineLoad);
+            if (ok) continue;
+            days.push(day);
+            if (currentLoad.rpe == null || baselineLoad.rpe == null) mainsLackRpe = true;
+            if (claim.phase === "peak" && (baselineLoad.rpe ?? 0) >= MAX_RPE) baselineAtRpeCap = true;
+        }
+        if (days.length === 0) continue;
+        misses.push({
+            kind: claim.phase === "deload" ? "notEasier" : "notHarder",
+            phase: claim.phase,
+            week: claim.week,
+            claim: claim.claim,
+            baselineWeek,
+            days: days.sort((a, b) => a - b),
+            mainsLackRpe,
+            baselineAtRpeCap,
+        });
+    }
+
+    if (misses.length === 0) return { ok: true, misses: [] };
+    misses.sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
+    return { ok: false, error: phaseHardnessErrorId(misses[0].phase), misses };
+}
+
+function phaseHardnessLine(miss: TPhaseHardnessMiss): string {
+    if (miss.kind === "missingPeak") {
+        return "phaseHardness: peakWeek is yes but no Mesocycle block claims a Peak week — add a Peak block before the end and give its main rpeDelta and/or setCountDelta higher values than the week before it.";
+    }
+    const days = `day${miss.days.length > 1 ? "s" : ""} ${miss.days.join(", ")}`;
+    const rpeNote = miss.mainsLackRpe
+        ? " Those mains have no RPE, so rpeDelta cannot move them; change setCountDelta."
+        : miss.baselineAtRpeCap
+            ? ` Week ${miss.baselineWeek} mains are already RPE 10, so raise setCountDelta or lower week ${miss.baselineWeek}'s rpeDelta.`
+            : "";
+    if (miss.kind === "notHarder") {
+        return `phaseHardness: week ${miss.week} is ${miss.claim} but mains are not harder than week ${miss.baselineWeek} (${days}) — raise week ${miss.week} main rpeDelta and/or setCountDelta above week ${miss.baselineWeek}'s row (do not copy the deload row).${rpeNote}`;
+    }
+    return `phaseHardness: week ${miss.week} is ${miss.claim} but mains are not easier than week ${miss.baselineWeek} (${days}) — lower week ${miss.week} main rpeDelta and/or setCountDelta below week ${miss.baselineWeek}'s row, and raise neither.${rpeNote}`;
+}
+
+/**
+ * {@link evaluateFirstBuildPhaseHardness} misses as Soft-fail lines: week,
+ * claim, and the **Periodization wave** fix.
+ *
+ * @param misses - Phase-hardness misses
+ */
+export function formatPhaseHardnessMessage(misses: TPhaseHardnessMiss[]): string {
+    return misses.map(phaseHardnessLine).join("\n");
 }

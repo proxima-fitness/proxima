@@ -57,7 +57,7 @@ function profile(overrides: Partial<TConstraintProfile> = {}): TConstraintProfil
 }
 
 describe("stalemateKeyForError", () => {
-    it("counts code gates and Jev honor ids", () => {
+    it("counts code gates, phase hardness, and Jev honor ids", () => {
         expect(stalemateKeyForError("constraint_violation")).toBe("constraint_violation");
         expect(stalemateKeyForError("weekCoverage")).toBe("weekCoverage");
         expect(stalemateKeyForError(SQUAT_KNEE.id)).toBe(SQUAT_KNEE.id);
@@ -65,7 +65,9 @@ describe("stalemateKeyForError", () => {
         expect(stalemateKeyForError("training.sessionDurationFit")).toBe(
             "training.sessionDurationFit",
         );
-        expect(stalemateKeyForError("constraint.peakHonor")).toBe("constraint.peakHonor");
+        expect(stalemateKeyForError("constraint.splitHonor")).toBe("constraint.splitHonor");
+        expect(stalemateKeyForError("phaseHardness.peak")).toBe("phaseHardness.peak");
+        expect(stalemateKeyForError("phaseHardness.deload")).toBe("phaseHardness.deload");
     });
 
     it("does not count schema, empty-day, bad id, readProgram_required, or structural stamp Soft-fails", () => {
@@ -83,19 +85,19 @@ describe("stalemateKeyForError", () => {
 describe("shouldEscalate", () => {
     it("escalates on the second of the same key this request", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(false);
-        expect(stash.softFailCounts?.["constraint.peakHonor"]).toBe(1);
-        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(true);
+        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(false);
+        expect(stash.softFailCounts?.["constraint.splitHonor"]).toBe(1);
+        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(true);
         expect(stash.stalemateStopped).toBe(true);
     });
 
     it("does not increment a different key onto the first", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.peakHonor")).toBe(false);
+        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(false);
         expect(shouldEscalate(stash, "weekCoverage")).toBe(false);
         expect(stash.stalemateStopped).toBeUndefined();
         expect(stash.softFailCounts).toEqual({
-            "constraint.peakHonor": 1,
+            "constraint.splitHonor": 1,
             weekCoverage: 1,
         });
     });
@@ -223,9 +225,9 @@ describe("buildStalematePayload", () => {
         expect(buildStalematePayload("weekCoverage", null).kind).toBe("weekCoverage");
     });
 
-    it("gives peakHonor a preference clear and Fix it", () => {
+    it("gives a code peak-hardness miss a preference clear and Fix it", () => {
         const payload = buildStalematePayload(
-            "constraint.peakHonor",
+            "phaseHardness.peak",
             profile({ preferences: {
                 splitType: "",
                 exerciseVariability: "",
@@ -237,6 +239,7 @@ describe("buildStalematePayload", () => {
         );
         expect(payload.kind).toBe("constraint");
         expect(payload.chips).toEqual([]);
+        expect(payload.why).toBe("The peak week still isn't harder than the week before it.");
         expect(payload.actions).toEqual([
             {
                 label: "I don't need a peak week",

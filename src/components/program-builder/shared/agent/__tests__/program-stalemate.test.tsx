@@ -328,7 +328,7 @@ describe("ProgramStalemateCard", () => {
         expect(sendMessage).toHaveBeenCalledWith({ text: FIX_IT_MESSAGE }, undefined);
     });
 
-    it("shows preference clear and Fix it for peakHonor", async () => {
+    it("shows preference clear and Fix it for a peak-hardness miss", async () => {
         userState.user = { id: "user-1" };
         getUserConstraints.mockResolvedValue({
             ...emptyUserConstraintProfileRecord(),
@@ -341,7 +341,7 @@ describe("ProgramStalemateCard", () => {
         const sendMessage = vi.fn(async () => {});
         const onPreferenceChange = vi.fn();
         const peakPayload = buildStalematePayload(
-            "constraint.peakHonor",
+            "phaseHardness.peak",
             {
                 injuries: [],
                 excludedEquipment: [],
