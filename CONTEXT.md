@@ -499,10 +499,10 @@ _Avoid_: Periodization, applying the questionnaire progression system at **First
 ### Periodization wave
 
 
-Andy-authored week-by-week **Periodization** targets on the **First build** land call (`buildProgram`). Required with week 1 (or share-expand roles). Deltas from week 1 on **Exercise role** mains (RPE and set count). Absolute rep range only at a **Block boundary**. Accessory RPE/set line only on claimed deload or peak weeks. Code applies it before the grid may land. Distinct from **Progression**.
+Andy-authored week-by-week **Periodization** targets on the **First build** land call (`buildProgram`). Required with week 1 (or share-expand roles). Deltas from week 1 on **Exercise role** mains (RPE and set count). Every week after week 1 must change mains (nonzero RPE or set-count delta, or a **Block boundary** rep range). Absolute rep range only at a **Block boundary**. Accessory RPE/set line only on claimed deload or peak weeks. Code applies it before the grid may land. Distinct from **Progression**.
 
 
-_Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays, Andy emitting per-week `mutateProgram` `update_set` as the apply path, code-invented default wave, a separate plan tool that only stores the wave
+_Avoid_: weekProgression, progression table, overload recipe, per-lift kg arrays, Andy emitting per-week `mutateProgram` `update_set` as the apply path, code-invented default wave, a separate plan tool that only stores the wave, later-week mains left at week-1 zeros
 
 
 
@@ -521,10 +521,21 @@ _Avoid_: Compound flag on a Hevy exercise template, first-row-is-the-main (warmu
 ### Block boundary
 
 
-The first week of a new named block on the **First build** plan (new job: intensification, peak, deload). Rep range on the **Periodization wave** may change here. When exercise variability is `lots`, lifts may swap here, not every week. Distinct from **Current week**.
+The first week of a new named **Mesocycle block** on the **First build** plan (new job: intensification, peak, deload). Rep range on the **Periodization wave** may change here. When exercise variability is `lots`, lifts may swap here, not every week. Distinct from **Current week**.
 
 
 _Avoid_: Every Sunday, weekly main-lift hopping, using **Selected week**
+
+
+
+
+### Mesocycle block
+
+
+Andy-named span of weeks on a **Proxima program** (name, week list, intent) written at **First build**. Claimed phases for the athlete UI and later coach context. Persisted on the program. Distinct from **Block boundary** (the first week of a new block) and from the **Periodization wave** (the numeric deltas). Code checks that a claimed deload-class week is easier and a claimed peak is harder on mains; Jev does not re-judge those phase labels from set-count and RPE alone.
+
+
+_Avoid_: weekIntents (implementation snapshot field), plan blocks as Soft-fail evidence for skill phase honors, treating persistence as a substitute for the wave
 
 
 
@@ -1237,10 +1248,10 @@ _Avoid_: Sync validator, ConstraintAwareMutation (ticket name), advisory prompt-
 ### Program sanity check
 
 
-Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, and week-coverage (later-week mains still matching week 1 fail **First build** unless a **Program stalemate** same-week skip this build). Injury and excluded-equipment semantic checks are per unique exercise title × each saved string on that snapshot. Other Constraint profile preferences, Andy-authored Training profile fit, and skill-principle misses **Soft tool failure** so Andy can retry until a **Program stalemate**. Does not run on manual grid edits or Sync.
+Named check on a proposed program snapshot before it lands on the builder (**First build** or **Program mutation batch**). **First build** is judged on the full periodized program after the **Periodization wave** is applied, not on week 1 alone. Later batches only re-check what the new work can break (injury, equipment, warmup). Code owns schema, ids, empty days, week-coverage (later-week mains still matching week 1 fail **First build** unless a **Program stalemate** same-week skip this build), and claimed deload / peak hardness vs the prior week. Injury and excluded-equipment semantic checks are per unique exercise title × each saved string on that snapshot. Other Constraint profile preferences and Andy-authored Training profile fit may **Soft tool failure** until a **Program stalemate**. Skill phase-honor questions (`stimulusHonor`, `weekIntentHonor`, `periodizationCoverage`) do not Soft-fail **First build**. Does not run on manual grid edits or Sync.
 
 
-_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only land without the wave, one blob injury/equipment question for the whole grid, `constraint.progressionHonor` as a **First build** question
+_Avoid_: Program verdict, catalog entry, scorecard (`rateProgram`), Mutation constraint gate (the substring/empty-day subset only), Jev on a week-1-only land without the wave, one blob injury/equipment question for the whole grid, `constraint.progressionHonor` as a **First build** question, Jev grading Accumulation / Peak from title + set count + RPE alone
 
 
 

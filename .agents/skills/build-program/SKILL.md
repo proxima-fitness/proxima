@@ -187,7 +187,7 @@ A **warmup set** is a lighter set on a working lift; use set type `"warmup"` onl
 The `periodizationWave` on **buildProgram** is how later weeks differ from week 1. It is required. Code applies it on that same call. See the **buildProgram** schema for field details.
 
 - One row per week, `1..durationWeeks`. Week 1 is the baseline: `main` deltas both `0`, no `accessory`, no `mainRepRange`.
-- `main`: `rpeDelta` and `setCountDelta` from week 1, applied to every `main` row. Every week after week 1 needs a non-zero main delta, or its mains are a copy of week 1 and the build Soft-fails.
+- `main`: `rpeDelta` and `setCountDelta` from week 1, applied to every `main` row. Every week after week 1 needs a non-zero main delta (or a `mainRepRange` on a **Block boundary**). The schema rejects a later week with both main deltas `0` and no `mainRepRange`.
 - Working-set count floors at **1**. A deload or peak with a large negative `setCountDelta` may leave one working set; do **not** inflate week-1 baselines just to absorb that delta.
 - `accessory`: only on weeks whose block is a deload, unload, taper, or peak, and required there.
 - `mainRepRange`: only on a **Block boundary** (first week of a block after week 1), when the new block changes the rep target.

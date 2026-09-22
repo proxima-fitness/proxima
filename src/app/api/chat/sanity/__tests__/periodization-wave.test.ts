@@ -2,8 +2,8 @@
  * @module chat/sanity/periodization-wave tests
  *
  * Periodization wave refine (ADR 0027 / 02, C3 input). Schema Soft-fail
- * cases: week identity, week-1 zeros, accessory iff deload/peak, rep range
- * only on a Block boundary.
+ * cases: week identity, week-1 zeros, later weeks change mains (ADR 0032 / 03),
+ * accessory iff deload/peak, rep range only on a Block boundary.
  */
 
 import { describe, expect, it } from "vitest";
@@ -315,5 +315,112 @@ describe("periodizationWaveSchema + refinePeriodizationWave", () => {
             },
         });
         expect(omittedOnBoundary.success).toBe(true);
+    });
+
+    it("rejects a later week whose mains are flat with no mainRepRange", () => {
+        const parsed = parseWave({
+            durationWeeks: 4,
+            blocks: accumulationDeloadBlocks,
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 2, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+                    {
+                        week: 4,
+                        main: { rpeDelta: -2, setCountDelta: -1 },
+                        accessory: { rpeDelta: -2, setCountDelta: -1 },
+                    },
+                ],
+            },
+        });
+        expect(parsed.success).toBe(false);
+        if (parsed.success) return;
+        const issue = parsed.error.issues.find((i) => i.message.startsWith("Week 2 mains"));
+        expect(issue?.message).toContain("must change from week 1");
+        expect(issue?.path).toEqual(["periodizationWave", "weeks", 1, "main"]);
+    });
+
+    it("accepts a later week that moves only RPE or only set count", () => {
+        const rpeOnly = parseWave({
+            durationWeeks: 4,
+            blocks: accumulationDeloadBlocks,
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+                    { week: 3, main: { rpeDelta: 2, setCountDelta: 0 } },
+                    {
+                        week: 4,
+                        main: { rpeDelta: -1, setCountDelta: 0 },
+                        accessory: { rpeDelta: -1, setCountDelta: 0 },
+                    },
+                ],
+            },
+        });
+        expect(rpeOnly.success).toBe(true);
+
+        const setsOnly = parseWave({
+            durationWeeks: 4,
+            blocks: accumulationDeloadBlocks,
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 2, main: { rpeDelta: 0, setCountDelta: 1 } },
+                    { week: 3, main: { rpeDelta: 0, setCountDelta: 2 } },
+                    {
+                        week: 4,
+                        main: { rpeDelta: 0, setCountDelta: -1 },
+                        accessory: { rpeDelta: 0, setCountDelta: -1 },
+                    },
+                ],
+            },
+        });
+        expect(setsOnly.success).toBe(true);
+    });
+
+    it("accepts flat mains with a mainRepRange on a Block boundary but not off one", () => {
+        const onBoundary = parseWave({
+            durationWeeks: 4,
+            blocks: [
+                { name: "Accumulation", weeks: [1, 2], intent: "Volume" },
+                { name: "Intensification", weeks: [3, 4], intent: "Heavier" },
+            ],
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    { week: 2, main: { rpeDelta: 0, setCountDelta: 1 } },
+                    {
+                        week: 3,
+                        main: { rpeDelta: 0, setCountDelta: 0 },
+                        mainRepRange: { start: 4, end: 6 },
+                    },
+                    { week: 4, main: { rpeDelta: 1, setCountDelta: 0 } },
+                ],
+            },
+        });
+        expect(onBoundary.success).toBe(true);
+
+        const offBoundary = parseWave({
+            durationWeeks: 4,
+            blocks: accumulationDeloadBlocks,
+            periodizationWave: {
+                weeks: [
+                    { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
+                    {
+                        week: 2,
+                        main: { rpeDelta: 0, setCountDelta: 0 },
+                        mainRepRange: { start: 8, end: 10 },
+                    },
+                    { week: 3, main: { rpeDelta: 1, setCountDelta: 1 } },
+                    {
+                        week: 4,
+                        main: { rpeDelta: -2, setCountDelta: -1 },
+                        accessory: { rpeDelta: -2, setCountDelta: -1 },
+                    },
+                ],
+            },
+        });
+        expect(offBoundary.success).toBe(false);
     });
 });

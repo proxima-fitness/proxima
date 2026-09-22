@@ -1,7 +1,8 @@
 /**
  * @module chat/sanity/periodization-wave
  *
- * Zod for the **Periodization wave** Andy submits on `buildProgram` (ADR 0027 / 02, ADR 0030 / 01).
+ * Zod for the **Periodization wave** Andy submits on `buildProgram` (ADR 0027 / 02, ADR 0030 / 01,
+ * ADR 0032 / 03).
  * Shape lives here; refine needs `durationWeeks` and `blocks` so it runs from
  * `buildProgramInputSchema.superRefine`. Slice 3 compiles this stash. No stamp.
  *
@@ -105,7 +106,8 @@ export function blockBoundaryWeeks(blocks: TWaveBlock[]): Set<number> {
 
 /**
  * Adds Zod issues when the wave does not cover 1..N, week 1 is not a zero
- * baseline, accessory is missing/extra vs claimed deload/peak weeks, or
+ * baseline, a later week leaves mains flat (both deltas 0, no `mainRepRange`;
+ * ADR 0032 C4), accessory is missing/extra vs claimed deload/peak weeks, or
  * `mainRepRange` sits off a Block boundary.
  *
  * @param data - Parsed plan fields the wave is checked against
@@ -173,6 +175,15 @@ export function refinePeriodizationWave(data: TWavePlan, ctx: z.RefinementCtx): 
                     ? `Week ${row.week} accessory is required on a deload / unload / taper / peak week`
                     : `Week ${row.week} accessory is only allowed on a deload / unload / taper / peak week`,
                 path: [...path, "accessory"],
+            });
+        }
+
+        const mainsFlat = row.main.rpeDelta === 0 && row.main.setCountDelta === 0;
+        if (mainsFlat && !hasMainRepRange(row)) {
+            ctx.addIssue({
+                code: "custom",
+                message: `Week ${row.week} mains must change from week 1: set a nonzero main rpeDelta or setCountDelta, or a mainRepRange on a Block boundary`,
+                path: [...path, "main"],
             });
         }
 

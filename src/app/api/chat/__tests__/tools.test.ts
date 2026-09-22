@@ -187,14 +187,19 @@ function emptyStash(): IProgramSanityStash {
     return { plan: null, buildProgramRoutines: null };
 }
 
-const fourWeekDeloadWave = {
+/**
+ * Zod-legal wave whose mains move only by RPE. On sets already at RPE 10 (the
+ * stamp caps there) or with no RPE, weeks 2-3 stamp as week-1 clones, the one
+ * way week-coverage can still see them now that flat later weeks fail Zod (ADR 0032 / 03).
+ */
+const fourWeekRpeOnlyWave = {
     weeks: [
         { week: 1, main: { rpeDelta: 0, setCountDelta: 0 } },
-        { week: 2, main: { rpeDelta: 0, setCountDelta: 0 } },
-        { week: 3, main: { rpeDelta: 0, setCountDelta: 0 } },
+        { week: 2, main: { rpeDelta: 1, setCountDelta: 0 } },
+        { week: 3, main: { rpeDelta: 1, setCountDelta: 0 } },
         {
             week: 4,
-            main: { rpeDelta: 0, setCountDelta: 0 },
+            main: { rpeDelta: -1, setCountDelta: 0 },
             accessory: { rpeDelta: -1, setCountDelta: 0 },
         },
     ],
@@ -958,6 +963,14 @@ describe("chat tools.ts", () => {
                 dayNumber,
                 title: `Day ${dayNumber}`,
             }));
+            /** Mains at the RPE cap, so `fourWeekRpeOnlyWave` stamps weeks 2-3 as clones. */
+            const twoDaysAtRpeCap = twoDays.map((day) => ({
+                ...day,
+                exercises: day.exercises.map((exercise) => ({
+                    ...exercise,
+                    sets: exercise.sets.map((set) => ({ ...set, rpe: 10 })),
+                })),
+            }));
 
             function setup(userMessage = "Build me a 4 week program") {
                 const buildProgramOnceGuard = { locked: false };
@@ -1008,7 +1021,7 @@ describe("chat tools.ts", () => {
                 vi.mocked(evaluate).mockClear();
                 const { buildProgramOnceGuard, programSanityStash, buildProgram } = setup();
 
-                const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekDeloadWave), totalDays: 2, routines: twoDays })) as {
+                const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekRpeOnlyWave), totalDays: 2, routines: twoDaysAtRpeCap })) as {
                     error?: string;
                     message?: string;
                     routines?: unknown[];
@@ -1085,7 +1098,7 @@ describe("chat tools.ts", () => {
 
             it("lands main clones when the Program stalemate same-week skip is this turn's user text", async () => {
                 const { buildProgramOnceGuard, programSanityStash, buildProgram } = setup(SAME_WEEK_SKIP_MESSAGE);
-                const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekDeloadWave), totalDays: 2, routines: twoDays })) as { error?: string };
+                const output = (await buildProgram.execute({ ...fourWeekPlan(fourWeekRpeOnlyWave), totalDays: 2, routines: twoDaysAtRpeCap })) as { error?: string };
 
                 expect(output.error).toBeUndefined();
                 expect(programSanityStash.skipSameWeekCoverage).toBe(true);
@@ -1270,6 +1283,19 @@ describe("chat tools.ts", () => {
                 expect(inputSchema.safeParse({ expandHevyShareSeed: { exerciseRoles: seedRoles } }).success).toBe(false);
             });
 
+            it("schema rejects a later week with flat mains before stamp or week-coverage", () => {
+                const { inputSchema } = asInputSchemaTool(getTools({}).buildProgram);
+                const flatWeekTwo = {
+                    weeks: fourWeekStampedWave.weeks.map((row) => (
+                        row.week === 2 ? { week: 2, main: { rpeDelta: 0, setCountDelta: 0 } } : row
+                    )),
+                };
+                expect(inputSchema.safeParse({
+                    ...fourWeekPlan(flatWeekTwo),
+                    expandHevyShareSeed: { exerciseRoles: seedRoles },
+                }).success).toBe(false);
+            });
+
             it("expands the seed as First build: stamped Case 1 once, then locks", async () => {
                 vi.mocked(evaluate).mockClear();
                 const { buildProgramOnceGuard, programSanityStash, buildProgram } = setup();
@@ -1296,7 +1322,14 @@ describe("chat tools.ts", () => {
             });
 
             it("Soft-fails a clone wave on later-week mains, like any First build", async () => {
-                const { buildProgramOnceGuard, buildProgram } = setup(seed, undefined, fourWeekDeloadWave);
+                const noRpeSeed = seed.map((day) => ({
+                    ...day,
+                    exercises: day.exercises.map((exercise) => ({
+                        ...exercise,
+                        sets: exercise.sets.map((set) => ({ ...set, rpe: null })),
+                    })),
+                }));
+                const { buildProgramOnceGuard, buildProgram } = setup(noRpeSeed, undefined, fourWeekRpeOnlyWave);
 
                 const output = await buildProgram.execute({ expandHevyShareSeed: { exerciseRoles: seedRoles } });
 
@@ -2085,7 +2118,7 @@ describe("chat tools.ts", () => {
                     { name: "Accumulation", weeks: [1, 2, 3], intent: "Volume" },
                     { name: "Deload", weeks: [4], intent: "Unload" },
                 ],
-                periodizationWave: fourWeekDeloadWave,
+                periodizationWave: fourWeekRpeOnlyWave,
             };
 
             const dayRoutine = (dayNumber: number, title: string) => ({
@@ -2097,7 +2130,8 @@ describe("chat tools.ts", () => {
                     title: "Bench Press (Barbell)",
                     notes: "",
                     role: "main",
-                    sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 8 }],
+                    // At the RPE cap so the RPE-only wave stamps claimed-week clones.
+                    sets: [{ type: "normal" as const, reps: 8, rep_range: { start: 8, end: 10 }, rpe: 10 }],
                 }],
             });
 
