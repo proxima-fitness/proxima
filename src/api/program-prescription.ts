@@ -12,11 +12,12 @@
  * Server-safe: callers pass the client (no browser client import), like
  * `workout-history-read`.
  *
- * Depends on: @supabase/supabase-js, @/hooks/supabase
+ * Depends on: @supabase/supabase-js, @/hooks/supabase, ./mesocycle-blocks
  * Used by: /api/programs/week-suggest, program-prescription-write (ADR 0012)
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/hooks/supabase";
+import { parseMesocycleBlocks, type TMesocycleBlock } from "./mesocycle-blocks";
 
 type TSupabase = SupabaseClient<Database>;
 
@@ -25,6 +26,11 @@ export type TProgramPrescriptionMeta = {
     title: string;
     /** Weeks in the prescription; null when the program never stored one. */
     programLength: number | null;
+    /**
+     * First-build **Mesocycle blocks** (ADR 0032 / 04). Null when the program
+     * was not a First build or the stored JSON is not the documented shape.
+     */
+    mesocycleBlocks: TMesocycleBlock[] | null;
 };
 
 /** Raw prescription exercise row (per-set arrays), as stored in Supabase. */
@@ -205,7 +211,8 @@ export function mapPrescriptionWeekToRoutines(
 }
 
 /**
- * Program title + length for prescription reads. Null when not found.
+ * Program title, length, and stored Mesocycle blocks for prescription reads.
+ * Null when not found.
  *
  * @param client - Supabase client (user-scoped server client on the API path)
  * @param programId - Proxima program id
@@ -216,7 +223,7 @@ export async function getProgramPrescriptionMeta(
 ): Promise<TProgramPrescriptionMeta | null> {
     const { data, error } = await client
         .from("programs")
-        .select("id, title, program_length")
+        .select("id, title, program_length, mesocycle_blocks")
         .eq("id", programId)
         .maybeSingle();
 
@@ -232,6 +239,7 @@ export async function getProgramPrescriptionMeta(
         id: data.id,
         title: data.title ?? "Proxima Program",
         programLength: data.program_length ?? null,
+        mesocycleBlocks: parseMesocycleBlocks(data.mesocycle_blocks),
     };
 }
 

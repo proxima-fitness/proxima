@@ -51,6 +51,7 @@ import {
     type TSyncResult,
 } from "@/components/program-builder/api/hevy_sync";
 import { connectChatToSavedProgram, isChatSessionInsertConfirmed } from "@/api/chat-history";
+import { readLandedMesocycleBlocks } from "@/api/mesocycle-blocks";
 import { ToolbarPortalButtons } from "@/components/program-builder/shared/ToolbarPortalButtons";
 import { BuildProgramToolbarTitle } from "@/components/program-builder/shared/BuildProgramToolbarTitle";
 import { SyncProgressDialog, type TSyncDialogPhase, type TSyncProgress } from "@/components/program-builder/shared/SyncProgressDialog";
@@ -776,11 +777,13 @@ function BuildProgramShell({
 
         try {
             const prompt = title !== "Untitled" ? title : search || "";
+            // ADR 0032 / 04: blocks from the landed First build; null when none landed this chat.
             const supabaseResult = await saveProgramToSupabase(
                 orderedProgram,
                 prompt,
                 programRequest.request,
                 user.id,
+                readLandedMesocycleBlocks(messages),
             );
 
             if (!isSaveProgramToSupabaseSuccess(supabaseResult)) {
@@ -836,6 +839,7 @@ function BuildProgramShell({
         user,
         hasProgramContent,
         orderedProgram,
+        messages,
         programRequest.request,
         search,
         queryClient,

@@ -1043,6 +1043,7 @@ export type Database = {
           id: number
           is_coach: boolean | null
           lock: boolean | null
+          mesocycle_blocks: Json | null
           program_length: number | null
           programs_textsearchable_index_col: unknown
           prompt: string | null
@@ -1061,6 +1062,7 @@ export type Database = {
           id?: number
           is_coach?: boolean | null
           lock?: boolean | null
+          mesocycle_blocks?: Json | null
           program_length?: number | null
           programs_textsearchable_index_col?: unknown
           prompt?: string | null
@@ -1079,6 +1081,7 @@ export type Database = {
           id?: number
           is_coach?: boolean | null
           lock?: boolean | null
+          mesocycle_blocks?: Json | null
           program_length?: number | null
           programs_textsearchable_index_col?: unknown
           prompt?: string | null
@@ -1611,6 +1614,7 @@ export type Database = {
           id: number
           is_coach: boolean | null
           lock: boolean | null
+          mesocycle_blocks: Json | null
           program_length: number | null
           programs_textsearchable_index_col: unknown
           prompt: string | null

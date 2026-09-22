@@ -24,6 +24,7 @@ import { getMaxFolderId } from "@/components/program-builder/utils";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/api/index";
 import { mapHevyTemplateToCustomMovement, mintCustomMovement } from "@/api/custom-movements";
+import type { TMesocycleBlock } from "@/api/mesocycle-blocks";
 import {
     buildRepsRange2DForDb,
     convertHevyOutputIntoInput,
@@ -560,6 +561,7 @@ function delayMs(ms: number): Promise<void> {
  * @param prompt - The original user prompt that generated this program
  * @param request - Optional request metadata (title, equipment, difficulty, etc.)
  * @param userId - When set, stored on the program row so saves succeed even if the session JWT is stale
+ * @param mesocycleBlocks - First-build Mesocycle blocks for `programs.mesocycle_blocks` (ADR 0032 / 04); omitted → null
  * @returns `{ status: "success", id, skippedExercises? }` on success, or `{ status: "error", ... }`
  */
 async function runSaveProgramToSupabase(
@@ -567,6 +569,7 @@ async function runSaveProgramToSupabase(
     prompt: string,
     request: TTextToJsonRequest | undefined,
     userId: string | undefined,
+    mesocycleBlocks: TMesocycleBlock[] | null | undefined,
 ): Promise<TSaveProgramToSupabaseSuccess | TSaveProgramToSupabaseError> {
     const weeks = getMaxFolderId(hevyRoutines) + 1;
     const BATCH_SIZE = 50; // Process exercises in batches of 50
@@ -586,6 +589,7 @@ async function runSaveProgramToSupabase(
             difficulty: request?.difficultyLevel ? request.difficultyLevel.split(',').map(s => s.trim()) : null,
             explore: request?.explore === "true" ? true : false,
             prompt,
+            mesocycle_blocks: mesocycleBlocks ?? null,
         };
         if (userId) {
             programUploadObject.user_id = userId;
@@ -745,18 +749,21 @@ async function runSaveProgramToSupabase(
 
 /**
  * Persists an AI-generated program to Supabase with session refresh and one automatic retry on failure.
+ *
+ * @param mesocycleBlocks - First-build Mesocycle blocks from the landed `buildProgram` (ADR 0032 / 04)
  */
 export const saveProgramToSupabase = async (
     hevyRoutines: THevyRoutine[],
     prompt: string,
     request?: TTextToJsonRequest,
     userId?: string,
+    mesocycleBlocks?: TMesocycleBlock[] | null,
 ): Promise<TSaveProgramToSupabaseSuccess | TSaveProgramToSupabaseError> => {
     await supabase.auth.getSession();
-    let result = await runSaveProgramToSupabase(hevyRoutines, prompt, request, userId);
+    let result = await runSaveProgramToSupabase(hevyRoutines, prompt, request, userId, mesocycleBlocks);
     if (result.status !== "success") {
         await delayMs(SAVE_TO_SUPABASE_RETRY_DELAY_MS);
-        result = await runSaveProgramToSupabase(hevyRoutines, prompt, request, userId);
+        result = await runSaveProgramToSupabase(hevyRoutines, prompt, request, userId, mesocycleBlocks);
     }
     return result;
 };

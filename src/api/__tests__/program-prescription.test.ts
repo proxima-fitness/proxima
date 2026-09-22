@@ -164,7 +164,18 @@ describe("getProgramPrescriptionMeta", () => {
             id: 42,
             title: "Hypertrophy Block",
             programLength: 8,
+            mesocycleBlocks: null,
         });
+    });
+
+    it("returns stored Mesocycle blocks (ADR 0032 / 04)", async () => {
+        const blocks = [
+            { name: "Accumulation", weeks: [1, 2, 3], intent: "volume" },
+            { name: "Deload", weeks: [4], intent: "recovery" },
+        ];
+        const client = mockClient({ id: 42, title: "PPL", program_length: 4, mesocycle_blocks: blocks });
+
+        await expect(getProgramPrescriptionMeta(client, 42)).resolves.toMatchObject({ mesocycleBlocks: blocks });
     });
 
     it("returns null when the program is missing or unreadable", async () => {
