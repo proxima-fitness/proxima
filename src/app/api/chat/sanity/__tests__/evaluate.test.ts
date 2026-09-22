@@ -188,8 +188,6 @@ describe("evaluate", () => {
             [userRequestedId("training.sessionDurationFit")]: 0.1,
             "skill.sessionShape": 0.08,
             [userRequestedId("skill.sessionShape")]: 0.94,
-            "skill.stimulusHonor": 0.9,
-            [userRequestedId("skill.stimulusHonor")]: 0.1,
         }));
 
         const result = await evaluate(snapshotThinDay("Keep today to one curl, I asked for a short day"), {
@@ -364,7 +362,7 @@ describe("evaluate", () => {
         expect(result.ok).toBe(true);
     });
 
-    it("judges a stamped First build on every later week the stamp changed, without constraint.progressionHonor", async () => {
+    it("judges a stamped First build on every later week the stamp changed, without constraint.progressionHonor or skill phase honors", async () => {
         const stamped: TProgramSanitySnapshot = {
             userMessage: "Build me a 3 week program",
             constraintProfile: initializeConstraintProfile({ progressionSystem: "linear", deloadWeek: "yes" }),
@@ -388,7 +386,9 @@ describe("evaluate", () => {
             expect(state.matrix.map((row) => row.week)).toEqual([1, 2, 3]);
             expect(questions).not.toHaveProperty("constraint.progressionHonor");
             expect(questions).toHaveProperty("constraint.deloadHonor");
-            expect(questions).toHaveProperty("skill.periodizationCoverage");
+            expect(questions).not.toHaveProperty("skill.periodizationCoverage");
+            expect(questions).not.toHaveProperty("skill.weekIntentHonor");
+            expect(questions).not.toHaveProperty("skill.stimulusHonor");
             return { "constraint.deloadHonor": 0.9 };
         });
 

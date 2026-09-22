@@ -8,9 +8,11 @@
  *
  * Constraint ids are fail-closed and have no User-stated exception on a
  * **First build**. Case 1 runs once on the plated + stamped mesocycle
- * (ADR 0027 / 04), so week-intent, stimulus, and periodization questions see
- * later weeks. `constraint.progressionHonor` is not asked: **Progression** is
- * not built, and the Periodization wave is not a progression system.
+ * (ADR 0027 / 04). `constraint.progressionHonor` is not asked: **Progression**
+ * is not built, and the Periodization wave is not a progression system.
+ * Skill phase honors (week intent, stimulus, periodization coverage) are not
+ * asked (ADR 0032 C1): the matrix of title + set count + RPE cannot prove
+ * Accumulation / Intensification / Peak semantics.
  * Later standalone mutations (Case 2) omit whole-program Constraint questions
  * (split / variability / deload / peak) and Training / skill questions so a
  * pre-existing grid cannot lock out every batch. Delta Constraint questions
@@ -58,9 +60,6 @@ export type TTrainingQuestionId = (typeof TRAINING_QUESTION_IDS)[number];
 /** Skill-principle question ids. Same exception / confidence policy as Training. */
 export const SKILL_QUESTION_IDS = [
     "skill.sessionShape",
-    "skill.weekIntentHonor",
-    "skill.stimulusHonor",
-    "skill.periodizationCoverage",
     "skill.programTypeHonor",
 ] as const;
 
@@ -256,8 +255,6 @@ export function buildSanityQuestions(
     const prefs = constraints?.preferences;
     const injuries = (constraints?.injuries ?? []).filter(hasText);
     const excludedEquipment = (constraints?.excludedEquipment ?? []).filter(hasText);
-    const hasLaterWeekChange = snapshot.changedDays.some((day) => day.week > 1);
-    const hasLaterWeek = snapshot.matrix.some((row) => row.week > 1);
     const hasWeekIntents = snapshot.weekIntents.length > 0;
     const hasExercises = snapshot.matrix.some((row) => row.exercises.length > 0);
     const hasProgramType = hasText(training?.trainingFocus) || hasWeekIntents;
@@ -366,36 +363,6 @@ export function buildSanityQuestions(
         );
         questions[userRequestedId("skill.sessionShape")] = userRequestedNoul(
             "a thin, short, or unusually shaped training day",
-        );
-    }
-    if (askTrainingOrSkill && hasLaterWeek && hasWeekIntents && hasExercises) {
-        questions["skill.stimulusHonor"] = noul(
-            "Do the days present in `matrix` honor the intent listed for those same weeks in `weekIntents` and the training goal?",
-            "Stimulus matches the claimed intent for weeks that appear in `matrix`. Ignore weeks that are not in `matrix`. A normal hypertrophy week on a fat-loss or cut profile is a fit. Do not count rows; `matchesWeek1Stimulus` is already computed.",
-            "A present week clearly fights its own claimed intent or the training goal.",
-        );
-        questions[userRequestedId("skill.stimulusHonor")] = userRequestedNoul(
-            "stimulus that does not match the claimed week intent or goal",
-        );
-    }
-    if (askTrainingOrSkill && hasLaterWeek && hasWeekIntents) {
-        questions["skill.weekIntentHonor"] = noul(
-            "Does each week in `matrix` honor its `weekIntents` name and intent?",
-            "The week's days match that block's claimed intent.",
-            "A week is labeled one intent but trained as another.",
-        );
-        questions[userRequestedId("skill.weekIntentHonor")] = userRequestedNoul(
-            "a week that ignores its plan intent",
-        );
-    }
-    if (askTrainingOrSkill && hasLaterWeekChange) {
-        questions["skill.periodizationCoverage"] = noul(
-            "Do the later-week days in `changedDays` semantically honor the periodization those days claim?",
-            "The already-changed days are a real progression, deload, or peak versus week 1. Do not count how many days changed.",
-            "The changed days are token edits that do not honor the claimed periodization.",
-        );
-        questions[userRequestedId("skill.periodizationCoverage")] = userRequestedNoul(
-            "periodization that does not really change later weeks",
         );
     }
     if (askTrainingOrSkill && hasProgramType) {
