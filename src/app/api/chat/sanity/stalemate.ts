@@ -14,7 +14,7 @@
  * different pair can still Soft-fail-retry. The escalate card rolls up every
  * pair miss this request, each with remove-that-constraint (**User-stated
  * change**) and replace-that-lift (a coach retry message, not a **User-stated
- * exception**).
+ * exception**). Preferred split, variability, and warmup are not counted.
  *
  * Depends on: ./types, ../constraints/types, ../constraints/initialize
  * Used by: tools.ts, week-coverage.ts, ProgramStalemateCard
@@ -22,6 +22,7 @@
 
 import { sanitizeExcludedEquipment } from "../constraints/initialize";
 import type { TConstraintProfile } from "../constraints/types";
+import { CONSTRAINT_QUESTION_ID_SET } from "./questions";
 import type {
     IProgramSanityStash,
     IProgramStalematePayload,
@@ -96,6 +97,9 @@ export type TStalemateExerciseMeta = {
  * @param error - Tool result `error` string
  */
 export function stalemateKeyForError(error: string): string | null {
+    // Preferred split, variability, and warmup soft-fail for a retry. They
+    // never become a Program stalemate card.
+    if (CONSTRAINT_QUESTION_ID_SET.has(error)) return null;
     if (STRUCTURAL_STAMP_NO_ESCALATE.has(error)) return null;
     if (ESCALATE_ERROR_CODES.has(error)) return error;
     if (
@@ -269,15 +273,6 @@ function whyForKey(key: string): string {
     if (key === "phaseHardness.deload") {
         return "The deload week still isn't easier than the week before it.";
     }
-    if (key === "constraint.splitHonor") {
-        return "Your saved split preference still conflicts with this program.";
-    }
-    if (key === "constraint.variabilityHonor") {
-        return "Your saved exercise-variability preference still conflicts with this program.";
-    }
-    if (key === "constraint.warmupPolicy") {
-        return "Your saved warmup preference still conflicts with this program.";
-    }
     if (key.startsWith("training.") || key.startsWith("skill.")) {
         return "This program doesn't match the training you asked for.";
     }
@@ -316,17 +311,12 @@ function preferenceClearAction(
 }
 
 /**
- * Preference honor buttons: **User-stated change** on that preference, plus
- * **Fix it.** Warmup may flip yes/no when the saved value is binary.
+ * Clear-preference buttons for a counted phase-hardness miss, plus **Fix it.**
+ * Split, variability, and warmup never reach this card.
  *
  * @param key - Counted Soft-fail id
- * @param profile - Active Constraint profile, if any
  */
-function preferenceActionsForKey(
-    key: string,
-    profile: TConstraintProfile | null | undefined,
-): TProgramStalemateAction[] {
-    const prefs = profile?.preferences;
+function preferenceActionsForKey(key: string): TProgramStalemateAction[] {
     switch (key) {
         case "phaseHardness.peak":
             return [
@@ -346,49 +336,6 @@ function preferenceActionsForKey(
                 ),
                 fixItAction(),
             ];
-        case "constraint.splitHonor":
-            return [
-                preferenceClearAction(
-                    "splitType",
-                    "Clear my split preference",
-                    "I no longer have a split preference",
-                ),
-                fixItAction(),
-            ];
-        case "constraint.variabilityHonor":
-            return [
-                preferenceClearAction(
-                    "exerciseVariability",
-                    "Clear exercise variability preference",
-                    "I no longer have an exercise variability preference",
-                ),
-                fixItAction(),
-            ];
-        case "constraint.warmupPolicy": {
-            const current = prefs?.warmupExercises?.trim().toLowerCase() ?? "";
-            const actions: TProgramStalemateAction[] = [];
-            if (current === "yes" || current === "no") {
-                const flipped = current === "yes" ? "no" : "yes";
-                actions.push({
-                    label: flipped === "yes"
-                        ? "I want warmup exercises"
-                        : "Skip warmup exercises",
-                    message: flipped === "yes"
-                        ? "I want warmup exercises in my program"
-                        : "I do not want warmup exercises in my program",
-                    preference: { key: "warmupExercises", value: flipped },
-                });
-            }
-            actions.push(
-                preferenceClearAction(
-                    "warmupExercises",
-                    "Clear warmup preference",
-                    "I no longer have a warmup preference",
-                ),
-                fixItAction(),
-            );
-            return actions;
-        }
         default:
             return [];
     }
@@ -396,7 +343,7 @@ function preferenceActionsForKey(
 
 /**
  * Card payload for an escalated Soft-fail. Chips are exact saved strings.
- * Preference honors and empty-chip constraint misses carry `actions`. When
+ * Phase-hardness misses and empty-chip constraint misses carry `actions`. When
  * `key` is a pair id, the card is the pair rollup: every pair this request,
  * each with its own fork, plus **Fix it.**
  *
@@ -423,7 +370,7 @@ export function buildStalematePayload(
     }
     const kind = kindForKey(key);
     const chips = chipsForKey(key, profile, exercises);
-    let actions = preferenceActionsForKey(key, profile);
+    let actions = preferenceActionsForKey(key);
     if (kind === "constraint" && chips.length === 0 && actions.length === 0) {
         actions = [fixItAction()];
     }

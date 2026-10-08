@@ -65,7 +65,6 @@ describe("stalemateKeyForError", () => {
         expect(stalemateKeyForError("training.sessionDurationFit")).toBe(
             "training.sessionDurationFit",
         );
-        expect(stalemateKeyForError("constraint.splitHonor")).toBe("constraint.splitHonor");
         expect(stalemateKeyForError("phaseHardness.peak")).toBe("phaseHardness.peak");
         expect(stalemateKeyForError("phaseHardness.deload")).toBe("phaseHardness.deload");
     });
@@ -79,25 +78,28 @@ describe("stalemateKeyForError", () => {
         expect(stalemateKeyForError("periodizationStamp.missingWave")).toBeNull();
         expect(stalemateKeyForError("periodizationStamp.missingRoles")).toBeNull();
         expect(stalemateKeyForError("periodizationStamp.emptyMains")).toBeNull();
+        expect(stalemateKeyForError("constraint.splitHonor")).toBeNull();
+        expect(stalemateKeyForError("constraint.variabilityHonor")).toBeNull();
+        expect(stalemateKeyForError("constraint.warmupPolicy")).toBeNull();
     });
 });
 
 describe("shouldEscalate", () => {
     it("escalates on the second of the same key this request", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(false);
-        expect(stash.softFailCounts?.["constraint.splitHonor"]).toBe(1);
-        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(true);
+        expect(shouldEscalate(stash, "skill.sessionShape")).toBe(false);
+        expect(stash.softFailCounts?.["skill.sessionShape"]).toBe(1);
+        expect(shouldEscalate(stash, "skill.sessionShape")).toBe(true);
         expect(stash.stalemateStopped).toBe(true);
     });
 
     it("does not increment a different key onto the first", () => {
         const stash = emptyStash();
-        expect(shouldEscalate(stash, "constraint.splitHonor")).toBe(false);
+        expect(shouldEscalate(stash, "skill.sessionShape")).toBe(false);
         expect(shouldEscalate(stash, "weekCoverage")).toBe(false);
         expect(stash.stalemateStopped).toBeUndefined();
         expect(stash.softFailCounts).toEqual({
-            "constraint.splitHonor": 1,
+            "skill.sessionShape": 1,
             weekCoverage: 1,
         });
     });

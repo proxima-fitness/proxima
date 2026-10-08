@@ -2,13 +2,14 @@
  * @module chat/sanity/evaluate
  *
  * One AI SDK {@link experimental_evaluate} call over {@link buildSanityQuestions},
- * then the C3–C5 fail policy (ADR 0025 / 03). Case 1 (`firstBuild: true`) is
- * the plated + stamped **First build** mesocycle, judged once before land
- * (ADR 0027 / 04, C4). Constraint misses reject even at low confidence there.
- * Case 2 (`firstBuild: false`, every `mutateProgram`) only asks delta
- * Constraint questions on `changedDays`, so a pre-existing grid cannot lock
- * out every batch. Training / skill misses Soft-fail only in Case 1 when the
- * user did not ask; low confidence fail-opens.
+ * then the fail policy. Case 1 (`firstBuild: true`) is the plated + stamped
+ * **First build** mesocycle, judged once before land (ADR 0027 / 04, C4).
+ * Injury / equipment pairs and preference honors (split, variability, warmup)
+ * land unless the answer is a clear no. A this-turn ask waives a preference
+ * honor. It does not waive a pair. Case 2 (`firstBuild: false`, every
+ * `mutateProgram`) only asks delta Constraint questions on `changedDays`, so
+ * a pre-existing grid cannot lock out every batch. Training / skill misses
+ * Soft-fail only in Case 1 when the user did not ask; low confidence fail-opens.
  *
  * Injury / equipment pair misses (ADR 0030 / 02, C5) carry the structured
  * pair plus a human-readable `why` built from its title and saved string.
@@ -27,7 +28,8 @@ import { experimental_evaluate, gateway } from "ai";
 
 import {
     buildSanityQuestions,
-    isConstraintQuestionId,
+    CONSTRAINT_QUESTION_ID_SET,
+    isConstraintPairId,
     TRAINING_OR_SKILL_QUESTION_ID_SET,
     userRequestedId,
     type TSanityQuestions,
@@ -43,14 +45,9 @@ import type {
 export const JEV_MODEL = "typesafe-ai/jev";
 
 /**
- * Constraint honor floor. Below this (including ~0.5) is a miss.
- * Cookbook 0.8 is not a product constant; start conservative and move on traces.
- */
-export const CONSTRAINT_HONOR_MIN = 0.65;
-
-/**
- * Training / skill miss ceiling. Only noul at or below this is a clear miss.
- * The mid band fail-opens (C5).
+ * Clear-miss ceiling for injury / equipment pairs, preference honors, and
+ * Training / skill. Only a noul at or below this rejects. Unanswered and the
+ * mid band land.
  */
 export const TRAINING_MISS_MAX = 0.35;
 
@@ -249,17 +246,22 @@ export function applyEvaluatePolicy(
         if (id.startsWith("userRequested.")) continue;
 
         const noul = nouls[id];
-        if (isConstraintQuestionId(id)) {
-            // Unanswered or not clearly yes → reject (fail-closed, C5).
-            if (!isFiniteNoul(noul) || noul < CONSTRAINT_HONOR_MIN) {
+        if (isConstraintPairId(id)) {
+            // Unanswered or uncertain lands. A clear no rejects, even if the
+            // user asked for that lift. Body limits wait for a User-stated change.
+            if (isFiniteNoul(noul) && noul <= TRAINING_MISS_MAX) {
                 misses.push(missFor(id, questions));
             }
             continue;
         }
 
-        if (!TRAINING_OR_SKILL_QUESTION_ID_SET.has(id)) continue;
-        if (!firstBuild) continue;
-        // Unanswered or mid-band / yes → pass (fail-open, C5).
+        const preferenceHonor = CONSTRAINT_QUESTION_ID_SET.has(id);
+        const trainingOrSkill = TRAINING_OR_SKILL_QUESTION_ID_SET.has(id);
+        if (!preferenceHonor && !trainingOrSkill) continue;
+        // Training / skill stay first-build only. Warmup is a preference honor
+        // and still rejects a clear no on a later mutation.
+        if (trainingOrSkill && !firstBuild) continue;
+        // Unanswered or mid-band / yes → pass.
         if (!isFiniteNoul(noul) || noul > TRAINING_MISS_MAX) continue;
 
         const asked = nouls[userRequestedId(id)];
@@ -286,8 +288,10 @@ export function formatEvaluateMessage(misses: TEvaluateMiss[]): string {
  *
  * @param snapshot - Compact result; must already exist (C1 / C6)
  * @param options.firstBuild - Stamped **First build** (Case 1) vs `mutateProgram` (Case 2)
- * @returns Soft-fail payload when any Constraint miss, or a first-build
- *   Training / skill miss without a User-stated exception
+ * @returns Soft-fail payload when a pair or preference honor is a clear no
+ *   without a waiver, or a first-build Training / skill miss without a
+ *   User-stated exception. Preference honors waive on this-turn chat. Pairs
+ *   do not.
  */
 export async function evaluate(
     snapshot: TProgramSanitySnapshot,

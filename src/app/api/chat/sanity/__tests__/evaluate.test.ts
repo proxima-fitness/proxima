@@ -5,7 +5,6 @@ import { initializeTrainingProfile } from "@/app/api/chat/training-profile";
 
 import {
     applyEvaluatePolicy,
-    CONSTRAINT_HONOR_MIN,
     constraintPairMisses,
     constraintPairWhy,
     evaluate,
@@ -59,7 +58,7 @@ function snapshotThinDay(userMessage: string): TProgramSanitySnapshot {
 }
 
 describe("applyEvaluatePolicy", () => {
-    it("rejects a Constraint miss (fail-any, fail-closed, no User-stated exception)", () => {
+    it("rejects a clear injury miss even when the user asked for that lift", () => {
         const misses = applyEvaluatePolicy(
             {
                 [KNEEL_PAIR]: 0.1,
@@ -74,10 +73,9 @@ describe("applyEvaluatePolicy", () => {
         ]);
     });
 
-    it("rejects a low-confidence Constraint miss", () => {
-        const noul = (CONSTRAINT_HONOR_MIN + TRAINING_MISS_MAX) / 2;
+    it("lands an uncertain injury score", () => {
+        const noul = (USER_REQUESTED_YES_MIN + TRAINING_MISS_MAX) / 2;
         expect(noul).toBeGreaterThan(TRAINING_MISS_MAX);
-        expect(noul).toBeLessThan(CONSTRAINT_HONOR_MIN);
 
         const misses = applyEvaluatePolicy(
             { [KNEEL_PAIR]: noul },
@@ -85,8 +83,50 @@ describe("applyEvaluatePolicy", () => {
             true,
         );
 
-        expect(misses).toHaveLength(1);
-        expect(misses[0].id).toBe(KNEEL_PAIR);
+        expect(misses).toEqual([]);
+    });
+
+    it("lands an unanswered injury pair", () => {
+        const misses = applyEvaluatePolicy({}, [KNEEL_PAIR], true);
+        expect(misses).toEqual([]);
+    });
+
+    it("rejects a clear split miss unless this turn asked for a different split", () => {
+        const clear = applyEvaluatePolicy(
+            { "constraint.splitHonor": 0.1 },
+            ["constraint.splitHonor"],
+            true,
+        );
+        expect(clear.map((miss) => miss.id)).toEqual(["constraint.splitHonor"]);
+
+        const asked = applyEvaluatePolicy(
+            {
+                "constraint.splitHonor": 0.1,
+                [userRequestedId("constraint.splitHonor")]: 0.9,
+            },
+            ["constraint.splitHonor", userRequestedId("constraint.splitHonor")],
+            true,
+        );
+        expect(asked).toEqual([]);
+    });
+
+    it("rejects a clear warmup miss on a later mutation unless this turn asked for it", () => {
+        const clear = applyEvaluatePolicy(
+            { "constraint.warmupPolicy": 0.1 },
+            ["constraint.warmupPolicy"],
+            false,
+        );
+        expect(clear.map((miss) => miss.id)).toEqual(["constraint.warmupPolicy"]);
+
+        const asked = applyEvaluatePolicy(
+            {
+                "constraint.warmupPolicy": 0.1,
+                [userRequestedId("constraint.warmupPolicy")]: 0.9,
+            },
+            ["constraint.warmupPolicy", userRequestedId("constraint.warmupPolicy")],
+            false,
+        );
+        expect(asked).toEqual([]);
     });
 
     it("passes a user-asked thin day", () => {
@@ -104,7 +144,7 @@ describe("applyEvaluatePolicy", () => {
     });
 
     it("passes a low-confidence skill miss", () => {
-        const noul = (CONSTRAINT_HONOR_MIN + TRAINING_MISS_MAX) / 2;
+        const noul = (USER_REQUESTED_YES_MIN + TRAINING_MISS_MAX) / 2;
         const misses = applyEvaluatePolicy(
             { "skill.sessionShape": noul },
             ["skill.sessionShape"],
@@ -448,13 +488,13 @@ describe("injury / equipment pair Soft-fail detail (ADR 0030 C5)", () => {
         expect(result.misses.map((miss) => miss.id)).toEqual([KNEEL_PAIR]);
     });
 
-    it("fails closed on an unanswered pair", async () => {
+    it("lands an unanswered pair", async () => {
         const result = await evaluate(snapshotWithInjury(), {
             firstBuild: true,
             postSystemOne: async () => ({}),
         });
 
-        expect(result.misses[0]?.id).toBe(KNEEL_PAIR);
+        expect(result).toEqual({ ok: true, misses: [] });
     });
 
     it("words an equipment pair why", () => {

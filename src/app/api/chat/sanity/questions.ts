@@ -6,8 +6,10 @@
  * (no `splitType` → no `constraint.splitHonor`). Question ids are for our
  * fail policy; Jev only sees `instructions` / `criteria`.
  *
- * Constraint ids are fail-closed and have no User-stated exception on a
- * **First build**. Case 1 runs once on the plated + stamped mesocycle
+ * Preference honors (split, variability, warmup) fail open and take a
+ * **User-stated exception**. Injury and equipment pairs fail open unless
+ * the answer is a clear no, and they have no **User-stated exception**.
+ * Case 1 runs once on the plated + stamped mesocycle
  * (ADR 0027 / 04). `constraint.progressionHonor` is not asked: **Progression**
  * is not built, and the Periodization wave is not a progression system.
  * Skill phase honors (week intent, stimulus, periodization coverage) are not
@@ -24,7 +26,8 @@
  * Injury and equipment are asked per pair (ADR 0030 / 02, C4): one question
  * per unique exercise title × each saved injury or excluded-equipment string.
  * First build reads titles from the full stamped mesocycle; Case 2 reads only
- * `changedDays`. No pair cap. Pair ids are fail-closed Constraint ids.
+ * `changedDays`. No pair cap. A clear pair miss can **Program stalemate**;
+ * an uncertain pair score lands. Preference honors never stalemate.
  *
  * Depends on: ./types, ./snapshot
  * Used by: evaluate.ts
@@ -37,7 +40,7 @@ import type {
     TProgramSanitySnapshot,
 } from "./types";
 
-/** Whole-profile Constraint question ids. Fail-any, fail-closed, no User-stated exception. */
+/** Preference honors. Fail-open, User-stated exception, never a Program stalemate. */
 export const CONSTRAINT_QUESTION_IDS = [
     "constraint.splitHonor",
     "constraint.variabilityHonor",
@@ -91,7 +94,7 @@ export function isConstraintPairId(id: string): boolean {
 }
 
 /**
- * Fail-closed Constraint id: whole-profile honor or pair.
+ * Preference honor or injury / equipment pair id.
  *
  * @param id - Honor question id
  */
@@ -274,6 +277,9 @@ export function buildSanityQuestions(
             "Day titles and exercise grouping match the stated split.",
             "The week is a different split than the stated preference.",
         );
+        questions[userRequestedId("constraint.splitHonor")] = userRequestedNoul(
+            "a split other than `constraintProfile.preferences.splitType`",
+        );
     }
     if (askWholeProgramConstraints && hasText(prefs?.exerciseVariability)) {
         questions["constraint.variabilityHonor"] = noul(
@@ -281,12 +287,18 @@ export function buildSanityQuestions(
             "Exercise variety across days matches the stated variability preference.",
             "Variety is clearly higher or lower than the stated preference.",
         );
+        questions[userRequestedId("constraint.variabilityHonor")] = userRequestedNoul(
+            "exercise variety other than `constraintProfile.preferences.exerciseVariability`",
+        );
     }
     if (askDeltaConstraints && hasText(prefs?.warmupExercises)) {
         questions["constraint.warmupPolicy"] = noul(
             "Does `matrix` honor `constraintProfile.preferences.warmupExercises`?",
             "Warmup presence matches the stated warmup preference.",
             "Warmups contradict the stated preference (missing when wanted, or present when not).",
+        );
+        questions[userRequestedId("constraint.warmupPolicy")] = userRequestedNoul(
+            "warmup exercises that contradict `constraintProfile.preferences.warmupExercises`",
         );
     }
 

@@ -49,7 +49,7 @@ Map exclude areas to `addExcludedAreas`.
 Map split, variability, progression, deload, peak, and warmup to `preferences` (catalog id to set).
 On a **User-stated change** that drops a preference (for example "I no longer have a split preference", clear deload preference), pass `preferences: { splitType: null }` (or the matching key). Do not "relax" a preference by swapping to Full Body / `fb` — that is a set, not a clear.
 Array clears stay on `removeInjuries` / `removeExcludedEquipment` / `removeExcludedAreas`.
-Never clear a preference or array to make a split or template feasible — adapt the program.
+Never clear an injury, excluded equipment, excluded area, or preference to make a template feasible. Adapt the program to a saved injury, excluded equipment, or excluded area. If this turn names a different preferred split, exercise variability, or warmup, build that and leave the saved preference in place unless it is a User-stated change.
 Program length and days per week are not cleared through this tool.
 This call is a background backup.
 Do not delay or block **getExerciseList** or **buildProgram** while you wait for it.

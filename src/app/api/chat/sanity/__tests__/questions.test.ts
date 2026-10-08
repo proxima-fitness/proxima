@@ -108,16 +108,22 @@ describe("buildSanityQuestions", () => {
         expect(questions[constraintPairId("injuries", "Squat", "left ankle")]).toBeDefined();
         expect(questions[constraintPairId("excludedEquipment", "Squat", "band")]).toBeDefined();
         expect(questions["constraint.warmupPolicy"]).toBeDefined();
+        expect(questions[userRequestedId("constraint.warmupPolicy")]).toBeDefined();
         expect(questions["constraint.splitHonor"]).toBeUndefined();
         expect(questions["constraint.progressionHonor"]).toBeUndefined();
         expect(questions["training.trainingFocusFit"]).toBeUndefined();
         expect(questions["skill.sessionShape"]).toBeUndefined();
     });
 
-    it("adds userRequested companions for Training / skill ids and never for Constraint", () => {
+    it("adds userRequested companions for preference honors and Training / skill, never for injury pairs", () => {
         const questions = buildSanityQuestions(emptySnapshot({
             userMessage: "keep days short",
-            constraintProfile: initializeConstraintProfile({ healthIssues: "knee" }),
+            constraintProfile: initializeConstraintProfile({
+                healthIssues: "knee",
+                splitType: "ppl",
+                exerciseVariability: "little",
+                warmupExercises: "yes",
+            }),
             trainingProfile: initializeTrainingProfile({ sessionDurationMin: 45 }),
             matrix: [dayRow(1, 1)],
         }));
@@ -126,6 +132,9 @@ describe("buildSanityQuestions", () => {
         expect(questions[userRequestedId("training.sessionDurationFit")]).toBeDefined();
         expect(questions["skill.sessionShape"]).toBeDefined();
         expect(questions[userRequestedId("skill.sessionShape")]).toBeDefined();
+        expect(questions[userRequestedId("constraint.splitHonor")]).toBeDefined();
+        expect(questions[userRequestedId("constraint.variabilityHonor")]).toBeDefined();
+        expect(questions[userRequestedId("constraint.warmupPolicy")]).toBeDefined();
         const injuryPair = constraintPairId("injuries", "Squat", "knee");
         expect(questions[injuryPair]).toBeDefined();
         expect(questions[userRequestedId(injuryPair)]).toBeUndefined();

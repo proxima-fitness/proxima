@@ -10,9 +10,9 @@
     "format": "prettier --write .",
     "prepare": "husky",
     "start": "next start",
-    "test": "vitest",
-    "test:ci": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--localstorage-file=:memory:\" vitest",
+    "test:ci": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--localstorage-file=:memory:\" vitest run",
+    "test:coverage": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--localstorage-file=:memory:\" vitest run --coverage",
     "test:db-smoke": "./scripts/run-db-smoke.sh",
     "openapi:generate": "next-openapi-gen generate"
   },

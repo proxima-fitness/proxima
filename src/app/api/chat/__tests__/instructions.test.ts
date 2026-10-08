@@ -167,7 +167,8 @@ describe("chat instructions.ts", () => {
             expect(description).toContain("User-stated change");
             expect(description).toContain("Edit profile");
             expect(description).toMatch(/Never call removeExcludedEquipment/i);
-            expect(description).toMatch(/adapt the program to the profile/i);
+            expect(description).toMatch(/adapt the program to that limit/i);
+            expect(description).toMatch(/different preferred split, exercise variability, or warmup/i);
             expect(description).toMatch(/do not edit the profile down/i);
             expect(description).toContain("Injuries & health issues");
             expect(description).toMatch(/Never put periodization/i);
