@@ -273,7 +273,7 @@ export function applyEvaluatePolicy(
     return misses;
 }
 
-/**   **/
+/**   ***/
 
 /**
  * One labeled line per miss for the Soft tool failure `message`.
