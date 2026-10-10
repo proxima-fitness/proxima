@@ -6,7 +6,7 @@
  * Loads `.env.local` from the repo root. Uses existing app keys where possible:
  * - `NEXT_PUBLIC_REACT_APP_HEVY_API_KEY` (or `HEVY_API_KEY`)
  * - `NEXT_PUBLIC_REACT_APP_SUPABASE_URL` (or `SUPABASE_URL`)
- * - `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`)
+ * - `SUPABASE_SECRET_KEY`
  *
  * Also add to `.env.local`:
  * - `USER_ID` - Supabase auth UUID for the user to import workouts as
@@ -41,13 +41,13 @@ function requiredEnv(...keys: string[]): string | undefined {
 async function main() {
     const apiKey = requiredEnv("HEVY_API_KEY", "NEXT_PUBLIC_REACT_APP_HEVY_API_KEY");
     const supabaseUrl = requiredEnv("SUPABASE_URL", "NEXT_PUBLIC_REACT_APP_SUPABASE_URL");
-    const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY");
+    const secretKey = requiredEnv("SUPABASE_SECRET_KEY");
     const userId = requiredEnv("USER_ID", "TEST_USER_ID");
 
     const missing: string[] = [];
     if (!apiKey) missing.push("HEVY_API_KEY or NEXT_PUBLIC_REACT_APP_HEVY_API_KEY");
     if (!supabaseUrl) missing.push("SUPABASE_URL or NEXT_PUBLIC_REACT_APP_SUPABASE_URL");
-    if (!serviceRoleKey) missing.push("SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY");
+    if (!secretKey) missing.push("SUPABASE_SECRET_KEY");
     if (!userId) missing.push("USER_ID or TEST_USER_ID");
 
     if (missing.length > 0) {
@@ -79,16 +79,18 @@ async function main() {
     }
 
     const body = (await response.json()) as THevyWorkoutsResponse;
-    const db = createClient<Database>(supabaseUrl!, serviceRoleKey!);
+    const db = createClient<Database>(supabaseUrl!, secretKey!);
 
     let inserted = 0;
     let skipped = 0;
+    let patched = 0;
     let failed = 0;
 
     for (const workout of body.workouts ?? []) {
         const result = await importHevyWorkout(db, { userId: userId!, workout, apiKey: apiKey! });
         if (result.status === "inserted") inserted += 1;
         else if (result.status === "skipped") skipped += 1;
+        else if (result.status === "patched") patched += 1;
         else {
             failed += 1;
             console.error(`Import failed for ${workout.id}: ${result.message}`);
@@ -96,7 +98,7 @@ async function main() {
     }
 
     console.log(
-        `Page ${body.page}/${body.page_count}: inserted=${inserted} skipped=${skipped} failed=${failed}`,
+        `Page ${body.page}/${body.page_count}: inserted=${inserted} skipped=${skipped} patched=${patched} failed=${failed}`,
     );
 }
 

@@ -268,6 +268,32 @@ import_map = "./functions/mcp/deno.json"
 entrypoint = "./functions/mcp/index.ts"
 static_files = ["./functions/mcp/apps/*.html"]
 
+# New sb_publishable / sb_secret keys are not JWTs — platform verify_jwt rejects them.
+# Callers send the key on `apikey` instead; authorize in-function when needed.
+[functions.hevy-program-sync]
+verify_jwt = false
+
+[functions.chat]
+verify_jwt = false
+
+[functions.text-to-json]
+verify_jwt = false
+
+[functions.image-to-text]
+verify_jwt = false
+
+[functions.speech-to-text]
+verify_jwt = false
+
+[functions.nsfw-image-detection]
+verify_jwt = false
+
+[functions.resend-add-contact]
+verify_jwt = false
+
+[functions.upstash-redis-ratelimit]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

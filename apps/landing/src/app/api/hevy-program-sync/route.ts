@@ -99,9 +99,9 @@ export async function POST() {
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL;
-        const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
+        const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-        if (!supabaseUrl || !serviceRoleKey) {
+        if (!supabaseUrl || !secretKey) {
             console.error("Missing SUPABASE_SECRET_KEY or NEXT_PUBLIC_REACT_APP_SUPABASE_URL");
             return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
         }
@@ -110,7 +110,7 @@ export async function POST() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${serviceRoleKey}`,
+                apikey: secretKey,
             },
             body: JSON.stringify({ user_id: user.id, mode: "on_demand" }),
         });

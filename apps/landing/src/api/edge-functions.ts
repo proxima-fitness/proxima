@@ -44,6 +44,14 @@ const speech_to_text = "/functions/v1/speech-to-text";
 const chat = "/functions/v1/chat";
 const nsfw_image_detection = "/functions/v1/nsfw-image-detection";
 
+/** Edge invoke headers — publishable/secret keys go on `apikey`, not Bearer. */
+function edgeAuthHeaders(): Record<string, string> {
+    return {
+        "Content-Type": "application/json",
+        apikey: supabaseKey,
+    };
+}
+
 /**
  * Sends a prompt to the `chat` edge function and streams the response
  * chunk-by-chunk via a callback.
@@ -62,10 +70,7 @@ export const postChatPrompt = async (prompt: string, onChunk: (chunk: string) =>
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabaseKey}`,
-            },
+            headers: edgeAuthHeaders(),
             body: JSON.stringify(payload),
         });
 
@@ -116,10 +121,7 @@ export const postTextToJson = async (query: string, schemaType: TTextToJsonSchem
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ supabaseKey }`,
-            },
+            headers: edgeAuthHeaders(),
             body: JSON.stringify(payload),
         });
 
@@ -152,10 +154,7 @@ export const postImageToText = async (imageUrl: string) => {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ supabaseKey }`,
-            },
+            headers: edgeAuthHeaders(),
             body: JSON.stringify(payload),
         });
 
@@ -185,10 +184,7 @@ export const postSpeechToText = async (base64Audio: string) => {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ supabaseKey }`,
-            },
+            headers: edgeAuthHeaders(),
             body: JSON.stringify(payload),
         });
 
@@ -218,10 +214,7 @@ export const postNsfwImageDetection = async (imageUrl: string) => {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ supabaseKey }`,
-            },
+            headers: edgeAuthHeaders(),
             body: JSON.stringify(payload),
         });
 

@@ -4,7 +4,7 @@
  * @module auth/delete-account
  *
  * Server-side delete-account API route. Verifies the current session, then
- * deletes the user via Supabase Auth Admin API (service role). Caller must be
+ * deletes the user via Supabase Auth Admin API (`SUPABASE_SECRET_KEY`). Caller must be
  * authenticated.
  *
  * Depends on: @/utils/supabase/server (session), @supabase/supabase-js (admin client).
@@ -27,10 +27,10 @@ export async function POST() {
             );
         }
 
-        const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
+        const secretKey = process.env.SUPABASE_SECRET_KEY;
         const supabaseUrl = process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL;
 
-        if (!serviceRoleKey || !supabaseUrl) {
+        if (!secretKey || !supabaseUrl) {
             console.error("Missing SUPABASE_SECRET_KEY or NEXT_PUBLIC_REACT_APP_SUPABASE_URL");
             return NextResponse.json(
                 { error: "Server configuration error" },
@@ -38,7 +38,7 @@ export async function POST() {
             );
         }
 
-        const supabaseAdmin = createSupabaseClient(supabaseUrl, serviceRoleKey, {
+        const supabaseAdmin = createSupabaseClient(supabaseUrl, secretKey, {
             auth: {
                 persistSession: false,
                 autoRefreshToken: false,
