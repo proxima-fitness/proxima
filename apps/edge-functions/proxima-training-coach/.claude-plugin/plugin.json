@@ -1,0 +1,9 @@
+{
+  "name": "proxima-training-coach",
+  "displayName": "Proxima Training Coach",
+  "version": "0.1.0",
+  "description": "Build and edit workout programs in Claude with Proxima. Connects to Proxima MCP for programs, memory, and training tools.",
+  "author": {
+    "name": "Proxima Fitness"
+  }
+}

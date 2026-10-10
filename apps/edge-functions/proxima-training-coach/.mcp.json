@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "Proxima": {
+      "type": "http",
+      "url": "https://mcp.proximafitness.com/functions/v1/mcp"
+    }
+  }
+}

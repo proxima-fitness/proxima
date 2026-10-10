@@ -9,6 +9,7 @@ apps/edge-functions/
   supabase/
     config.toml
     functions/          # deployable functions (mcp, hevy-program-sync, …)
+  proxima-training-coach/     # Claude plugin “Proxima Training Coach” — see INSTALL.md
 ```
 
 ## Deploy root

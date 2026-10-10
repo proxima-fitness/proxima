@@ -1,0 +1,261 @@
+---
+name: mutate-program
+description: >-
+  Workflow to change an existing Proxima program via MCP Mutation proposal.
+  Load when the user wants to change, edit, update, swap, rename, or remove
+  exercises, sets, reps, days, or program length, or change supersets.
+allowedTools:
+  - list_programs
+  - list_exercises
+  - read_program
+  - get_constraint_profile
+  - update_constraint_profile
+  - mutate_program
+  - accept_program_mutation
+  - reject_program_mutation
+  - save_program
+---
+
+# Mutate Program
+
+Host-agent path: Claude + **Proxima MCP** only. Never Gateway / Andy sandbox.
+Flow: **`mutate_program`** stages a **Mutation proposal** → user Accepts into MCP App builder (`accept_program_mutation` + `builder_routines`) → **`save_program`** writes the **Program prescription** (Edit program locks). Chat-only Accept without builder state does **not** write the prescription.
+Week Export / Sync / Connect Hevy are not available here — Proxima web / ADR 0036.
+
+Always pass explicit `program_id` (from `list_programs` or prior `build_program`). No vault default.
+
+## Before mutate_program (mandatory)
+
+Before **every** **mutate_program** call:
+
+1. **read_program (live-grid edits):** Call **`read_program`** with `program_id` in this turn and take **folderIds** / **dayOrder** / **exerciseIndex** from that snapshot. Do not reuse indexes from an earlier turn or from a **Mutation proposal** the user already Accepted. After a successful **build_program** in the same turn, the snapshot is stale (see **read_program staleness**).
+2. **Persist constraint changes:** If this turn (or recent unrecorded chat) adds, changes, or removes a constraint, also call **`update_constraint_profile`** in the same turn. Constraints include injury, equipment, area, movement restriction, and preference. Pass the add/remove fields. For preference clears on a **User-stated change**, pass `preferences: { <key>: null }` (e.g. `splitType: null`) — never swap to Full Body / `fb` as a wipe. Array clears stay on `removeInjuries` / `removeExcludedEquipment` / `removeExcludedAreas`. Never clear an injury, excluded equipment, excluded area, or preference to unlock a program style. Adapt the program to a saved injury, excluded equipment, or excluded area. If this turn names a different preferred split, exercise variability, or warmup, build that and leave the saved preference in place unless it is a User-stated change. Program length and days per week are not cleared through this tool. Pass `rawStatement` when the user spoke in chat. Call **`update_constraint_profile`** before **mutate_program** when you can. Do not wait for it before you edit. Do not assume that the Active Constraint Profile in the prompt is already written to Agentic memory.
+3. **Empty days:** Empty training days are rejected. An explicit remove is allowed.
+
+## Exercise objection
+
+User pushback on one programmed movement (pain, equipment mismatch, cannot perform a position, wrong stimulus) is an **Exercise objection**.
+
+| Scope | Op |
+|-------|-----|
+| One slot / new movement + sets | **`edit_exercise`** (or **insert_exercise** + **delete_exercise** in the same Program mutation batch if needed) |
+| Same template / equipment-only across the program (sets/rest stay) | **`swap_exercise_template`** (**Template swap**) |
+| Explicit "remove X" / "skip X" only | **`delete_exercise`** |
+
+**Lasting limit vs taste** (same turn as the replace when lasting):
+
+| Wording | Profile update |
+|---------|----------------|
+| Injury / pain (for example "hurts my knee") | **`addInjuries`** + `rawStatement` |
+| Missing equipment (for example "don't have cables") | **`addExcludedEquipment`** + `rawStatement` |
+| Movement restriction (for example "no overhead", "can't kneel") | **`addInjuries`** + `rawStatement` |
+| Periodization / deload / peak week plan | **Not** `addInjuries` - wave on **build_program** or `preferences.deloadWeek` / `peakWeek` |
+| Taste-only (for example "too boring", "swap this") | **No** profile update - replace only |
+
+Before **`addInjuries`**, read the saved **Injuries & health issues** in the Active Constraint Profile. Do not add an entry that sounds very similar to one already there (for example "Knee pain" next to "knee pain when squatting"). Keep the saved one.
+
+**Not an Exercise objection:** a **Program stalemate** on **First build**. Nothing landed — use **build-program**, not **mutate_program**.
+
+## Checklist
+
+- [ ] **Persist constraint changes** via **`update_constraint_profile`** when this turn changes constraints (same turn as mutate - non-blocking backup).
+- [ ] Empty training days are rejected. An explicit remove is allowed.
+- [ ] **Exercise objection:** replace/swap per table above. Lasting limits also update the profile. Taste-only does not.
+- [ ] **read_program** in this turn before **mutate_program** on an existing program. Target from that snapshot. `hevyProgram.length` = N total routines (all weeks).
+- [ ] Build **one operations array** with all registry ops for the requested change.
+- [ ] **Equipment / template swaps** (dumbbell-only, barbell → dumbbell, variation replace across program): use **`swap_exercise_template`**. Use one op per `from_exercise_template_id`. Omit **folderIds** / **dayOrder** to hit every week and day.
+- [ ] **Positional edits with new sets** (one slot, new prescription): use **`edit_exercise`** with grid payload (same shape as **insert_exercise**).
+- [ ] For other edits that affect every week/day occurrence: include **folderIds** (and matching **dayOrder**) for each week, or one op with multiple **folderIds** when the change is identical.
+- [ ] Call **mutate_program** once with `program_id` + full **operations** array (stages proposal only).
+- [ ] After user Accept path: **accept_program_mutation** (needs `builder_routines`) then **save_program**.
+
+## Propose → Accept → Save
+
+1. **read_program** (`program_id`) then **mutate_program** with **folderIds** / **dayOrder** from that snapshot. Shorten weeks with **delete_week** (highest index first). Never **build_program** for trim/lengthen.
+2. Pending proposal is OK with MCP App closed. Visible reply = the ask, not a claim that the prescription already changed.
+3. **accept_program_mutation** needs `builder_routines` from the open MCP App week builder. Without it, the tool errors and keeps the pending proposal — tell the user to open the program week UI, then Accept.
+4. After Accept, **save_program** with the updated builder grid to persist (Edit program locks refuse Current week / Week complete changes).
+5. **reject_program_mutation** discards pending only.
+
+Do **not** claim the prescription changed until **save_program** succeeds.
+
+## Targeting (mutate_program)
+
+Use registry operation ids only. Field details live in the **mutate_program** tool description. Do not duplicate per-op tables here.
+
+- **folderIds:** 0-based week index (`folder_id` on each routine). Week 1 → `[0]`, week W → `[W - 1]`. Multiple weeks: `[0, 1, 2, …]`. Always an **array**. Never use `folderId`.
+- **dayOrder:** 1-based day within the week (`order` on the routine).
+- **exerciseIndex:** **required** on every **insert_exercise** (0-based). Empty day → `0`. Append → `exercises.length` from **read_program**. Multi-insert batch → rising indices (`0`, `1`, `2`…) as ops accumulate. Use **array position** in read_program. Do not use a separate index field.
+- **setIndex:** 0-based index on the sets of that exercise (for **update_set** only).
+- **Sets in insert/edit payloads:** ordered `sets[]` array only. Indices come from array position (0-based). Optional `index` on each set is ignored.
+
+**Week + day from builder context:** For week `w` (1-based) and day `d` (1-based): `folderIds: [w - 1]`, `dayOrder: d`. Program length = **daysPerWeek × programLength** routines total.
+
+## Op selection
+
+| Goal | Op |
+|------|-----|
+| Rename day (for example "Back Day") | **edit_day_title** |
+| Rename + day notes | **edit_day_title** + **add_day_notes** |
+| Replace one exercise slot (new movement + sets) | **edit_exercise** |
+| Add exercise rows to a day | **insert_exercise** - **one `exercise` object per op**, not an `exercises` array |
+| Remove a row | **delete_exercise** |
+| Tweak reps / RPE / rest on existing set | **update_set** |
+| Swap template, keep sets/rest | **swap_exercise_template** |
+
+## Populate a training day
+
+When the user wants a day type (for example "make day 1 a Back Day"): call **read_program**, then one batch:
+
+1. **edit_day_title** for the new name.
+2. **insert_exercise** once per movement - one `exercise` per op. Keep existing warmups. Replace warmups only when the user asks for a replace.
+
+Multi-insert in one batch: ops apply in order on an accumulating program. Use rising **exerciseIndex** values (`0` on empty day, then `1`, `2`, …). Do not reuse the same index.
+
+```json
+{
+  "operations": [
+    { "op": "edit_day_title", "folderIds": [0], "dayOrder": 1, "title": "Back Day" },
+    {
+      "op": "insert_exercise",
+      "folderIds": [0],
+      "dayOrder": 1,
+      "exerciseIndex": 0,
+      "exercise": {
+        "exercise_template_id": "TEMPLATE_ID",
+        "rest_seconds": "90",
+        "sets": [
+          {
+            "type": "normal",
+            "reps": 8,
+            "weight_kg": null,
+            "rpe": 8,
+            "distance_meters": null,
+            "duration_seconds": null,
+            "custom_metric": null,
+            "rep_range": null
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+## Batch order
+
+Operations run in **array order** (fail-all if any op is invalid):
+
+1. Put **insert_exercise** (especially warmups at **exerciseIndex: 0**) before **update_set** / **edit_exercise** / **delete_exercise** on the same day.
+2. Put **delete_exercise** / inserts at higher **exerciseIndex** before lower-index updates when indices shift.
+3. Use **update_set** and **edit_day_title** for RPE, reps, rest, and title tweaks. Use **insert_exercise** / **delete_exercise** only when structure changes.
+4. Put **swap_exercise_template** before many positional **edit_exercise** calls when only the exercise template (equipment/variation) changes and sets/rest must stay.
+
+## Template swap vs positional edit
+
+| Goal | Op |
+|------|-----|
+| Replace all barbell bench with dumbbell bench (sets/rest unchanged) | **swap_exercise_template** |
+| Change one exercise slot to a different movement **and** new sets/reps | **edit_exercise** |
+| Tweak RPE/reps/rest on existing template | **update_set** |
+
+**Dumbbell-only example** - after **read_program**, one batch (omit **folderIds** / **dayOrder** for program-wide):
+
+```json
+{
+  "operations": [
+    { "op": "swap_exercise_template", "from_exercise_template_id": "SQUAT_BB", "to": { "exercise_template_id": "DCFF3E9F", "reason": "Dumbbell-only." } },
+    { "op": "swap_exercise_template", "from_exercise_template_id": "BENCH_BB", "to": { "exercise_template_id": "3601968B" } }
+  ]
+}
+```
+
+Do **not** emit nine **edit_exercise** ops that re-specify every set when **swap_exercise_template** is enough.
+
+## Supersets
+
+Superset ops use the same targeting as every other **mutate_program** op: **folderIds** + **dayOrder**. Never use `dayId` or per-routine `id` from **read_program**.
+
+- **create_superset** - group 2+ exercises on matching days. Args: `folderIds`, `dayOrder`, `exerciseIndexes` (0-based, min 2).
+- **remove_from_superset** - detach one exercise from its superset. Args: `folderIds`, `dayOrder`, `exerciseIndex` (0-based).
+
+**Detect supersets from read_program:** exercises that share the same non-null `supersets_id` on a day are grouped. To remove all supersets on a day, emit one **remove_from_superset** per grouped exercise index.
+
+**Program-wide ungroup** - one op per exercise index, each with every week in **folderIds** (not one op per week/day):
+
+```json
+{
+  "operations": [
+    { "op": "remove_from_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 1, "exerciseIndex": 4 },
+    { "op": "remove_from_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 1, "exerciseIndex": 6 }
+  ]
+}
+```
+
+After **read_program**, build **folderIds** from the `folder_id` of each routine for the target **dayOrder**. 8-week program → `[0, 1, 2, 3, 4, 5, 6, 7]`. Do **not** emit 16+ ops with different `dayId` values.
+
+**create_superset** across every week - same pattern:
+
+```json
+{
+  "operations": [
+    { "op": "create_superset", "folderIds": [0, 1, 2, 3, 4, 5, 6, 7], "dayOrder": 2, "exerciseIndexes": [3, 4] }
+  ]
+}
+```
+
+## Warmup exercises vs warmup sets
+
+A **warmup exercise** is its own row (a movement from list_exercises at the start of the day) with set type `"normal"`.
+A **warmup set** is a lighter set on a working lift; use set type `"warmup"` only for those.
+
+## Program types
+
+If the program or the requested changes are **powerlifting-focused**, load the powerlifting resource. Powerlifting focus includes squat, bench, deadlift, or programs "like" Starting Strength, 5/3/1, Texas Method, GZCL, Sheiko, and more. Read `resources/powerlifting.md`. Apply that knowledge when you build the **operations** batch. Preserve SBD emphasis, recovery, and style.
+
+If the program or the requested changes are **bodybuilding- or hypertrophy-focused**, load the bodybuilding resource. That focus includes aesthetic goals, muscle building, PPL, upper/lower, bro split, or training by muscle group. Read `resources/bodybuilding.md`. Apply that knowledge when you build the **operations** batch. Preserve volume landmarks, exercise categories per muscle, rep ranges, and session structure as in the resource.
+
+## Change program length (weeks)
+
+**Existing program on the grid:** use **read_program** + **mutate_program** only. Do **not** call **build_program**. That tool is for **new** program creation, not for trim or lengthen of a live program.
+
+- **Shorter program:** one **delete_week** per removed week. Use **folderIds: [weekIndex]** (0-based, same as routine `folder_id`). Emit one op per week. Delete **highest index first** so reindexing stays correct. Example for 8→2 weeks: `[7]`, `[6]`, `[5]`, `[4]`, `[3]`, `[2]` - keeps weeks 0 and 1.
+- **Longer program:** no **duplicate_week** on MCP. Say so; user can extend in Proxima web builder or rebuild.
+
+## Gotchas
+
+- **folderIds vs folder_id:** **read_program** returns `folder_id` on each routine. **mutate_program** expects **folderIds** as an array. Week 3 → `folderIds: [2]`. Never use `folderId: 2`.
+- **One exercise per insert_exercise:** Never pass `exercises: [...]`. Each new row needs its own `{ "op": "insert_exercise", "exercise": { … } }`.
+- **Nested objects, not JSON strings:** Any object field (`exercise`, `to`, `set`, and more) must be a nested object in the tool call. Never stringify it.
+- **All slot indices are 0-based:** `exerciseIndex`, `setIndex`, and `exercises[]` / `sets[]` array order. **`dayOrder`** is the Hevy day number (1-7), not an array index.
+- **Never omit exerciseIndex:** Omitting it fails validation. That is not the same as UI append. Always pass an explicit number.
+- **Supersets:** **create_superset** / **remove_from_superset** / **delete_day** all use **folderIds** + **dayOrder**. Never use `dayId`.
+- **Program shape**: The live program is all routines across all weeks. Length N = **daysPerWeek × programLength** (for example 6×8 = 48). Target days with **folderIds** + **dayOrder**, not flat routine-index math.
+- **Program-wide changes**: To change every occurrence (for example rename all "Push" to "Chest"), include **folderIds** for each week and the same **dayOrder**. You can also use one op with all relevant **folderIds**. Do not edit only the first week.
+- **One batch, one call**: Pass a single **operations** array to **mutate_program**. Do not split by week or make multiple **mutate_program** calls for one logical edit.
+- **read_program staleness**: Snapshot is from **request start**. It does **not** refresh after **build_program** in the same turn. A same-turn edit after a successful **build_program** targets from **build_program** output instead.
+
+## Rep ranges
+
+`rep_range` is a first-class field on every set (`{start, end}`). **`rep_range` supersedes `reps` in the UI**. When `rep_range` is non-null the UI displays the range and ignores `reps`.
+
+- When the program uses rep ranges, use **update_set** with the full **`rep_range`** object. Do not update only **reps**. Example: change 8-12 to 10-15 via `{ "op": "update_set", …, "set": { "rep_range": { "start": 10, "end": 15 } } }`.
+- **Fixed-rep rule:** When you change to a fixed rep count (for example 5x5, singles, doubles, triples), set **`rep_range`: null**. Set **`reps`** to the fixed value in **update_set**. **NEVER** emit a degenerate `rep_range` where `start === end` (for example `{start: 5, end: 5}`). That displays as "5-5" in the UI. That is incorrect.
+
+## Logged training history
+
+Full workout-history list tools are not on this coaching path. For a single known workout id, MCP has `get_workout`. Prefer program edits via **read_program** / **mutate_program**.
+
+## Operations batch template
+
+The following is **only** the payload shape for **mutate_program**. Do **not** copy this block into user-visible assistant messages. The tool expects `{ "operations": [ … ] }` (not a bare array at the top level).
+
+```json
+{
+  "operations": [
+    { "op": "edit_day_title", "folderIds": [0, 1, 2], "dayOrder": 1, "title": "Push Day" },
+    { "op": "update_set", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "setIndex": 0, "set": { "rep_range": { "start": 8, "end": 12 } } },
+    { "op": "update_set", "folderIds": [0], "dayOrder": 1, "exerciseIndex": 0, "setIndex": 0, "set": { "reps": 12 } }
+  ]
+}
+```
