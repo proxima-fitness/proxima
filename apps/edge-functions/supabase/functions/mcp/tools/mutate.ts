@@ -1,10 +1,11 @@
 /**
  * MCP tools: mutate_program / accept_program_mutation / reject_program_mutation /
- * save_program (ADR 0034 / 04).
+ * save_program (ADR 0034 / 04 + 12 builder App).
  */
 
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
+import { MCP_APP_URI, appUiMeta } from './app-uris.ts'
 import {
   acceptProgramMutation,
   proposeProgramMutation,
@@ -45,6 +46,7 @@ export function registerMutateTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args: TMutateProgramInput) => {
       try {
@@ -84,6 +86,7 @@ export function registerMutateTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args: TAcceptProgramMutationInput) => {
       try {
@@ -119,6 +122,7 @@ export function registerMutateTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args: TRejectProgramMutationInput) => {
       try {
@@ -147,6 +151,7 @@ export function registerMutateTools(
         destructiveHint: true,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args: TSaveProgramInput) => {
       try {

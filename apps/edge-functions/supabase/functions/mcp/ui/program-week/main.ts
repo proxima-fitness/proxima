@@ -191,11 +191,13 @@ function applyPayload(payload: TWeekPayload) {
   renderDays();
 }
 
-function fromResult(result: {
+type TToolResult = {
   structuredContent?: unknown;
   content?: Array<{ type: string; text?: string }>;
   isError?: boolean;
-}): TWeekPayload | null {
+};
+
+function fromResult(result: TToolResult): TWeekPayload | null {
   if (result.isError) return null;
   const structured = result.structuredContent;
   if (structured && typeof structured === "object") {
@@ -210,10 +212,7 @@ function fromResult(result: {
   }
 }
 
-function toolError(result: {
-  isError?: boolean;
-  content?: Array<{ type: string; text?: string }>;
-}): string | null {
+function toolError(result: TToolResult): string | null {
   if (!result.isError) return null;
   return result.content?.find((c) => c.type === "text")?.text ?? "Request failed";
 }
@@ -358,9 +357,17 @@ async function onSave() {
   }
 }
 
-const app = new App({ name: "Proxima program week", version: "0.2.0" });
+function programIdFrom(payload: unknown): number | null {
+  if (!payload || typeof payload !== "object") return null;
+  const id = (payload as { program_id?: unknown }).program_id;
+  return typeof id === "number" && Number.isInteger(id) && id > 0 ? id : null;
+}
 
-app.ontoolresult = (result) => {
+async function hydrateFromProgramId(programId: number) {
+  const result = await callTool("show_program_week", {
+    program_id: programId,
+    week_index: weekIndex,
+  });
   const payload = fromResult(result);
   if (!payload) {
     titleEl.textContent = "Program week";
@@ -368,6 +375,29 @@ app.ontoolresult = (result) => {
     return;
   }
   applyPayload(payload);
+}
+
+const app = new App({ name: "Proxima program week", version: "0.3.0" });
+
+// mutate/build_program open this App with a non-builder payload — refetch week view.
+app.ontoolresult = (result: TToolResult) => {
+  const payload = fromResult(result);
+  if (!payload) {
+    titleEl.textContent = "Program week";
+    daysEl.innerHTML = `<p class="err">No week data</p>`;
+    return;
+  }
+  if (Array.isArray(payload.builder_routines)) {
+    applyPayload(payload);
+    return;
+  }
+  const id = programIdFrom(payload);
+  if (id != null) {
+    void hydrateFromProgramId(id);
+    return;
+  }
+  titleEl.textContent = "Program week";
+  daysEl.innerHTML = `<p class="err">No week data</p>`;
 };
 
 app.onerror = console.error;

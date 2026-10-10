@@ -1,10 +1,11 @@
 /**
  * MCP tools: athlete surface reads — browse, statistics, calendar,
- * body-measurement history, blind spot (ADR 0034 / 11).
+ * body-measurement history, blind spot (ADR 0034 / 11 + 12 resourceUri).
  */
 
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
+import { MCP_APP_URI, appUiMeta } from './app-uris.ts'
 import {
   getBlindSpotAnalysis,
   getProfileCalendar,
@@ -42,6 +43,7 @@ export function registerAthleteTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.workoutBrowse),
     },
     async (args: TListWorkoutsInput) => {
       try {
@@ -70,6 +72,7 @@ export function registerAthleteTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.profileStatistics),
     },
     async (args: TGetProfileStatisticsInput) => {
       try {
@@ -97,6 +100,7 @@ export function registerAthleteTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.profileCalendar),
     },
     async (args: TGetProfileCalendarInput) => {
       try {
@@ -125,6 +129,7 @@ export function registerAthleteTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.bodyMeasurements),
     },
     async (args: TListBodyMeasurementsInput) => {
       try {
@@ -153,6 +158,7 @@ export function registerAthleteTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.blindSpot),
     },
     async (args: TGetBlindSpotAnalysisInput) => {
       try {

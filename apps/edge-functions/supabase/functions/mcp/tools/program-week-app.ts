@@ -1,36 +1,27 @@
 /**
  * @module program-week-app
- * MCP App week builder — ui:// resource + show_program_week (ADR 0034 / 06–07).
+ * MCP App week builder — show_program_week tool (ADR 0034 / 06–07 / 12).
  * Depends on: @modelcontextprotocol/ext-apps/server, programs-db, mutate-db,
- * program-week-model.
+ * program-week-model, app-uris.
  * Used by: tools/index.ts.
  *
+ * UI resource registered in ui-resources.ts.
  * Rebuild UI: from `ui/program-week/`, `node build.mjs` → `apps/program-week.html`.
  */
 
-import {
-  registerAppResource,
-  registerAppTool,
-  RESOURCE_MIME_TYPE,
-} from 'npm:@modelcontextprotocol/ext-apps@2.0.3/server'
+import { registerAppTool } from 'npm:@modelcontextprotocol/ext-apps@2.0.3/server'
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 import { z } from 'npm:zod@4'
 
+import { MCP_APP_URI, appUiMeta } from './app-uris.ts'
 import { peekPendingProposal } from './mutate-db.ts'
 import { readProgram } from './programs-db.ts'
 import { buildProgramWeekBuilder } from './program-week-model.ts'
 import { errorResult, jsonResult, runtimeErrorResult } from './result.ts'
 import type { ToolContext } from './types.ts'
 
-/** MCP App resource URI for the program week builder. */
-export const PROGRAM_WEEK_RESOURCE_URI = 'ui://proxima/program-week'
-
-// Edge runtime rejects `import … with { type: 'text' }`; read the built HTML instead.
-function loadProgramWeekHtml(): Promise<string> {
-  return Deno.readTextFile(
-    new URL('../apps/program-week.html', import.meta.url),
-  )
-}
+/** @deprecated Prefer MCP_APP_URI.programWeek — kept for existing imports/tests. */
+export const PROGRAM_WEEK_RESOURCE_URI = MCP_APP_URI.programWeek
 
 const ShowProgramWeekInput = z.object({
   program_id: z
@@ -49,8 +40,8 @@ const ShowProgramWeekInput = z.object({
 type TShowProgramWeekInput = z.infer<typeof ShowProgramWeekInput>
 
 /**
- * Register the week-builder MCP App tool + UI resource.
- * Data tools stay usable without this UI (C3 host-optional).
+ * Register the week-builder MCP App tool.
+ * HTML resource lives in registerUiResources (slice 12).
  */
 export function registerProgramWeekApp(
   server: McpServer,
@@ -72,9 +63,7 @@ export function registerProgramWeekApp(
         destructiveHint: false,
         openWorldHint: false,
       },
-      _meta: {
-        ui: { resourceUri: PROGRAM_WEEK_RESOURCE_URI },
-      },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args: TShowProgramWeekInput) => {
       try {
@@ -105,29 +94,6 @@ export function registerProgramWeekApp(
         return jsonResult(payload)
       } catch (error) {
         return runtimeErrorResult(error)
-      }
-    },
-  )
-
-  registerAppResource(
-    server,
-    'Proxima program week',
-    PROGRAM_WEEK_RESOURCE_URI,
-    {
-      description:
-        'MCP App week builder: one Program prescription week, Accept proposal, Save.',
-      mimeType: RESOURCE_MIME_TYPE,
-    },
-    async () => {
-      const text = await loadProgramWeekHtml()
-      return {
-        contents: [
-          {
-            uri: PROGRAM_WEEK_RESOURCE_URI,
-            mimeType: RESOURCE_MIME_TYPE,
-            text,
-          },
-        ],
       }
     },
   )

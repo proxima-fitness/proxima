@@ -8,6 +8,7 @@ import { registerMutateTools } from './mutate.ts'
 import { registerProgramWeekApp } from './program-week-app.ts'
 import { registerProgramTools } from './programs.ts'
 import type { ToolContext } from './types.ts'
+import { registerUiResources } from './ui-resources.ts'
 import { registerWorkoutTools } from './workouts.ts'
 
 export type { ToolContext } from './types.ts'
@@ -23,4 +24,5 @@ export function registerTools(server: McpServer, context: ToolContext): void {
   registerBuildTools(server, context)
   registerMutateTools(server, context)
   registerProgramWeekApp(server, context)
+  registerUiResources(server)
 }

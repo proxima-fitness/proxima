@@ -1,9 +1,10 @@
 /**
- * MCP tool: build_program — First build lands immediately (ADR 0034 / 03).
+ * MCP tool: build_program — First build lands immediately (ADR 0034 / 03 + 12 builder App).
  */
 
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
+import { MCP_APP_URI, appUiMeta } from './app-uris.ts'
 import { buildProgram } from './build-db.ts'
 import { BuildProgramInput } from './build-schema.ts'
 import { errorResult, jsonResult, runtimeErrorResult } from './result.ts'
@@ -27,6 +28,7 @@ export function registerBuildTools(
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programWeek),
     },
     async (args) => {
       try {

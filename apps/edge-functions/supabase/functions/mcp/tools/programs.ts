@@ -1,9 +1,10 @@
 /**
- * MCP tools: list_programs + read_program (ADR 0034 / 01).
+ * MCP tools: list_programs + read_program (ADR 0034 / 01 + 12 overview App).
  */
 
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
+import { MCP_APP_URI, appUiMeta } from './app-uris.ts'
 import { ListProgramsInput, ProgramIdInput } from './program-schema.ts'
 import { listPrograms, readProgram } from './programs-db.ts'
 import { errorResult, jsonResult, runtimeErrorResult } from './result.ts'
@@ -39,13 +40,14 @@ export function registerProgramTools(
     'read_program',
     {
       description:
-        'Read one Joined Proxima program\'s Program prescription as a Hevy-shaped grid (folder_id = 0-based week, order = 1-based day). Requires explicit program_id.',
+        'Read one Joined Proxima program\'s Program prescription as a Hevy-shaped grid (folder_id = 0-based week, order = 1-based day). Requires explicit program_id. Opens the Program overview MCP App when the host supports Apps; use show_program_week for the week builder.',
       inputSchema: ProgramIdInput,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: appUiMeta(MCP_APP_URI.programOverview),
     },
     async (args) => {
       try {

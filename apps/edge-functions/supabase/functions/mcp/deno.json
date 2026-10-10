@@ -14,8 +14,9 @@
     "zod": "npm:zod@4.3.5"
   },
   "tasks": {
-    "check": "deno check index.ts tools/packages_smoke_test.ts tools/program-week-app.ts tools/athlete.ts",
+    "check": "deno check index.ts tools/packages_smoke_test.ts tools/program-week-app.ts tools/athlete.ts tools/ui-resources.ts tools/app-uris.ts",
     "test:program-week": "deno test --config deno.json tools/program-week-model_test.ts",
-    "test:athlete": "deno test --config deno.json tools/athlete-db_test.ts"
+    "test:athlete": "deno test --config deno.json tools/athlete-db_test.ts",
+    "test:apps": "deno test --config deno.json --allow-read=./apps tools/app-uris_test.ts"
   }
 }
