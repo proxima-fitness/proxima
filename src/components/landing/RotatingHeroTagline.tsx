@@ -28,7 +28,7 @@ export const SCRAMBLE_TICK_S = 0.08;
 export const SCRAMBLE_CIPHER = "⌬⌖⊗⊙⎔⎕◆▲▼▰ᐃᐅᐊᐁ";
 
 const HEADING_CLASS =
-    "grid w-full px-4 text-center font-tertiary text-6xl font-bold leading-[1.08] tracking-tight text-foreground max-sm:px-6 max-sm:text-4xl dark:drop-shadow-[0_0_22px_rgba(51,187,207,0.28)]";
+    "grid w-full px-4 text-center font-tertiary text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl max-sm:px-6 xl:text-6xl dark:drop-shadow-[0_0_22px_rgba(51,187,207,0.28)]";
 
 const LETTER_OR_DIGIT = /[A-Za-z0-9]/;
 

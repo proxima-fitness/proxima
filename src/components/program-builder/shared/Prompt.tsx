@@ -7,6 +7,7 @@
  * Depends on: PromptTemplate, ResumeDraftBanner, UserContext, ProximaStarCanvasDynamic, RotatingHeroTagline. Used by: build-program/landing.
  */
 import { useEffect } from "react";
+import { ConnectMcpButton } from "@/components/landing/ConnectMcpButton";
 import { ProximaStarCanvasDynamic } from "@/components/landing/proxima-star/ProximaStarCanvasDynamic";
 import { RotatingHeroTagline } from "@/components/landing/RotatingHeroTagline";
 import { useUserContext } from "@/contexts/UserContext";
@@ -86,7 +87,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                             transition={{ duration: 0.85, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <RotatingHeroTagline />
-                            <div className="px-12 text-center text-xl font-normal leading-tight text-muted-foreground max-sm:px-2 max-sm:text-base">
+                            <div className="px-12 text-center text-base font-normal leading-tight text-muted-foreground sm:text-lg max-sm:px-2 xl:text-xl">
                                 <span className="block">Proxima builds an adaptive personalized plan from your constraints and workout logs.</span>
                                 <span className="block">Train in your fitness app and your plan will tailor itself to you.</span>
                             </div>
@@ -99,6 +100,7 @@ export const Prompt: React.FC<IProps> = ({ userData }) => {
                         >
                             <ResumeDraftBanner />
                             <PromptTemplate />
+                            <ConnectMcpButton />
                         </motion.div>
                     </div>
                 </div>

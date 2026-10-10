@@ -12,7 +12,7 @@ import { generateText, gateway } from "ai";
 import { sanitizeGeneratedChatTitle } from "@/api/chat-title";
 
 /** One-shot title only. Cheaper than the chat agent's model. */
-const CHAT_TITLE_MODEL = "inclusionai/ling-3.0-flash-vl-free";
+const CHAT_TITLE_MODEL = "inclusionai/ling-3.1-flash-free";
 
 /** Cap pasted first prompts so the title call stays small. */
 const MAX_FIRST_PROMPT_CHARS = 4000;
