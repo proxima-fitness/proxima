@@ -8,7 +8,7 @@ Internal ADR term for this path remains **Host-agent coaching**.
 
 - `.claude-plugin/plugin.json` — plugin identity (`proxima-training-coach`)
 - `.mcp.json` — remote MCP URL (edit if your deploy differs)
-- `skills/{build-program,mutate-program,training-principles}/` — skill copies mapped to MCP tools
+- `skills/{build-program,mutate-program,training-principles,athlete-context}/` — skill copies mapped to MCP tools
 
 ## Prerequisites
 
@@ -37,9 +37,10 @@ MCP-only (no skills): Claude Code `claude mcp add Proxima <url>` or claude.ai cu
 
 ## Verify
 
-1. Ask which Proxima skills are available → expect build-program / mutate-program / training-principles.
+1. Ask which Proxima skills are available → expect build-program / mutate-program / training-principles / athlete-context.
 2. Call `list_programs` (or ask Claude to list programs).
-3. Skills must never instruct calling Vercel AI Gateway or Week Export / Sync / Connect Hevy in Claude (those are Proxima web / ADR 0036).
+3. Athlete asks: calendar-only → `get_profile_calendar` App; blind-spot-only → `get_blind_spot_analysis` App; program glance → `read_program` overview (not builder).
+4. Skills must never instruct calling Vercel AI Gateway or Week Export / Sync / Connect Hevy in Claude (those are Proxima web / ADR 0036).
 
 ## Tool map (Andy → MCP)
 
@@ -51,6 +52,9 @@ MCP-only (no skills): Claude Code `claude mcp add Proxima <url>` or claude.ai cu
 | readProgram | read_program |
 | updateConstraintProfile | update_constraint_profile |
 | updateTrainingProfile | update_training_profile |
-| (n/a) | list_programs, accept_program_mutation, reject_program_mutation, save_program, get_*_profile, get_latest_body_measurement |
+| (n/a) | list_programs, accept_program_mutation, reject_program_mutation, save_program, show_program_week, get_*_profile, get_latest_body_measurement |
+| (n/a — athlete reads) | list_workouts, get_profile_statistics, get_profile_calendar, list_body_measurements, get_blind_spot_analysis |
+
+Athlete read → App map and overview-vs-builder routing: **athlete-context** skill (ADR 0034 / 09).
 
 No MCP equivalents yet: questionnaire UI (`getMoreInfoQuestions`), Hevy share import/export, Week Export / Sync / Connect Hevy.
