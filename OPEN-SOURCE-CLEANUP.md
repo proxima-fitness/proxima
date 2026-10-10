@@ -156,19 +156,5 @@ edge functions.
   npx supabase functions deploy resend-add-contact
   ```
 
-- [ ] **SQL — Resend trigger** uses `apikey` + `sb_secret_…` (not Bearer JWT):
-
-  ```sql
-  CREATE OR REPLACE TRIGGER "resend-general-add-contact"
-  AFTER INSERT ON "public"."users"
-  FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"(
-    'https://oivloxjpauqrggayaovk.supabase.co/functions/v1/resend-add-contact',
-    'POST',
-    '{"Content-type":"application/json","apikey":"<NEW_SECRET_KEY>"}',
-    '{}',
-    '5000'
-  );
-  ```
-
-- [ ] **Smoke-test** — login, programs, delete-account, Hevy sync, AI edges, signup → Resend.
-- [ ] Optional: blog project legacy keys; git history rewrite.
+- [x] **SQL Editor — Resend trigger** with `apikey` + rotated secret.
+- [ ] Optional: signup smoke → Resend contact; git history rewrite.
