@@ -90,7 +90,7 @@ Authorization: Bearer sb_secret_…
 
 | File | Reads |
 |------|-------|
-| `apps/edge-functions/supabase/functions/hevy-program-sync/supabase.ts` | `SUPABASE_SECRET_KEYS["default"]` |
+| `apps/edge-functions/supabase/functions/hevy-program-sync/supabase.ts` | `SUPABASE_SECRET_KEYS["rotated_supabase_secret_key"]` |
 | `apps/edge-functions/supabase/functions/upstash-redis-ratelimit/index.ts` | `SUPABASE_PUBLISHABLE_KEYS["default"]` |
 
 No legacy `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` fallbacks.
@@ -140,7 +140,7 @@ sends `apikey` for `sb_*` keys, and sets `verify_jwt = false` on API-key-invoked
 edge functions.
 
 - [x] **Disable legacy API keys** (Dashboard → Legacy) — done; leaked JWT is inert.
-- [ ] **Vercel env** = `sb_publishable_…` / `sb_secret_…` (not `eyJ…`); redeploy landing.
+- [ ] **Vercel env** = `sb_publishable_…` / `SUPABASE_SECRET_KEY` = value of **`rotated_supabase_secret_key`** (not `default`, not `eyJ…`); redeploy landing.
 - [ ] **Local `.env.local`** — same when pointing at prod.
 - [ ] **Redeploy edge functions** (so `verify_jwt = false` + new key reads ship):
 
