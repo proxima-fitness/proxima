@@ -1,0 +1,18 @@
+{
+  "nodeModulesDir": "none",
+  "compilerOptions": {
+    "strict": true
+  },
+  "unstable": [
+    "sloppy-imports"
+  ],
+  "imports": {
+    "@proxima/exercise-identity": "../../../../../packages/exercise-identity/src/index.ts",
+    "@proxima/mutation-constraint-gate": "../../../../../packages/mutation-constraint-gate/src/index.ts",
+    "@proxima/program-mutation-schemas": "../../../../../packages/program-mutation-schemas/src/index.ts",
+    "zod": "npm:zod@4.3.5"
+  },
+  "tasks": {
+    "check": "deno check index.ts tools/packages_smoke_test.ts"
+  }
+}

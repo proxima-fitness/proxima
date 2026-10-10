@@ -1,3 +1,5 @@
-npx lint-staged
-npm run test:ci
-npm run build
+ROOT=$(git rev-parse --show-toplevel)
+cd "$ROOT/apps/landing" && npx lint-staged
+cd "$ROOT"
+npm run test:ci -w landing
+npx turbo run build --filter=landing

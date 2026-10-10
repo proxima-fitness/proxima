@@ -1,0 +1,7 @@
+{
+    "imports": {
+      "@upstash/redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts",
+      "@upstash/ratelimit": "https://cdn.skypack.dev/@upstash/ratelimit@latest",
+      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.4.0"
+    }
+}

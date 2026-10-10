@@ -2,28 +2,38 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Monorepo layout
+
+- `apps/landing` — Next.js app (run most product commands here or via `-w landing` / Turbo `--filter=landing`)
+- `apps/edge-functions` — Deno Supabase Edge Functions (**Proxima MCP**, etc.); deploy with CLI from that directory
+- `packages/*` — shared pure packages (ADR 0035+)
+- `docs/adr/`, `CONTEXT.md` — domain docs at repo root
+
+Deploy roots: Vercel → `apps/landing`; Supabase Edge → `apps/edge-functions`.
+
 ## Commands
 
 ```bash
-npm run dev                 # Next.js dev server
-npm run build               # production build (also runs in pre-commit)
-npm run lint                # eslint
-npm run test                # vitest watch
-npm run test:ci             # vitest run (pre-commit gate)
-npm run test:coverage
-npm run test:db-smoke       # supabase/snippets/verify_*.sql against local Postgres
+npm install
+npm run dev                                    # landing Next.js dev server (Turbo)
+npx turbo run build --filter=landing           # production build (also runs in pre-commit)
+npm run lint                                   # eslint (landing)
+npm run test:ci -w landing                     # vitest run (pre-commit gate)
+npm run test -w landing                        # vitest watch
+npm run test:coverage -w landing
+npm run test:db-smoke -w landing               # supabase/snippets/verify_*.sql against local Postgres
 
-npx vitest run src/api/__tests__/program-prescription.test.ts     # one file
-npx vitest run src/api -t "returns title and program length"      # one test by name
+cd apps/landing && npx vitest run src/api/__tests__/program-prescription.test.ts
+cd apps/landing && npx vitest run src/api -t "returns title and program length"
 ```
 
-Pre-commit (husky) runs `lint-staged` → `npm run test:ci` → `npm run build`. Assume any of those failing blocks a commit.
+Pre-commit (husky at repo root) runs landing `lint-staged` → `test:ci` → Turbo `build --filter=landing`. Assume any of those failing blocks a commit.
 
 ### Local Supabase
 
-`./start-local-supabase.sh` starts Docker Supabase, applies migrations, seeds Hevy exercises/warmups, creates the test user (`test@localhost.dev` / `Password123!`), points `.env.local` at `http://127.0.0.1:54321`, and regenerates `src/hooks/supabase.ts`. Stop with `npx supabase stop`. See README for reverting `.env.local` to prod.
+From `apps/landing`, `./start-local-supabase.sh` starts Docker Supabase, applies migrations, seeds Hevy exercises/warmups, creates the test user (`test@localhost.dev` / `Password123!`), points `.env.local` at `http://127.0.0.1:54321`, and regenerates `src/hooks/supabase.ts`. Stop with `npx supabase stop` from that app. See `apps/landing/README.md` for reverting `.env.local` to prod.
 
-`src/hooks/supabase.ts` is **generated** (`npx supabase gen types --lang=typescript --local`) — edit migrations, not that file.
+`apps/landing/src/hooks/supabase.ts` is **generated** (`npx supabase gen types --lang=typescript --local`) — edit migrations, not that file.
 
 ## Domain docs and process
 
