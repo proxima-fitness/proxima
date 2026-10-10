@@ -169,13 +169,19 @@ function renderDays() {
                 return `<div class="ex">
                   <p class="ex-title">${escapeHtml(ex.title)}</p>
                   <table class="sets">
-                    <thead><tr><th>#</th><th>Reps</th><th>kg</th><th>RPE</th></tr></thead>
                     <tbody>${rows}</tbody>
                   </table>
                 </div>`;
               })
               .join("");
-      return `<section class="day"><h2>${escapeHtml(day.title)}</h2>${exercises}</section>`;
+      return `<section class="day">
+        <h2>${escapeHtml(day.title)}</h2>
+        <div class="colhead">
+          <span># · Exercise</span>
+          <div class="metrics"><span>Reps</span><span>Kg</span><span>RPE</span></div>
+        </div>
+        ${exercises}
+      </section>`;
     })
     .join("");
 }

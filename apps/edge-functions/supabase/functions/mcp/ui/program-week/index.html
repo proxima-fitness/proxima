@@ -5,63 +5,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Proxima program week</title>
     <style>
+      /* Clone of HevyDayCard + MutationProposalCard chrome from apps/landing. */
       :root {
         color-scheme: light dark;
-        --bg: var(--color-background-primary, #111);
-        --fg: var(--color-text-primary, #f2f2f2);
-        --muted: var(--color-text-secondary, #9a9a9a);
-        --border: var(--color-border-primary, #333);
-        --btn: var(--color-background-secondary, #222);
-        --accent: var(--color-text-accent, #5ec4b6);
-        font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+        --background: var(--color-background-primary, hsl(60 9% 98%));
+        --foreground: var(--color-text-primary, hsl(24 10% 10%));
+        --card: var(--color-background-secondary, #fff);
+        --muted: hsl(210 33% 97.6%);
+        --muted-foreground: var(--color-text-secondary, hsl(25 5% 45%));
+        --border: var(--color-border-primary, hsl(20 6% 90%));
+        --accent-teal: var(--color-text-accent, #33bbcf);
+        --accept: #16a34a;
+        --reject: #dc2626;
+        --day-border: #f3f4f6;
+        --day-bg: #f5f5f4;
+        --colhead-bg: #e8e8e8;
+        --font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, sans-serif);
       }
-      body { margin: 0; background: var(--bg); color: var(--fg); }
-      .shell { padding: 12px 14px 16px; }
-      .chrome { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-      .chrome h1 { flex: 1; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.3; }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: var(--color-background-primary, hsl(24 10% 10%));
+          --foreground: var(--color-text-primary, hsl(60 9% 98%));
+          --card: var(--color-background-secondary, hsl(24 6% 14%));
+          --muted: hsl(24 6% 18%);
+          --muted-foreground: var(--color-text-secondary, hsl(24 5% 64%));
+          --border: var(--color-border-primary, hsl(24 6% 20%));
+          --day-border: #1c1917;
+          --day-bg: #1c1917;
+          --colhead-bg: #1c1917;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 1.4;
+        -webkit-font-smoothing: antialiased;
+      }
+      .shell { padding: 14px 14px 20px; max-width: 520px; }
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .chrome h1 {
+        flex: 1;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       button {
-        background: var(--btn); color: var(--fg); border: 1px solid var(--border);
-        border-radius: 6px; padding: 6px 10px; font: inherit; cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+        background: transparent;
+        color: var(--foreground);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
       }
-      button:disabled { opacity: 0.4; cursor: default; }
-      button.primary { border-color: var(--accent); color: var(--accent); }
-      .meta { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
-      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+      button:hover { background: color-mix(in srgb, var(--muted) 70%, transparent); }
+      button:disabled { opacity: 0.45; cursor: default; }
+      button.ghost {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        background: color-mix(in srgb, var(--muted) 50%, transparent);
+      }
+      button.accept {
+        background: var(--accept);
+        border-color: transparent;
+        color: #fff;
+      }
+      button.accept:hover { background: #15803d; }
+      button.reject {
+        border-color: var(--reject);
+        color: var(--reject);
+        background: transparent;
+      }
+      button.reject:hover { background: color-mix(in srgb, var(--reject) 10%, transparent); }
+      button.save {
+        background: var(--accent-teal);
+        border-color: transparent;
+        color: #fff;
+      }
+      button.save:hover { opacity: 0.92; }
+      .meta {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: var(--muted-foreground);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      }
+      .actions .right { display: flex; gap: 6px; margin-left: auto; }
       .banner {
-        font-size: 12px; padding: 8px 10px; border-radius: 6px;
-        border: 1px solid var(--border); margin-bottom: 10px;
+        font-size: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background: color-mix(in srgb, var(--muted) 40%, transparent);
       }
-      .banner.pending { border-color: var(--accent); color: var(--accent); }
-      .banner.err { border-color: #e66; color: #e66; }
-      .banner.ok { border-color: var(--accent); color: var(--muted); }
-      .day { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-      .day h2 { margin: 0 0 8px; font-size: 13px; }
-      .ex { margin: 0 0 10px; }
-      .ex:last-child { margin-bottom: 0; }
-      .ex-title { font-size: 12px; font-weight: 600; margin: 0 0 4px; }
-      .sets { width: 100%; border-collapse: collapse; font-size: 11px; }
-      .sets th { color: var(--muted); font-weight: 500; text-align: left; padding: 2px 4px; }
-      .sets td { padding: 2px 4px; }
+      .banner.pending {
+        border-color: color-mix(in srgb, var(--accent-teal) 50%, transparent);
+        background: color-mix(in srgb, var(--accent-teal) 10%, transparent);
+        color: var(--foreground);
+      }
+      .banner.err { border-color: var(--reject); color: var(--reject); }
+      .banner.ok {
+        border-color: color-mix(in srgb, var(--accept) 40%, transparent);
+        color: var(--muted-foreground);
+      }
+      .day {
+        border: 3px solid var(--day-border);
+        border-radius: 8px;
+        background: var(--day-bg);
+        padding: 12px 4px 8px;
+        margin-bottom: 12px;
+      }
+      .day h2 {
+        margin: 0 10px 8px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .colhead {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        margin: 0 2px 4px;
+        border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background: var(--colhead-bg);
+        font-size: 11px;
+        color: var(--muted-foreground);
+      }
+      .colhead .metrics {
+        display: flex;
+        width: 48%;
+        max-width: 48%;
+        text-align: center;
+      }
+      .colhead .metrics span { flex: 1; }
+      .ex { padding: 0 4px; }
+      .ex-title {
+        margin: 10px 8px 4px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .sets {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .sets td { padding: 4px 6px; vertical-align: middle; }
+      .sets td:first-child {
+        color: var(--muted-foreground);
+        width: 1.5rem;
+        font-variant-numeric: tabular-nums;
+      }
       .sets input {
-        width: 3.5rem; background: var(--btn); color: var(--fg);
-        border: 1px solid var(--border); border-radius: 4px; padding: 3px 4px; font: inherit;
+        width: 100%;
+        max-width: 4.5rem;
+        background: var(--card);
+        color: var(--foreground);
+        border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+        border-radius: 6px;
+        padding: 5px 6px;
+        font: inherit;
+        font-variant-numeric: tabular-nums;
       }
-      .err { color: #e66; font-size: 13px; }
-      .empty { color: var(--muted); font-size: 13px; }
+      .sets input:focus {
+        outline: 2px solid color-mix(in srgb, var(--accent-teal) 45%, transparent);
+        outline-offset: 1px;
+      }
+      .err { color: var(--reject); font-size: 13px; }
+      .empty { color: var(--muted-foreground); font-size: 13px; margin: 8px 10px; }
     </style>
   </head>
   <body>
     <div class="shell">
       <div class="chrome">
-        <button type="button" id="prev" aria-label="Previous week">←</button>
+        <button type="button" class="ghost" id="prev" aria-label="Previous week">‹</button>
         <h1 id="title">Loading…</h1>
-        <button type="button" id="next" aria-label="Next week">→</button>
+        <button type="button" class="ghost" id="next" aria-label="Next week">›</button>
       </div>
       <p class="meta" id="meta"></p>
       <div class="actions">
-        <button type="button" id="accept" class="primary" disabled>Accept</button>
-        <button type="button" id="discard" disabled>Discard</button>
-        <button type="button" id="save" class="primary" disabled>Save</button>
+        <button type="button" id="discard" class="reject" disabled>Reject</button>
+        <div class="right">
+          <button type="button" id="save" class="save" disabled>Save</button>
+          <button type="button" id="accept" class="accept" disabled>Accept</button>
+        </div>
       </div>
       <div id="banner" hidden></div>
       <div id="days"></div>
