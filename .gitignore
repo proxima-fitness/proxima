@@ -1,8 +1,3 @@
-supabase/.temp/linked-project.json
-# Local-serve copy of edge-functions (Deno). Source of truth: sibling edge-functions repo.
-# Keep out of git + Next/tsc - Deno npm: imports break app TypeScript.
-supabase/functions/
-
 # Logs
 logs
 *.log
@@ -31,10 +26,10 @@ dist-ssr
 # vscode
 .vscode
 
-# ...
 .next
 next-env.d.ts
 dist
+.turbo
 
 .env.local
 .env.production
@@ -43,8 +38,14 @@ dist
 .cursor
 coverage
 docs/
-# TEMP: local serve copy of edge fns — delete at end of new-path week-loop ADR cycle
-# (see supabase/functions/README.md). Source of truth: edge-functions repo.
-supabase/functions/
-
 tsconfig.tsbuildinfo
+
+# Local-serve copy under the landing app (Deno). Source of truth: apps/edge-functions.
+apps/landing/supabase/functions/
+apps/landing/supabase/.temp/
+
+# Edge app local env / Deno caches (keep functions source tracked)
+apps/edge-functions/**/.env
+apps/edge-functions/**/.env.*
+apps/edge-functions/**/.env.local
+!apps/edge-functions/**/.env.example

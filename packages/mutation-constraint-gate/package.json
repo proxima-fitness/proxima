@@ -1,0 +1,16 @@
+{
+    "name": "@proxima/mutation-constraint-gate",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "test:ci": "vitest run --environment node",
+        "build": "node -e \"process.exit(0)\""
+    },
+    "devDependencies": {
+        "vitest": "^3.2.4"
+    }
+}

@@ -1,29 +1,36 @@
-# Proxima Landing
+# Proxima (monorepo)
 
-## Local Supabase
+Turborepo workspace for Proxima Fitness.
 
-Requires Docker Desktop, Node, and a shell that can run bash (Git Bash / WSL on Windows).
+## Apps
+
+| Path | What |
+|------|------|
+| `apps/landing` | Next.js app (marketing + logged-in product + Payload) |
+| `apps/edge-functions` | Supabase Edge Functions (**Proxima MCP**, sync, etc.) — Deno |
+
+Shared libraries live under `packages/` (ADR 0035).
+
+## Deploy roots
+
+| Surface | Root |
+|---------|------|
+| **Vercel** | `apps/landing` (Root Directory) |
+| **Supabase Edge Functions** | `apps/edge-functions` (run `supabase functions` from this directory) |
+
+## Common commands
 
 ```bash
-# Start local Supabase, run migrations, seed Hevy exercises + warmup templates, create test user, regen types
-# Points .env.local (or .env) at http://127.0.0.1:54321
-./start-local-supabase.sh
+npm install
+npm run dev                 # landing Next dev server
+npx turbo run build --filter=landing
+npm run test:ci -w landing
 
-# App (uses NEXT_PUBLIC_REACT_APP_SUPABASE_* from .env.local)
-npm run dev
-
-# Stop all local Supabase containers
-npx supabase stop
-
-# Status / local URLs + keys
-npx supabase status
+cd apps/landing && ./start-local-supabase.sh
+cd apps/edge-functions && npx supabase functions deploy mcp
 ```
 
-Revert `.env.local` to prod: remove the `LOCAL SUPABASE` block at the bottom, uncomment lines prefixed with `# PROD #`.
+## Domain docs
 
-### Test login
-
-After `./start-local-supabase.sh`:
-
-- Email: `test@localhost.dev`
-- Password: `Password123!`
+- Glossary: `CONTEXT.md`
+- ADRs: `docs/adr/` (gitignored locally in some clones — check `.gitignore`)
