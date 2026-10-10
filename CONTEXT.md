@@ -37,6 +37,39 @@ _Avoid_: Hevy API key, OAuth token, session cookie
 
 
 
+### Proxima MCP
+
+
+The OAuth MCP server Proxima exposes to host agents (Claude first; ChatGPT later). Tools run as the signed-in athlete under RLS. Distinct from the **Public API** (HTTP + **Public API key**) even when tools cover the same resources. Implemented as a Supabase Edge Function (monorepo `apps/edge-functions` once ADR 0035 lands; historically the edge-functions repo).
+
+
+_Avoid_: Public API wrap, Developer API, Supabase's own project MCP for coding agents, treating `whoami` as a product tool
+
+
+
+
+### Host-agent coaching
+
+
+Coaching where Claude or ChatGPT runs the LLM loop (user-picked models, their bill) and calls **Proxima MCP** for data and program tools. Skills and an **MCP App** may ship with the connector. Program core includes list/read, **First build**, **Mutation proposal** edit via the **MCP App**, and **Agentic memory** tools. **Week Export**, **Edit current week**, **Sync**, and **Connect Hevy** in Claude are a follow-on (ADR 0036), not implied by program tools alone. Distinct from the **Integrated training coach** (Andy on `/build-program` via AI Gateway).
+
+
+_Avoid_: Replacing Andy by default, BYOK Andy, calling the host "Andy", assuming MCP mutate auto-writes the **Program prescription**, treating Hevy week-loop tools as part of program read/mutate
+
+
+
+
+### MCP App
+
+
+Interactive HTML UI a **Proxima MCP** tool links via `ui://` so Claude or ChatGPT renders it in a sandboxed iframe. Planned program surface: Proxima-equivalent **week** builder UI, one week at a time with prev/next — the in-memory builder for **Host-agent coaching** (**Mutation proposal** Accept lands here; **Save** commits the **Program prescription**). Not Claude Artifacts.
+
+
+_Avoid_: Artifact, Artifacts, embedding the Next.js `/build-program` page wholesale, calling Accept a prescription write
+
+
+
+
 ### Workout source
 
 
@@ -1028,10 +1061,10 @@ _Avoid_: Patch, JSON edit
 ### Mutation proposal
 
 
-A **Program mutation batch** the coach wants to apply to an existing program, shown in chat until the user Accepts or discards it. Accept commits it to the in-memory builder. Reject, a new user message, or a stale fail-all discards it. Distinct from **First build**, which still lands immediately. Distinct from **AI week suggest**, whose Apply writes the **Program prescription** on Program overview.
+A **Program mutation batch** the coach wants to apply to an existing program, shown until the user Accepts or discards it. Accept commits it to the in-memory builder (**Integrated training coach**: web builder; **Host-agent coaching**: **MCP App** week builder). Reject, a new user message, or a stale fail-all discards it. Does not write the **Program prescription** until **Save** (**Edit program**) or the host-agent Save tool. Distinct from **First build**, which still lands immediately. Distinct from **AI week suggest**, whose Apply writes the **Program prescription** on Program overview.
 
 
-_Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** button), patch preview, auto-apply on ready
+_Avoid_: Accept step, line diff, Cursor diff, Apply (the **AI week suggest** button), patch preview, auto-apply on ready, treating MCP mutate tool success as a prescription commit
 
 
 
@@ -1149,10 +1182,10 @@ _Avoid_: navigateToEditHevyProgram helper, inline edit push
 ### Agentic memory
 
 
-What the integrated training coach persists about the user across sessions and can use when coaching. Inspectable and editable by the user on **Edit profile**. Edit-profile umbrella with subsections: **Constraint profile**, **Training profile** (structured person facts), and **Body measurements** (read from **Body measurements backup**, not freeform notes). Constraint profile and Training profile are separate user-scoped structured records. Body measurement history is a separate backup like workouts. Prompt inject covers Active Constraint Profile, Active Training profile, and latest body measurement when present.
+What the coach persists about the user across sessions and can use when coaching — the **Integrated training coach** (prompt inject + tools) and **Host-agent coaching** (**Proxima MCP** memory tools). Inspectable and editable by the user on **Edit profile**. Edit-profile umbrella with subsections: **Constraint profile**, **Training profile** (structured person facts), and **Body measurements** (read from **Body measurements backup**, not freeform notes). Constraint profile and Training profile are separate user-scoped structured records. Body measurement history is a separate backup like workouts. Prompt inject (integrated coach) and MCP reads cover Active Constraint Profile, Active Training profile, and latest body measurement when present.
 
 
-_Avoid_: Memories (implies freeform-only rows), agent knowledge (too vague), user preferences (too broad), folding person-facts into Constraint profile, stuffing body-measurement history into the Constraint profile row, Agent memory (use Training profile), Session episode (removed, not a kind)
+_Avoid_: Memories (implies freeform-only rows), agent knowledge (too vague), user preferences (too broad), folding person-facts into Constraint profile, stuffing body-measurement history into the Constraint profile row, Agent memory (use Training profile), Session episode (removed, not a kind), implying host-agent has no memory tools
 
 
 
