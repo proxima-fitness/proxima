@@ -1,6 +1,10 @@
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
+import { registerBuildTools } from './build.ts'
 import { registerExerciseTools } from './exercises.ts'
+import { registerMemoryTools } from './memory.ts'
+import { registerMutateTools } from './mutate.ts'
+import { registerProgramTools } from './programs.ts'
 import type { ToolContext } from './types.ts'
 import { registerWorkoutTools } from './workouts.ts'
 
@@ -11,4 +15,8 @@ export type { ToolContext } from './types.ts'
 export function registerTools(server: McpServer, context: ToolContext): void {
   registerExerciseTools(server, context)
   registerWorkoutTools(server, context)
+  registerProgramTools(server, context)
+  registerMemoryTools(server, context)
+  registerBuildTools(server, context)
+  registerMutateTools(server, context)
 }
