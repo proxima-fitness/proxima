@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module soft-tool-fail-log
  * Server soft-tool failure logging: structured console + Langfuse event (ADR 02).

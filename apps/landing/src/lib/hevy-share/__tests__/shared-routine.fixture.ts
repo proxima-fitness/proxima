@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Trimmed capture of a real `GET /routine_with_short_id/{shortId}` response - the same
  * routine that appears first in `shareable-folder.fixture.ts`, fetched by its `short_id`.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { promises as fs } from 'node:fs';
 import { exec as execCb } from 'node:child_process';
 import { resolve } from 'node:path';

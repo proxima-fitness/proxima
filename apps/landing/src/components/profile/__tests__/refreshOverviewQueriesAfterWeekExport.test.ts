@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * After Week Export, Hevy folder list refreshes before Program–Hevy links.
  */

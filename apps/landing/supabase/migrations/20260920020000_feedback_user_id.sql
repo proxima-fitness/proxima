@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Stamp signed-in feedback with user_id; unsigned rows stay null.
 -- Anyone (anon + authenticated) can still insert. Clients never read this table.
 

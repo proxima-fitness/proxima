@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Seed data required by the application (idempotent).
 
 INSERT INTO public.policy_versions (document_type, version_label, effective_at)

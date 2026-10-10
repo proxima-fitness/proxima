@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { HttpError } from "./errors.ts";
 import { THevyExerciseHistory, THevyExerciseTemplate, THevyRoutine, THevyRoutineFolderResponse, THevyRoutineRequest, THevyRoutineRequestObject, THevySets, THevyWorkouts, THevyWorkoutsResponse, TProgramTitle, TRoutineFolderRequest, TRoutineFolderResponse, TRoutineResponse, TRoutineSet, TSavedWorkoutExercise, TScheduleWorkouts } from "./types.ts";
 import { supabase } from "./supabase.ts";

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Program list + prescription read against the OAuth user's RLS client
  * (ADR 0034 / 01). List membership mirrors landing `getSubscribedPrograms`

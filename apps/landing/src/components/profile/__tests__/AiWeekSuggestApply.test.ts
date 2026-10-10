@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Apply call + result copy for AI week suggest (ADR 0012 / 03).
  */

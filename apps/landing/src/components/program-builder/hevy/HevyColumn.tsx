@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module HevyColumn
  * One week column in the Hevy program builder: header (week title, duplicate week), drop zone for day cards,

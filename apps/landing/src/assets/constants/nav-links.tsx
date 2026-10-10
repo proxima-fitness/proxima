@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { people03, people02, people04, people05, people06, star } from "public";
 
 /** Program search: length + duration row under search (comboboxes). */

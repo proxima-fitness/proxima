@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Recipe-tap **Proposal jump** runs in the click, not a HevyRoutine effect.
  */

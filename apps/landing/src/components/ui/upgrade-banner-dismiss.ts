@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module upgrade-banner-dismiss
  * Persist mobile dismiss of the upgrade banner until remaining credits hit 0.

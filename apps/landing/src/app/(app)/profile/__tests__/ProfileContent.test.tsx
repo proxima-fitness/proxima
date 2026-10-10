@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Smoke tests for profile single-scroll layout (ADR 0010 / 05).
  */

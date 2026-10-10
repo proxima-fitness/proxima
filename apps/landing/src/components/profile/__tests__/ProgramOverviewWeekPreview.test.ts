@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Unit tests for Week preview day slicing (ADR 0020 / 03).
  */

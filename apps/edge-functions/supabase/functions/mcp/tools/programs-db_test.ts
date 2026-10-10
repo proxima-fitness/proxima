@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Persistence tests for program MCP list/read (ADR 0034 / 01).
  * Run: deno test --config deno.json tools/programs-db_test.ts

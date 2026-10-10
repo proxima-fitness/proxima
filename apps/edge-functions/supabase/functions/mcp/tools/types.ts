@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { SupabaseContext } from 'npm:@supabase/server@1'
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.108.2'
 

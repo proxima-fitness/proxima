@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 
 import { registerAthleteTools } from './athlete.ts'

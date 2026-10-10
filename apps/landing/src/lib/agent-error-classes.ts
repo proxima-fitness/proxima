@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module agent-error-classes
  * Stable hard-failure class codes for PostHog + stream onError (ADR 02/03).

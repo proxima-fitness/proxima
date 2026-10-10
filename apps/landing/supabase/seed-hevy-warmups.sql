@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Proxima warmup exercise templates (WU*) for local development.
 -- Source: production hevy_exercise_templates WHERE id LIKE 'WU%'.
 -- Not available from the Hevy API - apply after Hevy library seed in start-local-supabase.sh.

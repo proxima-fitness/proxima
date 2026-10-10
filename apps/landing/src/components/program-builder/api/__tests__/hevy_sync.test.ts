@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Sync engine (ADR 0013 / 03): empty / PUT / POST diff, live ID rewrite, rollback plan.
  */

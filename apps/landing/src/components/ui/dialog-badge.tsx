@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module dialog-badge
  * Badge styled for use inside dialogs (same variants as badge; renders as span).

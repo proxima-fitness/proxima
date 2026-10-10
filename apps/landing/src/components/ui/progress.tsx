@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module progress
  * Determinate progress bar (0-100) built on Radix Progress.

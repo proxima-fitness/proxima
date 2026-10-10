@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module PositiveReviewsMarquee
  * @description Infinite horizontal scroll of Reddit testimonials with fixed edge fade.

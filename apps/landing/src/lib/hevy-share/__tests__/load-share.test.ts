@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadHevyShare } from "@/lib/hevy-share/load-share";
 import { HEVY_SHARE_PLATFORM_KEY_ENV } from "@/lib/hevy-share/share-client";

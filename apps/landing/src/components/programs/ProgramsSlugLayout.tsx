@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module ProgramsSlugLayout
  * @description Server-side layout for an individual program slug page, assembling thumbnails, creator context, overview, and export/edit CTAs.

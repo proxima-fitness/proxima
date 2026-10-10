@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module hover-card
  * Popover on hover: Root, Trigger, Content (positioned with align/sideOffset).

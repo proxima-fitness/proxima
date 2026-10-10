@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module hevy-export-gate
  * Detects openHevyExportGate tool part on the last assistant message for footer UI.

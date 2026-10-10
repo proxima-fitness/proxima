@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module label
  * Form label with peer-disabled styling. Wraps Radix Label.

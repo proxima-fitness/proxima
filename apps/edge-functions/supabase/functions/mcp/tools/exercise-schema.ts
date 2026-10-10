@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP exercise tools — mirror of
  * proxima_landing `src/lib/public-api/openapi-schemas/exercises.ts` (ADR 0033 / 02).

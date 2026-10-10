@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export type TSessionGoal = "strength" | "hypertrophy" | "endurance" | "mixed";
 
 export const SESSION_GOAL_LABELS: Record<TSessionGoal, string> = {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Persisted Mesocycle blocks (ADR 0032 / 04, C5): parse the stored shape, read
  * blocks only from a landed First build, and write them on New-path Save.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Dispatch, SetStateAction } from "react";
 import type { FileUIPart } from "ai";
 import {

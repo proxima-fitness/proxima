@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module tabs
  * Tabbed panel (list of triggers + content panels) built on Radix Tabs.

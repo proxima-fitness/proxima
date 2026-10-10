@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // supabase/functions/hello-world/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { HttpError } from "./errors.ts";

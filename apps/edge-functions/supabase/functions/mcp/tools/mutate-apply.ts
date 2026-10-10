@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Fail-all apply for MCP agent ops (ADR 0034 / 04).
  * Port of landing applyOperations subset — no Next/UI imports.

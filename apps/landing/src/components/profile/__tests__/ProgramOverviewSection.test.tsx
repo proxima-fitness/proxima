@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Smoke tests for Program overview section shell + program picker (ADR 0020).
  */

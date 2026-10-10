@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module toggle-group
  * Group of mutually exclusive or multiple toggles (radio-like or multi-select) built on Radix ToggleGroup.

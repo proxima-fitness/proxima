@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Schema parse tests for workout MCP tools (ADR 0033 / 03) — C4/C5.
  */

@@ -1,6 +1,7 @@
 {
     "name": "proxima",
     "private": true,
+    "license": "AGPL-3.0-only",
     "packageManager": "npm@11.19.1",
     "workspaces": [
         "apps/*",

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Error banner with retry and "Explore Programs" link when build fails. */
 
 import { AlertCircle, RefreshCw } from "lucide-react";

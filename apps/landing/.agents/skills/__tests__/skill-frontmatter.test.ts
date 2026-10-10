@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, it, expect } from "vitest";
 import { parse as parseYaml } from "yaml";
 import * as fs from "node:fs/promises";

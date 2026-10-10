@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Fold Proxima keys onto Hevy's insert_secret / read_secret / delete_secret.
 -- Drops the extra RPCs from the first cut of this slice.
 

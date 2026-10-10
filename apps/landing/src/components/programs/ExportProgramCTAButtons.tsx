@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module ExportProgramCTAButtons
  * @description Button list for selecting how to export a program (PDF, spreadsheet, coming-soon destinations).

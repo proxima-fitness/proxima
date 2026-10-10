@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module ConfirmDialog
  * @description Reusable confirm dialog. Cancel is a footer button by default;

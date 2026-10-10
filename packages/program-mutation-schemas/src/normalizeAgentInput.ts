@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Coerce common agent mistakes before Zod validation on mutateProgram operations. */
 
 /** Nested object fields per op that agents sometimes stringify. */

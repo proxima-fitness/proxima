@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Visibility + confirm for the Program overview debug reset control.
  */

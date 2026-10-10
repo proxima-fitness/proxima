@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0026 / 02 — local Postgres + Vault smoke for the Proxima API key.
 -- Scratch script, not a migration. Leaves no rows (transaction rolled back).
 --

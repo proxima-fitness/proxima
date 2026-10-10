@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Rebuild composable athlete MCP Apps (single-file HTML).
  * Usage (from this directory): node build.mjs

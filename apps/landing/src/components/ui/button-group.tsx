@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module button-group
  * Groups buttons (or triggers) horizontally or vertically with shared borders and

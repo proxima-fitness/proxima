@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module command
  * Command palette / combobox: search input, list, groups, items, shortcuts.

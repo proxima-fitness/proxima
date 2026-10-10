@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Hevy muscle_group slug → display label (matches POST API / create-exercise form).
  * Single source for primary muscle display in lists and custom exercise UI.

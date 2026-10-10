@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Dummy Supabase env so modules that import @/api/index can load in unit tests. */
 process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_URL ??= "http://127.0.0.1:54321";
 process.env.NEXT_PUBLIC_REACT_APP_SUPABASE_KEY ??= "test-supabase-anon-key";

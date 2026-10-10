@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module soft-tool-failure-ui
  * Soft tool failure render: calm in-progress copy for ordinary users;

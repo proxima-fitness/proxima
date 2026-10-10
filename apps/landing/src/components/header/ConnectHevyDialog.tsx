@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module ConnectHevyDialog
  * @description Header-level dialog for connecting or updating a user's Hevy API key so Proxima can sync workout data from the Hevy app.

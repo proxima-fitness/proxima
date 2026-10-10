@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module dropdown-menu
  * Context menu / dropdown: Trigger, Content, Item, CheckboxItem, RadioItem, Label,

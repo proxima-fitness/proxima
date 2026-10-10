@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module HevyExportGate
  * Multi-step chat footer for Hevy export prerequisites: sign-in, then inline Hevy API key paste.

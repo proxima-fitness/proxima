@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Deterministic tiled value-noise lattice shared by the disk shader and Node rendering.
 export const NOISE_VOLUME_SIZE = 64;
 

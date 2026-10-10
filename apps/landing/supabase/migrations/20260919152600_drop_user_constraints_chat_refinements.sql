@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Drop chat refinements. Do not copy into injuries.
 -- Stored values were mostly program-style leftover. Health that still matters
 -- is already on injuries, or Andy will write it via addInjuries on the next chat

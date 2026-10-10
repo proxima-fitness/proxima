@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Sample Hevy body-measurement payload shaped like the grill / OpenAPI BodyMeasurement.
  * Used by import mapping tests and Hevy parse helpers.

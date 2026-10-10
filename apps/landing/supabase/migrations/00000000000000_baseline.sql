@@ -1,3 +1,4 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
 
 
 
@@ -3338,7 +3339,7 @@ CREATE OR REPLACE TRIGGER "programs_tsvectorupdate_trigger" BEFORE INSERT OR UPD
 
 
 
-CREATE OR REPLACE TRIGGER "resend-general-add-contact" AFTER INSERT ON "public"."users" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://oivloxjpauqrggayaovk.supabase.co/functions/v1/resend-add-contact', 'POST', '{"Content-type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pdmxveGpwYXVxcmdnYXlhb3ZrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4Njg2NjY5MywiZXhwIjoyMDAyNDQyNjkzfQ.r-DSZ570oZ40D_N_nBDWBr5dcoiWrC1t_3OEjl6gQng"}', '{}', '5000');
+CREATE OR REPLACE TRIGGER "resend-general-add-contact" AFTER INSERT ON "public"."users" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://oivloxjpauqrggayaovk.supabase.co/functions/v1/resend-add-contact', 'POST', '{"Content-type":"application/json","Authorization":"Bearer <SUPABASE_SERVICE_ROLE_KEY>"}', '{}', '5000');
 
 
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: Constraint / Training profile R/W + latest body measurement (ADR 0034 / 02).
  */

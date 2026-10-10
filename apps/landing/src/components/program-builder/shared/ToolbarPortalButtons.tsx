@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ToolbarPortalButtons
  * Renders Undo and one persist slot (**Save** or **Start**, never both) into

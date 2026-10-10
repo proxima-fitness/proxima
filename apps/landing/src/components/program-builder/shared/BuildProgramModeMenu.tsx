@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module BuildProgramModeMenu
  * Breadcrumb dropdown for program mode. With `hevy=true`, offers New vs Edit (`edit=true`).

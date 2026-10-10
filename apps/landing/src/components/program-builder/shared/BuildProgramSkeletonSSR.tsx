@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module BuildProgramSkeletonSSR
  * Server-renderable loading skeleton for program builder (no quotes, no client hooks). Used for SSR/initial paint.

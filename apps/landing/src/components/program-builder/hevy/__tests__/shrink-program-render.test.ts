@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "@/components/program-builder/mutations/apply";
 import { appendOrderToHevyRoutines } from "@/components/program-builder/utils/format-responses";

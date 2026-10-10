@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Day complete SoT: persist Hevy routine_id on workout backup (ADR 0011 / 0013 A7).
 -- A planned day is complete iff this ID is in that week's Program–Hevy link hevy_routine_ids.
 

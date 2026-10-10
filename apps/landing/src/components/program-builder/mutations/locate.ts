@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { mutationFailure, type TMutationResult, mutationSuccess } from "./types";
 
 export function requireNonEmptyFolderIds(folderIds: number[] | undefined): TMutationResult | null {

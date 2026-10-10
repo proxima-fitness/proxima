@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module DeleteAccountDialog
  * @description Dialog for permanently deleting the user's account. Requires typing "Delete"

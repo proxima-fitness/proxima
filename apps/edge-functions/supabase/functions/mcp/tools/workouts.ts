@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: create/get/replace/delete history Workouts (ADR 0033 / 03).
  */

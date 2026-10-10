@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module accordion
  * Expandable/collapsible sections with one or more items. Wraps Radix Accordion

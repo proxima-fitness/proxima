@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module slider
  * Single or range slider (thumb on track) built on Radix Slider.

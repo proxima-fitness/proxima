@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ProgramsFallback
  * Skeleton for programs list page: header block plus grid of program cards.

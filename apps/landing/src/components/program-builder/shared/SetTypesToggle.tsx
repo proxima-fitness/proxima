@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module SetTypesToggle
  * Single-set type selector: warmup, dropset, failure (normal implied). Used per set in the program editor.

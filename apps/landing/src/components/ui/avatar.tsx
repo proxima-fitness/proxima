@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module avatar
  * User or entity image with optional fallback (initials/icon). Composed of Root,

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Browser lifecycle for the baked black-hole pipeline. VGPU stays dynamically imported.
 
 import type { Frame, Gpu, Surface } from "vgpu";

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const AGENT_DEBUG_MODE_KEY = "proxima_agent_debug_mode";
 
 export function getAgentDebugMode(): boolean {

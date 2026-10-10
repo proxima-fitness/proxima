@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proxima-star/settings
  * Camera, disk, bloom, and starfield uniforms for the adapted Optimized Black Hole pipeline.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { supabase } from "./supabase.ts";
 import { HttpError } from "./errors.ts";
 import { TProgram, TProgramHistory, TProgramHevyWeekLink, TProgramScheduleHistory, TProgramSubscriber, TRoutineFolderResponse, TRoutineResponse } from "./types.ts";

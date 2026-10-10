@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module useHevySuccessConfetti
  * Shared confetti effect for Hevy export/sync success. Returns a fire function,

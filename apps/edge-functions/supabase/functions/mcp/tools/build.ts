@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tool: build_program — First build lands immediately (ADR 0034 / 03 + 12 builder App).
  */

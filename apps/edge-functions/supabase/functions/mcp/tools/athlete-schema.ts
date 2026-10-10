@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP athlete read tools (ADR 0034 / 11).
  * Names pinned in 09-widen-host-surfaces.md.

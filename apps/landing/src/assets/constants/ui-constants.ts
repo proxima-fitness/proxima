@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** User-facing messages and error copy. */
 export const PROFANITY_ERROR_MESSAGE = "Content contains profanity that does not meet our community guidelines";
 

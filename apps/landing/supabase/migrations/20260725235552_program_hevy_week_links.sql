@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Program–Hevy link: durable pointer from Proxima program + week → Hevy folder + routines.
 -- Grain: one row per (program_id, nth_week). Current week = max(nth_week) for a program.
 

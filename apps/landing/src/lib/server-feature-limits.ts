@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Server-side feature limits with test-user tier override (cookie-backed).
  *

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /*
  * @module Themes
  * @description Feature section that describes theme customization and embeds the theme preview slider.

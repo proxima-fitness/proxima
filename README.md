@@ -34,3 +34,20 @@ cd apps/edge-functions && npx supabase functions deploy mcp
 
 - Glossary: `CONTEXT.md`
 - ADRs: `docs/adr/` (gitignored locally in some clones — check `.gitignore`)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Outside pull requests require a
+signed [Contributor License Agreement](CLA.md) (CLA Assistant).
+
+## License
+
+Proxima is licensed under the [GNU AGPL v3.0](LICENSE). If you run a
+modified version as a network service, you must publish your source
+code under the same license.
+
+Want to use Proxima without AGPL obligations? Contact us about a
+commercial license: jack@proximafitness.com.
+
+"Proxima Fitness" and the Proxima logo are not covered by this license.
+Forks must use a different name and branding.

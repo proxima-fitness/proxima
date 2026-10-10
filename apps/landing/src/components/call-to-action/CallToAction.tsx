@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module CallToAction
  * Placeholder for the CTA section (e.g. "Download the App"); currently returns null (deprecated).

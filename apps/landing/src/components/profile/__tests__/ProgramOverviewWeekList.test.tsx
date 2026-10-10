@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Mark week complete confirm dialog on Program overview week list.
  */

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Shared usage-cap paywall contract (ADR 0019).
  * Safe for client + server - no Next.js server-only imports.

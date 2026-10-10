@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Cached AI week suggest result (ADR 0012). One row per program + completed week.
 -- Company-borne LLM cost: generate once, return cache on later panel opens.
 

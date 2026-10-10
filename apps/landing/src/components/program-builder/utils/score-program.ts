@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Heuristic bodybuilding program scoring against editable volume landmarks and rules.
  * Narrative muscle volumes live in `.agents/skills/build-program/resources/bodybuilding.md`;

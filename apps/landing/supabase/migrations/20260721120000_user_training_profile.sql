@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 CREATE TABLE public.user_training_profile (
   user_id uuid PRIMARY KEY REFERENCES public.users (id) ON DELETE CASCADE,
   age integer,

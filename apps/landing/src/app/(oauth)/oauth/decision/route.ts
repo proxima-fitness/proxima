@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module oauth/decision
  * Approves or denies an OAuth authorization request.

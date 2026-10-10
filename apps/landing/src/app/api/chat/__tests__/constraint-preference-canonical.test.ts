@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * updateConstraintProfile preferences must use questionnaire option-id enums;
  * null clears a key to "" (ADR 0031 sub-plan 01).

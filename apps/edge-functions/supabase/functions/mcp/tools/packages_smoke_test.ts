@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * ADR 0035 / 0034 — Deno can resolve workspace packages.
  * Run: deno test --config deno.json tools/packages_smoke_test.ts

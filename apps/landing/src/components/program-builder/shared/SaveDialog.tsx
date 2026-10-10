@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module SaveDialog
  * Post-creation congratulations modal with View JSON / Preview PDF toggle; placeholder for future save/export actions.

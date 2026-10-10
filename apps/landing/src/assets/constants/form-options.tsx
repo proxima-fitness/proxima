@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Sex options used in onboarding and goal forms. */
 export const sexOptions: TSelectOption[] = [
     { label: "Male", value: "male"},

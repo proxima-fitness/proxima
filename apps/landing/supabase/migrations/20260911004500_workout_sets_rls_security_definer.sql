@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Nested RLS on workout_sets WITH CHECK (exercise JOIN workout) can reject a
 -- legitimate insert: PostgREST writes sets in a follow-up request after the
 -- exercise row lands, and the join is itself RLS-filtered. A SECURITY DEFINER

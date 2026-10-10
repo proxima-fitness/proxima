@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ModifyProgramProgress
  * Compact progress list for mutateProgram: objectives with expand/collapse.

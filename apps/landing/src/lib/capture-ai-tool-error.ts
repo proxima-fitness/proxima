@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module capture-ai-tool-error
  * Client PostHog for Soft tool failures (ADR 02). Fires even when calm UI hides ToolErrorPanel.

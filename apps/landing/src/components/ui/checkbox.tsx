@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module checkbox
  * Binary toggle control with check indicator. Wraps Radix Checkbox with theme styles.

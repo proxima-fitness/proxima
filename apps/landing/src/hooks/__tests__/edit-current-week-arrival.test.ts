@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Edit current week arrival shape (ADR 0013 / 01).
  */

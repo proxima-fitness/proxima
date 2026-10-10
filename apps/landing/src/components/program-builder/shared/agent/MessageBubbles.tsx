@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module MessageBubbles
  * Renders chat messages (user + assistant), tool outputs (buildProgram, mutateProgram), build progress, error/retry UI, and applies program updates from tool results. After the stream finishes, duplicates week 1 across all weeks and merges post-buildProgram mutateProgram ops into one atomic commit, and hydrates a confirmed Hevy share import as a week-1 seed. Standalone mutateProgram is a **Mutation proposal** until Accept. A stale fail-all expires like Reject. A **Program stalemate** card replaces the empty-grid timeout banner.

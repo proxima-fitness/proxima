@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Persistence tests for Agentic memory MCP tools (ADR 0034 / 02).
  * Run: deno test --config deno.json tools/memory-db_test.ts

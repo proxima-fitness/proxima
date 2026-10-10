@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Unit tests for Program overview week status derivation (ADR 0010 / 02).
  */

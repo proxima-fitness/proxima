@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module stream-on-error
  * AI SDK stream `onError`: log real failure server-side; return safe class code to client (ADR 03).

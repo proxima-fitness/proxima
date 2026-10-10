@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Workout history sync: missing parent → workout_exercises RLS (not FK).
 -- Reproduces the concurrent-import race: importer A inserts a workouts shell,
 -- importer B deletes that incomplete shell, A's workout_exercises INSERT fails

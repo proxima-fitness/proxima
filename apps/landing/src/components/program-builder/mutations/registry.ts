@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { mutationTargetsCompletedDay } from "@/hooks/edit-persist";
 import { programMutationCatalogById } from "./catalog";
 import { isValidationFailure, mutationFailure, type TMutationResult, type TProgramMutationRunContext } from "./types";

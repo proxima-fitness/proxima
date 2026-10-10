@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module editor-reducer
  * Builder program + undo stack. New-path Save/leave dirty is exercise content

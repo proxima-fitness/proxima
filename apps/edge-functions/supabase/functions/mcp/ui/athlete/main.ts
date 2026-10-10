@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Composable athlete MCP Apps — one surface per bundle (ADR 0034 / 12).
  * Build injects __SURFACE__ (overview | statistics | calendar | workouts | measurements | blind-spot).

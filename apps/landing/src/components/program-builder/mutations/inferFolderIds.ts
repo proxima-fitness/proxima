@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Ops that may omit folderIds/dayOrder to mean "all matching routines in the program". */
 const PROGRAM_WIDE_FOLDER_OPS = new Set(["swap_exercise_template"]);
 

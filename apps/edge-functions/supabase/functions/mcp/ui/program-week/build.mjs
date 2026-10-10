@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Rebuild apps/program-week.html (single-file MCP App).
  * Usage (from this directory):

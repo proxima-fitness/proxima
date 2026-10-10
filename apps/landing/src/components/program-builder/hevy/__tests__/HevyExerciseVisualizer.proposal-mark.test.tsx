@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Proposal mark gutter on builder exercise rows (ADR 0024 / 05).
  */

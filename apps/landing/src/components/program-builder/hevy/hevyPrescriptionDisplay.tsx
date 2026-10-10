@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Shared empty-state and column render helpers for Hevy prescription grids (day card, PDF).
  */

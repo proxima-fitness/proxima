@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Formats a Usage period `resets_on` date (YYYY-MM-DD from Postgres) for blocked-state copy.
  *

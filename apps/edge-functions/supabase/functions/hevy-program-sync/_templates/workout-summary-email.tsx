@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * ADR 0011 SP5: unused by hevy-program-sync (post-sync Resend path commented out).
  * Kept for a possible future re-engagement product — do not delete.

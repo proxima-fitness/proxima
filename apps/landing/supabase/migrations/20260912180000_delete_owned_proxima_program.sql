@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Owner **Delete** of a **Proxima program** is a PostgREST DELETE on
 -- `programs` (RLS: auth.uid() = user_id). Join rows and leftover child
 -- tables must not block that delete. FK referential actions are exempt

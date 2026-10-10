@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module tooltip
  * Hover/focus tooltip (floating label) built on Radix Tooltip.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod inputs for MCP program mutate / Accept / Save (ADR 0034 / 04).
  * Agent-exposed op subset from @proxima/program-mutation-schemas.

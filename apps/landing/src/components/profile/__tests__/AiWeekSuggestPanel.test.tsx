@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * AI week suggest panel: entry gating, fetch-on-expand, states (ADR 0012 / 02).
  */

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Workout routine-id read for Day complete (ADR 0011 SoT / 0013 A7).
  */

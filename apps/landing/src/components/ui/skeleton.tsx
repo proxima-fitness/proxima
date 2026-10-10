@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module skeleton
  * Placeholder block with pulse animation for loading states.

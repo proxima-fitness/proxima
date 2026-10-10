@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ToolbarSaveButton
  * Toolbar persist slot. **Save** writes the Program prescription; **Sync**

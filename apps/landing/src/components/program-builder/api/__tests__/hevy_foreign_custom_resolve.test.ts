@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Week Export against a **Hevy share import**: the sharer's **Hevy-native custom** IDs are theirs
  * alone, so each is minted as a **Custom movement** and created on the importing user's Hevy

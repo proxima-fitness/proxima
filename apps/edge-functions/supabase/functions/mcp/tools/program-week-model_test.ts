@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Week builder clamp / paging / set patch (ADR 0034 / 06–07).
  * Run: deno test --config deno.json tools/program-week-model_test.ts

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module button
  * Primary action control with variants (default, destructive, outline, secondary,

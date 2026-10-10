@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module dialog
  * Modal dialog: Root, Trigger, Portal, Overlay, Content (optional hideClose),

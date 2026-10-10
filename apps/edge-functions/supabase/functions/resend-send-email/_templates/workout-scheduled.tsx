@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { Body, Container, Head, Heading, Html, Link, Text, Img, Hr, Section, Column, Row, Font } from "npm:@react-email/components@0.0.22";
 import * as React from "npm:react@18.3.1";
 export const WorkoutScheduledEmail = ()=>/*#__PURE__*/ React.createElement(Html, null, /*#__PURE__*/ React.createElement(Head, null, /*#__PURE__*/ React.createElement(Font, {

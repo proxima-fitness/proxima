@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module avatar-stack
  * Stack of avatars (overlapping) with tooltips; optional max count with "+N" for overflow. Orientation vertical/horizontal.

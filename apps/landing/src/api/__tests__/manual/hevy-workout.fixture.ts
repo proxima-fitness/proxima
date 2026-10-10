@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Sample Hevy `GET /v1/workouts` payload for import adapter tests. */
 export const hevyWorkoutFixture: THevyWorkout = {
     id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Unit tests for on-demand hevy-program-sync gate + single-flight (ADR 0011).
  */

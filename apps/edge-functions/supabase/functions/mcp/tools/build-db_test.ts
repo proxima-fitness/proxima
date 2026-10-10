@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * First-build persist tests (ADR 0034 / 03).
  * Run: deno test --config deno.json tools/build-db_test.ts

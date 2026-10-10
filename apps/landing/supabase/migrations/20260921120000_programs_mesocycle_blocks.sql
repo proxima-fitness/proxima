@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0032 / 04 (C5): persist First-build Mesocycle blocks on the Proxima program.
 -- Shape: [{ "name": string, "weeks": number[] (1-based), "intent": string }], the
 -- `blocks` array from the successful buildProgram call. Null when the program

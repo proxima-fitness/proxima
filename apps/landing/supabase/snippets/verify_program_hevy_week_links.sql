@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0008 / Sub-plan 4 — local Postgres + RLS smoke for program_hevy_week_links.
 -- PASS 7–10: ADR 0011 `completed_at` (Week complete) under RLS. PRO-256.
 -- PASS 11–13: ADR 0013 `exported_hevy_routine_ids` (Export-time Hevy routine IDs).

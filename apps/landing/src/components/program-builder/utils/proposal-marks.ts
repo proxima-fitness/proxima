@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proposal-marks
  * Capture **Proposal marks** from a **Program mutation batch** at Accept,

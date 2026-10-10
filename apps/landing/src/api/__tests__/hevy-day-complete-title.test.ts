@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Hevy-app Day complete title checkmark (ADR 0011 SoT / 0013 A7).
  * Same join as the builder lock: Workout `routine_id` ∩ link `hevy_routine_ids`.

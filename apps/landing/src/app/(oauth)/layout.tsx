@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module (oauth)/layout
  * Standalone root layout for OAuth consent / decision routes. No app shell —

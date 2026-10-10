@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP program list/read tools (ADR 0034 / 01).
  */

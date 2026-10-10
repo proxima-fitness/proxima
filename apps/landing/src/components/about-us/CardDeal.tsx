@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module CardDeal
  * "About Us" section: heading and short blurb about Proxima/Jack (software dev, bodybuilding, plateau).

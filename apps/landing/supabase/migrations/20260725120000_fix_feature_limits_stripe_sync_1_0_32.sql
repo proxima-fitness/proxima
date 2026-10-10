@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Repair get_my_feature_limits after the Stripe Sync 1.0.19 -> 1.0.32 upgrade.
 --
 -- Two upstream changes to the sync-engine-owned `stripe` schema broke this function:

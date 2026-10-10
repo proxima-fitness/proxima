@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Canonical site URL included in exported routine notes (Hevy, CSV, PDF). */
 export const PROXIMA_FITNESS_EXPORT_URL = "https://proximafitness.com";
 

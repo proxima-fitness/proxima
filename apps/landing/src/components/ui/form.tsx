@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module form
  * Form field wiring for react-hook-form: Form (Provider), FormField (Controller),

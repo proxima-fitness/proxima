@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Regression: skipped questionnaire must not force an empty updateConstraintProfile call.
  *

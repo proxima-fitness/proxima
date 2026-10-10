@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module badge
  * Small status/label pill with variant styles (default, secondary, destructive, outline).

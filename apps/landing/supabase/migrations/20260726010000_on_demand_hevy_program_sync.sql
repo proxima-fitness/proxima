@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0011 / sub-plan 3: on-demand hevy-program-sync (no midnight fan-out).
 -- Separate program-sync cursor from workout-history backup cursor.
 

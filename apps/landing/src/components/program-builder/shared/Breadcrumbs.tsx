@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module Breadcrumbs
  * Renders breadcrumb trail (Home → Build Program → mode dropdown: New only, or New+Edit when `hevy=true`) on the build-program route.

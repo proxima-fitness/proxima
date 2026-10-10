@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Empty Hevy-folder Week preview slot (ADR 0013 / C4).
  */

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proxima-star/pipeline
  * Bake, refine, shade, bloom, and composite pass graph from the Optimized Black Hole example.

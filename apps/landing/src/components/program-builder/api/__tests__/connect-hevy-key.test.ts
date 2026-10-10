@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { QueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";

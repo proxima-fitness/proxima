@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // File: supabase/functions/add-contact/index.ts
 import { serve } from "https://deno.land/std@0.171.0/http/server.ts";
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Hevy mirror subsection (ADR 0020 / 04).
  */

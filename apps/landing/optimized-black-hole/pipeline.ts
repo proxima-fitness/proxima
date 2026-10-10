@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { Effect, Frame, Gpu, Surface, Target } from "vgpu";
 
 import bakeWgsl from "./bake.wgsl";

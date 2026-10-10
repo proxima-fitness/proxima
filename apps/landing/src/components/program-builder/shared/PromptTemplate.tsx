@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module PromptTemplate
  * Main prompt input on landing: typewriter placeholder, attachments, suggestion groups, and navigation to build-program with search or sessionStorage for long prompts.

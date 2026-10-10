@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Apply endpoint: auth, target re-resolution, cache-sourced writes (ADR 0012 / 03).
  */

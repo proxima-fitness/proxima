@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Verifies try_consume_feature_usage (ADR 0019 / PRO-193).
 --
 -- Scratch script, not a migration: run it by hand after applying the migration.

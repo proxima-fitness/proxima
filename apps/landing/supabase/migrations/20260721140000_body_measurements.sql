@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Body measurements backup: dated Hevy (and future source) measurement history.
 -- Grain: one row per user + source + external_id (Hevy: external_id = measured_on date).
 

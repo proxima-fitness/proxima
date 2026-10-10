@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: list_exercises + create_custom_exercise (ADR 0033 / 02).
  */

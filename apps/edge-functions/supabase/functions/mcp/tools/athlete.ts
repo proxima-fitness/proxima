@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: athlete surface reads — browse, statistics, calendar,
  * body-measurement history, blind spot (ADR 0034 / 11 + 12 resourceUri).

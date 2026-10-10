@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Drop unused public tables left over from the deprecated mobile / social home surface.
 -- None of these are queried by the web app (only leftover generated types / marketing copy).
 

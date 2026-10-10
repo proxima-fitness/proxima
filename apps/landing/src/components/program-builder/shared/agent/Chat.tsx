@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module Chat
  * Chat input for program builder: suggestions, upgrade banner, PromptInput with attachments

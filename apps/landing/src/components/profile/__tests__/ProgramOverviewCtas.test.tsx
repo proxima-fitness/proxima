@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Program overview chrome: title rename, split Export, Edit Week N / Edit program.
  */

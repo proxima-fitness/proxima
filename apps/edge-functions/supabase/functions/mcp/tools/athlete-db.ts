@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Athlete-surface reads against the OAuth user's RLS client (ADR 0034 / 11).
  * Query shapes mirror landing workout-history-read / body-measurements-read;

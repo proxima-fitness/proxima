@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Trimmed capture of a real `GET /shareable_folder/{id}` response (a Proxima-exported
  * week, shared back). Structure is verbatim - only repeated sets and the long i18n title

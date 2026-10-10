@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Trimmed capture of a real `GET /workout/{id}` response for
  * `https://hevy.com/workout/b9842b34-e36e-48df-bdb4-91b1f915faf7`.

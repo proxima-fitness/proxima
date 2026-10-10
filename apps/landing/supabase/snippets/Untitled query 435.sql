@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 SELECT sw."nthWeek", sw."nthDay", pwe.id, pwe.weights, pwe.reps, pwe.rpe, pwe.reps_range
 FROM public.schedule_workouts sw
 JOIN public.program_workout_exercises pwe ON pwe.schedule_id = sw.id

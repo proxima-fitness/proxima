@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { TInsertExercisePayload, TSwapExerciseTemplateMinimalTo } from "./schemas";
 
 export type { TSwapExerciseTemplateMinimalTo } from "./schemas";

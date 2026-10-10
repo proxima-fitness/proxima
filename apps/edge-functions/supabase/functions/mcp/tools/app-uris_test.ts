@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Slice 12 checklist: tool → App map + composable HTML (no cross-surface chrome).
  * Run: deno test --config deno.json tools/app-uris_test.ts

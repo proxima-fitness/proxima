@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module Navbar
  * Agent toolbar: hide chat, expand/collapse, move sidebar left/right. Desktop only.

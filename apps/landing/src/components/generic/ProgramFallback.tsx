@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ProgramFallback
  * Skeleton layout for a single program detail page: hero image, title block, sidebar, week list.

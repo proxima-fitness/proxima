@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Agentic memory reads/writes against the OAuth user's RLS client (ADR 0034 / 02).
  * Mirrors landing `user-constraints` / `user-training-profile` / `body-measurements-read`

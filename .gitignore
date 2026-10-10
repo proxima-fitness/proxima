@@ -40,6 +40,11 @@ coverage
 docs/
 tsconfig.tsbuildinfo
 
+# Local secret-scan artifacts
+gitleaks*.json
+gitleaks*.sarif
+
+
 # Local-serve copy under the landing app (Deno). Source of truth: apps/edge-functions.
 apps/landing/supabase/functions/
 apps/landing/supabase/.temp/

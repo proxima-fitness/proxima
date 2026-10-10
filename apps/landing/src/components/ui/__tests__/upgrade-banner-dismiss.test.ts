@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

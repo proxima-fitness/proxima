@@ -1,0 +1,12 @@
+# Gitleaks config for Proxima. Extends default rules; allowlists synthetic
+# test fixtures only. Real secrets must still fail the scan.
+title = "proxima"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic API keys in unit/component tests"
+paths = [
+    '''__tests__/''',
+]

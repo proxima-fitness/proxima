@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module HowItWorksSection
  * Homepage How it works: walkthrough video, accordion steps (Andy + critique), CTA.

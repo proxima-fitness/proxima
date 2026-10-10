@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module drawer
  * Bottom sheet / drawer: Root, Trigger, Portal, Overlay, Content, Header, Footer,

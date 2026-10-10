@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Regression: Constraint profile writes must survive skill tool allowlists.
  *

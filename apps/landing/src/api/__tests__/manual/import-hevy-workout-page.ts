@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Local dev helper - fetch one Hevy workouts page and import each workout.
  *

@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Expand source_type with the closed Public API Workout source list.
 -- hevy stays for native sync. Unique (user_id, source, external_id) is unchanged (ADR 0026 / 01).
 

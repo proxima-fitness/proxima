@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module SetTypesLegend
  * Hover-reveal legend for set types: Warmup, Working, Drop Set, Failure. Shown next to set-type controls.

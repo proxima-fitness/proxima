@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /** Parses user message text to extract spreadsheet blocks for display-only rendering. */
 function parseUserMessageWithSpreadsheets(text: string): {
     displayText: string;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { ZodError } from "zod";
 
 import { OP_NESTED_OBJECT_FIELDS } from "./normalizeAgentInput";

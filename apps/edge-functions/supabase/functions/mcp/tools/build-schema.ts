@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP First build (`build_program`, ADR 0034 / 03).
  * Wave refine mirrors landing `periodization-wave.ts` (no Gateway).

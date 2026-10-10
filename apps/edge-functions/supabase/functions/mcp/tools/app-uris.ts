@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module app-uris
  * MCP App `ui://` URIs + tool → surface map (ADR 0034 / 09 / 12).

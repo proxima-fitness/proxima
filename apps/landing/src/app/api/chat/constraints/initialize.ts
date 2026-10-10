@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { canonicalizeConstraintPreferences } from '@/components/account/constraint-profile-options';
 import { sanitizeExcludedEquipment } from '@proxima/mutation-constraint-gate';
 import type { TConstraintProfile } from './types';

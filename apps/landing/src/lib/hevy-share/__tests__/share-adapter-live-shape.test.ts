@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Adapter checked against a captured real `shareable_folder` response, so the
  * field names Hevy actually sends stay covered alongside the defensive tests.

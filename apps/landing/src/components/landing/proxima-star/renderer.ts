@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proxima-star/renderer
  * Browser lifecycle for the baked Optimized Black Hole pipeline, retuned as a star.

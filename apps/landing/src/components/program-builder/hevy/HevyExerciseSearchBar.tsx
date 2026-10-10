@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module HevyExerciseSearchBar
  * Searchable list of Hevy exercise templates: fuzzy search via Fuse, virtual list for performance.

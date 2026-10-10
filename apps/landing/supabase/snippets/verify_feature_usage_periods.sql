@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Verifies the Usage period semantics introduced by
 -- 20260725130000_feature_usage_monthly_periods.sql (ADR 0017).
 --

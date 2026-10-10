@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { beforeEach, describe, expect, it } from "vitest";
 import {
     HEVY_SHARE_RATE_LIMIT_PER_HOUR,

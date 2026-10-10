@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { classifySessionGoal, SESSION_GOAL_LABELS, SESSION_GOAL_TOOLTIPS } from "@/api/session-goal";
 import { Badge } from "@/components/ui/badge";
 import {

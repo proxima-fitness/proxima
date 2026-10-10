@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module CustomSidebarTrigger
  * Button that toggles the app sidebar open/closed; used in header/nav for mobile or compact layout.

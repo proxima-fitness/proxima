@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Mutate propose / Accept / Save tests (ADR 0034 / 04).
  * Run: deno test --config deno.json tools/mutate-db_test.ts

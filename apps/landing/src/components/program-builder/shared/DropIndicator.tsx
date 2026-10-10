@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module DropIndicator
  * Invisible drag-and-drop target strip; data attributes drive where a dropped item is inserted (beforeId, column).

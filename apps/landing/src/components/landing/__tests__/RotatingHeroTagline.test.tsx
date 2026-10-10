@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module RotatingHeroTagline tests
  * Tagline index wrap, scramble frames, and the rotating hero headline.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP workout tools — mirror of
  * proxima_landing `openapi-schemas/workouts.ts` + `workout-source.ts` (ADR 0033 / 03).

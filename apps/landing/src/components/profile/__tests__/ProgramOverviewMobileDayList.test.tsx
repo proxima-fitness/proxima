@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Compact mobile Week preview exercise list (layout v3 under md).
  */

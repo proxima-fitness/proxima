@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Apply path for AI week suggest: week containment + per-set column patching
  * (ADR 0012 / 03).

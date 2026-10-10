@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module pagination
  * Pagination nav and building blocks (list, item, link, prev/next, ellipsis).

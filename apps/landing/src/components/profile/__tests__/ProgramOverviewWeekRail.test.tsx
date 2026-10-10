@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Smoke tests for Program overview week rail selection (ADR 0020 / 02).
  */

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module spinner
  * Loading spinner (Loader2 icon) with size and visibility variants.

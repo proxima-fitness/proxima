@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Sanitizes the incoming UI message history by dropping a trailing assistant
  * message that contains unresolved tool calls (e.g. after an aborted stream).

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proxima-mcp
  * Public Proxima MCP endpoint + host-agent install helpers (Claude / ChatGPT / Claude Code).

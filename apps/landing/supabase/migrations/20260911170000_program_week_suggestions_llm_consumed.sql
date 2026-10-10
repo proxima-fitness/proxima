@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0015 SP2: AI week suggest billing flag. Existing rows grandfather as
 -- consumed (full payload) so live caches stay unlocked.
 

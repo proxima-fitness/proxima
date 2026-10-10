@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { withPayload } from "@payloadcms/next/withPayload";
 import createMDX from '@next/mdx'
 import dotenv from 'dotenv';

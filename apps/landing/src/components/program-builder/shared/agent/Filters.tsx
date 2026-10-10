@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module Filters
  * Commented-out advanced filters form (sex, age, program length, days, goals, equipment, exclude, health, etc.). Kept for reference; not rendered.

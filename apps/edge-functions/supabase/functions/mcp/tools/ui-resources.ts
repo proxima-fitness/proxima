@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ui-resources
  * Register composable MCP App HTML resources (ADR 0034 / 12).

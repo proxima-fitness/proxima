@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module card
  * Content container with Header, Title, Description, Content, Footer. Used for

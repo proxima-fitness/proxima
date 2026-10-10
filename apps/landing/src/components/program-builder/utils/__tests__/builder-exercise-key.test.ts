@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Builder exercise key assignment (ADR 0024 / 04).
  */

@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Delta cursor for Hevy's workout events feed (ADR 0012 dogfood follow-up).
 --
 -- The backup mirror was count-driven: it only pulled when Hevy's total exceeded

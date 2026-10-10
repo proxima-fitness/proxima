@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 DROP FUNCTION IF EXISTS public.get_bolao_predictor_limits();
 DROP FUNCTION IF EXISTS public.try_consume_bolao_prediction();
 ALTER TABLE public.feature_usage

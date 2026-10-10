@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module HevyRoutineCard
  * Card for one Hevy routine in the "Add Hevy Routine" dialog: title, exercise list as description, click to add and toast.

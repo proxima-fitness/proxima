@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Builder day id minting on the Edit path (ADR 0013 / 02).
  *

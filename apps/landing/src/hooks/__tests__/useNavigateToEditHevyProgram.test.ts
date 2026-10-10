@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Edit-path handoff hook (ADR 0010 / 04).
  */

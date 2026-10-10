@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module LandingSection
  * Shared section shell for homepage bands - alternating elevated / recessed surfaces.

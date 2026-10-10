@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Day complete SoT: workouts.routine_id (ADR 0011 / 0013 A7).
 -- Scratch script, not a migration. Leaves no rows (transaction rolled back).
 --

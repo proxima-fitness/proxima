@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: mutate_program / accept_program_mutation / reject_program_mutation /
  * save_program (ADR 0034 / 04 + 12 builder App).

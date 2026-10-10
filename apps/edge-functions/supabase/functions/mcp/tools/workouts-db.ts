@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * History Workout CRUD against the OAuth user's RLS client (ADR 0033 / 03).
  * Behavior mirrors createPublicApiWorkout / get / replace / delete — user_id from JWT.

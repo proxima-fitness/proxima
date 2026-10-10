@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Exercise list/create against the OAuth user's RLS client (ADR 0033 / 02).
  * Behavior mirrors listPublicApiExercises + mintCustomMovement, without service role.

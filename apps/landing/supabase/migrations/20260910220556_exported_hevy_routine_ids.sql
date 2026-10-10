@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0013 / SP5: Export-time Hevy routine IDs on Program–Hevy link.
 -- Join key for Planned vs completed. Distinct from live hevy_routine_ids (Sync).
 -- Backfill copies live IDs; already-diverged weeks are a known gap.

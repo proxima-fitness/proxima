@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ProgramJoinMeta
  * Title-card Join row: joined count plus the Join control (hidden for owner / unsigned).

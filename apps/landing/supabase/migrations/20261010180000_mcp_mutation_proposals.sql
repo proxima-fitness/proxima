@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Durable MCP Mutation proposals (ADR 0034). Edge isolates do not share process memory.
 CREATE TABLE public.mcp_mutation_proposals (
   user_id uuid NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,

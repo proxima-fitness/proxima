@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import type { ReadonlyURLSearchParams } from "next/navigation";
 
 export const BUILD_PROGRAM_PATH = "/build-program";

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Zod contracts for Proxima MCP Agentic memory tools (ADR 0034 / 02).
  * Preference / Training catalogs mirror landing questionnaire option ids.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module BuildProgramSkeleton
  * Client-side loading skeleton for the program builder (steps + quote placeholders). Shown while build-program content loads.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module program-builder/utils/build-program
  * DEPRECATED: This module is no longer used.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Persistence tests for athlete read MCP tools (ADR 0034 / 11).
  * Run: deno test --config deno.json tools/athlete-db_test.ts

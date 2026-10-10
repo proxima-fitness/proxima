@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import type { User } from "@supabase/supabase-js";
 

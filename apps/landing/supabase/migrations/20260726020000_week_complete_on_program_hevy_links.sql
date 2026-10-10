@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- ADR 0011 / sub-plan 4: durable Week complete on Program–Hevy link.
 -- Manual Mark week complete + auto-mark when all schedule-history days are done.
 

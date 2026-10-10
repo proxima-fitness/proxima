@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module breadcrumb
  * Navigation trail (List, Item, Link, Page, Separator, Ellipsis). Supports

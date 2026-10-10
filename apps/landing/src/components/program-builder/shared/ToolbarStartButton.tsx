@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ToolbarStartButton
  * Toolbar **Start** control (ADR 0016 / 01). Occupies the persist slot when

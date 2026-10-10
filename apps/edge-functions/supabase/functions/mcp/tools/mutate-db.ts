@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Mutation proposal → Accept → Save for Proxima MCP (ADR 0034 / 04).
  *

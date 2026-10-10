@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- One-shot: legacy exclude token `bodyweight` never matched Hevy equipment.
 -- Catalog now uses Bodyweight → value `none`. Rewrite stored arrays; drop dupes.
 -- Applied on prod 2026-07-31; file restored so local history matches remote.

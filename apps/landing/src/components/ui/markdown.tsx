@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module markdown
  * Renders markdown string as React: parses into blocks, uses react-markdown with

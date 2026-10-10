@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module oauth-client-logo
  * Known MCP / OAuth client marks for the consent screen.

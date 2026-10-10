@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Atomic check-and-increment against the current Usage period + tier cap.
 -- ADR 0019 / PRO-193. Returns allowed=false on deny rather than raising, so
 -- callers map to paywall without try/catch on expected denial.

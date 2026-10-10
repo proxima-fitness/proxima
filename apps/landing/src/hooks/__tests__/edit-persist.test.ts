@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Toolbar persist dispatch + Day complete identity (ADR 0013 / 04).
  */

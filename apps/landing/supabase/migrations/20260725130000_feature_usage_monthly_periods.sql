@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Periodise public.feature_usage by calendar month (UTC). ADR 0017 / PRO-195.
 --
 -- Before: one mutable row per user, counters that never reset, so quota needed

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module RebuildProgramDialog
  * Modal to enter a prompt and re-generate a single day (week/day indices from parent). Submits to handleGenerateDay.

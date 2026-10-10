@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Owner-scoped UPDATE on Program prescription exercises (ADR 0012 / 03).
 --
 -- The baseline shipped SELECT + INSERT policies for this table and nothing

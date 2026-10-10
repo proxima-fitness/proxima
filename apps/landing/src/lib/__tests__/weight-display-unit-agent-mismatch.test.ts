@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Regression: agent must round in display unit, not weight_kg space.
  * Integer kg can still show fractional lbs (60 kg → 132.25 lbs).

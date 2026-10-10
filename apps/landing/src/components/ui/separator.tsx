@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module separator
  * Visual divider line (horizontal or vertical) built on Radix Separator.

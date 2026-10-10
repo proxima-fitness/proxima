@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { describe, it, expect, beforeEach } from "vitest";
 import { CHAT_MESSAGES_KEY } from "@/assets/constants/ui-constants";
 import {

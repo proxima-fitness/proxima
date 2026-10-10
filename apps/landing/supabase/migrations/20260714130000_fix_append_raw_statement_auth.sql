@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 CREATE OR REPLACE FUNCTION public.append_raw_statement(
   p_user_id uuid,
   p_statement text

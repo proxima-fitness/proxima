@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Reject batches that strip every exercise from a day that previously had movements.
  * Allows days that were already empty and days removed via delete_day in the same batch.

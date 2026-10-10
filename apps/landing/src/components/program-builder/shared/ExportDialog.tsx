@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ExportDialog
  * Modal to choose export destination (PDF, spreadsheet) and render PDF preview or CSV download.

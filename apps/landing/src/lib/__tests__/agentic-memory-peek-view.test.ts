@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module lib/__tests__/agentic-memory-peek-view
  *

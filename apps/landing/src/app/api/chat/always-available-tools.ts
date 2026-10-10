@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Tools always kept when a skill sets `allowedTools` (route prepareCall).
  * Constraint / Training profile writes must survive build-program / mutate-program

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * First build land + persist for Proxima MCP (ADR 0034 / 03).
  * Plate week 1 → stamp Periodization wave → INSERT prescription + Join owner.

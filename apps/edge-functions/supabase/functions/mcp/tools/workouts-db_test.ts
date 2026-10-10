@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Persistence tests for workout MCP tools (ADR 0033 / 03) — first-write-wins + ownership.
  */

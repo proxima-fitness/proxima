@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * MCP tools: list_programs + read_program (ADR 0034 / 01 + 12 overview App).
  */

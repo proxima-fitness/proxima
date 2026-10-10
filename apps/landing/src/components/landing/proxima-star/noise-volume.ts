@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module proxima-star/noise-volume
  * Deterministic tiled value-noise lattice shared by the disk shader.

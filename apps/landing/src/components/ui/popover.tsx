@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module popover
  * Uncontrolled popover (trigger opens floating panel) built on Radix Popover.

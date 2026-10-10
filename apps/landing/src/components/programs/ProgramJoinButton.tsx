@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ProgramJoinButton
  * Subscribe / unsubscribe a user to a public **Proxima program**.

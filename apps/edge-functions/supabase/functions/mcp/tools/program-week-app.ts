@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module program-week-app
  * MCP App week builder — show_program_week tool (ADR 0034 / 06–07 / 12).

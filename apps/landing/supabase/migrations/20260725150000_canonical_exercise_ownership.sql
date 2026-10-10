@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Custom movements: give canonical_exercises an explicit owner, scope uniqueness to that owner,
 -- and unify the two normalization schemes that currently share one unique index.
 -- ADR: docs/adr/0018-custom-movements/01-canonical-ownership-schema.md

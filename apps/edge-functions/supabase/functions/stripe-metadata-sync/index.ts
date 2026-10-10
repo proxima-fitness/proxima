@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { serve } from "https://deno.land/std@0.171.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.0.0?target=deno"
 

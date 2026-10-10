@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * The **Hevy share import** grid gate lives on the server, so the request body has to carry
  * an honest grid-state flag on every turn - including the turns where the `hevyProgram`

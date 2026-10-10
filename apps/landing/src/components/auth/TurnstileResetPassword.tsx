@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module TurnstileResetPassword
  * Cloudflare Turnstile widget that runs after the user submits the forgot-password email.

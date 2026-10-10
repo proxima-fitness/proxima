@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module ToolsTabs
  * Toolbar link "New" with icon; navigates to `/` (landing). Used in program builder header.

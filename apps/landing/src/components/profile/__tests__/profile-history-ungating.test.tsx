@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Profile history surfaces with backup rows and no Hevy key (ADR 0026 / 06).
  */

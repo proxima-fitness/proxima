@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * @module TurnstileSignIn
  * Cloudflare Turnstile widget shown after user submits email/password login. On verify, signs in via

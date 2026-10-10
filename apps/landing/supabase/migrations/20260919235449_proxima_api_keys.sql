@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Reuse Hevy vault RPCs for the Proxima API key.
 -- insert_secret / read_secret / delete_secret stay the write-read-delete path.
 -- Distinct vault row: proxima_api_key_{userId} vs hevy_api_key_{userId}.

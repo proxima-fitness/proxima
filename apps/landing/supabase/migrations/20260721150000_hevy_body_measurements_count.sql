@@ -1,3 +1,5 @@
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Sync cursor for Hevy body-measurements backup (workout-history twin).
 -- Hevy has no /body_measurements/count; progress uses page walks + backed-up row counts.
 
