@@ -8,7 +8,7 @@
  * Used by: landing profile/api; edge MCP athlete tools (slice 11+)
  */
 
-export { takeKeysetPage } from "./keyset";
+export { takeKeysetPage } from "./keyset.ts";
 
 export {
     PROFILE_STATISTICS_TIMEZONE,
@@ -29,13 +29,13 @@ export {
     computeAvgWorkoutsPerWeek,
     buildProfileTrainingMetrics,
     formatProfileConsistencyLine,
-} from "./statistics";
+} from "./statistics.ts";
 export type {
     TProfileStatisticsWeekBucket,
     TProfileStatisticsChart,
     TProfileStatisticsResponse,
     TStatisticsWorkout,
-} from "./statistics";
+} from "./statistics.ts";
 
 export {
     getLocalMonthUtcBounds,
@@ -43,8 +43,8 @@ export {
     formatLocalDateKey,
     buildSundayStartCalendarGrid,
     groupWorkoutsByLocalDate,
-} from "./calendar";
-export type { TProfileCalendarWorkout, TCalendarDayCell } from "./calendar";
+} from "./calendar.ts";
+export type { TProfileCalendarWorkout, TCalendarDayCell } from "./calendar.ts";
 
 export {
     FREE_STALL_PERFORMANCE_CAP,
@@ -52,7 +52,7 @@ export {
     historyEntriesToSessions,
     transformSessionsToExercise,
     transformHistoryToExercise,
-} from "./blind-spot";
+} from "./blind-spot.ts";
 export type {
     TExerciseSessionAggregate,
     TExerciseStallResult,
@@ -60,7 +60,7 @@ export type {
     TBlindSpotWorkout,
     THevyExerciseHistoryEntry,
     TTransformSessionsOptions,
-} from "./blind-spot";
+} from "./blind-spot.ts";
 
 export {
     DEFAULT_WORKOUT_HISTORY_LIMIT,
@@ -69,7 +69,7 @@ export {
     sortWorkoutNestedRows,
     mapBackedUpWorkoutToHevyRoutine,
     paginateWorkoutBrowse,
-} from "./workout-browse";
+} from "./workout-browse.ts";
 export type {
     TMapBackedUpWorkoutOptions,
     TBrowseSetRow,
@@ -79,14 +79,14 @@ export type {
     TBrowseHevyExercise,
     TBrowseHevyRoutine,
     TWorkoutHistoryCursor,
-} from "./workout-browse";
+} from "./workout-browse.ts";
 
 export {
     DEFAULT_BODY_MEASUREMENTS_LIMIT,
     normalizeMeasuredOnBound,
     paginateBodyMeasurements,
-} from "./body-measurements";
+} from "./body-measurements.ts";
 export type {
     TBodyMeasurementCursor,
     TBodyMeasurementKeysetRow,
-} from "./body-measurements";
+} from "./body-measurements.ts";

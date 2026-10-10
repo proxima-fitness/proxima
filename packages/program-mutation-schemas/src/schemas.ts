@@ -2,11 +2,11 @@
 
 import { z } from "zod";
 
-export { normalizeAgentOperationInput } from "./normalizeAgentInput";
-import { normalizeHevyApiRoutineForAddDay, normalizeRestSeconds } from "./normalizeHevyApiRoutine";
-import type { THevyExercise, THevySet } from "./hevy-types";
+export { normalizeAgentOperationInput } from "./normalizeAgentInput.ts";
+import { normalizeHevyApiRoutineForAddDay, normalizeRestSeconds } from "./normalizeHevyApiRoutine.ts";
+import type { THevyExercise, THevySet } from "./hevy-types.ts";
 
-export type { THevyExercise, THevyRepRange, THevySet } from "./hevy-types";
+export type { THevyExercise, THevyRepRange, THevySet } from "./hevy-types.ts";
 
 const folderIdsSchema = z
     .array(z.number().int().nonnegative())

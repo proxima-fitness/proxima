@@ -6,7 +6,7 @@
  * Workout history browse: nested sort, backup → Hevy routine mapping, page defaults.
  */
 
-import { takeKeysetPage } from "./keyset";
+import { takeKeysetPage } from "./keyset.ts";
 
 /** Default workout cap for browse and agent-style reads. */
 export const DEFAULT_WORKOUT_HISTORY_LIMIT = 15;

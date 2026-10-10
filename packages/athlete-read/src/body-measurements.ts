@@ -6,7 +6,7 @@
  * Body measurement history window helpers (defaults, date bounds, keyset page).
  */
 
-import { takeKeysetPage } from "./keyset";
+import { takeKeysetPage } from "./keyset.ts";
 
 /** Default history page size for browse / agent-style reads. */
 export const DEFAULT_BODY_MEASUREMENTS_LIMIT = 30;
