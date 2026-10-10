@@ -258,11 +258,15 @@ inspector_port = 8083
 
 # Public MCP server: gateway JWT off so Streamable HTTP works without a user token.
 # Auth (when added) is handled inside the function via withOAuthProtectedResource / withSupabase.
+# static_files: MCP App HTML under apps/ is read at resources/read via Deno.readTextFile
+# (ui-resources.ts). Without this, list works but every ui://proxima/* read fails in prod.
+# Deploy needs Docker running (CLI bundles static_files into the eszip).
 [functions.mcp]
 enabled = true
 verify_jwt = false
 import_map = "./functions/mcp/deno.json"
 entrypoint = "./functions/mcp/index.ts"
+static_files = ["./functions/mcp/apps/*.html"]
 
 [analytics]
 enabled = true

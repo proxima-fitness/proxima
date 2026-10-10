@@ -77,6 +77,7 @@ const APP_RESOURCES: readonly TAppResource[] = [
 ]
 
 function loadHtml(fileName: string): Promise<string> {
+  // Bundled only when config.toml [functions.mcp].static_files includes apps/*.html.
   return Deno.readTextFile(new URL(`../apps/${fileName}`, import.meta.url))
 }
 
@@ -92,7 +93,16 @@ export function registerUiResources(server: McpServer): void {
         mimeType: RESOURCE_MIME_TYPE,
       },
       async () => {
-        const text = await loadHtml(app.htmlFile)
+        let text: string
+        try {
+          text = await loadHtml(app.htmlFile)
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : String(error)
+          throw new Error(
+            `MCP App HTML missing for ${app.uri} (${app.htmlFile}): ${detail}. ` +
+              'Deploy mcp with static_files = ["./functions/mcp/apps/*.html"] and Docker.',
+          )
+        }
         return {
           contents: [
             {

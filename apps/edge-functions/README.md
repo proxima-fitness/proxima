@@ -19,6 +19,7 @@ Run Supabase CLI from this directory (`apps/edge-functions`). Example:
 
 ```bash
 cd apps/edge-functions
+# Docker required: mcp bundles apps/*.html via config.toml static_files
 npx supabase functions deploy mcp
 ```
 
