@@ -9,7 +9,7 @@ apps/edge-functions/
   supabase/
     config.toml
     functions/          # deployable functions (mcp, hevy-program-sync, …)
-      mcp/apps/         # MCP App single-file HTML (program-week shell)
+      mcp/apps/         # MCP App single-file HTML (program-week builder)
   proxima-training-coach/     # Claude plugin “Proxima Training Coach” — see INSTALL.md
 ```
 

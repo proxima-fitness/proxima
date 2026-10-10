@@ -6,11 +6,11 @@
  *
  * Landmines vs Andy:
  * - No Jev / week-coverage Soft-fails (C5 — no Gateway)
- * - Pending lives in process memory (ponytail: Map; durable table if multi-isolate drops proposals)
+ * - Pending in `mcp_mutation_proposals` (Edge isolates do not share process memory)
  * - Accept without builder_routines errors — never silent prescription write
  *
  * Depends on: mutate-schema, mutate-apply, programs-db, @proxima/mutation-constraint-gate
- * Used by: mutate.ts, mutate-db_test.ts
+ * Used by: mutate.ts, program-week-app.ts, mutate-db_test.ts
  */
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.108.2'
@@ -61,16 +61,96 @@ type TPending = {
   operations: TAgentProgramOperation[]
 }
 
-// ponytail: process Map — durable proposal table if cold-starts drop pending
+/** Same-isolate cache; Postgres is the source of truth across Edge workers. */
 const pendingByKey = new Map<string, TPending>()
 
 function pendingKey(userId: string, programId: number): string {
   return `${userId}:${programId}`
 }
 
-/** Test seam — clear in-memory proposals between cases. */
+/** Test seam — clear in-memory cache between cases (mock DB cleared separately). */
 export function clearPendingProposalsForTests(): void {
   pendingByKey.clear()
+}
+
+async function loadPending(
+  db: SupabaseClient,
+  userId: string,
+  programId: number,
+): Promise<TPending | null> {
+  const key = pendingKey(userId, programId)
+  const cached = pendingByKey.get(key)
+  if (cached) return cached
+
+  const { data, error } = await db
+    .from('mcp_mutation_proposals')
+    .select('operations')
+    .eq('user_id', userId)
+    .eq('program_id', programId)
+    .maybeSingle()
+  if (error) {
+    console.error('mcp_mutation_proposals load', error.message)
+    return null
+  }
+  if (!data?.operations || !Array.isArray(data.operations)) return null
+  const pending = {
+    operations: data.operations as TAgentProgramOperation[],
+  }
+  pendingByKey.set(key, pending)
+  return pending
+}
+
+async function storePending(
+  db: SupabaseClient,
+  userId: string,
+  programId: number,
+  operations: TAgentProgramOperation[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = pendingKey(userId, programId)
+  pendingByKey.set(key, { operations })
+  const { error } = await db.from('mcp_mutation_proposals').upsert(
+    {
+      user_id: userId,
+      program_id: programId,
+      operations,
+    },
+    { onConflict: 'user_id,program_id' },
+  )
+  if (error) {
+    pendingByKey.delete(key)
+    return { ok: false, error: error.message }
+  }
+  return { ok: true }
+}
+
+async function clearPending(
+  db: SupabaseClient,
+  userId: string,
+  programId: number,
+): Promise<boolean> {
+  const key = pendingKey(userId, programId)
+  const hadMem = pendingByKey.delete(key)
+  const { data, error } = await db
+    .from('mcp_mutation_proposals')
+    .delete()
+    .eq('user_id', userId)
+    .eq('program_id', programId)
+    .select('program_id')
+  if (error) {
+    console.error('mcp_mutation_proposals delete', error.message)
+    return hadMem
+  }
+  return hadMem || (data?.length ?? 0) > 0
+}
+
+/** Peek pending Mutation proposal ops (MCP App Accept chrome). */
+export async function peekPendingProposal(
+  db: SupabaseClient,
+  userId: string,
+  programId: number,
+): Promise<TAgentProgramOperation[] | null> {
+  const pending = await loadPending(db, userId, programId)
+  return pending?.operations ?? null
 }
 
 type TLinkRow = {
@@ -299,9 +379,15 @@ export async function proposeProgramMutation(
     }
   }
 
-  pendingByKey.set(pendingKey(userId, input.program_id), {
-    operations: input.operations,
-  })
+  const stored = await storePending(
+    db,
+    userId,
+    input.program_id,
+    input.operations,
+  )
+  if (!stored.ok) {
+    return { status: 'error', error: stored.error }
+  }
 
   return {
     status: 'ok',
@@ -322,7 +408,7 @@ export async function acceptProgramMutation(
   const owner = await assertOwner(db, userId, input.program_id)
   if (!owner.ok) return { status: 'error', error: owner.error }
 
-  const pending = pendingByKey.get(pendingKey(userId, input.program_id))
+  const pending = await loadPending(db, userId, input.program_id)
   if (!pending) {
     return {
       status: 'error',
@@ -363,7 +449,7 @@ export async function acceptProgramMutation(
 
   const applied = applyOperations(input.builder_routines, pending.operations)
   if (!applied.ok) {
-    pendingByKey.delete(pendingKey(userId, input.program_id))
+    await clearPending(db, userId, input.program_id)
     return {
       status: 'error',
       error: 'Accept failed (stale builder or invalid batch); proposal discarded',
@@ -371,7 +457,7 @@ export async function acceptProgramMutation(
     }
   }
 
-  pendingByKey.delete(pendingKey(userId, input.program_id))
+  await clearPending(db, userId, input.program_id)
   return {
     status: 'ok',
     program_id: input.program_id,
@@ -380,13 +466,13 @@ export async function acceptProgramMutation(
 }
 
 /** Discard pending Mutation proposal (reject / supersede helper). */
-export function rejectProgramMutation(
+export async function rejectProgramMutation(
+  db: SupabaseClient,
   userId: string,
   input: TRejectProgramMutationInput,
-): TRejectResult {
-  const key = pendingKey(userId, input.program_id)
-  const had = pendingByKey.delete(key)
-  return { status: 'ok', program_id: input.program_id, cleared: had }
+): Promise<TRejectResult> {
+  const cleared = await clearPending(db, userId, input.program_id)
+  return { status: 'ok', program_id: input.program_id, cleared }
 }
 
 function buildRepsRange2D(

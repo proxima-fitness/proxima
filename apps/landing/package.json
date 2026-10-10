@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "@proxima/athlete-read": "*",
     "@proxima/exercise-identity": "*",
     "@proxima/mutation-constraint-gate": "*",
     "@proxima/program-mutation-schemas": "*",

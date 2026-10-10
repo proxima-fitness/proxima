@@ -122,7 +122,11 @@ export function registerMutateTools(
     },
     async (args: TRejectProgramMutationInput) => {
       try {
-        const result = rejectProgramMutation(userClaims.id, args)
+        const result = await rejectProgramMutation(
+          supabase,
+          userClaims.id,
+          args,
+        )
         return jsonResult(result)
       } catch (error) {
         return runtimeErrorResult(error)

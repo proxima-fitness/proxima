@@ -185,6 +185,12 @@ function mutateDb(seed?: {
   ]
   const scheduleRows: TScheduleRow[] = []
   const exerciseRows: TExerciseUpload[] = []
+  type TProposalRow = {
+    user_id: string
+    program_id: number
+    operations: unknown
+  }
+  const proposals: TProposalRow[] = []
   let nextProgramId = Math.max(0, ...programs.map((p) => p.id)) + 1
 
   const client = {
@@ -304,6 +310,72 @@ function mutateDb(seed?: {
               ),
             )
             return { data: match ?? null, error: null }
+          },
+        }
+        return builder
+      }
+
+      if (table === 'mcp_mutation_proposals') {
+        const filters: Array<{ column: string; value: unknown }> = []
+        let deleteMode = false
+        const builder = {
+          select() {
+            return builder
+          },
+          eq(column: string, value: unknown) {
+            filters.push({ column, value })
+            return builder
+          },
+          upsert(
+            row: TProposalRow,
+            _opts?: { onConflict?: string },
+          ) {
+            const idx = proposals.findIndex(
+              (p) =>
+                p.user_id === row.user_id && p.program_id === row.program_id,
+            )
+            if (idx >= 0) proposals[idx] = row
+            else proposals.push(row)
+            return Promise.resolve({ data: row, error: null })
+          },
+          delete() {
+            deleteMode = true
+            return builder
+          },
+          async maybeSingle() {
+            const match = proposals.find((row) =>
+              filters.every(
+                (filter) =>
+                  (row as Record<string, unknown>)[filter.column] ===
+                    filter.value,
+              ),
+            )
+            return { data: match ?? null, error: null }
+          },
+          then(
+            resolve: (value: {
+              data: Array<{ program_id: number }> | null
+              error: null
+            }) => void,
+          ) {
+            if (deleteMode) {
+              const kept: TProposalRow[] = []
+              const removed: Array<{ program_id: number }> = []
+              for (const row of proposals) {
+                const hit = filters.every(
+                  (filter) =>
+                    (row as Record<string, unknown>)[filter.column] ===
+                      filter.value,
+                )
+                if (hit) removed.push({ program_id: row.program_id })
+                else kept.push(row)
+              }
+              proposals.length = 0
+              proposals.push(...kept)
+              resolve({ data: removed, error: null })
+              return
+            }
+            resolve({ data: null, error: null })
           },
         }
         return builder
@@ -508,6 +580,11 @@ Deno.test('propose → Accept → Save → read sees update_set', async () => {
   const links: TLinkRow[] = []
   const scheduleRows: TScheduleRow[] = []
   const exerciseRows: TExerciseUpload[] = []
+  const proposals: Array<{
+    user_id: string
+    program_id: number
+    operations: unknown
+  }> = []
   const templates: TTemplateRow[] = [{
     id: EXERCISE_ID,
     title: 'Squat',
@@ -682,6 +759,78 @@ Deno.test('propose → Accept → Save → read sees update_set', async () => {
             return Promise.resolve({ data: rows, error: null })
           },
         }
+      }
+      if (table === 'mcp_mutation_proposals') {
+        const filters: Array<{ column: string; value: unknown }> = []
+        let deleteMode = false
+        const builder = {
+          select() {
+            return builder
+          },
+          eq(column: string, value: unknown) {
+            filters.push({ column, value })
+            return builder
+          },
+          upsert(row: {
+            user_id: string
+            program_id: number
+            operations: unknown
+          }) {
+            const idx = proposals.findIndex(
+              (p) =>
+                p.user_id === row.user_id && p.program_id === row.program_id,
+            )
+            if (idx >= 0) proposals[idx] = row
+            else proposals.push(row)
+            return Promise.resolve({ data: row, error: null })
+          },
+          delete() {
+            deleteMode = true
+            return builder
+          },
+          async maybeSingle() {
+            const match = proposals.find((row) =>
+              filters.every(
+                (filter) =>
+                  (row as Record<string, unknown>)[filter.column] ===
+                    filter.value,
+              ),
+            )
+            return { data: match ?? null, error: null }
+          },
+          then(
+            resolve: (v: {
+              data: Array<{ program_id: number }> | null
+              error: null
+            }) => void,
+          ) {
+            if (deleteMode) {
+              const removed = proposals.filter((row) =>
+                filters.every(
+                  (filter) =>
+                    (row as Record<string, unknown>)[filter.column] ===
+                      filter.value,
+                ),
+              )
+              const keep = proposals.filter((row) =>
+                !filters.every(
+                  (filter) =>
+                    (row as Record<string, unknown>)[filter.column] ===
+                      filter.value,
+                ),
+              )
+              proposals.length = 0
+              proposals.push(...keep)
+              resolve({
+                data: removed.map((r) => ({ program_id: r.program_id })),
+                error: null,
+              })
+              return
+            }
+            resolve({ data: null, error: null })
+          },
+        }
+        return builder
       }
       throw new Error(`Unexpected table ${table}`)
     },

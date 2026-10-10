@@ -8,7 +8,10 @@
  * Used by: chat/tools/tools.ts (getBodyMeasurements), chat/instructions
  */
 import type { TBodyMeasurementRow } from '@/api/body-measurements-read';
+import { normalizeMeasuredOnBound } from '@proxima/athlete-read';
 import { z } from 'zod';
+
+export { normalizeMeasuredOnBound };
 
 /** Hard cap on measurement entries the agent can pull into context per call. */
 export const AGENT_BODY_MEASUREMENTS_MAX = 30;
@@ -41,14 +44,6 @@ export type TGetBodyMeasurementsInput = z.infer<typeof getBodyMeasurementsInputS
 export function clampBodyMeasurementsLimit(limit: number): number {
     if (!Number.isFinite(limit) || limit < 1) return 1;
     return Math.min(Math.floor(limit), AGENT_BODY_MEASUREMENTS_MAX);
-}
-
-/** Normalizes optional date bounds to YYYY-MM-DD for backup queries. */
-export function normalizeMeasuredOnBound(value: string | undefined): string | undefined {
-    if (!value) return undefined;
-    const trimmed = value.trim();
-    if (!trimmed) return undefined;
-    return trimmed.slice(0, 10);
 }
 
 type TMeasurementForModel = {

@@ -4,7 +4,7 @@
  * Shared read path for backed-up workout history: nested queries, sync progress,
  * and on-demand freshness via chunked delta sync.
  *
- * Depends on: api/workout-history-sync, hooks/supabase types
+ * Depends on: @proxima/athlete-read, api/workout-history-sync
  * Used by: Blind Spot (02), agent tool (03), sync progress consumers
  */
 import {
@@ -13,14 +13,17 @@ import {
     readSyncCursor,
     runSyncChunk,
 } from "./workout-history-sync";
-import type { Database } from "@/hooks/supabase";
 import {
     aggregateProfileStatistics,
     buildProfileTrainingMetrics,
+    DEFAULT_WORKOUT_HISTORY_LIMIT,
     getSinceIsoForWeekRange,
-} from "./workout-history-statistics";
+    mapBackedUpWorkoutToHevyRoutine as mapBackedUpWorkoutToHevyRoutineShared,
+    paginateWorkoutBrowse,
+    PREVIEW_MAX_EXERCISES,
+    sortWorkoutNestedRows,
+} from "@proxima/athlete-read";
 import { getLocalMonthUtcBounds } from "./workout-history-calendar";
-import { UNKNOWN_EXERCISE_TITLE } from "./workout-history";
 import {
     aggregateSessionsByTemplateId,
     transformSessionsToExercise,
@@ -29,11 +32,7 @@ import {
 const HEVY_TEMPLATE_SELECT =
     "id, title, type, primary_muscle_group, secondary_muscle_groups, is_custom, equipment, normalized_title, gif_id, instructions";
 
-/** Default workout cap for browse and agent-style reads. */
-export const DEFAULT_WORKOUT_HISTORY_LIMIT = 15;
-
-/** Max exercises returned when list route uses `preview=true`. */
-export const PREVIEW_MAX_EXERCISES = 3;
+export { DEFAULT_WORKOUT_HISTORY_LIMIT, PREVIEW_MAX_EXERCISES };
 
 /** Max sync chunks per `ensureWorkoutHistoryFresh` call (avoids serverless timeout). */
 export const DEFAULT_ENSURE_FRESH_MAX_CHUNKS = 5;
@@ -57,66 +56,6 @@ const WORKOUT_NESTED_SELECT_INNER = `
 `;
 
 /**
- * Sorts nested exercises and sets into stable display order.
- *
- * @param workouts - Workouts with nested `workout_exercises` and `workout_sets` from PostgREST
- * @returns Same workouts with exercises ordered by `sort_order` and sets by `set_index`
- */
-function sortWorkoutNestedRows(workouts: TBackedUpWorkout[]): TBackedUpWorkout[] {
-    return workouts.map((workout) => ({
-        ...workout,
-        workout_exercises: [...(workout.workout_exercises ?? [])]
-            .sort((a, b) => a.sort_order - b.sort_order)
-            .map((exercise) => ({
-                ...exercise,
-                workout_sets: [...(exercise.workout_sets ?? [])].sort(
-                    (a, b) => a.set_index - b.set_index,
-                ),
-            })),
-    }));
-}
-
-/**
- * Maps a backed-up set row to Hevy set shape for {@link THevyRoutine} consumers.
- */
-function mapBackedUpSetToHevySet(set: Database["public"]["Tables"]["workout_sets"]["Row"]): THevySets {
-    const repRange =
-        set.rep_range_start != null && set.rep_range_end != null
-            ? { start: set.rep_range_start, end: set.rep_range_end }
-            : null;
-
-    return {
-        index: set.set_index,
-        type: set.set_type,
-        weight_kg: set.weight_kg,
-        reps: set.reps,
-        distance_meters: set.distance_meters,
-        duration_seconds: set.duration_seconds,
-        rpe: set.rpe,
-        custom_metric: set.custom_metric,
-        rep_range: repRange,
-    };
-}
-
-/**
- * Maps a backed-up exercise row to Hevy exercise shape for {@link THevyRoutine} consumers.
- */
-function mapBackedUpExerciseToHevyExercise(
-    exercise: TWorkoutExerciseRow,
-    arrayIndex: number,
-): THevyExercise {
-    return {
-        index: arrayIndex,
-        title: exercise.canonical_exercises?.title ?? UNKNOWN_EXERCISE_TITLE,
-        notes: exercise.notes ?? "",
-        rest_seconds: null,
-        exercise_template_id: exercise.source_exercise_id ?? "",
-        supersets_id: exercise.superset_id,
-        sets: (exercise.workout_sets ?? []).map(mapBackedUpSetToHevySet),
-    };
-}
-
-/**
  * Maps a nested backup workout to {@link THevyRoutine} for `HevyDayCard` and browse APIs.
  *
  * @param workout - Nested backup row from {@link getWorkoutsForUser} or {@link getWorkoutById}
@@ -127,26 +66,7 @@ export function mapBackedUpWorkoutToHevyRoutine(
     workout: TBackedUpWorkout,
     options: TMapBackedUpWorkoutOptions = {},
 ): THevyRoutine {
-    const exercises = workout.workout_exercises ?? [];
-    const visibleExercises =
-        options.previewMaxExercises != null
-            ? exercises.slice(0, options.previewMaxExercises)
-            : exercises;
-
-    return {
-        id: workout.id,
-        title: workout.title ?? "",
-        folder_id: null,
-        notes: workout.description ?? "",
-        exercises: visibleExercises.map((exercise, index) =>
-            mapBackedUpExerciseToHevyExercise(exercise, index),
-        ),
-        updated_at: workout.updated_at ?? undefined,
-        created_at: workout.created_at ?? undefined,
-        started_at: workout.started_at,
-        ended_at: workout.ended_at,
-        source: workout.source ?? undefined,
-    };
+    return mapBackedUpWorkoutToHevyRoutineShared(workout, options) as THevyRoutine;
 }
 
 /**
@@ -200,17 +120,7 @@ export async function getWorkoutsForUser(
     }
 
     const sorted = sortWorkoutNestedRows((data ?? []) as TBackedUpWorkout[]);
-    const hasMore = sorted.length > limit;
-    const workouts = hasMore ? sorted.slice(0, limit) : sorted;
-    const lastWorkout = workouts.at(-1);
-
-    return {
-        workouts,
-        nextCursor:
-            hasMore && lastWorkout
-                ? { startedAt: lastWorkout.started_at, id: lastWorkout.id }
-                : null,
-    };
+    return paginateWorkoutBrowse(sorted, limit);
 }
 
 /**

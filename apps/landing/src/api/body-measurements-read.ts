@@ -3,13 +3,16 @@
  *
  * Shared read path for backed-up body measurements: latest entry + paginated history.
  *
- * Depends on: @/hooks/supabase types
+ * Depends on: @proxima/athlete-read, @/hooks/supabase types
  * Used by: Edit profile (SP7), agent tool (SP9), peek (SP8)
  */
 import type { Database } from "@/hooks/supabase";
+import {
+    DEFAULT_BODY_MEASUREMENTS_LIMIT,
+    paginateBodyMeasurements,
+} from "@proxima/athlete-read";
 
-/** Default history page size for browse / agent-style reads. */
-export const DEFAULT_BODY_MEASUREMENTS_LIMIT = 30;
+export { DEFAULT_BODY_MEASUREMENTS_LIMIT };
 
 export type TBodyMeasurementRow = Database["public"]["Tables"]["body_measurements"]["Row"];
 
@@ -100,16 +103,5 @@ export async function getBodyMeasurementsForUser(
         throw new Error(error.message);
     }
 
-    const rows = (data ?? []) as TBodyMeasurementRow[];
-    const hasMore = rows.length > limit;
-    const measurements = hasMore ? rows.slice(0, limit) : rows;
-    const last = measurements[measurements.length - 1];
-
-    return {
-        measurements,
-        nextCursor:
-            hasMore && last
-                ? { measuredOn: last.measured_on, id: last.id }
-                : null,
-    };
+    return paginateBodyMeasurements((data ?? []) as TBodyMeasurementRow[], limit);
 }

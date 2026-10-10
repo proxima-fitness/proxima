@@ -1,12 +1,11 @@
 /**
  * @module program-week-app
- * MCP App week shell — ui:// resource + show_program_week (ADR 0034 / 06).
- * Depends on: @modelcontextprotocol/ext-apps/server, programs-db, program-week-model.
+ * MCP App week builder — ui:// resource + show_program_week (ADR 0034 / 06–07).
+ * Depends on: @modelcontextprotocol/ext-apps/server, programs-db, mutate-db,
+ * program-week-model.
  * Used by: tools/index.ts.
  *
- * Rebuild UI: from a scratch dir with vite + vite-plugin-singlefile, bundle
- * `ui/program-week/` (import App from npm `@modelcontextprotocol/ext-apps/app-with-deps`)
- * into `apps/program-week.html`.
+ * Rebuild UI: from `ui/program-week/`, `node build.mjs` → `apps/program-week.html`.
  */
 
 import {
@@ -17,14 +16,21 @@ import {
 import type { McpServer } from 'npm:@modelcontextprotocol/server@2.0.0'
 import { z } from 'npm:zod@4'
 
-import programWeekHtml from '../apps/program-week.html' with { type: 'text' }
+import { peekPendingProposal } from './mutate-db.ts'
 import { readProgram } from './programs-db.ts'
-import { buildProgramWeekShell } from './program-week-model.ts'
+import { buildProgramWeekBuilder } from './program-week-model.ts'
 import { errorResult, jsonResult, runtimeErrorResult } from './result.ts'
 import type { ToolContext } from './types.ts'
 
-/** MCP App resource URI for the program week shell. */
+/** MCP App resource URI for the program week builder. */
 export const PROGRAM_WEEK_RESOURCE_URI = 'ui://proxima/program-week'
+
+// Edge runtime rejects `import … with { type: 'text' }`; read the built HTML instead.
+function loadProgramWeekHtml(): Promise<string> {
+  return Deno.readTextFile(
+    new URL('../apps/program-week.html', import.meta.url),
+  )
+}
 
 const ShowProgramWeekInput = z.object({
   program_id: z
@@ -43,7 +49,7 @@ const ShowProgramWeekInput = z.object({
 type TShowProgramWeekInput = z.infer<typeof ShowProgramWeekInput>
 
 /**
- * Register the week-shell MCP App tool + UI resource.
+ * Register the week-builder MCP App tool + UI resource.
  * Data tools stay usable without this UI (C3 host-optional).
  */
 export function registerProgramWeekApp(
@@ -56,9 +62,10 @@ export function registerProgramWeekApp(
     {
       title: 'Show program week',
       description:
-        'Open the MCP App week shell for one Joined Proxima program week ' +
-        '(prev/next chrome). Returns structuredContent for the iframe and a JSON text fallback for non-Apps hosts. ' +
-        'Does not mutate the Program prescription.',
+        'Open the MCP App week builder for one Joined Proxima program week ' +
+        '(prev/next, Accept Mutation proposal, Save prescription). ' +
+        'Returns structuredContent with builder_routines for the iframe and a JSON text fallback. ' +
+        'Does not mutate the Program prescription by itself.',
       inputSchema: ShowProgramWeekInput,
       annotations: {
         readOnlyHint: true,
@@ -83,13 +90,19 @@ export function registerProgramWeekApp(
           return errorResult(result.error)
         }
 
-        const shell = buildProgramWeekShell({
+        const pending = await peekPendingProposal(
+          supabase,
+          userClaims.id,
+          args.program_id,
+        )
+        const payload = buildProgramWeekBuilder({
           program_id: result.program.id,
           title: result.program.title,
           routines: result.program.routines,
           week_index: args.week_index ?? 0,
+          pending_op_count: pending?.length ?? 0,
         })
-        return jsonResult(shell)
+        return jsonResult(payload)
       } catch (error) {
         return runtimeErrorResult(error)
       }
@@ -101,17 +114,21 @@ export function registerProgramWeekApp(
     'Proxima program week',
     PROGRAM_WEEK_RESOURCE_URI,
     {
-      description: 'MCP App shell: one Program prescription week with prev/next.',
+      description:
+        'MCP App week builder: one Program prescription week, Accept proposal, Save.',
       mimeType: RESOURCE_MIME_TYPE,
     },
-    () => ({
-      contents: [
-        {
-          uri: PROGRAM_WEEK_RESOURCE_URI,
-          mimeType: RESOURCE_MIME_TYPE,
-          text: programWeekHtml,
-        },
-      ],
-    }),
+    async () => {
+      const text = await loadProgramWeekHtml()
+      return {
+        contents: [
+          {
+            uri: PROGRAM_WEEK_RESOURCE_URI,
+            mimeType: RESOURCE_MIME_TYPE,
+            text,
+          },
+        ],
+      }
+    },
   )
 }
