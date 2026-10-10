@@ -13,6 +13,7 @@
     "zod": "npm:zod@4.3.5"
   },
   "tasks": {
-    "check": "deno check index.ts tools/packages_smoke_test.ts"
+    "check": "deno check index.ts tools/packages_smoke_test.ts tools/program-week-app.ts",
+    "test:program-week": "deno test --config deno.json tools/program-week-model_test.ts"
   }
 }

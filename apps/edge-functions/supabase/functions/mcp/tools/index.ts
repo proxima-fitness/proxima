@@ -4,6 +4,7 @@ import { registerBuildTools } from './build.ts'
 import { registerExerciseTools } from './exercises.ts'
 import { registerMemoryTools } from './memory.ts'
 import { registerMutateTools } from './mutate.ts'
+import { registerProgramWeekApp } from './program-week-app.ts'
 import { registerProgramTools } from './programs.ts'
 import type { ToolContext } from './types.ts'
 import { registerWorkoutTools } from './workouts.ts'
@@ -19,4 +20,5 @@ export function registerTools(server: McpServer, context: ToolContext): void {
   registerMemoryTools(server, context)
   registerBuildTools(server, context)
   registerMutateTools(server, context)
+  registerProgramWeekApp(server, context)
 }
