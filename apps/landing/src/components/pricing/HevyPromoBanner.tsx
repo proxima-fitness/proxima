@@ -10,17 +10,18 @@ import {
     DEFAULT_CALENDLY_SCHEDULING_URL,
     DISCOVERY_DISCOUNT_CODE,
     DISCOVERY_DISCOUNT_PERCENT,
-    MAIN_DISCOUNT_CODE,
-    MAIN_DISCOUNT_PERCENT,
+    // MAIN_DISCOUNT_CODE, // commented out: SUMMER40 promo expired Sept 30 2026
+    // MAIN_DISCOUNT_PERCENT,
 } from "@/assets/constants/ui-constants";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator"; // commented out: only used by expired SUMMER40 promo
 import { cn } from "@/lib/utils";
 
 /*
  * @module HevyPromoBanner
- * @description Pricing promos: public Pro+ discount (code from MAIN_DISCOUNT_*) and product-feedback Calendly path (95% code after booking).
- * @dependsOn react-calendly, Separator, ui-constants.
+ * @description Pricing product-feedback Calendly path (95% discount code revealed after booking).
+ *   Public Pro+ discount (SUMMER40) hidden: expired Sept 30 2026.
+ * @dependsOn react-calendly, ui-constants.
  * @usedBy /pricing accordion panel.
  */
 
@@ -35,7 +36,8 @@ function getCalendlyPortalRoot(): HTMLElement | null {
 }
 
 /**
- * HevyPromoBanner stacks the main Pro+ promo and discovery-call offers for use inside the pricing accordion.
+ * HevyPromoBanner shows the product-feedback discovery-call offer for use inside the pricing accordion.
+ * The main Pro+ SUMMER40 promo block below is commented out (expired Sept 30 2026).
  */
 export function HevyPromoBanner({ className, onJumpToCheckout }: THevyPromoBannerProps = {}) {
     const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || DEFAULT_CALENDLY_SCHEDULING_URL;
@@ -58,6 +60,7 @@ export function HevyPromoBanner({ className, onJumpToCheckout }: THevyPromoBanne
                 className,
             )}
         >
+            {/* Expired SUMMER40 promo block (expired Sept 30 2026), kept commented out for easy revival.
             <div className="space-y-2">
                 <p className="text-sm font-semibold text-foreground">Limited Time Offer</p>
                 <p className="text-foreground text-sm font-medium leading-snug">
@@ -70,6 +73,7 @@ export function HevyPromoBanner({ className, onJumpToCheckout }: THevyPromoBanne
             </div>
 
             <Separator className="bg-border" />
+            */}
 
             <div className="space-y-3">
                 <p className="text-sm font-semibold text-foreground">Product feedback call</p>
